@@ -220,5 +220,3 @@ bool collision_benchmark::LoadWorlds(const std::vector<std::string>& worldfiles,
     }
     return true;
 }
-
-#endif
