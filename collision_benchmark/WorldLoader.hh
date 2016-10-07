@@ -1,3 +1,6 @@
+#ifndef COLLISION_BENCHMARK_WORLDLOADER
+#define COLLISION_BENCHMARK_WORLDLOADER
+
 /*
  * Copyright (C) 2012-2016 Open Source Robotics Foundation
  *
@@ -45,3 +48,5 @@ extern bool LoadWorlds(const std::vector<std::string>& worldfiles,
                        std::vector<gazebo::physics::WorldPtr>& worlds);
 
 }  // namespace collision_benchmark
+
+#endif  // COLLISION_BENCHMARK_WORLDLOADER
