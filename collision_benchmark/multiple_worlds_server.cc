@@ -75,25 +75,22 @@ bool PlayTest(int argc, char **argv)
     return false;
   }
 
-  // vector of filenames from where to load worlds (to be read from arguments)
-  std::vector<std::string> worldFilenames;
-  // vector of world names (to be generated)
-  std::vector<std::string> worldNames;
+  // list of worlds to be loaded
+  std::set<collision_benchmark::Worldfile> worldsToLoad;
 
   int numIters = atoi(argv[1]);
 
   for (int i = 2; i < argc; ++i)
   {
     std::string worldfile = std::string(argv[i]);
-    worldFilenames.push_back(worldfile);
     std::stringstream worldname;
     worldname << "world_" << i - 1;
-    worldNames.push_back(worldname.str());
+    worldsToLoad.insert(collision_benchmark::Worldfile(worldfile,worldname.str()));
   }
 
-  std::vector<gazebo::physics::WorldPtr> worlds;
   std::cout << "Loading worlds..." << std::endl;
-  if (!collision_benchmark::LoadWorlds(worldFilenames, worldNames, worlds))
+  std::vector<gazebo::physics::WorldPtr> worlds = collision_benchmark::LoadWorlds(worldsToLoad);
+  if (worlds.size()!=worldsToLoad.size())
   {
     std::cerr << "Could not load worlds." << std::endl;
     return false;
