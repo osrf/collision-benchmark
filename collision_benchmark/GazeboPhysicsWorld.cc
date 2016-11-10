@@ -20,12 +20,11 @@
  * Date: May 2016
  */
 #include <collision_benchmark/GazeboPhysicsWorld.hh>
-#include <collision_benchmark/GazeboWorldState.hh>
+//#include <collision_benchmark/GazeboWorldState.hh>
 #include <collision_benchmark/WorldLoader.hh>
 #include <collision_benchmark/boost_std_conversion.h>
 
 #include <gazebo/physics/physics.hh>
-//#include <gazebo/physics/PhysicsIface.hh>
 
 using collision_benchmark::GazeboPhysicsWorld;
 

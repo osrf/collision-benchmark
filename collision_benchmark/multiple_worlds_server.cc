@@ -16,7 +16,7 @@
 */
 
 #include <collision_benchmark/WorldLoader.hh>
-#include <collision_benchmark/GazeboWorldState.hh>
+// #include <collision_benchmark/GazeboWorldState.hh> // TODO to be added in next PR
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
 
@@ -71,20 +71,21 @@ bool PlayTest(int argc, char **argv)
   }
 
   // Go through all worlds and print info
+  /* TODO: This will be added in the next PR
   bool printState = false;
   if (printState)
   {
     std::cout << "##### States of all worlds before running:" << std::endl;
     collision_benchmark::PrintWorldStates(worlds);
-  }
+  }*/
 
   RunWorlds(numIters, worlds);
 
-  if (printState)
+  /*if (printState)
   {
     std::cout << "##### States of all worlds after running:" << std::endl;
     collision_benchmark::PrintWorldStates(worlds);
-  }
+  }*/
 
   return true;
 }

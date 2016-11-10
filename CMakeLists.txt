@@ -10,7 +10,7 @@ list(APPEND CMAKE_CXX_FLAGS "${GAZEBO_CXX_FLAGS}")
 add_library(collision_benchmark SHARED
   collision_benchmark/WorldLoader.cc
   collision_benchmark/GazeboPhysicsWorld.cc
-  collision_benchmark/GazeboWorldState.cc
+  #collision_benchmark/GazeboWorldState.cc
 )
 
 add_executable(multiple_worlds_server
