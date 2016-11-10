@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
+set(ENABLE_TEST true)
+
 find_package(gazebo 8.0 REQUIRED)
 include_directories(${PROJECT_SOURCE_DIR} ${GAZEBO_INCLUDE_DIRS})
 link_directories(${GAZEBO_LIBRARY_DIRS})
@@ -7,6 +9,8 @@ list(APPEND CMAKE_CXX_FLAGS "${GAZEBO_CXX_FLAGS}")
   
 add_library(collision_benchmark SHARED
   collision_benchmark/WorldLoader.cc
+  collision_benchmark/GazeboPhysicsWorld.cc
+  collision_benchmark/GazeboWorldState.cc
 )
 
 add_executable(multiple_worlds_server
@@ -22,6 +26,7 @@ if (ENABLE_TEST)
   include_directories(${GTEST_INCLUDE_DIRS})
 
   add_executable(multiple_worlds_test test/MultipleWorlds_TEST.cc)
-  target_link_libraries(multiple_worlds_test ${GTEST_BOTH_LIBRARIES})
+  target_link_libraries(multiple_worlds_test
+    collision_benchmark ${GTEST_BOTH_LIBRARIES})
   add_test(MultipleWorldsTest multiple_worlds_test)
 endif (ENABLE_TEST)

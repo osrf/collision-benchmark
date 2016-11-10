@@ -196,11 +196,11 @@ gazebo::physics::WorldPtr collision_benchmark::LoadWorld(const std::string& worl
 }
 
 
-std::vector<gazebo::physics::WorldPtr> collision_benchmark::LoadWorlds(const std::set<Worldfile>& worldfiles)
+std::vector<gazebo::physics::WorldPtr> collision_benchmark::LoadWorlds(const std::vector<Worldfile>& worldfiles)
 {
   std::vector<gazebo::physics::WorldPtr> worlds;
   // -- load all worlds --
-  for (std::set<Worldfile>::const_iterator w = worldfiles.begin();
+  for (std::vector<Worldfile>::const_iterator w = worldfiles.begin();
       w != worldfiles.end(); ++w)
   {
     std::cout << "Loading world " << w->filename << " (named as '" << w->worldname << "')" << std::endl;

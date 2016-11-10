@@ -10,13 +10,13 @@ namespace collision_benchmark
  * \brief Basic interface for a shape
  * \author Jennifer Buehler
  * \date October 2016
- */    
+ */
 class Shape
 {
 
-    public: Shape(){}
-    private: Shape(const Shape& c){}
-    public: virtual ~Shape(){}
+  public: Shape(){}
+  private: Shape(const Shape& c){}
+  public: virtual ~Shape(){}
 
 };
 
