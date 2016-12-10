@@ -113,7 +113,7 @@ class GazeboPhysicsWorld: public collision_benchmark::PhysicsEngineWorld<GazeboP
 
   public: virtual bool IsAdaptor() const;
 
-  public: virtual RefResult SetWorld(WorldPtr& world);
+  public: virtual RefResult SetWorld(const WorldPtr& world);
 
   public: virtual WorldPtr GetWorld() const;
 

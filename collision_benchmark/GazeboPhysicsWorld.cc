@@ -22,7 +22,7 @@
 #include <collision_benchmark/GazeboPhysicsWorld.hh>
 #include <collision_benchmark/GazeboWorldState.hh>
 #include <collision_benchmark/WorldLoader.hh>
-#include <collision_benchmark/boost_std_conversion.h>
+#include <collision_benchmark/boost_std_conversion.hh>
 
 #include <gazebo/physics/physics.hh>
 //#include <gazebo/physics/PhysicsIface.hh>
@@ -108,12 +108,15 @@ void GazeboPhysicsWorld::Clear()
 
 GazeboPhysicsWorld::WorldState GazeboPhysicsWorld::GetWorldState() const
 {
-  throw new gazebo::common::Exception(__FILE__,__LINE__,"Implement me");
+  gazebo::physics::WorldState s(world);
+  return s;
 }
 
 GazeboPhysicsWorld::WorldState GazeboPhysicsWorld::GetWorldStateDiff(const WorldState& other) const
 {
-  throw new gazebo::common::Exception(__FILE__,__LINE__,"Implement me");
+  gazebo::physics::WorldState diffState = other - GetWorldState();
+  // std::cout << "Diff state: " << std::endl << diffState << std::endl;
+  return diffState;
 }
 
 GazeboPhysicsWorld::OpResult GazeboPhysicsWorld::SetWorldState(const WorldState& state, bool isDiff)
@@ -161,7 +164,7 @@ bool GazeboPhysicsWorld::IsAdaptor() const
   return true;
 }
 
-GazeboPhysicsWorld::RefResult GazeboPhysicsWorld::SetWorld(WorldPtr& _world)
+GazeboPhysicsWorld::RefResult GazeboPhysicsWorld::SetWorld(const WorldPtr& _world)
 {
   world = collision_benchmark::to_boost_ptr<World>(_world);
   return GazeboPhysicsWorld::REFERENCED;

@@ -5,7 +5,10 @@
 
 
 /**
- * Helper function which fixes the SDF format in the states description
+ * Helper function which fixes the SDF format in the states description.
+ *  adds the <sdf version='1.6'>...</sdf> tags around the strings which have to
+ *  be there for compatibility with World::SetState(). The insertions coming
+ *  from WorldState::operator- are in a format not compatible with it.
  */
 void fixSDF(std::vector<std::string>& states)
 {

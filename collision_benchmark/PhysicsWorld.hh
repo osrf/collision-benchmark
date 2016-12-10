@@ -22,7 +22,6 @@
 #include <sdf/sdf.hh>
 
 #include <memory>
-// #include <boost/shared_ptr.hpp>
 
 namespace collision_benchmark
 {
@@ -52,6 +51,11 @@ namespace collision_benchmark
 template<class WorldStateImpl>
 class PhysicsWorldBase
 {
+
+  private: typedef PhysicsWorldBase<WorldStateImpl> Self;
+  public: typedef std::shared_ptr<Self> Ptr;
+  public: typedef std::shared_ptr<const Self> ConstPtr;
+
   /// NOT_SUPPORTED: depending on the context of the function, this means
   ///   something about what the method does is not supported (eg. file format not supported)
   public: typedef enum _OpResult {FAILED, NOT_SUPPORTED, SUCCESS} OpResult;
@@ -125,10 +129,13 @@ class PhysicsWorldBase
 template<class PhysicsWorldTypes>
 class PhysicsWorld: public PhysicsWorldBase<typename PhysicsWorldTypes::WorldState>
 {
+  private: typedef PhysicsWorld<PhysicsWorldTypes> Self;
+  public: typedef std::shared_ptr<Self> Ptr;
+  public: typedef std::shared_ptr<const Self> ConstPtr;
 
   /// Describes a state of the world
   public: typedef typename PhysicsWorldTypes::WorldState WorldState;
-  protected: typedef PhysicsWorldBase<typename PhysicsWorldTypes::WorldState> BaseClass;
+  private: typedef PhysicsWorldBase<typename PhysicsWorldTypes::WorldState> BaseClass;
 
   public: typedef typename BaseClass::OpResult OpResult;
 
@@ -260,7 +267,12 @@ class PhysicsWorld: public PhysicsWorldBase<typename PhysicsWorldTypes::WorldSta
 template<class PhysicsWorldTypes, class PhysicsEngineWorldTypes>
 class PhysicsEngineWorld: public PhysicsWorld<PhysicsWorldTypes>
 {
-  protected: typedef PhysicsWorld<PhysicsWorldTypes> ParentClass;
+  private: typedef PhysicsWorld<PhysicsWorldTypes> ParentClass;
+
+  private: typedef PhysicsEngineWorld<PhysicsWorldTypes, PhysicsEngineWorldTypes> Self;
+  public: typedef std::shared_ptr<Self> Ptr;
+  public: typedef std::shared_ptr<const Self> ConstPtr;
+
   public: typedef typename ParentClass::ModelID ModelID;
   public: typedef typename ParentClass::ModelPartID ModelPartID;
   public: typedef typename ParentClass::WorldState WorldState;
@@ -313,7 +325,7 @@ class PhysicsEngineWorld: public PhysicsWorld<PhysicsWorldTypes>
   /// \retval REFERENCED if \e world was taken as local reference to the world.
   ///   In this case, the result of GetWorld() will return a pointer to \e world.
   /// \retval FAILED Error copying the state of \e world.
-  public: virtual RefResult SetWorld(WorldPtr& world) = 0;
+  public: virtual RefResult SetWorld(const WorldPtr& world) = 0;
 
   /// Returns the underlying world, or a pointer to this instance if this is
   /// a self-contained implementation (not an adaptor to another world).

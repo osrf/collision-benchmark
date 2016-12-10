@@ -14,29 +14,20 @@
  * limitations under the License.
  *
  */
-#ifndef COLLISION_BENCHMARK_GAZEBOWORLDSTATE_
-#define COLLISION_BENCHMARK_GAZEBOWORLDSTATE_
+#ifndef COLLISION_BENCHMARK_GAZEBOHELPERS_
+#define COLLISION_BENCHMARK_GAZEBOHELPERS_
 
 #include <gazebo/physics/World.hh>
 
 namespace collision_benchmark
 {
 
-/**
- * Sets the \e world to the state \e targetState
- */
-void SetWorldState(gazebo::physics::WorldPtr& world, const gazebo::physics::WorldState& targetState);
 
 /**
- * Print the world state. Can be used for testing.
+ * Clears all models, and all contacts, from the world.
  */
-void PrintWorldState(const gazebo::physics::WorldPtr world);
+void ClearModels(gazebo::physics::WorldPtr& world);
 
-/**
- * Print the world state. Can be used for testing.
- */
-void PrintWorldStates(const std::vector<gazebo::physics::WorldPtr>& worlds);
+}  // namespace
 
-}
-
-#endif   // COLLISION_BENCHMARK_GAZEBOWORLDSTATE_
+#endif   // COLLISION_BENCHMARK_GAZEBOHELPERS_

@@ -4,6 +4,7 @@
   
     <physics type='bullet'>
     </physics>
+
     <model name="box">
       <pose>0 0 3.0 0 0 0</pose>
       <link name="link">
