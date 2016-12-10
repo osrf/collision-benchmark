@@ -39,5 +39,22 @@ multiple_worlds_server 800 \
     test_worlds/cube_ode.world \
     test_worlds/sphere_bullet.world
 ```
+Load gzclient and then press any key to continue.
 
 After 800 iterations, this should switch from the cube to the sphere.
+
+**Simple example without gzclient**
+
+This quick test can be used to confirm that different engines have in fact
+been loaded for different worlds.
+
+```
+multiple_worlds_server 1 \
+    test_worlds/empty_ode.world \
+    test_worlds/empty_bullet.world
+```
+
+Then just press any key without loading gzclient to continue the test.
+This will update each world once, then switch to the second as the "main" world
+and update each world once again. At each update it should print "ode" and "bullet" as collision engines loaded.
+

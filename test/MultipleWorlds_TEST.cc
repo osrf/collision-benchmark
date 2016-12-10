@@ -9,7 +9,7 @@ class MultipleWorldsTest : public ::testing::Test {
   protected:
 
   MultipleWorldsTest()
-    :fakeProgramName("MultipleWorldsTest")
+  :fakeProgramName("MultipleWorldsTest")
   {
   }
   virtual ~MultipleWorldsTest()
@@ -18,15 +18,15 @@ class MultipleWorldsTest : public ::testing::Test {
 
   virtual void SetUp()
   {
-    // irrelevant to pass fake argv, so make an exception
-    // and pass away constness, so that fakeProgramName can be
-    // initialized easily in constructor.
-    gazebo::setupServer(1, (char**)&fakeProgramName);
+  // irrelevant to pass fake argv, so make an exception
+  // and pass away constness, so that fakeProgramName can be
+  // initialized easily in constructor.
+  gazebo::setupServer(1, (char**)&fakeProgramName);
   }
 
   virtual void TearDown()
   {
-    gazebo::shutdown();
+  gazebo::shutdown();
   }
 
   private:
@@ -41,10 +41,10 @@ std::vector<gazebo::physics::WorldPtr> LoadWorlds(const std::vector<std::string>
   int i=0;
   for (std::vector<std::string>::const_iterator it=filenames.begin(); it!=filenames.end(); ++it, ++i)
   {
-    std::string worldfile = *it;
-    std::stringstream worldname;
-    worldname << "world_" << i - 1;
-    worldsToLoad.push_back(collision_benchmark::Worldfile(worldfile,worldname.str()));
+  std::string worldfile = *it;
+  std::stringstream worldname;
+  worldname << "world_" << i - 1;
+  worldsToLoad.push_back(collision_benchmark::Worldfile(worldfile,worldname.str()));
   }
   return collision_benchmark::LoadWorlds(worldsToLoad);
 }
@@ -53,26 +53,39 @@ std::vector<gazebo::physics::WorldPtr> LoadWorlds(const std::vector<std::string>
 TEST_F(MultipleWorldsTest, UsesDifferentEngines)
 {
   std::vector<std::string> filenames;
-  filenames.push_back("../test_worlds/empty_ode.world");
-  filenames.push_back("../test_worlds/empty_bullet.world");
-  filenames.push_back("../test_worlds/empty_dart.world");
+  std::vector<std::string> engines;
+  if (gazebo::physics::PhysicsFactory::IsRegistered("ode"))
+  {
+    filenames.push_back("../test_worlds/empty_ode.world");
+    engines.push_back("ode");
+  }
+  if (gazebo::physics::PhysicsFactory::IsRegistered("bullet"))
+  {
+    filenames.push_back("../test_worlds/empty_bullet.world");
+    engines.push_back("bullet");
+  }
+  if (gazebo::physics::PhysicsFactory::IsRegistered("dart"))
+  {
+    filenames.push_back("../test_worlds/empty_dart.world");
+    engines.push_back("dart");
+  }
 
   std::vector<gazebo::physics::WorldPtr> worlds=LoadWorlds(filenames);
 
-  if (worlds.size() !=3 ) std::cout<<"Worlds not loaded"<<std::endl;
+  std::cout<<worlds.size()<<" worlds loaded."<<std::endl;
 
-  ASSERT_EQ(worlds.size(), 3) << " 3 Worlds must have been loaded";
+  if (worlds.size() != filenames.size() ) std::cout<<"Worlds not loaded"<<std::endl;
 
-  for (std::vector<gazebo::physics::WorldPtr>::iterator it=worlds.begin(); it!=worlds.end(); ++it)
+  ASSERT_EQ(worlds.size(), filenames.size()) << filenames.size() << "  Worlds must have been loaded";
+
+  int i=0;
+  for (std::vector<gazebo::physics::WorldPtr>::iterator it=worlds.begin(); it!=worlds.end(); ++it, ++i)
   {
     ASSERT_NE(it->get(),nullptr) << " World NULL pointer returned";
     ASSERT_NE((*it)->GetPhysicsEngine().get(), nullptr) << " World PhysicsEngine cannot be NULL";
+    ASSERT_EQ((*it)->GetPhysicsEngine()->GetType(), engines[i]) << "Engine must be '"<<engines[i]
+      <<"', is "<<(*it)->GetPhysicsEngine()->GetType();
   }
-
-  int i=0;
-  ASSERT_EQ(worlds[i++]->GetPhysicsEngine()->GetType(), "ode") << "Engine must be ODE";
-  ASSERT_EQ(worlds[i++]->GetPhysicsEngine()->GetType(), "bullet") << "Engine must be Bullet";
-  ASSERT_EQ(worlds[i++]->GetPhysicsEngine()->GetType(), "dart") << "Engine must be DART";
 }
 
 TEST_F(MultipleWorldsTest, OtherTest)
