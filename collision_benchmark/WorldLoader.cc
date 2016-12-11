@@ -32,10 +32,11 @@ bool collision_benchmark::WaitForNamespace(std::string worldNamespace, float max
   gazebo::common::Timer timer;
   timer.Start();
 
+  std::cout << "Waiting for namespace '" << worldNamespace << " 'to be loaded." << std::endl;
+
   bool found = false;
   while (!found && (timer.GetElapsed().Float() < maxWaitTime))
   {
-    std::cout << "Waiting for namespace '" << worldNamespace << " 'to be loaded." << std::endl;
     // found at most 1 second for namespaces to appear.
     if (gazebo::transport::waitForNamespaces(gazebo::common::Time(sleepTime, 0)))
     {
@@ -53,16 +54,19 @@ bool collision_benchmark::WaitForNamespace(std::string worldNamespace, float max
         std::cout << "Namespace '" << worldNamespace << "' received." << std::endl;
         found = true;
       }
-      else
+      /*else
       {
         std::cout << "Namespace '" << worldNamespace << "' not received yet." << std::endl;
-      }
+      }*/
     }
-    else
+    /*else
     {
       std::cout << "No namespaces received yet.\n";
-    }
+    }*/
   }
+  if (!found)
+    std::cerr<<"Unsuccessful wait for namespace "<<worldNamespace<<"."<<std::endl;
+
   return found;
 }
 
@@ -89,7 +93,7 @@ sdf::ElementPtr collision_benchmark::GetWorldFromSDF(const std::string& filename
 
   if (!sdf::readFile(fullFile, sdf))
   {
-    std::cerr << "Unable to read sdf file[" << "empty.world" << "]\n";
+    std::cerr << "Unable to read sdf file[" << filename << "]\n";
     return sdfRoot;
   }
 
@@ -101,6 +105,48 @@ sdf::ElementPtr collision_benchmark::GetWorldFromSDF(const std::string& filename
     std::cout << "Replacing world name: '" << sdfWorldName->GetAsString() << "' with '" << name << "'" << std::endl;
     sdfWorldName->SetFromString(name);
   }
+
+  return sdfRoot;
+}
+
+sdf::ElementPtr collision_benchmark::GetPhysicsFromSDF(const std::string& filename)
+{
+  sdf::ElementPtr sdfRoot;
+
+  // Load the world file
+  sdf::SDFPtr sdf(new sdf::SDF);
+  if (!sdf::init(sdf))
+  {
+    std::cerr << "Unable to initialize sdf\n";
+    return sdfRoot;
+  }
+
+  // Find the file.
+  std::string fullFile = gazebo::common::find_file(filename);
+
+  if (fullFile.empty())
+  {
+    std::cerr << "Unable to find file[" << filename << "]\n";
+    return sdfRoot;
+  }
+
+  if (!sdf::readFile(fullFile, sdf))
+  {
+    std::cerr << "Unable to read sdf file[" << filename << "]\n";
+    return sdfRoot;
+  }
+
+  sdfRoot = sdf->Root()->GetElement("world");
+  if (!sdfRoot)
+  {
+      std::cerr<<"No <world> tag exits in SDF "<<filename<<std::endl;
+      return sdfRoot;
+  }
+
+  sdfRoot = sdfRoot->GetElement("physics");
+
+  if (!sdfRoot)
+    std::cerr<<"No <physics> tag under <world>"<<std::endl;
 
   return sdfRoot;
 }
@@ -144,35 +190,62 @@ gazebo::physics::WorldPtr collision_benchmark::LoadWorldFromSDF(const sdf::Eleme
   return world;
 }
 
-gazebo::physics::WorldPtr collision_benchmark::LoadWorldFromFile(const std::string &_worldFile, const std::string& name)
+gazebo::physics::WorldPtr collision_benchmark::LoadWorldFromFile(const std::string &worldfile,
+                                                                 const std::string& name,
+                                                                 const sdf::ElementPtr& overridePhysics)
 {
   gazebo::physics::WorldPtr world;
-  sdf::ElementPtr sdfRoot = GetWorldFromSDF(_worldFile, name);
-  if (!sdfRoot)
-  {
-    std::cerr << "Could not load world" << std::endl;
-    return world;
-  }
-  return LoadWorldFromSDF(sdfRoot, name);
-}
-
-gazebo::physics::WorldPtr collision_benchmark::LoadWorld(const std::string& worldfile, const std::string& name)
-{
-  gazebo::physics::WorldPtr world;
+  sdf::ElementPtr sdfRoot;
   try
   {
-    // Load a world
-    std::cout << "Loading world " << worldfile;
-    if (!name.empty()) std::cout << " (to be named '" << name << "')";
-    std::cout << std::endl;
-
-    world = LoadWorldFromFile(worldfile, name);
+    sdfRoot = GetWorldFromSDF(worldfile, name);
   }
   catch (gazebo::common::Exception& e)
   {
     std::cerr << " Exception ocurred when loading world. " << e.GetErrorStr() << std::endl;
     return gazebo::physics::WorldPtr();
   }
+  if (!sdfRoot)
+  {
+    std::cerr << "Could not load world" << std::endl;
+    return world;
+  }
+  if (overridePhysics)
+  {
+    if (!sdfRoot->HasElement("physics"))
+    {
+#ifdef DEBUG
+      std::cout<<"World in "<<worldfile<<" did not have physics, so adding the override physics: "
+        <<std::endl<<overridePhysics->ToString("")<<std::endl;
+#endif
+      sdf::ElementPtr physics = overridePhysics->Clone();
+      physics->SetParent(sdfRoot);
+      sdfRoot->InsertElement(physics);
+    }
+    else
+    {
+      sdf::ElementPtr sdfPhysics = sdfRoot->GetElement("physics");
+#ifdef DEBUG
+      std::cout<<"World in "<<worldfile<<" has physics: "<<std::endl<<
+       sdfPhysics->ToString("")<<"< overriding with: "<<std::endl<<overridePhysics->ToString("")<<std::endl;
+#endif
+      sdfPhysics->Copy(overridePhysics);
+    }
+  }
+  return LoadWorldFromSDF(sdfRoot, name);
+}
+
+gazebo::physics::WorldPtr collision_benchmark::LoadWorld(const std::string& worldfile,
+                                                         const std::string& name,
+                                                         const sdf::ElementPtr& overridePhysics)
+{
+  // Load a world
+  std::cout << "Loading world " << worldfile;
+  if (!name.empty()) std::cout << " (to be named '" << name << "')";
+  std::cout << std::endl;
+
+  gazebo::physics::WorldPtr world = LoadWorldFromFile(worldfile, name, overridePhysics);
+
   if (!world)
   {
     std::cerr << "Could not load world." << std::endl;

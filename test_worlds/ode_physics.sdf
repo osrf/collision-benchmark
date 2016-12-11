@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<sdf version="1.5">
+  <world name="noname">
+    <physics type='ode'>
+      <ode>
+        <solver>
+          <iters>150</iters>
+        </solver>
+      </ode>
+    </physics>
+  </world>
+</sdf>
