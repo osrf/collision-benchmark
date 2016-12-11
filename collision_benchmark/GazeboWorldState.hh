@@ -17,6 +17,7 @@
 #ifndef COLLISION_BENCHMARK_GAZEBOWORLDSTATE_
 #define COLLISION_BENCHMARK_GAZEBOWORLDSTATE_
 
+#include <collision_benchmark/PhysicsWorld.hh>
 #include <gazebo/physics/World.hh>
 
 namespace collision_benchmark
@@ -33,9 +34,14 @@ void SetWorldState(gazebo::physics::WorldPtr& world, const gazebo::physics::Worl
 void PrintWorldState(const gazebo::physics::WorldPtr world);
 
 /**
- * Print the world state. Can be used for testing.
+ * Print the world states. Can be used for testing.
  */
 void PrintWorldStates(const std::vector<gazebo::physics::WorldPtr>& worlds);
+
+/**
+ * Print the world states. Can be used for testing.
+ */
+void PrintWorldStates(const std::vector<PhysicsWorldBase<gazebo::physics::WorldState>::Ptr>& worlds);
 
 }
 

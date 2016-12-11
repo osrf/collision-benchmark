@@ -26,14 +26,18 @@ include_directories(${PROJECT_SOURCE_DIR} ${GAZEBO_INCLUDE_DIRS} ${DART_INCLUDE_
 link_directories(${GAZEBO_LIBRARY_DIRS})
 list(APPEND CMAKE_CXX_FLAGS "${GAZEBO_CXX_FLAGS}")
 
-add_executable(multiple_worlds_server
-  collision_benchmark/multiple_worlds_server.cc)
+add_executable(multiple_worlds_server_test
+  collision_benchmark/multiple_worlds_server_test.cc)
+
+add_executable(multiple_worlds_server_test_simple
+  collision_benchmark/multiple_worlds_server_test_simple.cc)
 
 target_link_libraries(collision_benchmark
   ${GAZEBO_LIBRARIES}
   ${DART_LIBRARIES})
 
-target_link_libraries(multiple_worlds_server collision_benchmark)
+target_link_libraries(multiple_worlds_server_test_simple collision_benchmark)
+target_link_libraries(multiple_worlds_server_test collision_benchmark)
 
 # testing
 if (ENABLE_TEST)

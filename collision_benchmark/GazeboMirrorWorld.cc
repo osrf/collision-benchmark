@@ -68,5 +68,5 @@ void GazeboMirrorWorld::Sync()
 
 void GazeboMirrorWorld::Update(int iter)
 {
-  throw new gazebo::common::Exception(__FILE__,__LINE__,"Implement me");
+  gazebo::runWorld(mirrorWorld, iter);
 }

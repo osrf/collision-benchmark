@@ -1,4 +1,5 @@
 #include <collision_benchmark/GazeboWorldState.hh>
+#include <collision_benchmark/GazeboStateCompare.hh>
 
 #include <gazebo/common/common.hh>
 #include <gazebo/physics/physics.hh>
@@ -53,20 +54,20 @@ void GetNewEntities(const gazebo::physics::WorldState& _state1,
 // XXX TODO REMOVE: Flags for testing
 #define FORCE_TARGET_TIME_VALUES
 //#define FORCE_KEEP_TIME_VALUES
-//#define DEBUGMIRR
+// #define DEBUGWORLDSTATE
 void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr& world, const gazebo::physics::WorldState& targetState)
 {
   bool pauseState = world->IsPaused();
   world->SetPaused(true);
   gazebo::physics::WorldState currentState(world);
 
-#ifdef DEBUGMIRR
+#ifdef DEBUGWORLDSTATE
   std::cout << "Setting world state. " << std::endl;
   std::cout << "Target state: " << std::endl << targetState << std::endl;
   std::cout << "Current state: " << std::endl << currentState << std::endl;
 #endif
 
-  //re-set mirror state times
+  //re-set state times
   // XXX TODO CHECK: should reset all times of the state as well,
   // because the *difference* is going to be added to it
   // Not sure yet how to best handle the times.
@@ -81,7 +82,7 @@ void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr& world, const 
   gazebo::physics::WorldState diffState = targetState - currentState;
   gazebo::physics::WorldState newState = currentState + diffState;
 
-#ifdef DEBUGMIRR
+#ifdef DEBUGWORLDSTATE
   std::cout << "Diff state: " << std::endl << diffState << std::endl;
 #endif
 
@@ -122,7 +123,7 @@ void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr& world, const 
   std::vector<gazebo::physics::LightState> lights;
   GetNewEntities(targetState, currentState, models, lights);
 
-  // apply the state to the mirror world
+  // apply the state to the world
   world->SetState(newState);
 
   // now, update the poses of the new models and lights
@@ -150,10 +151,14 @@ void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr& world, const 
     l->SetState(light);
   }
 
-#ifdef DEBUGMIRR
+#ifdef DEBUGWORLDSTATE
   std::cout << "State set to:" << std::endl;
   gazebo::physics::WorldState _currentState(world);
   std::cout << _currentState << std::endl;
+  if (!GazeboStateCompare::Equal(_currentState, targetState))
+  {
+    std::cerr<<"Target state was not set as supposed to!!"<<std::endl;
+  }
 #endif
 
   world->SetPaused(pauseState);
@@ -177,5 +182,18 @@ void collision_benchmark::PrintWorldStates(const std::vector<gazebo::physics::Wo
   }
   std::cout << "#####" << std::endl;
 }
+
+void collision_benchmark::PrintWorldStates(const std::vector<PhysicsWorldBase<gazebo::physics::WorldState>::Ptr>& worlds)
+{
+  std::cout << "## World states ###" << std::endl;
+  for (std::vector<PhysicsWorldBase<gazebo::physics::WorldState>::Ptr>::const_iterator w = worlds.begin();
+      w != worlds.end(); ++w)
+  {
+    gazebo::physics::WorldState s=(*w)->GetWorldState();
+    std::cout << s << std::endl;
+  }
+  std::cout << "#####" << std::endl;
+}
+
 
 

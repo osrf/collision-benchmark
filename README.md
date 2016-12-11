@@ -27,7 +27,7 @@ the world to be displayed (the "main world") which will be displayed by gzclient
 of this test is to demonstrate how several worlds can be run, and how it is possible to switch
 between those worlds for displayingin gzclient.
 
-``multiple_worlds_server <number-of-simulation-steps> <list-of-worlds>``
+``multiple_worlds_server_test_simple <number-of-simulation-steps> <list-of-worlds>``
 
 Then you can start gzclient and look at the world currently being displayed. Press any key to continue
 as soon as gzclient is up and running.
@@ -35,7 +35,7 @@ as soon as gzclient is up and running.
 **Example**
 
 ```
-multiple_worlds_server 800 \
+multiple_worlds_server_test_simple 800 \
     test_worlds/cube_ode.world \
     test_worlds/sphere_bullet.world
 ```
@@ -49,7 +49,7 @@ This quick test can be used to confirm that different engines have in fact
 been loaded for different worlds.
 
 ```
-multiple_worlds_server 1 \
+multiple_worlds_server_test_simple 1 \
     test_worlds/empty_ode.world \
     test_worlds/empty_bullet.world
 ```

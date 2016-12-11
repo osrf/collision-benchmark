@@ -79,17 +79,17 @@ class GazeboPhysicsWorld: public collision_benchmark::PhysicsEngineWorld<GazeboP
 
   public: virtual bool SupportsSDF() const;
 
-  public: virtual OpResult LoadFromSDF(const sdf::ElementPtr& sdf);
+  public: virtual OpResult LoadFromSDF(const sdf::ElementPtr& sdf, const std::string& worldname="");
 
-  public: virtual OpResult LoadFromFile(const std::string& filename);
+  public: virtual OpResult LoadFromFile(const std::string& filename, const std::string& worldname="");
 
-  public: virtual OpResult LoadFromString(const std::string& str);
+  public: virtual OpResult LoadFromString(const std::string& str, const std::string& worldname="");
 
-  public: virtual ModelLoadResult AddModelFromFile(const std::string& filename);
+  public: virtual ModelLoadResult AddModelFromFile(const std::string& filename, const std::string& modelname="");
 
-  public: virtual ModelLoadResult AddModelFromString(const std::string& str);
+  public: virtual ModelLoadResult AddModelFromString(const std::string& str, const std::string& modelname="");
 
-  public: virtual ModelLoadResult AddModelFromSDF(const sdf::ElementPtr& sdf);
+  public: virtual ModelLoadResult AddModelFromSDF(const sdf::ElementPtr& sdf, const std::string& modelname="");
 
   public: virtual bool SupportsShapes() const;
 
@@ -108,6 +108,8 @@ class GazeboPhysicsWorld: public collision_benchmark::PhysicsEngineWorld<GazeboP
   public: virtual OpResult SetWorldState(const WorldState& state, bool isDiff);
 
   public: virtual void Update(int steps=1);
+
+  public: virtual std::string GetName() const;
 
   public: virtual bool SupportsContacts() const;
 

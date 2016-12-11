@@ -98,6 +98,9 @@ class PhysicsWorldBase
   /// Does \e steps subsequent update calls to the world. **This call blocks**.
   /// \param steps number of iterations to run the world. If 0, runs forever.
   public: virtual void Update(int steps=1)=0;
+
+  /// Returns the name of the world
+  public: virtual std::string GetName() const=0;
 };
 
 
@@ -173,42 +176,48 @@ class PhysicsWorld: public PhysicsWorldBase<typename PhysicsWorldTypes::WorldSta
   /// Like gazebo::physics::World::Load(), loads from SDF
   /// Some implementations may not support directly reading from SDF,
   /// in which case an exception is thrown (see also SupportsSDF()).
+  /// \param worldname set to non-empty string to override world name given in SDF
   /// \retval NOT_SUPPORTED the type of model specified in the SDF is not supported
   /// \retval FAILED Loading failed for any other reason
-  public: virtual OpResult LoadFromSDF(const sdf::ElementPtr& sdf)=0;
+  public: virtual OpResult LoadFromSDF(const sdf::ElementPtr& sdf, const std::string& worldname="")=0;
 
   /// Loads a world from a file. The format of the file has to be
   /// supported by the implementation.
+  /// \param worldname set to non-empty string to override world name given in the file
   /// \retval NOT_SUPPORTED the file type, or the world specified within is not supported
   /// \retval FAILED Loading failed for any other reason
-  public: virtual OpResult LoadFromFile(const std::string& filename)=0;
+  public: virtual OpResult LoadFromFile(const std::string& filename, const std::string& worldname="")=0;
 
   /// Loads a world from a string \e str. The format of the file has to be
   /// supported by the implementation.
+  /// \param worldname set to non-empty string to override world name given in the string
   /// \retval NOT_SUPPORTED the format of the string, or the world specified within is not supported
   /// \retval FAILED Loading failed for any other reason
-  public: virtual OpResult LoadFromString(const std::string& str)=0;
+  public: virtual OpResult LoadFromString(const std::string& str, const std::string& worldname="")=0;
 
   /// Loads a model from a file and adds it to the world
   /// To subsequently set the pose of the model, use SetWorldState(),
   /// or specific methods of the subclass implementation.
+  /// \param modelname set to non-empty string to override world name given in file
   /// \retval NOT_SUPPORTED the file type, or the model specified within is not supported
   /// \retval FAILED Loading failed for any other reason
-  public: virtual ModelLoadResult AddModelFromFile(const std::string& filename)=0;
+  public: virtual ModelLoadResult AddModelFromFile(const std::string& filename, const std::string& modelname="")=0;
 
   /// Loads a model from a string and adds it to the world
   /// To subsequently set the pose of the model, use SetWorldState(),
   /// or specific methods of the subclass implementation.
+  /// \param modelname set to non-empty string to override world name given in string
   /// \retval NOT_SUPPORTED the format of the string, or the model specified within is not supported
   /// \retval FAILED Loading failed for any other reason
-  public: virtual ModelLoadResult AddModelFromString(const std::string& str)=0;
+  public: virtual ModelLoadResult AddModelFromString(const std::string& str, const std::string& modelname="")=0;
 
   /// Loads a model from a SDF specification and adds it to the world.
   /// Some implementations may not support directly reading from SDF,
   /// in which case an exception is thrown (see also SupportsSDF()).
   /// To subsequently set the pose of the model, use SetWorldState(),
   /// or specific methods of the subclass implementation.
-  public: virtual ModelLoadResult AddModelFromSDF(const sdf::ElementPtr& sdf)=0;
+  /// \param modelname set to non-empty string to override world name given in SDF
+  public: virtual ModelLoadResult AddModelFromSDF(const sdf::ElementPtr& sdf, const std::string& modelname="")=0;
 
   /// \return true if AddModelFromShape() is supported
   public: virtual bool SupportsShapes() const = 0;

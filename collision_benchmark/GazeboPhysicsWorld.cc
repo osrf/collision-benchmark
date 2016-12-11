@@ -59,9 +59,9 @@ bool GazeboPhysicsWorld::WaitForNamespace(const gazebo::physics::WorldPtr& gzwor
 }
 
 
-GazeboPhysicsWorld::OpResult GazeboPhysicsWorld::LoadFromSDF(const sdf::ElementPtr& sdf)
+GazeboPhysicsWorld::OpResult GazeboPhysicsWorld::LoadFromSDF(const sdf::ElementPtr& sdf, const std::string& worldname)
 {
-  gazebo::physics::WorldPtr gzworld = collision_benchmark::LoadWorldFromSDF(sdf, "");
+  gazebo::physics::WorldPtr gzworld = collision_benchmark::LoadWorldFromSDF(sdf, worldname);
 
   if (!gzworld)
     return GazeboPhysicsWorld::FAILED;
@@ -74,9 +74,9 @@ GazeboPhysicsWorld::OpResult GazeboPhysicsWorld::LoadFromSDF(const sdf::ElementP
   return GazeboPhysicsWorld::SUCCESS;
 }
 
-GazeboPhysicsWorld::OpResult GazeboPhysicsWorld::LoadFromFile(const std::string& filename)
+GazeboPhysicsWorld::OpResult GazeboPhysicsWorld::LoadFromFile(const std::string& filename, const std::string& worldname)
 {
-  gazebo::physics::WorldPtr gzworld = collision_benchmark::LoadWorldFromFile(filename, "");
+  gazebo::physics::WorldPtr gzworld = collision_benchmark::LoadWorldFromFile(filename, worldname);
 
   if (!gzworld)
     return GazeboPhysicsWorld::FAILED;
@@ -89,22 +89,22 @@ GazeboPhysicsWorld::OpResult GazeboPhysicsWorld::LoadFromFile(const std::string&
   return GazeboPhysicsWorld::SUCCESS;
 }
 
-GazeboPhysicsWorld::OpResult GazeboPhysicsWorld::LoadFromString(const std::string& str)
+GazeboPhysicsWorld::OpResult GazeboPhysicsWorld::LoadFromString(const std::string& str, const std::string& worldname)
 {
   throw new gazebo::common::Exception(__FILE__,__LINE__,"Implement me");
 }
 
-GazeboPhysicsWorld::ModelLoadResult GazeboPhysicsWorld::AddModelFromFile(const std::string& filename)
+GazeboPhysicsWorld::ModelLoadResult GazeboPhysicsWorld::AddModelFromFile(const std::string& filename, const std::string& modelname)
 {
   throw new gazebo::common::Exception(__FILE__,__LINE__,"Implement me");
 }
 
-GazeboPhysicsWorld::ModelLoadResult GazeboPhysicsWorld::AddModelFromString(const std::string& str)
+GazeboPhysicsWorld::ModelLoadResult GazeboPhysicsWorld::AddModelFromString(const std::string& str, const std::string& modelname)
 {
   throw new gazebo::common::Exception(__FILE__,__LINE__,"Implement me");
 }
 
-GazeboPhysicsWorld::ModelLoadResult GazeboPhysicsWorld::AddModelFromSDF(const sdf::ElementPtr& sdf)
+GazeboPhysicsWorld::ModelLoadResult GazeboPhysicsWorld::AddModelFromSDF(const sdf::ElementPtr& sdf, const std::string& modelname)
 {
   throw new gazebo::common::Exception(__FILE__,__LINE__,"Implement me");
 }
@@ -155,7 +155,16 @@ GazeboPhysicsWorld::OpResult GazeboPhysicsWorld::SetWorldState(const WorldState&
 
 void GazeboPhysicsWorld::Update(int steps)
 {
+  std::cout<<"Running "<<steps<<" steps for world "<<world->GetName()<<", physics engine: "<<world->GetPhysicsEngine()->GetType()<<std::endl;
+  // Run simulation for given number of steps.
+  // This method calls world->RunBlocking();
   gazebo::runWorld(world,steps);
+}
+
+
+std::string GazeboPhysicsWorld::GetName() const
+{
+  return world->GetName();
 }
 
 bool GazeboPhysicsWorld::SupportsContacts() const
