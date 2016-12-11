@@ -288,7 +288,7 @@ class PhysicsEngineWorld: public PhysicsWorld<PhysicsWorldTypes>
   public: typedef std::shared_ptr<PhysicsEngine> PhysicsEnginePtr;
   public: typedef std::shared_ptr<World> WorldPtr;
 
-  public: typedef enum _RefResult {FAILED, NOT_SUPPORTED, COPIED, REFERENCED} RefResult;
+  public: typedef enum _RefResult {ERROR, COPIED, REFERENCED} RefResult;
 
   public: PhysicsEngineWorld(){}
   public: PhysicsEngineWorld(const PhysicsEngineWorld& w){}
@@ -318,13 +318,11 @@ class PhysicsEngineWorld: public PhysicsWorld<PhysicsWorldTypes>
   /// If IsAdaptor() returns false,
   /// the whole state of \e world will be *copied* to this world.
   /// Otherwise, the given pointer will be used as adapted world.
-  /// \retval NOT_SUPPORTED this implementation does not support setting the
-  ///   state directly from another world. Try SetWorldState instead.
   /// \retval COPIED if the state of \e world was copied.
   ///   In this case, the result of GetWorld() will NOT return a pointer to \e world.
   /// \retval REFERENCED if \e world was taken as local reference to the world.
   ///   In this case, the result of GetWorld() will return a pointer to \e world.
-  /// \retval FAILED Error copying the state of \e world.
+  /// \retval ERROR Error copying the state of \e world.
   public: virtual RefResult SetWorld(const WorldPtr& world) = 0;
 
   /// Returns the underlying world, or a pointer to this instance if this is

@@ -19,6 +19,7 @@ add_library(collision_benchmark SHARED
   collision_benchmark/GazeboWorldState.cc
   collision_benchmark/GazeboMirrorWorld.cc
   collision_benchmark/GazeboHelpers.cc
+  collision_benchmark/GazeboStateCompare.cc
 )
 
 include_directories(${PROJECT_SOURCE_DIR} ${GAZEBO_INCLUDE_DIRS} ${DART_INCLUDE_DIRS})

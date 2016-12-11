@@ -20,11 +20,7 @@
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
 
-/// Waits for the namespace \e worldNamespace to appear in the Gazebo list of namespaces.
-/// Repeatedly waits for new incoming namespaces (waiting *maximum* \e sleepTime seconds at each attempt)
-/// and checks whether the given \e worldNamespace is in the list of namespaces.
-/// \param maxWaitTime waits for this maximum time (seconds)
-bool WaitForNamespace(std::string worldNamespace, float maxWaitTime = 10, float sleepTime = 1)
+bool collision_benchmark::WaitForNamespace(std::string worldNamespace, float maxWaitTime, float sleepTime)
 {
   gazebo::transport::TopicManager * topicManager = gazebo::transport::TopicManager::Instance();
   if (!topicManager)

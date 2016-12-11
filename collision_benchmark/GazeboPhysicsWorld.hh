@@ -65,6 +65,14 @@ class GazeboPhysicsWorld: public collision_benchmark::PhysicsEngineWorld<GazeboP
   public: typedef typename ParentClass::PhysicsEnginePtr PhysicsEnginePtr;
   public: typedef typename ParentClass::WorldPtr WorldPtr;
 
+  // set to true (default) to wait for the namespace for be loaded in the Load* methods.
+  // Max wait time can be set in \e OnLoadMaxWaitForNamespace and \e OnLoadMaxWaitForNamespaceSleep
+  public: static constexpr bool OnLoadWaitForNamespace = true;
+  // if \e OnLoadWaitForNamespace, then this is the maximum time (seconds) to wait for
+  public: static constexpr float OnLoadMaxWaitForNamespace = 10;
+  // if \e OnLoadWaitForNamespace, sleep time in-between checks to wait for whether the namespace has been loaded
+  public: static constexpr float OnLoadWaitForNamespaceSleep = 1;
+
   public: GazeboPhysicsWorld();
   public: GazeboPhysicsWorld(const GazeboPhysicsWorld& w){}
   public: virtual ~GazeboPhysicsWorld();
@@ -120,6 +128,9 @@ class GazeboPhysicsWorld: public collision_benchmark::PhysicsEngineWorld<GazeboP
   public: virtual ModelPtr GetModel(const ModelID& model) const;
 
   public: virtual PhysicsEnginePtr GetPhysicsEngine() const;
+
+  /// wait for the namespace of this world
+  private: bool WaitForNamespace(const gazebo::physics::WorldPtr& gzworld, float maxWait, float waitSleep);
 
   private: gazebo::physics::WorldPtr world;
 };  // class GazeboPhysicsWorld

@@ -65,6 +65,12 @@ class Worldfile
 /// \return worlds will contain the loaded worlds
 std::vector<gazebo::physics::WorldPtr> LoadWorlds(const std::vector<Worldfile>& worldfiles);
 
+/// Waits for the namespace \e worldNamespace to appear in the Gazebo list of namespaces.
+/// Repeatedly waits for new incoming namespaces (waiting *maximum* \e sleepTime seconds at each attempt)
+/// and checks whether the given \e worldNamespace is in the list of namespaces.
+/// \param maxWaitTime waits for this maximum time (seconds)
+bool WaitForNamespace(std::string worldNamespace, float maxWaitTime = 10, float sleepTime = 1);
+
 }  // namespace collision_benchmark
 
 #endif  // COLLISIONBENCHMARK_WORLDLOADER_

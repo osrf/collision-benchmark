@@ -21,6 +21,7 @@
  */
 #include <collision_benchmark/GazeboPhysicsWorld.hh>
 #include <collision_benchmark/GazeboWorldState.hh>
+#include <collision_benchmark/GazeboHelpers.hh>
 #include <collision_benchmark/WorldLoader.hh>
 #include <collision_benchmark/boost_std_conversion.hh>
 
@@ -43,14 +44,49 @@ bool GazeboPhysicsWorld::SupportsSDF() const
   return true;
 }
 
+bool GazeboPhysicsWorld::WaitForNamespace(const gazebo::physics::WorldPtr& gzworld, float maxWait, float waitSleep)
+{
+  std::string worldNamespace = gzworld->GetName();
+
+  // wait for namespace to be loaded, to make sure the order of namespaces maintained
+  // in the transport system eventually will correspond to the same order of the worlds
+  if (!collision_benchmark::WaitForNamespace(worldNamespace, maxWait, waitSleep))
+  {
+    std::cerr << "Namespace of world '" << worldNamespace << "' was not loaded" << std::endl;
+    return false;
+  }
+  return true;
+}
+
+
 GazeboPhysicsWorld::OpResult GazeboPhysicsWorld::LoadFromSDF(const sdf::ElementPtr& sdf)
 {
-  throw new gazebo::common::Exception(__FILE__,__LINE__,"Implement me");
+  gazebo::physics::WorldPtr gzworld = collision_benchmark::LoadWorldFromSDF(sdf, "");
+
+  if (!gzworld)
+    return GazeboPhysicsWorld::FAILED;
+
+  if (OnLoadWaitForNamespace && !WaitForNamespace(gzworld, OnLoadMaxWaitForNamespace, OnLoadWaitForNamespaceSleep))
+    return GazeboPhysicsWorld::FAILED;
+
+  SetWorld(collision_benchmark::to_std_ptr<gazebo::physics::World>(gzworld));
+
+  return GazeboPhysicsWorld::SUCCESS;
 }
 
 GazeboPhysicsWorld::OpResult GazeboPhysicsWorld::LoadFromFile(const std::string& filename)
 {
-  throw new gazebo::common::Exception(__FILE__,__LINE__,"Implement me");
+  gazebo::physics::WorldPtr gzworld = collision_benchmark::LoadWorldFromFile(filename, "");
+
+  if (!gzworld)
+    return GazeboPhysicsWorld::FAILED;
+
+  if (OnLoadWaitForNamespace && !WaitForNamespace(gzworld, OnLoadMaxWaitForNamespace, OnLoadWaitForNamespaceSleep))
+    return GazeboPhysicsWorld::FAILED;
+
+  SetWorld(collision_benchmark::to_std_ptr<gazebo::physics::World>(gzworld));
+
+  return GazeboPhysicsWorld::SUCCESS;
 }
 
 GazeboPhysicsWorld::OpResult GazeboPhysicsWorld::LoadFromString(const std::string& str)
@@ -95,15 +131,7 @@ bool GazeboPhysicsWorld::RemoveModel(const ModelID& id)
 
 void GazeboPhysicsWorld::Clear()
 {
-    bool pauseState = world->IsPaused();
-    world->SetPaused(true);
-    // XXX TODO CHECK: this does not clear the lights
-    world->ClearModels();
-    // need to reset physics engine in order to stop it
-    // from publishing old contact points
-    gazebo::physics::PhysicsEnginePtr physics = world->GetPhysicsEngine();
-    if (physics) physics->GetContactManager()->Clear();
-    world->SetPaused(pauseState);
+  collision_benchmark::ClearModels(world);
 }
 
 GazeboPhysicsWorld::WorldState GazeboPhysicsWorld::GetWorldState() const
@@ -121,12 +149,8 @@ GazeboPhysicsWorld::WorldState GazeboPhysicsWorld::GetWorldStateDiff(const World
 
 GazeboPhysicsWorld::OpResult GazeboPhysicsWorld::SetWorldState(const WorldState& state, bool isDiff)
 {
-  // XXX TODO To be added in a later PR
-  /**
   collision_benchmark::SetWorldState(world, state);
   return PhysicsWorldBase::SUCCESS;
-  */
-  return PhysicsWorldBase::FAILED;
 }
 
 void GazeboPhysicsWorld::Update(int steps)
