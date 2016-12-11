@@ -17,10 +17,11 @@
 /**
  * Desc: PhysicsEngineWorld implementation for Gazebo which wraps a gazebo::physics::World object
  * Author: Jennifer Buehler
- * Date: May 2016
+ * Date: November 2016
  */
 #include <collision_benchmark/GazeboPhysicsWorld.hh>
 #include <collision_benchmark/GazeboWorldState.hh>
+#include <collision_benchmark/GazeboStateCompare.hh>
 #include <collision_benchmark/GazeboHelpers.hh>
 #include <collision_benchmark/WorldLoader.hh>
 #include <collision_benchmark/boost_std_conversion.hh>
@@ -150,6 +151,16 @@ GazeboPhysicsWorld::WorldState GazeboPhysicsWorld::GetWorldStateDiff(const World
 GazeboPhysicsWorld::OpResult GazeboPhysicsWorld::SetWorldState(const WorldState& state, bool isDiff)
 {
   collision_benchmark::SetWorldState(world, state);
+
+#ifdef DEBUG
+  gazebo::physics::WorldState _currentState(world);
+  GazeboStateCompare::Tolerances t=GazeboStateCompare::Tolerances::CreateDefault(1e-03);
+  if (!GazeboStateCompare::Equal(_currentState, state, t))
+  {
+    std::cerr<<"Target state was not set as supposed to!!"<<std::endl;
+  }
+#endif
+
   return PhysicsWorldBase::SUCCESS;
 }
 

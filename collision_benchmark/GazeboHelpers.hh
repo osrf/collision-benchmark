@@ -19,6 +19,7 @@
 
 #include <gazebo/physics/World.hh>
 
+
 namespace collision_benchmark
 {
 

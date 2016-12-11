@@ -2,6 +2,7 @@
 #include <gazebo/physics/PhysicsEngine.hh>
 #include <gazebo/physics/ContactManager.hh>
 
+
 void collision_benchmark::ClearModels(gazebo::physics::WorldPtr& world)
 {
   bool pauseState = world->IsPaused();

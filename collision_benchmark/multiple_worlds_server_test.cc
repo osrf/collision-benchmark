@@ -88,12 +88,15 @@ bool PlayTest(int argc, char **argv)
   }
 
   // first, load the mirror world (it has to be loaded first for gzclient to connect to it)
+
   GazeboMirrorWorld::Ptr mirrorWorld = setupMirrorWorld();
   if(!mirrorWorld)
   {
     std::cerr<<"Could not load mirror world."<<std::endl;
     return false;
   }
+
+  // now, load all worlds as given in command line arguments
 
   int numIters = atoi(argv[1]);
 
@@ -125,18 +128,18 @@ bool PlayTest(int argc, char **argv)
     collision_benchmark::PrintWorldStates(worlds);
   }
 
-  std::cout << "Now start gzclient if you would like to view the test. Press any key to continue."<<std::endl;
+  std::cout << "Now start gzclient if you would like to view the test. Press [Enter] to continue."<<std::endl;
   getchar();
 
   // Go through all worlds, mirroring each for the given number of iterations.
   for (int i = 0; i < worlds.size(); ++i)
   {
-      std::cout << "+++++++++++++++++++++++++++++++++++++++++" << std::endl;
-      std::cout << "Now mirroring " << worlds[i]->GetName() << std::endl;
-      std::cout << "+++++++++++++++++++++++++++++++++++++++++" << std::endl;
-      mirrorWorld->SetOriginalWorld(worlds[i]);
-      const int steps=1;
-      RunWorlds(numIters, steps, worlds, mirrorWorld);
+    std::cout << "+++++++++++++++++++++++++++++++++++++++++" << std::endl;
+    std::cout << "Now mirroring " << worlds[i]->GetName() << std::endl;
+    std::cout << "+++++++++++++++++++++++++++++++++++++++++" << std::endl;
+    mirrorWorld->SetOriginalWorld(worlds[i]);
+    const int steps=1;
+    RunWorlds(numIters, steps, worlds, mirrorWorld);
   }
 
   if (printState)

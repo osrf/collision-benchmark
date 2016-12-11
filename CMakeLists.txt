@@ -12,6 +12,7 @@ if(USE_DART)
   find_package(DART REQUIRED)
 endif(USE_DART)
 
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 
 add_library(collision_benchmark SHARED
   collision_benchmark/WorldLoader.cc

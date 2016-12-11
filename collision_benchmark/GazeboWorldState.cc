@@ -1,5 +1,25 @@
+/*
+ * Copyright (C) 2012-2016 Open Source Robotics Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+*/
+/* Desc: Helper functions for Gazebo world states
+ * Author: Jennifer Buehler
+ * Date: October 2016
+ */
+
 #include <collision_benchmark/GazeboWorldState.hh>
-#include <collision_benchmark/GazeboStateCompare.hh>
 
 #include <gazebo/common/common.hh>
 #include <gazebo/physics/physics.hh>
@@ -54,7 +74,7 @@ void GetNewEntities(const gazebo::physics::WorldState& _state1,
 // XXX TODO REMOVE: Flags for testing
 #define FORCE_TARGET_TIME_VALUES
 //#define FORCE_KEEP_TIME_VALUES
-// #define DEBUGWORLDSTATE
+//#define DEBUGWORLDSTATE
 void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr& world, const gazebo::physics::WorldState& targetState)
 {
   bool pauseState = world->IsPaused();
@@ -155,10 +175,6 @@ void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr& world, const 
   std::cout << "State set to:" << std::endl;
   gazebo::physics::WorldState _currentState(world);
   std::cout << _currentState << std::endl;
-  if (!GazeboStateCompare::Equal(_currentState, targetState))
-  {
-    std::cerr<<"Target state was not set as supposed to!!"<<std::endl;
-  }
 #endif
 
   world->SetPaused(pauseState);

@@ -16,9 +16,10 @@
 */
 /* Desc: World adaptor mirroring another physics::World
  * Author: Jennifer Buehler
- * Date: May 2016
+ * Date: December 2016
  */
 #include <collision_benchmark/GazeboMirrorWorld.hh>
+#include <collision_benchmark/GazeboStateCompare.hh>
 #include <collision_benchmark/GazeboWorldState.hh>
 #include <collision_benchmark/GazeboHelpers.hh>
 #include <gazebo/physics/PhysicsIface.hh>
@@ -64,6 +65,15 @@ void GazeboMirrorWorld::Sync()
   assert(originalWorld);
   gazebo::physics::WorldState origState = originalWorld->GetWorldState();
   collision_benchmark::SetWorldState(mirrorWorld, origState);
+#ifdef DEBUG
+  gazebo::physics::WorldState _currentState(mirrorWorld);
+  GazeboStateCompare::Tolerances t=GazeboStateCompare::Tolerances::CreateDefault(1e-03);
+  t.CheckDynamics=false; // don't check dynamics because the physics engine of the mirror world is disabled
+  if (!GazeboStateCompare::Equal(_currentState, origState, t))
+  {
+    std::cerr<<"Target state was not set as supposed to!!"<<std::endl;
+  }
+#endif
 }
 
 void GazeboMirrorWorld::Update(int iter)

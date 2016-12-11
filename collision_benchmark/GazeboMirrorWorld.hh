@@ -16,7 +16,7 @@
 */
 /* Desc: World adaptor mirroring another physics::World
  * Author: Jennifer Buehler
- * Date: May 2016
+ * Date: December 2016
  */
 #ifndef COLLISION_BENCHMARK_GAZEBOMIRRORWORLD_H
 #define COLLISION_BENCHMARK_GAZEBOMIRRORWORLD_H
@@ -59,7 +59,7 @@ namespace collision_benchmark
  * - waiting for namespaces can still be improved, sometimes it may fail (see also PrivateHelpers)
  *
  * \author Jennifer Buehler
- * \date May 2016
+ * \date December 2016
  */
 class GazeboMirrorWorld
 {

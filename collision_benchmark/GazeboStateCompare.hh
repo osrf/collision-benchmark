@@ -32,19 +32,21 @@ struct GazeboStateCompare
   // Put in one struct in order to reduce number of parameters in the Equal() functions.
   struct Tolerances
   {
-    static Tolerances CreateDefault()
+    static Tolerances CreateDefault(float accuracy=1e-03)
     {
       Tolerances t;
-      t.Position=1e-07;
-      t.Orientation=1e-07;
-      t.Force=1e-07;
-      t.Torque=1e-07;
-      t.Scale=1e-07;
-      t.Velocity=1e-07;
-      t.VelocityOrientation=1e-07;
-      t.Acceleration=1e-07;
-      t.AccelerationOrientation=1e-07;
-      t.JointAngle=1e-03;
+      t.Position=accuracy;
+      t.Orientation=accuracy;
+      t.Force=accuracy;
+      t.Torque=accuracy;
+      t.Scale=accuracy;
+      t.Velocity=accuracy;
+      t.VelocityOrientation=accuracy;
+      t.Acceleration=accuracy;
+      t.AccelerationOrientation=accuracy;
+      t.JointAngle=accuracy;
+      t.CheckLinkCollisionStates=true;
+      t.CheckDynamics=true;
       return t;
     }
 
@@ -73,6 +75,11 @@ struct GazeboStateCompare
     double AccelerationOrientation;
     // Tolerance for joint angles (radian)
     double JointAngle;
+
+    // In links, check equality of CollisionState as well.
+    bool CheckLinkCollisionStates;
+    // In links, check force, velocity, acceleration if true, or skip if false.
+    bool CheckDynamics;
   };
 
 
@@ -88,8 +95,7 @@ struct GazeboStateCompare
                     const Tolerances& tolerance=Tolerances::Default);
   static bool Equal(const gazebo::physics::LinkState& s1,
                     const gazebo::physics::LinkState& s2,
-                    const Tolerances& tolerance=Tolerances::Default,
-                    const bool checkCollisionStates=true);
+                    const Tolerances& tolerance=Tolerances::Default);
   static bool Equal(const gazebo::physics::JointState& s1,
                     const gazebo::physics::JointState& s2,
                     const Tolerances& tolerance=Tolerances::Default);

@@ -29,7 +29,7 @@ between those worlds for displayingin gzclient.
 
 ``multiple_worlds_server_test_simple <number-of-simulation-steps> <list-of-worlds>``
 
-Then you can start gzclient and look at the world currently being displayed. Press any key to continue
+Then you can start gzclient and look at the world currently being displayed. Press [Enter] to continue
 as soon as gzclient is up and running.
 
 **Example**
@@ -39,7 +39,7 @@ multiple_worlds_server_test_simple 800 \
     test_worlds/cube_ode.world \
     test_worlds/sphere_bullet.world
 ```
-Load gzclient and then press any key to continue.
+Load gzclient and then press [Enter] to continue.
 
 After 800 iterations, this should switch from the cube to the sphere.
 
@@ -54,7 +54,7 @@ multiple_worlds_server_test_simple 1 \
     test_worlds/empty_bullet.world
 ```
 
-Then just press any key without loading gzclient to continue the test.
+Then just press [Enter] without loading gzclient to continue the test.
 This will update each world once, then switch to the second as the "main" world
 and update each world once again. At each update it should print "ode" and "bullet" as collision engines loaded.
 
