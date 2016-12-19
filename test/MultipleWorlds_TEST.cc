@@ -66,13 +66,13 @@ TEST_F(MultipleWorldsTest, UsesDifferentEngines)
   for (std::vector<gazebo::physics::WorldPtr>::iterator it=worlds.begin(); it!=worlds.end(); ++it)
   {
     ASSERT_NE(it->get(),nullptr) << " World NULL pointer returned";
-    ASSERT_NE((*it)->GetPhysicsEngine().get(), nullptr) << " World PhysicsEngine cannot be NULL";
+    ASSERT_NE((*it)->Physics().get(), nullptr) << " World PhysicsEngine cannot be NULL";
   }
 
   int i=0;
-  ASSERT_EQ(worlds[i++]->GetPhysicsEngine()->GetType(), "ode") << "Engine must be ODE";
-  ASSERT_EQ(worlds[i++]->GetPhysicsEngine()->GetType(), "bullet") << "Engine must be Bullet";
-  ASSERT_EQ(worlds[i++]->GetPhysicsEngine()->GetType(), "dart") << "Engine must be DART";
+  ASSERT_EQ(worlds[i++]->Physics()->GetType(), "ode") << "Engine must be ODE";
+  ASSERT_EQ(worlds[i++]->Physics()->GetType(), "bullet") << "Engine must be Bullet";
+  ASSERT_EQ(worlds[i++]->Physics()->GetType(), "dart") << "Engine must be DART";
 }
 
 TEST_F(MultipleWorldsTest, OtherTest)

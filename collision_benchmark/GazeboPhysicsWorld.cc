@@ -100,7 +100,7 @@ void GazeboPhysicsWorld::Clear()
     world->ClearModels();
     // need to reset physics engine in order to stop it
     // from publishing old contact points
-    gazebo::physics::PhysicsEnginePtr physics = world->GetPhysicsEngine();
+    gazebo::physics::PhysicsEnginePtr physics = world->Physics();
     if (physics) physics->GetContactManager()->Clear();
     world->SetPaused(pauseState);
 }
@@ -178,6 +178,6 @@ GazeboPhysicsWorld::ModelPtr GazeboPhysicsWorld::GetModel(const ModelID& model) 
 
 GazeboPhysicsWorld::PhysicsEnginePtr GazeboPhysicsWorld::GetPhysicsEngine() const
 {
-  if (world) return collision_benchmark::to_std_ptr<GazeboPhysicsWorld::PhysicsEngine>(world->GetPhysicsEngine());
+  if (world) return collision_benchmark::to_std_ptr<GazeboPhysicsWorld::PhysicsEngine>(world->Physics());
   return PhysicsEnginePtr();
 }

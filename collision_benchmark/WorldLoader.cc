@@ -183,7 +183,7 @@ gazebo::physics::WorldPtr collision_benchmark::LoadWorld(const std::string& worl
     return gazebo::physics::WorldPtr();
   }
 
-  std::string worldNamespace = world->GetName();
+  std::string worldNamespace = world->Name();
 
   // wait for namespace to be loaded, to make sure the order of namespaces maintained
   // in the transport system eventually will correspond to the same order of the worlds

@@ -31,7 +31,7 @@ void RunWorlds(int iter, const std::vector<gazebo::physics::WorldPtr>& worlds)
         w != worlds.end(); ++w)
     {
       gazebo::physics::WorldPtr world = *w;
-      std::cout<<"World "<<world->GetName()<<" physics engine: "<<world->GetPhysicsEngine()->GetType()<<std::endl;
+      std::cout<<"World "<<world->Name()<<" physics engine: "<<world->Physics()->GetType()<<std::endl;
       // Run simulation for given number of steps.
       // This method calls world->RunBlocking();
       int steps = 1;
