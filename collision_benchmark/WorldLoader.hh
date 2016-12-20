@@ -18,8 +18,7 @@
 #define COLLISIONBENCHMARK_WORLDLOADER_
 
 #include <gazebo/gazebo.hh>
-
-#include <set>
+#include <vector>
 
 namespace collision_benchmark
 {
@@ -56,15 +55,16 @@ class Worldfile
   public: std::string worldname;
 };
 
-/// Convenience function to load several worlds at once
+/// Convenience function to load several worlds at once. Loads the worlds in the order given in \e worldfiles
+///  and returns the accordingly in the same order.
+///
 /// \param worldNames has to be of same size as \e worldfiles and contains names
 ///        of the respective worlds to override the name given in the world file.
 ///        If a names is an empty string, it will instead keep the name in the original world
 ///        file or use the default name.
 /// \return worlds will contain the loaded worlds
-std::vector<gazebo::physics::WorldPtr> LoadWorlds(const std::set<Worldfile>& worldfiles);
+std::vector<gazebo::physics::WorldPtr> LoadWorlds(const std::vector<Worldfile>& worldfiles);
 
 }  // namespace collision_benchmark
-
 
 #endif  // COLLISIONBENCHMARK_WORLDLOADER_
