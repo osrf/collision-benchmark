@@ -22,6 +22,16 @@ with their own physics engine each simultaneously.
 ### Simple initial test
 
 There is a test which loads multiple worlds at the same and runs them simultaneously.
+
+A simple
+
+``make test``
+
+will run a test that confirms different engines are loaded.
+
+There is also a test which can be used to visually confirm that different worlds are loaded
+and gzclient can be switched to display any of these worlds.
+
 Every ``<number-of-iterations>`` iterations the next loaded world is considered
 the world to be displayed (the "main world") which will be displayed by gzclient. The intention
 of this test is to demonstrate how several worlds can be run, and how it is possible to switch
@@ -57,4 +67,5 @@ multiple_worlds_server_test_simple 1 \
 Then just press [Enter] without loading gzclient to continue the test.
 This will update each world once, then switch to the second as the "main" world
 and update each world once again. At each update it should print "ode" and "bullet" as collision engines loaded.
+
 

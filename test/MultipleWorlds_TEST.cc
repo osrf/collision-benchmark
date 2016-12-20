@@ -89,9 +89,9 @@ TEST_F(MultipleWorldsTest, UsesDifferentEngines)
   for (std::vector<gazebo::physics::WorldPtr>::iterator it=worlds.begin(); it!=worlds.end(); ++it, ++i)
   {
     ASSERT_NE(it->get(),nullptr) << " World NULL pointer returned";
-    ASSERT_NE((*it)->GetPhysicsEngine().get(), nullptr) << " World PhysicsEngine cannot be NULL";
-    ASSERT_EQ((*it)->GetPhysicsEngine()->GetType(), engines[i]) << "Engine must be '"<<engines[i]
-      <<"', is "<<(*it)->GetPhysicsEngine()->GetType();
+    ASSERT_NE((*it)->Physics().get(), nullptr) << " World PhysicsEngine cannot be NULL";
+    ASSERT_EQ((*it)->Physics()->GetType(), engines[i]) << "Engine must be '"<<engines[i]
+      <<"', is "<<(*it)->Physics()->GetType();
   }
 }
 
@@ -136,14 +136,13 @@ TEST_F(MultipleWorldsTest, UsesDifferentEnginesOverride)
   int i=0;
   for (std::vector<gazebo::physics::WorldPtr>::iterator it=worlds.begin(); it!=worlds.end(); ++it, ++i)
   {
-    std::cout<<"Engine used: "<<(*it)->GetPhysicsEngine()->GetType()<<std::endl;
+    std::cout<<"Engine used: "<<(*it)->Physics()->GetType()<<std::endl;
     ASSERT_NE(it->get(),nullptr) << " World NULL pointer returned";
-    ASSERT_NE((*it)->GetPhysicsEngine().get(), nullptr) << " World PhysicsEngine cannot be NULL";
-    ASSERT_EQ((*it)->GetPhysicsEngine()->GetType(), engines[i]) << "Engine must be '"<<engines[i]
-      <<"', is "<<(*it)->GetPhysicsEngine()->GetType();
+    ASSERT_NE((*it)->Physics().get(), nullptr) << " World PhysicsEngine cannot be NULL";
+    ASSERT_EQ((*it)->Physics()->GetType(), engines[i]) << "Engine must be '"<<engines[i]
+      <<"', is "<<(*it)->Physics()->GetType();
   }
 }
-
 
 TEST_F(MultipleWorldsTest, TransferWorldState)
 {

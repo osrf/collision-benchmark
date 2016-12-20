@@ -43,7 +43,7 @@ void RunWorlds(int iter, const std::vector<gazebo::physics::WorldPtr>& worlds, c
         w != worlds.end(); ++w)
     {
       gazebo::physics::WorldPtr world = *w;
-      std::cout<<"Running "<<steps<<" steps for world "<<world->GetName()<<", physics engine: "<<world->GetPhysicsEngine()->GetType()<<std::endl;
+      std::cout<<"Running "<<steps<<" steps for world "<<world->Name()<<", physics engine: "<<world->Physics()->GetType()<<std::endl;
       // Run simulation for given number of steps.
       // This method calls world->RunBlocking();
       gazebo::runWorld(world, steps);
@@ -142,7 +142,7 @@ bool PlayTest(int argc, char **argv)
   for (int i = 0; i < worlds.size(); ++i)
   {
       std::cout << "+++++++++++++++++++++++++++++++++++++++++" << std::endl;
-      std::cout << "Now mirroring " << gzworlds[i]->GetName() << std::endl;
+      std::cout << "Now mirroring " << gzworlds[i]->Name() << std::endl;
       std::cout << "+++++++++++++++++++++++++++++++++++++++++" << std::endl;
       mirrorWorld->SetOriginalWorld(worlds[i]);
       RunWorlds(numIters, gzworlds, mirrorWorld);

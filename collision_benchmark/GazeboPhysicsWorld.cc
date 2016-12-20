@@ -47,7 +47,7 @@ bool GazeboPhysicsWorld::SupportsSDF() const
 
 bool GazeboPhysicsWorld::WaitForNamespace(const gazebo::physics::WorldPtr& gzworld, float maxWait, float waitSleep)
 {
-  std::string worldNamespace = gzworld->GetName();
+  std::string worldNamespace = gzworld->Name();
 
   // wait for namespace to be loaded, to make sure the order of namespaces maintained
   // in the transport system eventually will correspond to the same order of the worlds
@@ -166,7 +166,7 @@ GazeboPhysicsWorld::OpResult GazeboPhysicsWorld::SetWorldState(const WorldState&
 
 void GazeboPhysicsWorld::Update(int steps)
 {
-  std::cout<<"Running "<<steps<<" steps for world "<<world->GetName()<<", physics engine: "<<world->GetPhysicsEngine()->GetType()<<std::endl;
+  std::cout<<"Running "<<steps<<" steps for world "<<world->Name()<<", physics engine: "<<world->Physics()->GetType()<<std::endl;
   // Run simulation for given number of steps.
   // This method calls world->RunBlocking();
   gazebo::runWorld(world,steps);
@@ -175,7 +175,7 @@ void GazeboPhysicsWorld::Update(int steps)
 
 std::string GazeboPhysicsWorld::GetName() const
 {
-  return world->GetName();
+  return world->Name();
 }
 
 bool GazeboPhysicsWorld::SupportsContacts() const
@@ -226,6 +226,6 @@ GazeboPhysicsWorld::ModelPtr GazeboPhysicsWorld::GetModel(const ModelID& model) 
 
 GazeboPhysicsWorld::PhysicsEnginePtr GazeboPhysicsWorld::GetPhysicsEngine() const
 {
-  if (world) return collision_benchmark::to_std_ptr<GazeboPhysicsWorld::PhysicsEngine>(world->GetPhysicsEngine());
+  if (world) return collision_benchmark::to_std_ptr<GazeboPhysicsWorld::PhysicsEngine>(world->Physics());
   return PhysicsEnginePtr();
 }

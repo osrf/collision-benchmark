@@ -150,7 +150,7 @@ void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr& world, const 
   for (const auto & model : models)
   {
     // std::cout<<"New model: "<<model.GetName()<<std::endl;
-    gazebo::physics::ModelPtr m = world->GetModel(model.GetName());
+    gazebo::physics::ModelPtr m = world->ModelByName(model.GetName());
     if (!m)
     {
       throw new gazebo::common::Exception(__FILE__, __LINE__,
@@ -162,7 +162,7 @@ void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr& world, const 
   for (const auto & light : lights)
   {
     // std::cout<<"New light: "<<light.GetName()<<std::endl;
-    gazebo::physics::LightPtr l = world->Light(light.GetName());
+    gazebo::physics::LightPtr l = world->LightByName(light.GetName());
     if (!l)
     {
       throw new gazebo::common::Exception(__FILE__, __LINE__,
@@ -183,7 +183,7 @@ void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr& world, const 
 
 void collision_benchmark::PrintWorldState(const gazebo::physics::WorldPtr world)
 {
-  std::cout << "## State of world " << world->GetName() << std::endl;
+  std::cout << "## State of world " << world->Name() << std::endl;
   gazebo::physics::WorldState _state(world);
   std::cout << _state << std::endl;
 }

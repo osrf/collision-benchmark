@@ -12,7 +12,7 @@ void collision_benchmark::ClearModels(gazebo::physics::WorldPtr& world)
   world->ClearModels();
   // need to reset physics engine in order to stop it
   // from publishing old contact points?
-  gazebo::physics::PhysicsEnginePtr physics = world->GetPhysicsEngine();
+  gazebo::physics::PhysicsEnginePtr physics = world->Physics();
   if (physics) physics->GetContactManager()->Clear();
   world->SetPaused(pauseState);
 }

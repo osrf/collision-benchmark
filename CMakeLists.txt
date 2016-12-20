@@ -1,16 +1,8 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
 set(ENABLE_TEST true)
-set(USE_DART true)
 
 find_package(gazebo 8.0 REQUIRED)
-
-# DART dependencies are not automatically exported by Gazebo cmake script,
-# need to find it separately to not get undefined references to gazebo libs
-# compiled with DART support.
-if(USE_DART)
-  find_package(DART REQUIRED)
-endif(USE_DART)
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 

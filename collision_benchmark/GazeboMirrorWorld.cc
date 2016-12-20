@@ -32,7 +32,7 @@ GazeboMirrorWorld::GazeboMirrorWorld(gazebo::physics::WorldPtr& mirrorWorld_):
   mirrorWorld(mirrorWorld_)
 {
   assert(mirrorWorld);
-  mirrorWorld->EnablePhysicsEngine(false);
+  mirrorWorld->SetPhysicsEnabled(false);
   std::cout<<"GazeboMirrorWorld constructed."<<std::endl;
 }
 
