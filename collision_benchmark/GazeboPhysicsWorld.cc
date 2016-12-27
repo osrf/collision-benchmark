@@ -155,6 +155,7 @@ GazeboPhysicsWorld::OpResult GazeboPhysicsWorld::SetWorldState(const WorldState&
 #ifdef DEBUG
   gazebo::physics::WorldState _currentState(world);
   GazeboStateCompare::Tolerances t=GazeboStateCompare::Tolerances::CreateDefault(1e-03);
+  if (!world->PhysicsEnabled()) t.CheckDynamics=false;
   if (!GazeboStateCompare::Equal(_currentState, state, t))
   {
     std::cerr<<"Target state was not set as supposed to!!"<<std::endl;
@@ -166,7 +167,7 @@ GazeboPhysicsWorld::OpResult GazeboPhysicsWorld::SetWorldState(const WorldState&
 
 void GazeboPhysicsWorld::Update(int steps)
 {
-  std::cout<<"Running "<<steps<<" steps for world "<<world->Name()<<", physics engine: "<<world->Physics()->GetType()<<std::endl;
+  // std::cout<<"Running "<<steps<<" steps for world "<<world->Name()<<", physics engine: "<<world->Physics()->GetType()<<std::endl;
   // Run simulation for given number of steps.
   // This method calls world->RunBlocking();
   gazebo::runWorld(world,steps);

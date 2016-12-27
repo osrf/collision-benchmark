@@ -227,7 +227,7 @@ gazebo::physics::WorldPtr collision_benchmark::LoadWorldFromFile(const std::stri
       sdf::ElementPtr sdfPhysics = sdfRoot->GetElement("physics");
 #ifdef DEBUG
       std::cout<<"World in "<<worldfile<<" has physics: "<<std::endl<<
-       sdfPhysics->ToString("")<<"< overriding with: "<<std::endl<<overridePhysics->ToString("")<<std::endl;
+      sdfPhysics->ToString("")<<"< overriding with: "<<std::endl<<overridePhysics->ToString("")<<std::endl;
 #endif
       sdfPhysics->Copy(overridePhysics);
     }

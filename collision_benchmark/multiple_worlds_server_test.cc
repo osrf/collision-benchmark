@@ -22,8 +22,14 @@
 #include <collision_benchmark/GazeboPhysicsWorld.hh>
 #include <collision_benchmark/boost_std_conversion.hh>
 
+#include <collision_benchmark/GazeboHelpers.hh>
+
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
+
+
+#include <gazebo/transport/TransportIface.hh>
+
 
 using collision_benchmark::PhysicsWorldBase;
 using collision_benchmark::PhysicsWorld;
@@ -77,13 +83,53 @@ GazeboMirrorWorld::Ptr setupMirrorWorld()
     return mirrorWorld;
 }
 
+// returns a table with the filenames to use for each of the physcis engines. Only supported
+// engines are returned. Key of the returned map is the engine name as given in \e engines,
+// value is the path to the SDF file with the physics settings
+// \param engines can contain "ode", "bullet", "dart", "simbody"
+std::map<std::string,std::string> getPhysicsSettingsSdfFor(const std::vector<std::string>& engines)
+{
+  std::map<std::string, std::string> physics_filenames;
+  std::set<std::string> supported_engines=collision_benchmark::GetSupportedPhysicsEngines();
+
+  for (std::vector<std::string>::const_iterator eit=engines.begin(); eit!=engines.end(); ++eit)
+  {
+    std::string e=*eit;
+    if (!supported_engines.count(*eit)) continue;
+
+    if (e=="bullet")
+      physics_filenames["bullet"]="../physics_settings/bullet_default.sdf";
+    else if (e=="dart")
+      physics_filenames["dart"]="../physics_settings/dart_default.sdf";
+    else if (e=="ode")
+      physics_filenames["ode"]="../physics_settings/ode_default.sdf";
+    else if (e=="simbody")
+      // XXX TODO add the empty_simbody.world file
+      physics_filenames["simbody"] = "../physics_settings/simbody_default.world";
+  }
+  return physics_filenames;
+}
+
+bool connectTransport()
+{
+  if (!gazebo::transport::init())
+  {
+      gzerr << "Unable to initialize transport.\n";
+      return false;
+  }
+
+  // Run transport loop. Starts a thread
+  gazebo::transport::run();
+  return true;
+}
 
 // Main method to play the test, later to be replaced by a dedicated structure (without command line arument params)
 bool PlayTest(int argc, char **argv)
 {
-  if (argc < 3)
+  if (argc < 4)
   {
-    std::cerr<<"Usage: "<<argv[0]<<" <number iterations> <list of world filenames>"<<std::endl;
+    std::cerr<<"Usage: "<<argv[0]<<" <number iterations> <world file> <list of physics engines>"<<std::endl;
+    std::cerr<<"<list of physics engines> can contain the following: [ode, bullet, dart, simbody] "<<std::endl;
     return false;
   }
 
@@ -96,28 +142,48 @@ bool PlayTest(int argc, char **argv)
     return false;
   }
 
-  // now, load all worlds as given in command line arguments
-
   int numIters = atoi(argv[1]);
 
-  std::cout << "Loading worlds..." << std::endl;
+  // now, load the worlds as given in command line arguments with the different engines given
+  std::string worldfile = argv[2];
+
+  std::vector<std::string> selectedEngines;
+  for (int i = 3; i < argc; ++i)
+    selectedEngines.push_back(argv[i]);
+
+  std::map<std::string,std::string> physicsEngines = getPhysicsSettingsSdfFor(selectedEngines);
+
+  std::cout << "Loading world " << worldfile << " with "<<physicsEngines.size()<<" engines."<<std::endl;
+
   std::vector<GzPhysicsWorldBase::Ptr> worlds;
-  for (int i = 2; i < argc; ++i)
+  int i=1;
+  for (std::map<std::string,std::string>::iterator it = physicsEngines.begin(); it!=physicsEngines.end(); ++it, ++i)
   {
-    std::string worldfile = std::string(argv[i]);
+    std::string engine = it->first;
+    std::string physicsSDF = it->second;
+
     std::stringstream _worldname;
-    _worldname << "world_" << i - 1;
+    _worldname << "world_" << i << "_" << engine;
     std::string worldname=_worldname.str();
 
-    std::cout << "Loading world " << worldfile << " (named as '" << worldname << "')" << std::endl;
-    GazeboPhysicsWorld::Ptr gzWorld(new GazeboPhysicsWorld());
-    if (gzWorld->LoadFromFile(worldfile, worldname)!=GzPhysicsWorldBase::SUCCESS)
+    std::cout << "Loading with physics engine " << engine << " (named as '" << worldname << "')" << std::endl;
+
+    std::cout<<"Loading physics from "<<physicsSDF<<std::endl;
+    sdf::ElementPtr physics = collision_benchmark::GetPhysicsFromSDF(physicsSDF);
+    if (!physics.get())
     {
-      std::cerr << "Could not load world " << worldfile << std::endl;
+      std::cerr << "Could not get phyiscs engine from " << physicsSDF << std::endl;
       continue;
     }
-    GzPhysicsWorldBase::Ptr newWorld(gzWorld);
-    worlds.push_back(newWorld);
+
+    // std::cout<<"Physics: "<<physics->ToString("")<<std::endl;
+    std::cout<<"Loading world from "<<worldfile<<std::endl;
+    gazebo::physics::WorldPtr gzworld = collision_benchmark::LoadWorldFromFile(worldfile, worldname, physics);
+
+    // Create the GazeboPhysicsWorld object
+    GazeboPhysicsWorld::Ptr gzPhysicsWorld(new GazeboPhysicsWorld());
+    gzPhysicsWorld->SetWorld(collision_benchmark::to_std_ptr<gazebo::physics::World>(gzworld));
+    worlds.push_back(gzPhysicsWorld);
   }
 
   // Go through all worlds and print info
@@ -135,12 +201,14 @@ bool PlayTest(int argc, char **argv)
   for (int i = 0; i < worlds.size(); ++i)
   {
     std::cout << "+++++++++++++++++++++++++++++++++++++++++" << std::endl;
-    std::cout << "Now mirroring " << worlds[i]->GetName() << std::endl;
+    std::cout << "Now mirroring " << worlds[i]->GetName() << std::endl; //" using engine " << worlds[i]->Physics()->GetType() << std::endl;
     std::cout << "+++++++++++++++++++++++++++++++++++++++++" << std::endl;
     mirrorWorld->SetOriginalWorld(worlds[i]);
     const int steps=1;
     RunWorlds(numIters, steps, worlds, mirrorWorld);
   }
+
+  std::cout<<" Finished running the worlds. "<<std::endl;
 
   if (printState)
   {
@@ -159,6 +227,8 @@ int main(int argc, char **argv)
   gazebo::setupServer(argc, argv);
 
   PlayTest(argc, argv);
+
+  std::cout << "Shutting down..." <<std::endl;
 
   gazebo::shutdown();
 

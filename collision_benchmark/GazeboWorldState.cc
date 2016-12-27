@@ -74,7 +74,7 @@ void GetNewEntities(const gazebo::physics::WorldState& _state1,
 // XXX TODO REMOVE: Flags for testing
 #define FORCE_TARGET_TIME_VALUES
 //#define FORCE_KEEP_TIME_VALUES
-//#define DEBUGWORLDSTATE
+// #define DEBUGWORLDSTATE
 void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr& world, const gazebo::physics::WorldState& targetState)
 {
   bool pauseState = world->IsPaused();
@@ -98,13 +98,89 @@ void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr& world, const 
   // Handle all insertions/deletions of models in a
   // differential state. The result will have the name of
   // origState, adding all the models/lights/etc from origState which are
-  // not in emptyState (which is empty so it will be all models).
+  // not in currentState
   gazebo::physics::WorldState diffState = targetState - currentState;
-  gazebo::physics::WorldState newState = currentState + diffState;
-
 #ifdef DEBUGWORLDSTATE
   std::cout << "Diff state: " << std::endl << diffState << std::endl;
 #endif
+
+  // diffState now has the list of insertions and deletions required for using
+  // in gazebo::World::SetWorldState. However, diffState cannot be used
+  // to determine rotations of models, because they are not commutative:
+  //   currentState + diffState = target
+  // is NOT equivalent to equation used above, if non-commutative!
+  // For this reason, do the update in two steps, instead of simply
+  // finding the actual new state via newState = currentState + diffState
+  // (which is not legal for roataions).
+  // Step 1: Handle all insertions and deletions, because they only
+  //         can be extracted from the diffState. Apply to current state.
+  // Step 2: Now current state should have same models as target state. Can
+  //         simply set the target state.
+
+  ///// Step 1: Handle insertions (requires fixing of SDF)
+  gazebo::physics::WorldState modelChangeState = currentState;
+  std::vector<std::string> insertions = diffState.Insertions();
+  fixSDF(insertions);
+  modelChangeState.SetInsertions(insertions);
+  std::vector<std::string> deletions = diffState.Deletions();
+  modelChangeState.SetDeletions(deletions);
+  fixSDF(deletions);
+
+  // apply the state of Step 1 to the world
+  world->SetState(modelChangeState);
+
+  // the insertions still have one drawback: They don't contain
+  // the current model pose. So subsequently, the current pose
+  // is only published as message in the *next* world update *only if*
+  // the pose has changed (from within Model::OnPoseChange by call of World::SetWorldPose).
+  // But if the pose within the target state world has not changed,
+  // no message is published. So we need to force publishing the poses
+  // of the newly inserted models.
+  std::vector<gazebo::physics::ModelState> models;
+  std::vector<gazebo::physics::LightState> lights;
+  GetNewEntities(targetState, currentState, models, lights);
+
+  // now, update the poses of the new models and lights
+  for (const auto & model : models)
+  {
+#ifdef DEBUGWORLDSTATE
+    std::cout<<"New model: "<<model.GetName()<<std::endl;
+#endif
+    gazebo::physics::ModelPtr m = world->ModelByName(model.GetName());
+    if (!m)
+    {
+      throw new gazebo::common::Exception(__FILE__, __LINE__,
+                        "Model not found though it should have been inserted.");
+    }
+    m->SetState(model);
+  }
+
+  for (const auto & light : lights)
+  {
+#ifdef DEBUGWORLDSTATE
+    std::cout<<"New light: "<<light.GetName()<<std::endl;
+#endif
+    gazebo::physics::LightPtr l = world->LightByName(light.GetName());
+    if (!l)
+    {
+      throw new gazebo::common::Exception(__FILE__, __LINE__,
+                        "Light not found though it should have been inserted.");
+    }
+    l->SetState(light);
+  }
+
+
+  currentState = gazebo::physics::WorldState(world);
+
+#ifdef DEBUGWORLDSTATE
+  std::cout << "New state after insertions " << std::endl << currentState << std::endl;
+#endif
+
+
+
+  //// Step 2: Set the target state
+
+  gazebo::physics::WorldState newState = targetState;
 
   // Force the new state to use certain iteration/time values
   // in order to maintain consistency within the world
@@ -125,51 +201,8 @@ void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr& world, const 
   newState.SetSimTime(currentState.GetSimTime());
 #endif
 
-  std::vector<std::string> insertions = diffState.Insertions();
-  fixSDF(insertions);
-  newState.SetInsertions(insertions);
-  std::vector<std::string> deletions = diffState.Deletions();
-  newState.SetDeletions(deletions);
-  fixSDF(deletions);
-
-  // the insertions still have one drawback: They don't contain
-  // the current model pose. So subsequently, the current pose
-  // is only published as message in the *next* world update *only if*
-  // the pose has changed (from within Model::OnPoseChange by call of World::SetWorldPose).
-  // But if the pose within the target state world has not changed,
-  // no message is published. So we need to force publishing the poses
-  // of the newly inserted models.
-  std::vector<gazebo::physics::ModelState> models;
-  std::vector<gazebo::physics::LightState> lights;
-  GetNewEntities(targetState, currentState, models, lights);
-
-  // apply the state to the world
+  // apply the state of Step 1 to the world
   world->SetState(newState);
-
-  // now, update the poses of the new models and lights
-  for (const auto & model : models)
-  {
-    // std::cout<<"New model: "<<model.GetName()<<std::endl;
-    gazebo::physics::ModelPtr m = world->ModelByName(model.GetName());
-    if (!m)
-    {
-      throw new gazebo::common::Exception(__FILE__, __LINE__,
-                        "Model not found though it should have been inserted.");
-    }
-    m->SetState(model);
-  }
-
-  for (const auto & light : lights)
-  {
-    // std::cout<<"New light: "<<light.GetName()<<std::endl;
-    gazebo::physics::LightPtr l = world->LightByName(light.GetName());
-    if (!l)
-    {
-      throw new gazebo::common::Exception(__FILE__, __LINE__,
-                        "Light not found though it should have been inserted.");
-    }
-    l->SetState(light);
-  }
 
 #ifdef DEBUGWORLDSTATE
   std::cout << "State set to:" << std::endl;

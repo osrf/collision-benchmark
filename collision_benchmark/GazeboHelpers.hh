@@ -18,7 +18,7 @@
 #define COLLISION_BENCHMARK_GAZEBOHELPERS_
 
 #include <gazebo/physics/World.hh>
-
+#include <set>
 
 namespace collision_benchmark
 {
@@ -28,6 +28,12 @@ namespace collision_benchmark
  * Clears all models, and all contacts, from the world.
  */
 void ClearModels(gazebo::physics::WorldPtr& world);
+
+/**
+ * Returns all supported physics engines
+ */
+std::set<std::string> GetSupportedPhysicsEngines();
+
 
 }  // namespace
 

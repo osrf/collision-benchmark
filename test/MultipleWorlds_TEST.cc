@@ -5,10 +5,12 @@
 #include <collision_benchmark/GazeboPhysicsWorld.hh>
 #include <collision_benchmark/GazeboStateCompare.hh>
 #include <collision_benchmark/GazeboMirrorWorld.hh>
+#include <collision_benchmark/GazeboHelpers.hh>
 
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
 
+#include <gazebo/test/helper_physics_generator.hh>
 
 using collision_benchmark::PhysicsWorldBase;
 using collision_benchmark::PhysicsWorld;
@@ -64,33 +66,29 @@ std::vector<gazebo::physics::WorldPtr> LoadWorlds(const std::vector<std::string>
 TEST_F(MultipleWorldsTest, UsesDifferentEngines)
 {
   std::vector<std::string> filenames;
-  std::vector<std::string> engines;
-  if (gazebo::physics::PhysicsFactory::IsRegistered("ode"))
-  {
-    filenames.push_back("../test_worlds/empty_ode.world");
-    engines.push_back("ode");
-  }
-  if (gazebo::physics::PhysicsFactory::IsRegistered("bullet"))
-  {
+  std::set<std::string> engines=collision_benchmark::GetSupportedPhysicsEngines();
+  // insert engines alphanumerically into filenames so that filenames has same
+  // order as engines
+  if (engines.count("bullet"))
     filenames.push_back("../test_worlds/empty_bullet.world");
-    engines.push_back("bullet");
-  }
-  if (gazebo::physics::PhysicsFactory::IsRegistered("dart"))
-  {
+  if (engines.count("dart"))
     filenames.push_back("../test_worlds/empty_dart.world");
-    engines.push_back("dart");
-  }
+  if (engines.count("ode"))
+    filenames.push_back("../test_worlds/empty_ode.world");
+  if (engines.count("simbody"))
+    // XXX TODO add the empty_simbody.world file
+    filenames.push_back("../test_worlds/empty_simbody.world");
 
   std::vector<gazebo::physics::WorldPtr> worlds=LoadWorlds(filenames);
 
   ASSERT_EQ(worlds.size(), filenames.size()) << filenames.size() << "  Worlds must have been loaded";
 
-  int i=0;
-  for (std::vector<gazebo::physics::WorldPtr>::iterator it=worlds.begin(); it!=worlds.end(); ++it, ++i)
+  std::set<std::string>::iterator eit=engines.begin();
+  for (std::vector<gazebo::physics::WorldPtr>::iterator it=worlds.begin(); it!=worlds.end(); ++it, ++eit)
   {
     ASSERT_NE(it->get(),nullptr) << " World NULL pointer returned";
     ASSERT_NE((*it)->Physics().get(), nullptr) << " World PhysicsEngine cannot be NULL";
-    ASSERT_EQ((*it)->Physics()->GetType(), engines[i]) << "Engine must be '"<<engines[i]
+    ASSERT_EQ((*it)->Physics()->GetType(), *eit) << "Engine must be '"<<*eit
       <<"', is "<<(*it)->Physics()->GetType();
   }
 }
@@ -99,22 +97,18 @@ TEST_F(MultipleWorldsTest, UsesDifferentEngines)
 TEST_F(MultipleWorldsTest, UsesDifferentEnginesOverride)
 {
   std::vector<std::string> physics_filenames;
-  std::vector<std::string> engines;
-  if (gazebo::physics::PhysicsFactory::IsRegistered("ode"))
-  {
-    physics_filenames.push_back("../test_worlds/ode_physics.sdf");
-    engines.push_back("ode");
-  }
-  if (gazebo::physics::PhysicsFactory::IsRegistered("bullet"))
-  {
-    physics_filenames.push_back("../test_worlds/bullet_physics.sdf");
-    engines.push_back("bullet");
-  }
-  if (gazebo::physics::PhysicsFactory::IsRegistered("dart"))
-  {
-    physics_filenames.push_back("../test_worlds/dart_physics.sdf");
-    engines.push_back("dart");
-  }
+  std::set<std::string> engines=collision_benchmark::GetSupportedPhysicsEngines();
+  // insert engines alphanumerically into filenames so that filenames has same
+  // order as engines
+  if (engines.count("bullet"))
+    physics_filenames.push_back("../physics_settings/bullet_default.sdf");
+  if (engines.count("dart"))
+    physics_filenames.push_back("../physics_settings/dart_default.sdf");
+  if (engines.count("ode"))
+    physics_filenames.push_back("../physics_settings/ode_default.sdf");
+  if (engines.count("simbody"))
+    // XXX TODO add the empty_simbody.world file
+    physics_filenames.push_back("../physics_settings/simbody_default.world");
 
   std::vector<gazebo::physics::WorldPtr> worlds;
   for (std::vector<std::string>::const_iterator it=physics_filenames.begin(); it!=physics_filenames.end(); ++it)
@@ -133,13 +127,13 @@ TEST_F(MultipleWorldsTest, UsesDifferentEnginesOverride)
 
   ASSERT_EQ(worlds.size(), physics_filenames.size()) << physics_filenames.size() << "  Worlds must have been loaded";
 
-  int i=0;
-  for (std::vector<gazebo::physics::WorldPtr>::iterator it=worlds.begin(); it!=worlds.end(); ++it, ++i)
+  std::set<std::string>::iterator eit=engines.begin();
+  for (std::vector<gazebo::physics::WorldPtr>::iterator it=worlds.begin(); it!=worlds.end(); ++it, ++eit)
   {
     std::cout<<"Engine used: "<<(*it)->Physics()->GetType()<<std::endl;
     ASSERT_NE(it->get(),nullptr) << " World NULL pointer returned";
     ASSERT_NE((*it)->Physics().get(), nullptr) << " World PhysicsEngine cannot be NULL";
-    ASSERT_EQ((*it)->Physics()->GetType(), engines[i]) << "Engine must be '"<<engines[i]
+    ASSERT_EQ((*it)->Physics()->GetType(), *eit) << "Engine must be '"<<*eit
       <<"', is "<<(*it)->Physics()->GetType();
   }
 }
@@ -150,6 +144,7 @@ TEST_F(MultipleWorldsTest, TransferWorldState)
 
   GazeboPhysicsWorld::Ptr gzWorld1(new GazeboPhysicsWorld());
   ASSERT_EQ(gzWorld1->LoadFromFile("worlds/empty.world"),GzPhysicsWorldBase::SUCCESS) << " Could not load empty world";
+  gzWorld1->GetWorld()->SetPhysicsEnabled(false);
 
   GazeboPhysicsWorld::Ptr gzWorld2(new GazeboPhysicsWorld());
   ASSERT_EQ(gzWorld2->LoadFromFile("worlds/rubble.world"),GzPhysicsWorldBase::SUCCESS) << " Could not load rubble world";
@@ -157,13 +152,22 @@ TEST_F(MultipleWorldsTest, TransferWorldState)
   GzPhysicsWorldBase::Ptr world1(gzWorld1);
   GzPhysicsWorldBase::Ptr world2(gzWorld2);
 
-  gazebo::physics::WorldState target=world2->GetWorldState(); // get the rubble world
-  ASSERT_EQ(world1->SetWorldState(target, false), GzPhysicsWorldBase::SUCCESS) << " Could not set world state";
-
-  gazebo::physics::WorldState newState = world1->GetWorldState();
-  GazeboStateCompare::Tolerances t=GazeboStateCompare::Tolerances::CreateDefault(1e-03);
-  // t.CheckDynamics=false; // don't check dynamics
-  ASSERT_EQ(GazeboStateCompare::Equal(newState, target, t), true) <<"Target state was not set as supposed to!!";
+  for (int i=0; i<2000; ++i)
+  {
+    gazebo::physics::WorldState target=world2->GetWorldState(); // get the rubble world
+    ASSERT_EQ(world1->SetWorldState(target, false), GzPhysicsWorldBase::SUCCESS) << " Could not set world state";
+    gazebo::physics::WorldState newState = world1->GetWorldState();
+    GazeboStateCompare::Tolerances t=GazeboStateCompare::Tolerances::CreateDefault(1e-03);
+    t.CheckDynamics=false; // don't check dynamics because we disable physics engine in gzWorld1
+    ASSERT_EQ(GazeboStateCompare::Equal(newState, target, t), true)
+      <<"Target state was not set as supposed to!! ";
+/*      <<std::endl<<std::endl<<newState<<std::endl<<std::endl<<target
+      <<std::endl<<std::endl
+      <<"Diff: "<<std::endl
+      <<target - world1->GetWorldState();*/
+    gzWorld1->Update(1);
+    gzWorld2->Update(1);
+  }
 }
 
 int main(int argc, char**argv)

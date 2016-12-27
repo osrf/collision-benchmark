@@ -27,19 +27,20 @@ A simple
 
 ``make test``
 
-will run a test that confirms different engines are loaded.
+will include a test that confirms different engines are loaded.
+
 
 There is also a test which can be used to visually confirm that different worlds are loaded
 and gzclient can be switched to display any of these worlds.
+
+``multiple_worlds_server_test_simple <number-of-simulation-steps> <list-of-worlds>``
 
 Every ``<number-of-iterations>`` iterations the next loaded world is considered
 the world to be displayed (the "main world") which will be displayed by gzclient. The intention
 of this test is to demonstrate how several worlds can be run, and how it is possible to switch
 between those worlds for displayingin gzclient.
 
-``multiple_worlds_server_test_simple <number-of-simulation-steps> <list-of-worlds>``
-
-Then you can start gzclient and look at the world currently being displayed. Press [Enter] to continue
+You need to start gzclient when prompted to do so. Press [Enter] to continue
 as soon as gzclient is up and running.
 
 **Example**
@@ -68,4 +69,9 @@ Then just press [Enter] without loading gzclient to continue the test.
 This will update each world once, then switch to the second as the "main" world
 and update each world once again. At each update it should print "ode" and "bullet" as collision engines loaded.
 
+### One world, different engines
 
+It is also possible to specify one world file to load, and several physics engines the world
+should be loaded with. This means the world will be loaded multiple times, once with each physics engine,
+and then you can switch between the worlds, just like with the previous simple test. The
+difference is that you have to specify only one world file.

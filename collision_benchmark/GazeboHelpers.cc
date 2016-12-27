@@ -2,6 +2,8 @@
 #include <gazebo/physics/PhysicsEngine.hh>
 #include <gazebo/physics/ContactManager.hh>
 
+#include <gazebo/gazebo_config.h>
+
 
 void collision_benchmark::ClearModels(gazebo::physics::WorldPtr& world)
 {
@@ -16,3 +18,38 @@ void collision_benchmark::ClearModels(gazebo::physics::WorldPtr& world)
   if (physics) physics->GetContactManager()->Clear();
   world->SetPaused(pauseState);
 }
+
+
+
+std::set<std::string> collision_benchmark::GetSupportedPhysicsEngines()
+{
+  std::set<std::string> engines;
+
+  // XXX TODO: Should use same names as used
+  // in Gazebo/SDF to select physics engines. Use this as soon
+  // as there a constant/macro for it.
+  engines.insert("ode"); // ODE is always supported
+#ifdef HAVE_BULLET
+  engines.insert("bullet");
+#endif
+#ifdef HAVE_DART
+  engines.insert("dart");
+#endif
+#ifdef HAVE_SIMBODY
+  engines.insert("simbody");
+#endif
+
+  // could also use:
+  // if (gazebo::physics::PhysicsFactory::IsRegistered("ode"))
+
+  /*
+  or with #include <gazebo/test/helper_physics_generator.hh>
+  std::vector<std::string> engines = {"ode" BULLET_SUPPORT SIMBODY_SUPPORT DART_SUPPORT};
+  std::cout<<"Supported engines: "<<std::endl;
+  for (int i=0; i<engines.size(); ++i)
+    std::cout<<engines[i]<<std::endl;*/
+
+  return engines;
+}
+
+

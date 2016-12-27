@@ -182,7 +182,25 @@ bool GazeboStateCompare::Equal(const gazebo::physics::ModelState& s1, const gaze
   if (!Equal(s1.GetPose(), s2.GetPose(), tolerances.Position, tolerances.Orientation))
   {
 #ifdef DEBUG
-    std::cout<<"Poses not equal: "<<s1.GetPose()<<", "<<s2.GetPose()<<std::endl;
+    std::cout<<"Poses of model "<<s1.GetName()<<" not equal: "<< std::endl << s1.GetPose()<< std::endl <<s2.GetPose()<<std::endl;
+    // q2 is target
+    gazebo::math::Quaternion q1 = s1.GetPose().rot;
+    gazebo::math::Quaternion q2 = s2.GetPose().rot;
+    gazebo::math::Quaternion diff = q1.GetInverse() * q2;
+    gazebo::math::Quaternion res  = q1 * diff;
+    std::cout<<"Rot trg: "<< q2.x<< ", " << q2.y<< ", " << q2.z<<", " << q2.w<<std::endl;
+    std::cout<<"Rot diff: "<< diff.x<< ", " << diff.y<< ", " << diff.z<<", " << diff.w<<std::endl;
+    std::cout<<"Rot back: "<< res.x<< ", " << res.y<< ", " << res.z<<", " << res.w<<std::endl;
+    std::cout<<"EULER "<<std::endl;
+    std::cout<<"Rot trg: "<< q2.GetAsEuler().x<< ", " << q2.GetAsEuler().y<< ", " << q2.GetAsEuler().z<<std::endl;
+    std::cout<<"Rot diff: "<< diff.GetAsEuler().x<< ", " << diff.GetAsEuler().y<< ", " << diff.GetAsEuler().z<<std::endl;
+    std::cout<<"Rot back: "<< res.GetAsEuler().x<< ", " << res.GetAsEuler().y<< ", " << res.GetAsEuler().z<<std::endl;
+
+    std::cout<<"ORIGSTATE"<<std::endl<<s1<<std::endl;
+    gazebo::physics::ModelState diffState = s2 - s1;
+    std::cout<<"DIFFSTATE"<<std::endl<<diffState<<std::endl;
+    gazebo::physics::ModelState restoreState = s1 + diffState;
+    std::cout<<"RESOTRSTATE"<<std::endl<<restoreState<<std::endl;
 #endif
     return false;
   }
