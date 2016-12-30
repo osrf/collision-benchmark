@@ -131,12 +131,22 @@ GazeboPhysicsWorld::ModelLoadResult GazeboPhysicsWorld::AddModelFromShape(const 
 
 std::vector<GazeboPhysicsWorld::ModelID> GazeboPhysicsWorld::GetAllModelIDs() const
 {
-  throw new gazebo::common::Exception(__FILE__,__LINE__,"Implement me");
+  std::vector<GazeboPhysicsWorld::ModelID> names;
+  int numModels = world->ModelCount();
+  for (int i=0; i<numModels; ++i)
+  {
+    gazebo::physics::ModelPtr m=world->ModelByIndex(i);
+    names.push_back(m->GetName());
+  }
+  return names;
 }
 
 bool GazeboPhysicsWorld::RemoveModel(const ModelID& id)
 {
-  throw new gazebo::common::Exception(__FILE__,__LINE__,"Implement me");
+  gazebo::physics::ModelPtr m=world->ModelByName(id);
+  if (!m) return false;
+  world->RemoveModel(m);
+  return true;
 }
 
 void GazeboPhysicsWorld::Clear()
@@ -190,7 +200,7 @@ std::string GazeboPhysicsWorld::GetName() const
 
 bool GazeboPhysicsWorld::SupportsContacts() const
 {
-  throw new gazebo::common::Exception(__FILE__,__LINE__,"Implement me");
+  return true;
 }
 
 std::vector<GazeboPhysicsWorld::ContactInfoPtr> GazeboPhysicsWorld::GetContactInfo() const
@@ -231,7 +241,8 @@ GazeboPhysicsWorld::WorldPtr GazeboPhysicsWorld::GetWorld() const
 
 GazeboPhysicsWorld::ModelPtr GazeboPhysicsWorld::GetModel(const ModelID& model) const
 {
-  throw new gazebo::common::Exception(__FILE__,__LINE__,"Implement me");
+  gazebo::physics::ModelPtr m=world->ModelByName(id);
+  return m;
 }
 
 GazeboPhysicsWorld::PhysicsEnginePtr GazeboPhysicsWorld::GetPhysicsEngine() const
