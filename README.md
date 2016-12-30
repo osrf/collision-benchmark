@@ -48,6 +48,10 @@ between those worlds for displaying in gzclient.
 You need to start gzclient when prompted to do so. Press [Enter] to continue
 as soon as gzclient is up and running.
 
+Please note that you cannot use the gzclient controls like Pause and Step with this project
+yet. Also, the iterations and simulation time etc. displayed at the bottom
+may not reflect the actual simulation time.
+
 **Example 1 without gzclient**
 
 The test can be used to quickly confirm that different engines have in fact
@@ -112,6 +116,10 @@ Make sure libcollision_benchmark_gui.so is in the GAZEBO_PLUGIN_PATH.
 You can swith between the physics engines with the GUI control panel displayed on the top right.
 Between the buttons, the name of the currently displayed world is shown, which should contain the physics
 engine in the name.
+
+Please note that you cannot use the gzclient controls like Pause and Step with this project
+yet. Also, the iterations and simulation time etc displayed at the bottom
+may not reflect the actual simulation time.
 
 **Example:**
 

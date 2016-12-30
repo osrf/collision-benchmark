@@ -60,6 +60,11 @@ namespace collision_benchmark
  *   a paused world. It needs to be checked whether this can be improved.
  * - waiting for namespaces can still be improved, sometimes it may fail (see also PrivateHelpers)
  *
+ * **Current limitations:**
+ *
+ * Please note that you cannot use the gzclient controls like Pause and Step with this class yet.
+ * Also, the iterations and simulation time etc. displayed at the bottom may not reflect the actual simulation time.
+ *
  * \author Jennifer Buehler
  * \date December 2016
  */

@@ -24,11 +24,11 @@ set(collision_benchmark_HEADERS
   collision_benchmark/GazeboPhysicsWorld.hh
   collision_benchmark/GazeboWorldState.hh
   collision_benchmark/PhysicsWorld.hh
-  collision_benchmark/WorldLoader.hh
+  collision_benchmark/GazeboWorldLoader.hh
 )
 
 add_library(collision_benchmark SHARED
-  collision_benchmark/WorldLoader.cc
+  collision_benchmark/GazeboWorldLoader.cc
   collision_benchmark/GazeboPhysicsWorld.cc
   collision_benchmark/GazeboWorldState.cc
   collision_benchmark/GazeboMirrorWorld.cc

@@ -119,7 +119,6 @@ void ClientGui::receiveWorldMsg(ConstAnyPtr &_msg)
 
 void ClientGui::OnNameChange(const std::string& name)
 {
-  std::cout<<"OnNameChange!!!"<<std::endl;
   labelName->setText(name.c_str());
   QSize totalSize = maxHeightAddWidth(labelName->sizeHint(), minSize, 1.1);
   this->resize(totalSize);

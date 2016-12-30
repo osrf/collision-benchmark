@@ -23,7 +23,7 @@
 #include <collision_benchmark/GazeboWorldState.hh>
 #include <collision_benchmark/GazeboStateCompare.hh>
 #include <collision_benchmark/GazeboHelpers.hh>
-#include <collision_benchmark/WorldLoader.hh>
+#include <collision_benchmark/GazeboWorldLoader.hh>
 #include <collision_benchmark/boost_std_conversion.hh>
 
 #include <gazebo/physics/physics.hh>
@@ -90,7 +90,18 @@ GazeboPhysicsWorld::OpResult GazeboPhysicsWorld::LoadFromFile(const std::string&
 
 GazeboPhysicsWorld::OpResult GazeboPhysicsWorld::LoadFromString(const std::string& str, const std::string& worldname)
 {
-  throw new gazebo::common::Exception(__FILE__,__LINE__,"Implement me");
+  gazebo::physics::WorldPtr gzworld = collision_benchmark::LoadWorldFromSDFString(str, worldname);
+
+  if (!gzworld)
+    return GazeboPhysicsWorld::FAILED;
+
+  if (OnLoadWaitForNamespace && !WaitForNamespace(gzworld, OnLoadMaxWaitForNamespace, OnLoadWaitForNamespaceSleep))
+    return GazeboPhysicsWorld::FAILED;
+
+  SetWorld(collision_benchmark::to_std_ptr<gazebo::physics::World>(gzworld));
+
+  return GazeboPhysicsWorld::SUCCESS;
+
 }
 
 GazeboPhysicsWorld::ModelLoadResult GazeboPhysicsWorld::AddModelFromFile(const std::string& filename, const std::string& modelname)

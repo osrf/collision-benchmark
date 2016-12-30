@@ -23,8 +23,12 @@
 namespace collision_benchmark
 {
 
-/// returns the root of the world in the SDF
-sdf::ElementPtr GetWorldFromSDF(const std::string& filename, const std::string& name);
+/// returns the SDF root of the world, reading it from a file, and replaces the name with \e name (if not empty)
+sdf::ElementPtr GetSDFWorldFromFile(const std::string& filename, const std::string& name);
+
+/// returns the SDF root of the world, reading it from an xml string \e xmlString,
+/// and replaces the name with \e name (if not empty)
+sdf::ElementPtr GetSDFWorldFromString(const std::string& xmlString, const std::string& name);
 
 /// loads a world given a SDF element
 /// \param name if not empty string, then this name is used to override the name in \e worldFile
@@ -36,6 +40,13 @@ gazebo::physics::WorldPtr LoadWorldFromSDF(const sdf::ElementPtr& sdfRoot, const
 gazebo::physics::WorldPtr LoadWorldFromFile(const std::string& worldfile,
                                             const std::string& name="",
                                             const sdf::ElementPtr& overridePhysics=sdf::ElementPtr());
+
+/// loads a world from an SDF xml string
+/// \param name if not empty string, then this name is used to override the name in \e worldfile
+/// \param overridePhysics if not NULL, this SDF is used to override the physics in the SDF \e worldfile.
+gazebo::physics::WorldPtr LoadWorldFromSDFString(const std::string& xmlString,
+                                                 const std::string& name="",
+                                                 const sdf::ElementPtr& overridePhysics=sdf::ElementPtr());
 
 /// Like LoadWorldFromFile(), but does additional error checking and waiting for the
 /// namespace to be loaded

@@ -53,7 +53,13 @@ void GazeboMirrorWorld::ClearModels()
 void GazeboMirrorWorld::Sync()
 {
   assert(originalWorld);
-  /*GazeboPhysicsWorld::Ptr gzOrigWorld = std::dynamic_pointer_cast<GazeboPhysicsWorld>(originalWorld);
+
+/*
+  XXX TODO support Pause and Step functions, though this will have to be done for all worlds,
+  so probably rather in WorldManager with a common interface... not of high priority now though.
+  Best is probably to re-write mirror world and receive all the Gui commands from a dedicated interface,
+  instead of having the whole cloned world.
+  GazeboPhysicsWorld::Ptr gzOrigWorld = std::dynamic_pointer_cast<GazeboPhysicsWorld>(originalWorld);
   bool isPaused=false;
   if (gzOrigWorld)
   {
