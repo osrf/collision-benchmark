@@ -16,7 +16,9 @@ make tests
 make install
 ```
 
-Make sure the library ``libcollision_benchmark_gui.so`` compiled by this project is in your GAZEBO_PLUGIN_PATH.
+Make sure the library ``libcollision_benchmark_gui.so`` compiled by this project (installed to ``<your-install-prefix>/lib``)
+is in your GAZEBO_PLUGIN_PATH, and that you add ``<your-install-prefix>/share`` to your GAZEBO_RESOURCE_PATH.
+You may also want the ``<your-install-prefix>/bin`` path in your PATH.
 
 ## Simulating multiple parallel worlds
 
@@ -46,7 +48,25 @@ between those worlds for displaying in gzclient.
 You need to start gzclient when prompted to do so. Press [Enter] to continue
 as soon as gzclient is up and running.
 
-**Example 1 with gzclient**
+**Example 1 without gzclient**
+
+The test can be used to quickly confirm that different engines have in fact
+been loaded for different worlds.
+
+```
+multiple_worlds_server_test_simple 1 \
+    test_worlds/empty_ode.world \
+    test_worlds/empty_bullet.world
+```
+
+Then just press ``[Enter]`` without loading gzclient to continue the test.
+This will update each world once, then switch to the second as the "main" world
+and update each world once again. At each update it should print "ode" and "bullet" as collision engines loaded.
+
+
+**Example 2 with gzclient**
+
+You may also look at the test with gzclient. Use a higher number of iterations for that:
 
 ```
 multiple_worlds_server_test_simple 800 \
@@ -64,20 +84,7 @@ and then press ``[Enter]`` in the first terminal to continue with the test.
 
 After 800 iterations, this should switch from the cube to the sphere.
 
-**Example 2 without gzclient**
 
-The test can also be used to quickly confirm that different engines have in fact
-been loaded for different worlds.
-
-```
-multiple_worlds_server_test_simple 1 \
-    test_worlds/empty_ode.world \
-    test_worlds/empty_bullet.world
-```
-
-Then just press ``[Enter]`` without loading gzclient to continue the test.
-This will update each world once, then switch to the second as the "main" world
-and update each world once again. At each update it should print "ode" and "bullet" as collision engines loaded.
 
 ### One world, different engines
 

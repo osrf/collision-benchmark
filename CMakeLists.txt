@@ -9,9 +9,23 @@ find_package (Qt4)
 include (${QT_USE_FILE})
 add_definitions(${QT_DEFINITIONS})
 
-
-
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
+
+set(collision_benchmark_HEADERS
+  collision_benchmark/boost_std_conversion.hh
+  collision_benchmark/ContactInfo.hh
+  collision_benchmark/GazeboMirrorWorld.hh
+  collision_benchmark/GazeboStateCompare.hh
+  collision_benchmark/MirrorWorld.hh
+  collision_benchmark/Shape.hh
+  collision_benchmark/WorldManager.hh
+  collision_benchmark/ClientGui.hh
+  collision_benchmark/GazeboHelpers.hh
+  collision_benchmark/GazeboPhysicsWorld.hh
+  collision_benchmark/GazeboWorldState.hh
+  collision_benchmark/PhysicsWorld.hh
+  collision_benchmark/WorldLoader.hh
+)
 
 add_library(collision_benchmark SHARED
   collision_benchmark/WorldLoader.cc
@@ -63,3 +77,32 @@ target_link_libraries(multiple_worlds_test
   collision_benchmark ${GTEST_BOTH_LIBRARIES})
 add_test(MultipleWorldsTest multiple_worlds_test)
 add_dependencies(tests multiple_worlds_test)
+
+
+# installing
+set (test_WORLDS
+  test_worlds/cube_bullet.world
+  test_worlds/cube_dart.world
+  test_worlds/cube_ode.world
+  test_worlds/empty_bullet.world
+  test_worlds/empty_dart.world
+  test_worlds/empty_ode.world
+  test_worlds/sphere_bullet.world
+  test_worlds/sphere_dart.world
+  test_worlds/sphere_ode.world)
+
+set(physics_SDF
+  physics_settings/bullet_default.sdf
+  physics_settings/dart_default.sdf
+  physics_settings/ode_default.sdf)
+
+install (FILES ${collision_benchmark_HEADERS}
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/include/collision_benchmark)
+install (FILES ${physics_SDF}
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/share/physics_settings)
+install (FILES ${test_WORLDS}
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/share/test_worlds)
+
+install (TARGETS collision_benchmark multiple_worlds_server multiple_worlds_server_test_simple
+  LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+  RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
