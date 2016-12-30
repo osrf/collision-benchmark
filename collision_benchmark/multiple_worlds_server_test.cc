@@ -123,6 +123,19 @@ bool connectTransport()
   return true;
 }
 
+
+void testCallback(ConstWorldStatisticsPtr &_msg)
+{
+  std::cout << "World stats: "<<_msg->DebugString();
+}
+
+void testCallbackAny(ConstAnyPtr &_msg)
+{
+  std::cout << "Any: "<<_msg->DebugString();
+}
+
+
+
 // Main method to play the test, later to be replaced by a dedicated structure (without command line arument params)
 bool PlayTest(int argc, char **argv)
 {
@@ -194,6 +207,14 @@ bool PlayTest(int argc, char **argv)
     collision_benchmark::PrintWorldStates(worlds);
   }
 
+  std::cout<<"Testing transport: "<<std::endl;
+  gazebo::transport::NodePtr node(new gazebo::transport::Node());
+  node->Init();
+
+  gazebo::transport::SubscriberPtr sub = node->Subscribe("mirror_world/set_world", testCallbackAny);
+  gazebo::transport::PublisherPtr pub = node->Advertise<gazebo::msgs::Any>("mirror_world/get_world");
+
+
   std::cout << "Now start gzclient if you would like to view the test. Press [Enter] to continue."<<std::endl;
   getchar();
 
@@ -201,11 +222,21 @@ bool PlayTest(int argc, char **argv)
   for (int i = 0; i < worlds.size(); ++i)
   {
     std::cout << "+++++++++++++++++++++++++++++++++++++++++" << std::endl;
-    std::cout << "Now mirroring " << worlds[i]->GetName() << std::endl; //" using engine " << worlds[i]->Physics()->GetType() << std::endl;
+    std::cout << "Now mirroring " << worlds[i]->GetName() << std::endl;
     std::cout << "+++++++++++++++++++++++++++++++++++++++++" << std::endl;
     mirrorWorld->SetOriginalWorld(worlds[i]);
+
+
+    gazebo::msgs::Any m;
+    m.set_type(gazebo::msgs::Any::STRING);
+    m.set_string_value(mirrorWorld->GetOriginalWorld()->GetName());
+    m.set_int_value(3);
+    pub->Publish(m);
+
+
     const int steps=1;
     RunWorlds(numIters, steps, worlds, mirrorWorld);
+
   }
 
   std::cout<<" Finished running the worlds. "<<std::endl;
@@ -224,8 +255,15 @@ bool PlayTest(int argc, char **argv)
 int main(int argc, char **argv)
 {
   // Initialize gazebo.
-  gazebo::setupServer(argc, argv);
-
+  try
+  {
+    gazebo::setupServer(argc, argv);
+  }
+  catch (...)
+  {
+    std::cerr<<"Could not setup server"<<std::endl;
+    return 1;
+  }
   PlayTest(argc, argv);
 
   std::cout << "Shutting down..." <<std::endl;
@@ -233,4 +271,5 @@ int main(int argc, char **argv)
   gazebo::shutdown();
 
   std::cout << "Test ended." << std::endl;
+  return 0;
 }
