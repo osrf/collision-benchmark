@@ -84,7 +84,6 @@ ClientGui::ClientGui()
   this->move(10, 10);
   QSize totalSize = maxHeightAddWidth(labelName->sizeHint(), minSize, 1.1);
   this->resize(totalSize);
-  // this->adjustSize();
 
   // Set up transportation system
   this->node = gazebo::transport::NodePtr(new gazebo::transport::Node());
@@ -117,7 +116,6 @@ void ClientGui::OnButtonNext()
   m.set_int_value(1); // "Next" world
   this->mirrorWorldPub->Publish(m);
 }
-
 
 
 /////////////////////////////////////////////////

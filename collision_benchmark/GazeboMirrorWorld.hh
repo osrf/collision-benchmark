@@ -23,7 +23,7 @@
 
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/World.hh>
-#include <collision_benchmark/PhysicsWorld.hh>
+#include <collision_benchmark/MirrorWorld.hh>
 #include <string>
 #include <iostream>
 
@@ -31,7 +31,9 @@ namespace collision_benchmark
 {
 
 /**
- * \brief Maintains a world of its own, and can be set to mirror another physics::World.
+ * \brief MirrorWorld implementation which uses gazebo::physics::World for the mirror world.
+ * Only supports PhysicsWorldBase<gazebo::physics::WorldState> as original world.
+ *
  * The world contains a *copy* of the other worlds state (models, lights, etc)
  * but maintains its own collision engine, which is disabled.
  *
@@ -61,7 +63,8 @@ namespace collision_benchmark
  * \author Jennifer Buehler
  * \date December 2016
  */
-class GazeboMirrorWorld
+class GazeboMirrorWorld:
+  public MirrorWorld<gazebo::physics::WorldState>
 {
     public: typedef std::shared_ptr<GazeboMirrorWorld> Ptr;
     public: typedef std::shared_ptr<const GazeboMirrorWorld> ConstPtr;
@@ -82,24 +85,16 @@ class GazeboMirrorWorld
     /// Returns the mirror world
     public:  gazebo::physics::WorldPtr GetMirrorWorld() const;
 
-    /// Sets the original world to be mirrored by this GazeboMirrorWorld
-    public:  void SetOriginalWorld(const OriginalWorldPtr& originalWorld);
+    /// Documentation inherited
+    public:  virtual void Sync();
 
-    /// Returns the original world which is mirrored by this class
-    public:  OriginalWorldPtr GetOriginalWorld() const;
-
-    /// Synchronizes the world with the original
-    public:  void Sync();
-
-    /// Clears all models from the current mirror world.
+    /// Documentation inherited
     public: virtual void ClearModels();
 
-    /// Synchronizes the mirror world to the original by calling Sync(),
-    /// and subsequently updates the mirror world.
+    /// Documentation inherited
     public: virtual void Update(int iter=1);
 
     protected:  gazebo::physics::WorldPtr mirrorWorld;
-    protected:  OriginalWorldPtr originalWorld;
 };
 
 }  // namespace collision_benchmark

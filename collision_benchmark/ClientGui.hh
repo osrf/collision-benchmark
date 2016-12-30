@@ -26,40 +26,52 @@
 
 namespace collision_benchmark
 {
-    class GAZEBO_VISIBLE ClientGui : public gazebo::GUIPlugin
-    {
-      Q_OBJECT
+  /**
+   * Creates a GUI with "Next" and "Prev" button to swith between worlds to be
+   * displayed. A label displaying the name of the current worls is fitted betwen
+   * the buttons.
+   *
+   * Communication with the server works via gazebo::Any messages.
+   * An integer of -1 is sent for "Prev", an integer of 1 for "Next",
+   * and a string is received for the world name.
+   *
+   * \author Jennifer Buehler
+   * \date December 2016
+   */
+  class GAZEBO_VISIBLE ClientGui : public gazebo::GUIPlugin
+  {
+    Q_OBJECT
 
-      /// \brief Constructor
-      /// \param[in] _parent Parent widget
-      public: ClientGui();
+    /// \brief Constructor
+    /// \param[in] _parent Parent widget
+    public: ClientGui();
 
-      /// \brief Destructor
-      public: virtual ~ClientGui();
+    /// \brief Destructor
+    public: virtual ~ClientGui();
 
-      /// \brief Callback trigged when the button "Prev" is pressed.
-      protected slots: void OnButtonPrev();
+    /// \brief Callback trigged when the button "Prev" is pressed.
+    protected slots: void OnButtonPrev();
 
-      /// \brief Callback trigged when the button "Next" is pressed.
-      protected slots: void OnButtonNext();
+    /// \brief Callback trigged when the button "Next" is pressed.
+    protected slots: void OnButtonNext();
 
-      /// \brief Callback triggered upon reception of the mirrored world info
-      private: void receiveWorldMsg(ConstAnyPtr &_msg);
+    /// \brief Callback triggered upon reception of the mirrored world info
+    private: void receiveWorldMsg(ConstAnyPtr &_msg);
 
-      /// \brief Label to display current world name
-      private: QLabel * labelName;
+    /// \brief Label to display current world name
+    private: QLabel * labelName;
 
-      /// \brief Node used to establish communication with gzserver.
-      private: gazebo::transport::NodePtr node;
+    /// \brief Node used to establish communication with gzserver.
+    private: gazebo::transport::NodePtr node;
 
-      /// \brief Publisher for "next" and "prev" world setting
-      private: gazebo::transport::PublisherPtr mirrorWorldPub;
+    /// \brief Publisher for "next" and "prev" world setting
+    private: gazebo::transport::PublisherPtr mirrorWorldPub;
 
-      /// \brief Subscriber for receiving information of the world displayed
-      private: gazebo::transport::SubscriberPtr mirrorWorldSub;
+    /// \brief Subscriber for receiving information of the world displayed
+    private: gazebo::transport::SubscriberPtr mirrorWorldSub;
 
-      /// \brief minimum size of the widget, set by the buttons width and height
-      private: QSize minSize;
-    };
+    /// \brief minimum size of the widget, set by the buttons width and height
+    private: QSize minSize;
+  };
 }
 #endif

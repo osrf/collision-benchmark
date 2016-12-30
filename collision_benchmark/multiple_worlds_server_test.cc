@@ -24,6 +24,8 @@
 
 #include <collision_benchmark/GazeboHelpers.hh>
 
+#include <collision_benchmark/WorldManager.hh>
+
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
 
@@ -34,36 +36,13 @@
 using collision_benchmark::PhysicsWorldBase;
 using collision_benchmark::PhysicsWorld;
 using collision_benchmark::GazeboPhysicsWorld;
+using collision_benchmark::MirrorWorld;
 using collision_benchmark::GazeboMirrorWorld;
+using collision_benchmark::WorldManager;
 
 typedef PhysicsWorldBase<gazebo::physics::WorldState> GzPhysicsWorldBase;
+typedef WorldManager<gazebo::physics::WorldState> GzWorldManager;
 
-/**
- * Convenience function to call GazeboPhysicsWorld::Update(steps) on several worlds \e iter times
- * \param iter number of iterations (world updates)
- * \param worlds all worlds that have to be updated
- * \param mirrorWorld optional: if not NULL, the method GazeboMirrorWorld::Sync() is called at each iteration
- */
-void RunWorlds(int iter, int steps, const std::vector<GzPhysicsWorldBase::Ptr>& worlds, const GazeboMirrorWorld::Ptr& mirrorWorld=GazeboMirrorWorld::Ptr(NULL))
-{
-  for (unsigned int i = 0; i < iter; ++i)
-  {
-    // std::cout << "##### Running world(s), iter=" << i << std::endl;
-    for (std::vector<GzPhysicsWorldBase::Ptr>::const_iterator it = worlds.begin();
-        it != worlds.end(); ++it)
-    {
-      GzPhysicsWorldBase::Ptr w=*it;
-      w->Update(steps);
-    }
-
-    if (mirrorWorld)
-    {
-      mirrorWorld->Sync();
-      // std::cout<<"Running mirror world. Paused? "<<mirrorWorld->GetMirrorWorld()->IsPaused()<<std::endl;
-      mirrorWorld->Update(steps);
-    }
-  }
-}
 
 // loads the mirror world. This should be loaded before all other Gazebo worlds, so that
 // gzclient connects to this one.
@@ -110,38 +89,12 @@ std::map<std::string,std::string> getPhysicsSettingsSdfFor(const std::vector<std
   return physics_filenames;
 }
 
-bool connectTransport()
-{
-  if (!gazebo::transport::init())
-  {
-      gzerr << "Unable to initialize transport.\n";
-      return false;
-  }
-
-  // Run transport loop. Starts a thread
-  gazebo::transport::run();
-  return true;
-}
-
-
-void testCallback(ConstWorldStatisticsPtr &_msg)
-{
-  std::cout << "World stats: "<<_msg->DebugString();
-}
-
-void testCallbackAny(ConstAnyPtr &_msg)
-{
-  std::cout << "Any: "<<_msg->DebugString();
-}
-
-
-
 // Main method to play the test, later to be replaced by a dedicated structure (without command line arument params)
 bool PlayTest(int argc, char **argv)
 {
-  if (argc < 4)
+  if (argc < 3)
   {
-    std::cerr<<"Usage: "<<argv[0]<<" <number iterations> <world file> <list of physics engines>"<<std::endl;
+    std::cerr<<"Usage: "<<argv[0]<<" <world file> <list of physics engines>"<<std::endl;
     std::cerr<<"<list of physics engines> can contain the following: [ode, bullet, dart, simbody] "<<std::endl;
     return false;
   }
@@ -155,20 +108,18 @@ bool PlayTest(int argc, char **argv)
     return false;
   }
 
-  int numIters = atoi(argv[1]);
-
   // now, load the worlds as given in command line arguments with the different engines given
-  std::string worldfile = argv[2];
+  std::string worldfile = argv[1];
 
   std::vector<std::string> selectedEngines;
-  for (int i = 3; i < argc; ++i)
+  for (int i = 2; i < argc; ++i)
     selectedEngines.push_back(argv[i]);
 
   std::map<std::string,std::string> physicsEngines = getPhysicsSettingsSdfFor(selectedEngines);
 
   std::cout << "Loading world " << worldfile << " with "<<physicsEngines.size()<<" engines."<<std::endl;
 
-  std::vector<GzPhysicsWorldBase::Ptr> worlds;
+  GzWorldManager worldManager(mirrorWorld);
   int i=1;
   for (std::map<std::string,std::string>::iterator it = physicsEngines.begin(); it!=physicsEngines.end(); ++it, ++i)
   {
@@ -193,60 +144,25 @@ bool PlayTest(int argc, char **argv)
     std::cout<<"Loading world from "<<worldfile<<std::endl;
     gazebo::physics::WorldPtr gzworld = collision_benchmark::LoadWorldFromFile(worldfile, worldname, physics);
 
+    if (!gzworld)
+    {
+      std::cout<<"Error loading world "<<worldfile<<std::endl;
+      return false;
+    }
     // Create the GazeboPhysicsWorld object
     GazeboPhysicsWorld::Ptr gzPhysicsWorld(new GazeboPhysicsWorld());
     gzPhysicsWorld->SetWorld(collision_benchmark::to_std_ptr<gazebo::physics::World>(gzworld));
-    worlds.push_back(gzPhysicsWorld);
+    worldManager.AddPhysicsWorld(gzPhysicsWorld);
   }
-
-  // Go through all worlds and print info
-  bool printState = false;
-  if (printState)
-  {
-    std::cout << "##### States of all worlds before running:" << std::endl;
-    collision_benchmark::PrintWorldStates(worlds);
-  }
-
-  std::cout<<"Testing transport: "<<std::endl;
-  gazebo::transport::NodePtr node(new gazebo::transport::Node());
-  node->Init();
-
-  gazebo::transport::SubscriberPtr sub = node->Subscribe("mirror_world/set_world", testCallbackAny);
-  gazebo::transport::PublisherPtr pub = node->Advertise<gazebo::msgs::Any>("mirror_world/get_world");
-
 
   std::cout << "Now start gzclient if you would like to view the test. Press [Enter] to continue."<<std::endl;
   getchar();
-
-  // Go through all worlds, mirroring each for the given number of iterations.
-  for (int i = 0; i < worlds.size(); ++i)
+  std::cout << "Now starting to update worlds."<<std::endl;
+  while(true)
   {
-    std::cout << "+++++++++++++++++++++++++++++++++++++++++" << std::endl;
-    std::cout << "Now mirroring " << worlds[i]->GetName() << std::endl;
-    std::cout << "+++++++++++++++++++++++++++++++++++++++++" << std::endl;
-    mirrorWorld->SetOriginalWorld(worlds[i]);
-
-
-    gazebo::msgs::Any m;
-    m.set_type(gazebo::msgs::Any::STRING);
-    m.set_string_value(mirrorWorld->GetOriginalWorld()->GetName());
-    m.set_int_value(3);
-    pub->Publish(m);
-
-
-    const int steps=1;
-    RunWorlds(numIters, steps, worlds, mirrorWorld);
-
+    int numSteps=1;
+    worldManager.Update(numSteps);
   }
-
-  std::cout<<" Finished running the worlds. "<<std::endl;
-
-  if (printState)
-  {
-    std::cout << "##### States of all worlds after running:" << std::endl;
-    collision_benchmark::PrintWorldStates(worlds);
-  }
-
   return true;
 }
 
@@ -264,6 +180,7 @@ int main(int argc, char **argv)
     std::cerr<<"Could not setup server"<<std::endl;
     return 1;
   }
+
   PlayTest(argc, argv);
 
   std::cout << "Shutting down..." <<std::endl;

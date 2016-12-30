@@ -33,7 +33,6 @@ GazeboMirrorWorld::GazeboMirrorWorld(gazebo::physics::WorldPtr& mirrorWorld_):
 {
   assert(mirrorWorld);
   mirrorWorld->SetPhysicsEnabled(false);
-  std::cout<<"GazeboMirrorWorld constructed."<<std::endl;
 }
 
 GazeboMirrorWorld::~GazeboMirrorWorld()
@@ -43,16 +42,6 @@ GazeboMirrorWorld::~GazeboMirrorWorld()
 gazebo::physics::WorldPtr GazeboMirrorWorld::GetMirrorWorld() const
 {
   return mirrorWorld;
-}
-
-GazeboMirrorWorld::OriginalWorldPtr GazeboMirrorWorld::GetOriginalWorld() const
-{
-  return originalWorld;
-}
-
-void GazeboMirrorWorld::SetOriginalWorld(const OriginalWorldPtr& _originalWorld)
-{
-  originalWorld = _originalWorld;
 }
 
 void GazeboMirrorWorld::ClearModels()

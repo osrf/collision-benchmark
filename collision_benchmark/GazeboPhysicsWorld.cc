@@ -27,13 +27,11 @@
 #include <collision_benchmark/boost_std_conversion.hh>
 
 #include <gazebo/physics/physics.hh>
-//#include <gazebo/physics/PhysicsIface.hh>
 
 using collision_benchmark::GazeboPhysicsWorld;
 
 GazeboPhysicsWorld::GazeboPhysicsWorld()
 {
-  std::cout<<"Constructor GazeboPhysicsWorld"<<std::endl;
 }
 
 GazeboPhysicsWorld::~GazeboPhysicsWorld()
