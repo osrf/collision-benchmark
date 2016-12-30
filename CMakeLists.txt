@@ -35,8 +35,8 @@ list(APPEND CMAKE_CXX_FLAGS "${GAZEBO_CXX_FLAGS}")
 
 add_custom_target(tests)
 
-add_executable(multiple_worlds_server_test
-  collision_benchmark/multiple_worlds_server_test.cc)
+add_executable(multiple_worlds_server
+  collision_benchmark/multiple_worlds_server.cc)
 
 add_executable(multiple_worlds_server_test_simple
   collision_benchmark/multiple_worlds_server_test_simple.cc)
@@ -51,7 +51,7 @@ target_link_libraries(collision_benchmark_gui
   ${DART_LIBRARIES})
 
 target_link_libraries(multiple_worlds_server_test_simple collision_benchmark)
-target_link_libraries(multiple_worlds_server_test collision_benchmark)
+target_link_libraries(multiple_worlds_server collision_benchmark)
 
 # testing
 enable_testing()

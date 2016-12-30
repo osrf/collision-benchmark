@@ -88,8 +88,18 @@ ClientGui::ClientGui()
   // Set up transportation system
   this->node = gazebo::transport::NodePtr(new gazebo::transport::Node());
   this->node->Init();
-  this->mirrorWorldPub = this->node->Advertise<gazebo::msgs::Any>("mirror_world/set_world");
-  this->mirrorWorldSub = this->node->Subscribe("mirror_world/get_world", &ClientGui::receiveWorldMsg, this);
+  std::string SET_TOPIC="mirror_world/set_world";
+  std::string GET_TOPIC="mirror_world/get_world";
+  this->mirrorWorldPub = this->node->Advertise<gazebo::msgs::Any>(SET_TOPIC);
+  this->mirrorWorldSub = this->node->Subscribe(GET_TOPIC, &ClientGui::receiveWorldMsg, this);
+
+  std::cout<<"Waiting for connection to topic "<<SET_TOPIC<<std::endl;
+  this->mirrorWorldPub->WaitForConnection();
+  // Send the model to the gazebo server
+  gazebo::msgs::Any m;
+  m.set_type(gazebo::msgs::Any::INT32);
+  m.set_int_value(0); // Request world name
+  this->mirrorWorldPub->Publish(m);
 }
 
 /////////////////////////////////////////////////
@@ -99,7 +109,7 @@ ClientGui::~ClientGui()
 
 void ClientGui::receiveWorldMsg(ConstAnyPtr &_msg)
 {
-  std::cout << "Any: "<<_msg->DebugString();
+  // std::cout << "Any msg: "<<_msg->DebugString();
   std::string worldName=_msg->string_value();
   labelName->setText(worldName.c_str());
   QSize totalSize = maxHeightAddWidth(labelName->sizeHint(), minSize, 1.1);

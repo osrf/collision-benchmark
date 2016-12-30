@@ -38,6 +38,13 @@ namespace collision_benchmark
  * Simple convenience class which maintains a number of worlds along with an optional
  * MirrorWorld and accepts messages to control switching the mirror world.
  *
+ * Communication with the client works via gazebo::Any messages.
+ * An INT32 of -1 is received for "Prev", an integer of 1 for "Next",
+ * a 0 for no change and simply triggering the sending of the name of the currently
+ * mirrored world.
+ * Each time a message is received, the current world name is sent back in a gazebo::Any message
+ * with type STRING.
+ *
  * \author Jennifer Buehler
  * \date December 2016
  */
@@ -137,7 +144,7 @@ class WorldManager
     /// Will send back the current world name with \e ctrlClientPublisher.
     private:  void crtlClientCallback(ConstAnyPtr &_msg)
               {
-                std::cout << "Received: "<<_msg->DebugString();
+                // std::cout << "Received: "<<_msg->DebugString();
                 // change the world:
                 if (_msg->type() != gazebo::msgs::Any::INT32)
                 {
@@ -145,14 +152,14 @@ class WorldManager
                   return;
                 }
                 int ctrl=_msg->int_value();
-                if (ctrl<0)
+                if (ctrl < 0)
                 {
                   // Switch to previous world
                   std::cout<<"Switching to previous world"<<std::endl;
                   if (mirroredWorldIdx > 0) --mirroredWorldIdx;
                   //  else mirroredWorldIdx=worlds.size()-1; // go back to last world
                 }
-                else
+                else if (ctrl > 0)
                 {
                   // Switch to next world
                   std::cout<<"Switching to next world"<<std::endl;
@@ -160,18 +167,24 @@ class WorldManager
                   // else mirroredWorldIdx=0; // go back to first world
                 }
 
-                // update mirrored world
-                SetMirroredWorld(mirroredWorldIdx);
+                if (ctrl != 0)
+                {
+                  // update mirrored world
+                  SetMirroredWorld(mirroredWorldIdx);
+                }
 
                 // send back the name of the new world:
-                gazebo::msgs::Any m;
-                m.set_type(gazebo::msgs::Any::STRING);
-                m.set_string_value(mirrorWorld->GetOriginalWorld()->GetName());
-                m.set_int_value(3);
-                ctrlClientPublisher->Publish(m);
+                SendWorldName(mirrorWorld->GetOriginalWorld()->GetName());
               }
 
-
+    /// sends the name of a word via \e ctrlClientPublisher
+    private: void SendWorldName(const std::string& name)
+             {
+                gazebo::msgs::Any m;
+                m.set_type(gazebo::msgs::Any::STRING);
+                m.set_string_value(name);
+                ctrlClientPublisher->Publish(m);
+             }
 
     private: gazebo::transport::SubscriberPtr ctrlClientSubscriber;
     private: gazebo::transport::PublisherPtr ctrlClientPublisher;

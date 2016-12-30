@@ -33,6 +33,7 @@ namespace collision_benchmark
    *
    * Communication with the server works via gazebo::Any messages.
    * An integer of -1 is sent for "Prev", an integer of 1 for "Next",
+   * a 0 for no change and simply request the world name to be sent,
    * and a string is received for the world name.
    *
    * \author Jennifer Buehler

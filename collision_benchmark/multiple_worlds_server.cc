@@ -21,17 +21,11 @@
 #include <collision_benchmark/GazeboMirrorWorld.hh>
 #include <collision_benchmark/GazeboPhysicsWorld.hh>
 #include <collision_benchmark/boost_std_conversion.hh>
-
 #include <collision_benchmark/GazeboHelpers.hh>
-
 #include <collision_benchmark/WorldManager.hh>
 
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
-
-
-#include <gazebo/transport/TransportIface.hh>
-
 
 using collision_benchmark::PhysicsWorldBase;
 using collision_benchmark::PhysicsWorld;

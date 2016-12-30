@@ -75,3 +75,31 @@ It is also possible to specify one world file to load, and several physics engin
 should be loaded with. This means the world will be loaded multiple times, once with each physics engine,
 and then you can switch between the worlds, just like with the previous simple test. The
 difference is that you have to specify only one world file.
+
+You may start the Multiple worlds server as follows:
+
+```multiple_worlds_server <world file> <list of phyiscs engines>```
+
+The ``<list of physics engines>`` can contain *ode, bullet, simbody* and *dart*.
+
+This will prompt you with a keypress so you get the chance to start gzclient before the worlds are started.
+Confirm with [Enter] immediately if you don't want to wait, otherwise press [Enter] after gzclient has loaded up.
+
+Start gzclient and you will see the world with the engine with the name which comes first in lexicographical order.
+You should load up the gzclient with the GUI plugin which will allow you to control switching between the worlds:
+
+``gzclient --g libcollision_benchmark_gui.so``
+
+Make sure libcollision_benchmark_gui.so is in the GAZEBO_PLUGIN_PATH.
+
+You can swith between the physics engines with the GUI control panel displayed on the top right.
+Between the buttons, the name of the currently displayed world is shown, which should contain the physics
+engine in the name.
+
+
+**Example:**
+
+```multiple_worlds_server worlds/rubble.world bullet ode``
+
+This will load up the rubble world with the bullet and ODE engines. Use the GUI control panel to switch
+between the bullet and ode worlds.
