@@ -7,12 +7,16 @@ Benchmark tests for collision checking and contact
 If you compiled Gazebo from source, don't forget to source ``<your-gazebo-install-path>/share/setup.sh`` to set up the 
 gazebo environment variables. We will in particular need the ``GAZEBO_RESOURCE_PATH``.
 
-If you installed Gazebo with DART support, you may need to enable the cmake flag ``USE_DART`` to avoid
-undefined references to DART:
+Compile:
+```
+cd build
+cmake ..
+make
+make tests
+make install
+```
 
-``cmake -DUSE_DART=true``
-
-Otherwise, compile as usual.
+Make sure the library ``libcollision_benchmark_gui.so`` compiled by this project is in your GAZEBO_PLUGIN_PATH.
 
 ## Simulating multiple parallel worlds
 
@@ -29,34 +33,40 @@ A simple
 
 will include a test that confirms different engines are loaded.
 
-
 There is also a test which can be used to visually confirm that different worlds are loaded
-and gzclient can be switched to display any of these worlds.
+and gzclient can display any of these worlds.
 
 ``multiple_worlds_server_test_simple <number-of-simulation-steps> <list-of-worlds>``
 
 Every ``<number-of-iterations>`` iterations the next loaded world is considered
-the world to be displayed (the "main world") which will be displayed by gzclient. The intention
+the world to be displayed in gzclient. The intention
 of this test is to demonstrate how several worlds can be run, and how it is possible to switch
-between those worlds for displayingin gzclient.
+between those worlds for displaying in gzclient.
 
 You need to start gzclient when prompted to do so. Press [Enter] to continue
 as soon as gzclient is up and running.
 
-**Example**
+**Example 1 with gzclient**
 
 ```
 multiple_worlds_server_test_simple 800 \
     test_worlds/cube_ode.world \
     test_worlds/sphere_bullet.world
 ```
-Load gzclient and then press [Enter] to continue.
+
+Then load gzclient in another terminal:
+
+```
+gzclient
+```
+
+and then press ``[Enter]`` in the first terminal to continue with the test.
 
 After 800 iterations, this should switch from the cube to the sphere.
 
-**Simple example without gzclient**
+**Example 2 without gzclient**
 
-This quick test can be used to confirm that different engines have in fact
+The test can also be used to quickly confirm that different engines have in fact
 been loaded for different worlds.
 
 ```
@@ -65,7 +75,7 @@ multiple_worlds_server_test_simple 1 \
     test_worlds/empty_bullet.world
 ```
 
-Then just press [Enter] without loading gzclient to continue the test.
+Then just press ``[Enter]`` without loading gzclient to continue the test.
 This will update each world once, then switch to the second as the "main" world
 and update each world once again. At each update it should print "ode" and "bullet" as collision engines loaded.
 
