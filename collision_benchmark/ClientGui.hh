@@ -59,6 +59,13 @@ namespace collision_benchmark
     /// \brief Callback triggered upon reception of the mirrored world info
     private: void receiveWorldMsg(ConstAnyPtr &_msg);
 
+    /// changing the name of the label has to be done via a signal/slot
+    /// in order to be handled by the Qt event loop. Connect this signal
+    /// to OnNameChange.
+    signals: void TriggerNameChange(const std::string& n);
+    /// Slot for TriggerNameChange.
+    private slots: void OnNameChange(const std::string& n);
+
     /// \brief Label to display current world name
     private: QLabel * labelName;
 

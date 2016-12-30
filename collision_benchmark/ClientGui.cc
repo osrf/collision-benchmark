@@ -61,6 +61,7 @@ ClientGui::ClientGui()
 
   // Create label to sit in-between buttons ad display world name
   labelName = new QLabel("<...>");
+  connect(this, SIGNAL(TriggerNameChange(const std::string&)), this, SLOT(OnNameChange(const std::string&)));
 
   // Add the buttons to the frame's layout
   switchWorldsLayout->addWidget(buttonPrev);
@@ -95,6 +96,8 @@ ClientGui::ClientGui()
 
   std::cout<<"Waiting for connection to topic "<<SET_TOPIC<<std::endl;
   this->mirrorWorldPub->WaitForConnection();
+  std::cout<<"Received."<<std::endl;
+
   // Send the model to the gazebo server
   gazebo::msgs::Any m;
   m.set_type(gazebo::msgs::Any::INT32);
@@ -111,11 +114,16 @@ void ClientGui::receiveWorldMsg(ConstAnyPtr &_msg)
 {
   // std::cout << "Any msg: "<<_msg->DebugString();
   std::string worldName=_msg->string_value();
-  labelName->setText(worldName.c_str());
+  emit TriggerNameChange(worldName);
+}
+
+void ClientGui::OnNameChange(const std::string& name)
+{
+  std::cout<<"OnNameChange!!!"<<std::endl;
+  labelName->setText(name.c_str());
   QSize totalSize = maxHeightAddWidth(labelName->sizeHint(), minSize, 1.1);
   this->resize(totalSize);
 }
-
 
 /////////////////////////////////////////////////
 void ClientGui::OnButtonNext()

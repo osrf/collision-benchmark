@@ -113,10 +113,9 @@ You can swith between the physics engines with the GUI control panel displayed o
 Between the buttons, the name of the currently displayed world is shown, which should contain the physics
 engine in the name.
 
-
 **Example:**
 
-```multiple_worlds_server worlds/rubble.world bullet ode``
+``multiple_worlds_server worlds/rubble.world bullet ode``
 
 This will load up the rubble world with the bullet and ODE engines. Use the GUI control panel to switch
 between the bullet and ode worlds.

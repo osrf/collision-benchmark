@@ -156,6 +156,7 @@ bool PlayTest(int argc, char **argv)
   {
     int numSteps=1;
     worldManager.Update(numSteps);
+    // gazebo::common::Time::MSleep(100);
   }
   return true;
 }

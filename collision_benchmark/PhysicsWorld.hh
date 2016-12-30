@@ -256,7 +256,6 @@ class PhysicsWorld: public PhysicsWorldBase<typename PhysicsWorldTypes::WorldSta
   public: virtual std::vector<ContactInfoPtr> GetContactInfo(const ModelID& m1, const ModelID& m2) const=0;
 };
 
-
 /**
  * \brief A more engine-specific pure virtual interface of PhysicsWorld which adds a broader access to physics engine functionality
  *

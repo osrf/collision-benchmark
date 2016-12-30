@@ -19,6 +19,7 @@
  * Date: December 2016
  */
 #include <collision_benchmark/GazeboMirrorWorld.hh>
+#include <collision_benchmark/GazeboPhysicsWorld.hh>
 #include <collision_benchmark/GazeboStateCompare.hh>
 #include <collision_benchmark/GazeboWorldState.hh>
 #include <collision_benchmark/GazeboHelpers.hh>
@@ -52,6 +53,17 @@ void GazeboMirrorWorld::ClearModels()
 void GazeboMirrorWorld::Sync()
 {
   assert(originalWorld);
+  /*GazeboPhysicsWorld::Ptr gzOrigWorld = std::dynamic_pointer_cast<GazeboPhysicsWorld>(originalWorld);
+  bool isPaused=false;
+  if (gzOrigWorld)
+  {
+    // set mirror world to paused if the original world is paused too. Only supported for other gazebo worlds.
+    bool isPaused = gzOrigWorld->GetWorld()->IsPaused();
+    std::cout<<"Paused state: "<<gzOrigWorld->GetWorld()->IsPaused()<<std::endl;;
+    mirrorWorld->SetPaused(isPaused);
+  }
+  if (isPaused) return;*/
+
   gazebo::physics::WorldState origState = originalWorld->GetWorldState();
   collision_benchmark::SetWorldState(mirrorWorld, origState);
 #ifdef DEBUG

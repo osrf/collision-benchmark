@@ -73,7 +73,6 @@ void GetNewEntities(const gazebo::physics::WorldState& _state1,
 
 // XXX TODO REMOVE: Flags for testing
 #define FORCE_TARGET_TIME_VALUES
-//#define FORCE_KEEP_TIME_VALUES
 // #define DEBUGWORLDSTATE
 void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr& world, const gazebo::physics::WorldState& targetState)
 {
@@ -176,8 +175,6 @@ void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr& world, const 
   std::cout << "New state after insertions " << std::endl << currentState << std::endl;
 #endif
 
-
-
   //// Step 2: Set the target state
 
   gazebo::physics::WorldState newState = targetState;
@@ -185,21 +182,18 @@ void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr& world, const 
   // Force the new state to use certain iteration/time values
   // in order to maintain consistency within the world
 
-#ifdef FORCE_TARGET_TIME_VALUES
-  // the + operator doesn't add iterations and times
+  // XXX DEBUG THIS: Causes world to be not properly updated
+/*#ifdef FORCE_TARGET_TIME_VALUES
   newState.SetIterations(targetState.GetIterations());
   newState.SetWallTime(targetState.GetWallTime());
   newState.SetRealTime(targetState.GetRealTime());
   newState.SetSimTime(targetState.GetSimTime());
-#endif
-
-#ifdef FORCE_KEEP_TIME_VALUES
-  // the + operator doesn't add iterations and times
+#else
   newState.SetIterations(currentState.GetIterations());
   newState.SetWallTime(currentState.GetWallTime());
   newState.SetRealTime(currentState.GetRealTime());
   newState.SetSimTime(currentState.GetSimTime());
-#endif
+#endif*/
 
   // apply the state of Step 1 to the world
   world->SetState(newState);
