@@ -241,8 +241,8 @@ GazeboPhysicsWorld::WorldPtr GazeboPhysicsWorld::GetWorld() const
 
 GazeboPhysicsWorld::ModelPtr GazeboPhysicsWorld::GetModel(const ModelID& model) const
 {
-  gazebo::physics::ModelPtr m=world->ModelByName(id);
-  return m;
+  gazebo::physics::ModelPtr m=world->ModelByName(model);
+  return collision_benchmark::to_std_ptr<gazebo::physics::Model>(m);
 }
 
 GazeboPhysicsWorld::PhysicsEnginePtr GazeboPhysicsWorld::GetPhysicsEngine() const

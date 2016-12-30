@@ -71,11 +71,11 @@ std::map<std::string,std::string> getPhysicsSettingsSdfFor(const std::vector<std
     if (!supported_engines.count(*eit)) continue;
 
     if (e=="bullet")
-      physics_filenames["bullet"]="../physics_settings/bullet_default.sdf";
+      physics_filenames["bullet"]="physics_settings/bullet_default.sdf";
     else if (e=="dart")
-      physics_filenames["dart"]="../physics_settings/dart_default.sdf";
+      physics_filenames["dart"]="physics_settings/dart_default.sdf";
     else if (e=="ode")
-      physics_filenames["ode"]="../physics_settings/ode_default.sdf";
+      physics_filenames["ode"]="physics_settings/ode_default.sdf";
     else if (e=="simbody")
       // XXX TODO add the empty_simbody.world file
       physics_filenames["simbody"] = "../physics_settings/simbody_default.world";
