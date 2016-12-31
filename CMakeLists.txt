@@ -78,11 +78,11 @@ target_link_libraries(multiple_worlds_test
 add_test(MultipleWorldsTest multiple_worlds_test)
 add_dependencies(tests multiple_worlds_test)
 
-add_executable(interface_tests EXCLUDE_FROM_ALL test/WorldInterface_TEST.cc)
-target_link_libraries(interface_tests
+add_executable(world_interface_test EXCLUDE_FROM_ALL test/WorldInterface_TEST.cc)
+target_link_libraries(world_interface_test
   collision_benchmark ${GTEST_BOTH_LIBRARIES})
-add_test(WorldInterfaceTest interface_tests)
-add_dependencies(tests interface_tests)
+add_test(WorldInterfaceTest world_interface_test)
+add_dependencies(tests world_interface_test)
 
 
 

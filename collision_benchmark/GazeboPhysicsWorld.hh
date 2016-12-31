@@ -14,6 +14,7 @@ struct GazeboPhysicsWorldTypes
 {
   /// ID type used to identify models in the world
   typedef std::string ModelID;
+
   /// ID type to identify individual parts of a model
   typedef std::string ModelPartID;
 

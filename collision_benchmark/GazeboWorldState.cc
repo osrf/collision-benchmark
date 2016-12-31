@@ -25,21 +25,6 @@
 #include <gazebo/physics/physics.hh>
 
 
-/**
- * Helper function which fixes the SDF format in the states description.
- *  adds the <sdf version='1.6'>...</sdf> tags around the strings which have to
- *  be there for compatibility with World::SetState(). The insertions coming
- *  from WorldState::operator- are in a format not compatible with it.
- */
-void fixSDF(std::vector<std::string>& states)
-{
-  for (std::vector<std::string>::iterator it = states.begin(); it != states.end(); ++it)
-  {
-    std::stringstream mod;
-    mod << "<sdf version='1.6'>" << *it << "</sdf>";
-    *it = std::string(mod.str());
-  }
-}
 
 /**
  * Returns new entities which were added in \e state2 when compared to _state1
@@ -70,6 +55,23 @@ void GetNewEntities(const gazebo::physics::WorldState& _state1,
     }
   }
 }
+
+
+void collision_benchmark::fixSDF(std::string& sdf)
+{
+  std::stringstream mod;
+  mod << "<sdf version='1.6'>" << sdf << "</sdf>";
+  sdf = std::string(mod.str());
+}
+
+void collision_benchmark::fixSDF(std::vector<std::string>& sdfs)
+{
+  for (std::vector<std::string>::iterator it = sdfs.begin(); it != sdfs.end(); ++it)
+  {
+    fixSDF(*it);
+  }
+}
+
 
 // XXX TODO REMOVE: Flags for testing
 #define FORCE_TARGET_TIME_VALUES

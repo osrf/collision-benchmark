@@ -24,6 +24,23 @@ namespace collision_benchmark
 {
 
 /**
+ * Helper function which fixes the SDF format in the string, aimed at being part
+ * of the WorldState's <insertions> or <deletions>.
+ * Adds the <sdf version='1.6'>...</sdf> tags around the string. This is required
+ * for compatibility with World::SetState().
+ * Examle where this is required The insertions coming
+ * from WorldState::operator- are in a format not compatible and need to be fixed
+ * with this fucntion..
+ */
+void fixSDF(std::string& sdf);
+
+/**
+ * Calls fixSDF() for all the sdf's
+ */
+void fixSDF(std::vector<std::string>& sdf);
+
+
+/**
  * Sets the \e world to the state \e targetState
  */
 void SetWorldState(gazebo::physics::WorldPtr& world, const gazebo::physics::WorldState& targetState);

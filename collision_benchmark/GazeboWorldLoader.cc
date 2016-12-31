@@ -17,6 +17,7 @@
 
 
 #include <collision_benchmark/GazeboWorldLoader.hh>
+#include <collision_benchmark/GazeboWorldState.hh>
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
 
@@ -85,7 +86,16 @@ sdf::ElementPtr collision_benchmark::GetSDFElementFromFile(const std::string& fi
   }
 
   // Find the file.
-  std::string fullFile = gazebo::common::find_file(filename);
+  std::string fullFile;
+  try
+  {
+   fullFile = gazebo::common::find_file(filename);
+  }
+  catch (gazebo::common::Exception& e)
+  {
+    std::cerr << "File "<<filename<<" not found. " << e.GetErrorStr() << std::endl;
+    return sdf::ElementPtr();
+  }
 
   if (fullFile.empty())
   {
@@ -93,7 +103,15 @@ sdf::ElementPtr collision_benchmark::GetSDFElementFromFile(const std::string& fi
     return sdfRoot;
   }
 
-  if (!sdf::readFile(fullFile, sdf))
+  try
+  {
+    if (!sdf::readFile(fullFile, sdf))
+    {
+      std::cerr << "Unable to read sdf file[" << filename << "]\n";
+      return sdfRoot;
+    }
+  }
+  catch (...)
   {
     std::cerr << "Unable to read sdf file[" << filename << "]\n";
     return sdfRoot;
@@ -187,6 +205,13 @@ sdf::ElementPtr collision_benchmark::GetPhysicsFromSDF(const std::string& filena
 
 gazebo::physics::WorldPtr collision_benchmark::LoadWorldFromSDF(const sdf::ElementPtr& sdfRoot, const std::string& name)
 {
+  if (sdfRoot->GetName() != "world")
+  {
+    std::cerr<<"SDF must be a 'world' element"<<std::endl;
+    std::cerr<<sdfRoot->ToString("")<<std::endl;
+    return gazebo::physics::WorldPtr();
+  }
+
   gazebo::physics::WorldPtr world;
   try
   {
@@ -230,9 +255,10 @@ gazebo::physics::ModelPtr collision_benchmark::LoadModelFromSDF(const sdf::Eleme
 {
   GZ_ASSERT(world, "Can't load a model without a world");
 
-  if (!sdfRoot->HasElement("model"))
+  if (sdfRoot->GetName() != "model")
   {
-    std::cerr<<"SDF must have a 'model' element"<<std::endl;
+    std::cerr<<"SDF must be a 'model' element"<<std::endl;
+    std::cerr<<sdfRoot->ToString("")<<std::endl;
     return gazebo::physics::ModelPtr();
   }
 
@@ -262,9 +288,12 @@ gazebo::physics::ModelPtr collision_benchmark::LoadModelFromSDF(const sdf::Eleme
   tempState.SetWallTime(wstate.GetWallTime());
   tempState.SetIterations(wstate.GetIterations());
 
+  std::string ins=sdfRoot->ToString("");
+  // the SDF has to be fixed up, otherwise gazebo::physics::World::SetState is not successful
+  collision_benchmark::fixSDF(ins);
+
   std::vector<std::string> insertions;
-  insertions.push_back(sdfRoot->ToString(""));
-  std::cout<<"TEST"<<std::endl<<sdfRoot->ToString("");
+  insertions.push_back(ins);
   tempState.SetInsertions(insertions);
 
   world->SetState(tempState);

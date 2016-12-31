@@ -22,7 +22,7 @@
         <collision name="sphere_collision">
           <geometry>
             <sphere>
-              <radius>0.001</radius>
+              <radius>0.1</radius>
             </sphere>
           </geometry>
         </collision>

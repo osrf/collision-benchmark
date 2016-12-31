@@ -116,7 +116,17 @@ GazeboPhysicsWorld::ModelLoadResult GazeboPhysicsWorld::AddModelFromString(const
 
 GazeboPhysicsWorld::ModelLoadResult GazeboPhysicsWorld::AddModelFromSDF(const sdf::ElementPtr& sdf, const std::string& modelname)
 {
-  throw new gazebo::common::Exception(__FILE__,__LINE__,"Implement me");
+  gazebo::physics::ModelPtr model = collision_benchmark::LoadModelFromSDF(sdf, world, modelname);
+  ModelLoadResult ret;
+  if (!model)
+  {
+    ret.opResult=FAILED;
+    return ret;
+  }
+  ret.opResult=SUCCESS;
+  ret.modelID=model->GetName();
+  // WorldState s(world); std::cout<<"World state: "<<s<<std::endl;
+  return ret;
 }
 
 bool GazeboPhysicsWorld::SupportsShapes() const

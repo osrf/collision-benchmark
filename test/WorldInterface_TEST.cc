@@ -36,7 +36,9 @@ TEST_F(WorldInterfaceTest, TransferWorldState)
   GzPhysicsWorldBase::Ptr world1(gzWorld1);
   GzPhysicsWorldBase::Ptr world2(gzWorld2);
 
-  for (int i=0; i<2000; ++i)
+  int numIters=1000;
+  std::cout<<"Doing "<<numIters<<" iterations on the rubble world and set the second world to the same state"<<std::endl;
+  for (int i=0; i<numIters; ++i)
   {
     gazebo::physics::WorldState target=world2->GetWorldState(); // get the rubble world
     ASSERT_EQ(world1->SetWorldState(target, false), GzPhysicsWorldBase::SUCCESS) << " Could not set world state";
@@ -61,8 +63,11 @@ TEST_F(WorldInterfaceTest, WorldManager)
 
   std::cout << "Loading world " << worldfile << " with "<<physicsEngines.size()<<" engines."<<std::endl;
 
-  typedef WorldManager<gazebo::physics::WorldState> GzWorldManager;
+  typedef gazebo::physics::WorldState GzWorldState;
+  typedef WorldManager<GzWorldState> GzWorldManager;
+  typedef GzWorldManager::PhysicsWorldBasePtr PhysicsWorldBasePtr;
 
+  // create one world per physics engine and load it with the cube world, and add it to the world manager
   GzWorldManager worldManager;
   int i=1;
   for (std::map<std::string,std::string>::iterator it = physicsEngines.begin(); it!=physicsEngines.end(); ++it, ++i)
@@ -92,9 +97,54 @@ TEST_F(WorldInterfaceTest, WorldManager)
     worldManager.AddPhysicsWorld(gzPhysicsWorld);
   }
 
+  std::vector<PhysicsWorldBasePtr> allWorlds = worldManager.GetPhysicsWorlds();
+  ASSERT_EQ(allWorlds.size(), physicsEngines.size()) << "As many worlds as physics engines should have been loaded";
 
+  // All worlds should have a cube named "box", and only two models (ground and cube).
+  for (std::vector<PhysicsWorldBasePtr>::iterator wit=allWorlds.begin(); wit!=allWorlds.end(); ++wit)
+  {
+    PhysicsWorldBasePtr world=*wit;
+    GzWorldState state = world->GetWorldState();
+    ASSERT_EQ(state.GetModelStates().size(), 2) <<"World "<<world->GetName()<<" should have only two models.";
+    ASSERT_NE(state.HasModelState("box"), false) << "World "<<world->GetName()<<" has no model named 'box'";
+  }
 }
 
+
+TEST_F(WorldInterfaceTest, ModelLoading)
+{
+  std::string worldfile = "../test_worlds/cube.world";
+
+  std::cout << "Loading world " << worldfile << std::endl;
+
+  typedef gazebo::physics::WorldState GzWorldState;
+  typedef WorldManager<GzWorldState> GzWorldManager;
+  typedef GzWorldManager::PhysicsWorldBasePtr PhysicsWorldBasePtr;
+  typedef PhysicsWorld<collision_benchmark::GazeboPhysicsWorldTypes> GzPhysicsWorld;
+
+  // create one world per physics engine and load it with the cube world, and add it to the world manager
+  GzPhysicsWorld::Ptr world (new GazeboPhysicsWorld());
+  world->LoadFromFile(worldfile);
+
+  ASSERT_NE(world.get(), nullptr) <<"Error loading world "<<worldfile<<std::endl;
+
+  // Now load an extra sphere to the worlds to test the PhysicsWorld::AddModel* functions
+  std::string forcedModelName = "test-sphere";
+  sdf::ElementPtr sdfRoot = collision_benchmark::GetSDFElementFromFile("../test_worlds/sphere.sdf", "model", forcedModelName);
+  ASSERT_NE(sdfRoot.get(), nullptr) << " Could not get SDF for sphere";
+
+  GzPhysicsWorld::ModelLoadResult res = world->AddModelFromSDF(sdfRoot);
+  ASSERT_EQ(res.opResult, GzPhysicsWorld::SUCCESS) << " Could not add extra model to world";
+  ASSERT_EQ(res.modelID, forcedModelName) << " Model name must have been forced to "<<forcedModelName<<" but is "<<res.modelID;
+
+  /*std::cout<<"Now you can view it with gzclient. Press any key to start the world."<<std::endl;
+  getchar();
+  while(true)
+  {
+    int numSteps=1;
+    world->Update(numSteps);
+  }*/
+}
 
 
 int main(int argc, char**argv)

@@ -188,7 +188,7 @@ class PhysicsWorld: public PhysicsWorldBase<typename PhysicsWorldTypes::WorldSta
   /// \retval FAILED Loading failed for any other reason
   public: virtual OpResult LoadFromFile(const std::string& filename, const std::string& worldname="")=0;
 
-  /// Loads a world from a string \e str. The format of the file has to be
+  /// Loads a world from a string \e str. The format of the string has to be
   /// supported by the implementation.
   /// \param worldname set to non-empty string to override world name given in the string
   /// \retval NOT_SUPPORTED the format of the string, or the world specified within is not supported
@@ -203,7 +203,8 @@ class PhysicsWorld: public PhysicsWorldBase<typename PhysicsWorldTypes::WorldSta
   /// \retval FAILED Loading failed for any other reason
   public: virtual ModelLoadResult AddModelFromFile(const std::string& filename, const std::string& modelname="")=0;
 
-  /// Loads a model from a string and adds it to the world
+  /// Loads a model from a string and adds it to the world. The format of the string
+  /// must be supported by the implementation.
   /// To subsequently set the pose of the model, use SetWorldState(),
   /// or specific methods of the subclass implementation.
   /// \param modelname set to non-empty string to override world name given in string

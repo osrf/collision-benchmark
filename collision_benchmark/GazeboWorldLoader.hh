@@ -25,17 +25,17 @@ namespace collision_benchmark
 
 /// returns the SDF root of the element with name \e elemName, reading it from a file,
 /// and replaces the name with \e name (if not empty)
-/// The element name must be at the root of the SDF, only the first occurence is returned.
+/// The element name \e elemName must be at the root of the SDF. Only the first occurence is returned.
 sdf::ElementPtr GetSDFElementFromFile(const std::string& filename,
                                       const std::string& elemName,
-                                      const std::string& name);
+                                      const std::string& name="");
 
 /// returns the SDF root of the element with name \e elemName, reading it from an xml string \e xmlString,
 /// and replaces the name with \e name (if not empty)
-/// The element name must be at the root of the SDF, only the first occurence is returned.
+/// The element name \e elemName must be at the root of the SDF. Only the first occurence is returned.
 sdf::ElementPtr GetSDFElementFromString(const std::string& xmlString,
                                         const std::string& elemName,
-                                        const std::string& name);
+                                        const std::string& name="");
 
 /// loads a world given a SDF element
 /// \param name if not empty string, then this name is used to override the name in \e sdfRoot, which will
