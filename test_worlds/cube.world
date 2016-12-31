@@ -1,7 +1,10 @@
 <?xml version="1.0" ?>
 <sdf version="1.5">
-  <world name="cube_world">
+  <world name="ode_cube_world">
   
+    <physics type='bullet'>
+    </physics>
+
     <model name="box">
       <pose>0 0 3.0 0 0 0</pose>
       <link name="link">
@@ -18,6 +21,9 @@
               <size>1 1 1</size>
             </box>
           </geometry>
+          <material>
+            <script>Gazebo/WoodPallet</script>
+          </material>
         </visual>
       </link>
     </model>

@@ -67,13 +67,9 @@ class WorldManager
     ///    need to be set to any world yet, will automatically be set to mirror the first world added with
     ///    AddPhysicsWorld.
     public:  WorldManager(const MirrorWorldPtr& _mirrorWorld=MirrorWorldPtr()):
-               node(new gazebo::transport::Node()),
-               mirrorWorld(_mirrorWorld),
                mirroredWorldIdx(-1)
              {
-               node->Init();
-               ctrlClientSubscriber = node->Subscribe("mirror_world/set_world", &Self::crtlClientCallback, this);
-               ctrlClientPublisher  = node->Advertise<gazebo::msgs::Any>("mirror_world/get_world");
+               SetMirrorWorld(_mirrorWorld);
              }
 
     public:  ~WorldManager() {}
@@ -84,12 +80,30 @@ class WorldManager
     ///    AddPhysicsWorld.
     public: void SetMirrorWorld(const MirrorWorldPtr& _mirrorWorld)
             {
+              if (!_mirrorWorld)
+              {
+                if (mirrorWorld)
+                {
+                  mirrorWorld.reset();
+                  ctrlClientSubscriber.reset();
+                  ctrlClientPublisher.reset();
+                }
+                mirroredWorldIdx=-1;
+                return;
+              }
               mirrorWorld=_mirrorWorld;
               if (!worlds.empty())
               {
                 mirrorWorld->SetOriginalWorld(worlds.front());
                 mirroredWorldIdx=0;
               }
+              if (!node)
+              {
+                node.reset(new gazebo::transport::Node());
+                node->Init();
+              }
+              if (!ctrlClientSubscriber) ctrlClientSubscriber = node->Subscribe("mirror_world/set_world", &Self::crtlClientCallback, this);
+              if (!ctrlClientPublisher) ctrlClientPublisher  = node->Advertise<gazebo::msgs::Any>("mirror_world/get_world");
             }
 
     /// Adds this world and returns the index this world can be accessed at

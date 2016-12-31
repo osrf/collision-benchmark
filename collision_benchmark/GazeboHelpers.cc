@@ -52,4 +52,33 @@ std::set<std::string> collision_benchmark::GetSupportedPhysicsEngines()
   return engines;
 }
 
+std::map<std::string,std::string> collision_benchmark::getPhysicsSettingsSdfFor(const std::vector<std::string>& engines)
+{
+  std::map<std::string, std::string> physics_filenames;
+  std::set<std::string> supported_engines=collision_benchmark::GetSupportedPhysicsEngines();
+
+  for (std::vector<std::string>::const_iterator eit=engines.begin(); eit!=engines.end(); ++eit)
+  {
+    std::string e=*eit;
+    if (!supported_engines.count(*eit)) continue;
+
+    if (e=="bullet")
+      physics_filenames["bullet"]="physics_settings/bullet_default.sdf";
+    else if (e=="dart")
+      physics_filenames["dart"]="physics_settings/dart_default.sdf";
+    else if (e=="ode")
+      physics_filenames["ode"]="physics_settings/ode_default.sdf";
+    else if (e=="simbody")
+      // XXX TODO add the empty_simbody.world file
+      physics_filenames["simbody"] = "../physics_settings/simbody_default.world";
+  }
+  return physics_filenames;
+}
+
+std::map<std::string,std::string> collision_benchmark::getPhysicsSettingsSdfForAllEngines()
+{
+  std::set<std::string> enginesSet = collision_benchmark::GetSupportedPhysicsEngines();
+  std::vector<std::string> enginesVector(enginesSet.begin(),enginesSet.end());
+  return getPhysicsSettingsSdfFor(enginesVector);
+}
 

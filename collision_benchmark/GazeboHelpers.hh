@@ -19,6 +19,8 @@
 
 #include <gazebo/physics/World.hh>
 #include <set>
+#include <map>
+#include <vector>
 
 namespace collision_benchmark
 {
@@ -34,6 +36,20 @@ void ClearModels(gazebo::physics::WorldPtr& world);
  */
 std::set<std::string> GetSupportedPhysicsEngines();
 
+/**
+ * Returns a table with the filenames to use for each of the supported physcis engines.
+ * Only supported engines are returned. Key of the returned map is the engine name as
+ * given in \e engines, value is the path to the SDF file with the physics settings.
+ *
+ * Requirement is that the physics_settings directory is in the GAZEBO_RESOURCE_PATH
+ * \param engines can contain "ode", "bullet", "dart", "simbody"
+ */
+std::map<std::string,std::string> getPhysicsSettingsSdfFor(const std::vector<std::string>& engines);
+
+/**
+ * Calls getPhysicsSettingsSdfFor() with all supported engines as returned from GetSupportedPhysicsEngines().
+ */
+std::map<std::string,std::string> getPhysicsSettingsSdfForAllEngines();
 
 }  // namespace
 

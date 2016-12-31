@@ -70,7 +70,9 @@ bool collision_benchmark::WaitForNamespace(std::string worldNamespace, float max
   return found;
 }
 
-sdf::ElementPtr collision_benchmark::GetSDFWorldFromFile(const std::string& filename, const std::string& name)
+sdf::ElementPtr collision_benchmark::GetSDFElementFromFile(const std::string& filename,
+                                                           const std::string& elemName,
+                                                           const std::string& name)
 {
   sdf::ElementPtr sdfRoot;
 
@@ -97,19 +99,21 @@ sdf::ElementPtr collision_benchmark::GetSDFWorldFromFile(const std::string& file
     return sdfRoot;
   }
 
-  sdfRoot = sdf->Root()->GetElement("world");
+  sdfRoot = sdf->Root()->GetElement(elemName);
 
   if (!name.empty())
   {
-    sdf::ParamPtr sdfWorldName = sdfRoot->GetAttribute("name");
-    std::cout << "Replacing world name: '" << sdfWorldName->GetAsString() << "' with '" << name << "'" << std::endl;
-    sdfWorldName->SetFromString(name);
+    sdf::ParamPtr sdfElemName = sdfRoot->GetAttribute("name");
+    std::cout << "Replacing world name: '" << sdfElemName->GetAsString() << "' with '" << name << "'" << std::endl;
+    sdfElemName->SetFromString(name);
   }
 
   return sdfRoot;
 }
 
-sdf::ElementPtr collision_benchmark::GetSDFWorldFromString(const std::string& xmlString, const std::string& name)
+sdf::ElementPtr collision_benchmark::GetSDFElementFromString(const std::string& xmlString,
+                                                             const std::string& elemName,
+                                                             const std::string& name)
 {
   sdf::ElementPtr sdfRoot;
 
@@ -127,13 +131,13 @@ sdf::ElementPtr collision_benchmark::GetSDFWorldFromString(const std::string& xm
     return sdfRoot;
   }
 
-  sdfRoot = sdf->Root()->GetElement("world");
+  sdfRoot = sdf->Root()->GetElement(elemName);
 
   if (!name.empty())
   {
-    sdf::ParamPtr sdfWorldName = sdfRoot->GetAttribute("name");
-    std::cout << "Replacing world name: '" << sdfWorldName->GetAsString() << "' with '" << name << "'" << std::endl;
-    sdfWorldName->SetFromString(name);
+    sdf::ParamPtr sdfElemName = sdfRoot->GetAttribute("name");
+    std::cout << "Replacing world name: '" << sdfElemName->GetAsString() << "' with '" << name << "'" << std::endl;
+    sdfElemName->SetFromString(name);
   }
 
   return sdfRoot;
@@ -220,6 +224,76 @@ gazebo::physics::WorldPtr collision_benchmark::LoadWorldFromSDF(const sdf::Eleme
   return world;
 }
 
+gazebo::physics::ModelPtr collision_benchmark::LoadModelFromSDF(const sdf::ElementPtr& sdfRoot,
+                                                                const gazebo::physics::WorldPtr& world,
+                                                                const std::string& name)
+{
+  GZ_ASSERT(world, "Can't load a model without a world");
+
+  if (!sdfRoot->HasElement("model"))
+  {
+    std::cerr<<"SDF must have a 'model' element"<<std::endl;
+    return gazebo::physics::ModelPtr();
+  }
+
+  sdf::ParamPtr sdfModelName = sdfRoot->GetAttribute("name");
+  std::string modelName = sdfModelName->GetAsString();
+
+  // first, fix up the name in the SDF
+  if (!name.empty())
+  {
+    if (modelName != name)
+    {
+      std::cout << "INFO: Replacing name in SDF: '" << sdfModelName->GetAsString() << "' with '" << name << "'" << std::endl;
+      sdfModelName->SetFromString(name);
+      modelName = name;
+    }
+  }
+
+  // load the model
+  bool pausedState=world->IsPaused();
+  world->SetPaused(true);
+
+  // The current interface of the world only allows addition of models via SetState() in the insertions.
+  gazebo::physics::WorldState wstate(world); // get current state as we need the time values
+  gazebo::physics::WorldState tempState;
+  tempState.SetSimTime(wstate.GetSimTime());
+  tempState.SetRealTime(wstate.GetRealTime());
+  tempState.SetWallTime(wstate.GetWallTime());
+  tempState.SetIterations(wstate.GetIterations());
+
+  std::vector<std::string> insertions;
+  insertions.push_back(sdfRoot->ToString(""));
+  std::cout<<"TEST"<<std::endl<<sdfRoot->ToString("");
+  tempState.SetInsertions(insertions);
+
+  world->SetState(tempState);
+
+  gazebo::physics::ModelPtr m = world->ModelByName(modelName);
+  if (!m)
+  {
+    std::cerr<<"Could not load model "<<modelName<<std::endl;
+  }
+
+  world->SetPaused(pausedState);
+
+  return m;
+}
+
+gazebo::physics::ModelPtr collision_benchmark::LoadModelFromSDFString(const std::string& sdfString,
+                                                                      const gazebo::physics::WorldPtr& world,
+                                                                      const std::string& name)
+{
+  GZ_ASSERT(world, "Can't load a model without a world");
+
+  sdf::ElementPtr sdfRoot = collision_benchmark::GetSDFElementFromString(sdfString, "model", name);
+  if (!sdfRoot)
+  {
+    std::cerr<<"SDF has no tag named 'model' in the root"<<std::endl;
+  }
+  return LoadModelFromSDF(sdfRoot, world, name);
+}
+
 // Helper function which interprets the string \e str as file if \e isFile is true,
 // and as xml string  otherwise
 gazebo::physics::WorldPtr LoadWorld_helper(const std::string &str,
@@ -231,8 +305,8 @@ gazebo::physics::WorldPtr LoadWorld_helper(const std::string &str,
   sdf::ElementPtr sdfRoot;
   try
   {
-    if (isFile) sdfRoot = collision_benchmark::GetSDFWorldFromFile(str, name);
-    else sdfRoot = collision_benchmark::GetSDFWorldFromString(str, name);
+    if (isFile) sdfRoot = collision_benchmark::GetSDFElementFromFile(str, "world", name);
+    else sdfRoot = collision_benchmark::GetSDFElementFromString(str, "world", name);
   }
   catch (gazebo::common::Exception& e)
   {

@@ -56,33 +56,6 @@ GazeboMirrorWorld::Ptr setupMirrorWorld()
     return mirrorWorld;
 }
 
-// returns a table with the filenames to use for each of the physcis engines. Only supported
-// engines are returned. Key of the returned map is the engine name as given in \e engines,
-// value is the path to the SDF file with the physics settings
-// \param engines can contain "ode", "bullet", "dart", "simbody"
-std::map<std::string,std::string> getPhysicsSettingsSdfFor(const std::vector<std::string>& engines)
-{
-  std::map<std::string, std::string> physics_filenames;
-  std::set<std::string> supported_engines=collision_benchmark::GetSupportedPhysicsEngines();
-
-  for (std::vector<std::string>::const_iterator eit=engines.begin(); eit!=engines.end(); ++eit)
-  {
-    std::string e=*eit;
-    if (!supported_engines.count(*eit)) continue;
-
-    if (e=="bullet")
-      physics_filenames["bullet"]="physics_settings/bullet_default.sdf";
-    else if (e=="dart")
-      physics_filenames["dart"]="physics_settings/dart_default.sdf";
-    else if (e=="ode")
-      physics_filenames["ode"]="physics_settings/ode_default.sdf";
-    else if (e=="simbody")
-      // XXX TODO add the empty_simbody.world file
-      physics_filenames["simbody"] = "../physics_settings/simbody_default.world";
-  }
-  return physics_filenames;
-}
-
 // Main method to play the test, later to be replaced by a dedicated structure (without command line arument params)
 bool PlayTest(int argc, char **argv)
 {
@@ -109,7 +82,7 @@ bool PlayTest(int argc, char **argv)
   for (int i = 2; i < argc; ++i)
     selectedEngines.push_back(argv[i]);
 
-  std::map<std::string,std::string> physicsEngines = getPhysicsSettingsSdfFor(selectedEngines);
+  std::map<std::string,std::string> physicsEngines = collision_benchmark::getPhysicsSettingsSdfFor(selectedEngines);
 
   std::cout << "Loading world " << worldfile << " with "<<physicsEngines.size()<<" engines."<<std::endl;
 
