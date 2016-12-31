@@ -20,10 +20,10 @@
  */
 
 #include <collision_benchmark/GazeboWorldState.hh>
+#include <collision_benchmark/GazeboHelpers.hh>
 
 #include <gazebo/common/common.hh>
 #include <gazebo/physics/physics.hh>
-
 
 
 /**
@@ -53,22 +53,6 @@ void GetNewEntities(const gazebo::physics::WorldState& _state1,
     {
       lights.push_back(light.second);
     }
-  }
-}
-
-
-void collision_benchmark::fixSDF(std::string& sdf)
-{
-  std::stringstream mod;
-  mod << "<sdf version='1.6'>" << sdf << "</sdf>";
-  sdf = std::string(mod.str());
-}
-
-void collision_benchmark::fixSDF(std::vector<std::string>& sdfs)
-{
-  for (std::vector<std::string>::iterator it = sdfs.begin(); it != sdfs.end(); ++it)
-  {
-    fixSDF(*it);
   }
 }
 
@@ -121,11 +105,11 @@ void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr& world, const 
   ///// Step 1: Handle insertions (requires fixing of SDF)
   gazebo::physics::WorldState modelChangeState = currentState;
   std::vector<std::string> insertions = diffState.Insertions();
-  fixSDF(insertions);
+  wrapSDF(insertions);
   modelChangeState.SetInsertions(insertions);
   std::vector<std::string> deletions = diffState.Deletions();
   modelChangeState.SetDeletions(deletions);
-  fixSDF(deletions);
+  wrapSDF(deletions);
 
   // apply the state of Step 1 to the world
   world->SetState(modelChangeState);

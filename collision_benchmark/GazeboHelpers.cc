@@ -4,7 +4,9 @@
 
 #include <gazebo/gazebo_config.h>
 
+#include <tinyxml.h>
 
+/////////////////////////////////////////////////
 void collision_benchmark::ClearModels(gazebo::physics::WorldPtr& world)
 {
   bool pauseState = world->IsPaused();
@@ -21,6 +23,7 @@ void collision_benchmark::ClearModels(gazebo::physics::WorldPtr& world)
 
 
 
+/////////////////////////////////////////////////
 std::set<std::string> collision_benchmark::GetSupportedPhysicsEngines()
 {
   std::set<std::string> engines;
@@ -52,6 +55,7 @@ std::set<std::string> collision_benchmark::GetSupportedPhysicsEngines()
   return engines;
 }
 
+/////////////////////////////////////////////////
 std::map<std::string,std::string> collision_benchmark::getPhysicsSettingsSdfFor(const std::vector<std::string>& engines)
 {
   std::map<std::string, std::string> physics_filenames;
@@ -75,10 +79,95 @@ std::map<std::string,std::string> collision_benchmark::getPhysicsSettingsSdfFor(
   return physics_filenames;
 }
 
+/////////////////////////////////////////////////
 std::map<std::string,std::string> collision_benchmark::getPhysicsSettingsSdfForAllEngines()
 {
   std::set<std::string> enginesSet = collision_benchmark::GetSupportedPhysicsEngines();
   std::vector<std::string> enginesVector(enginesSet.begin(),enginesSet.end());
   return getPhysicsSettingsSdfFor(enginesVector);
 }
+
+
+
+/////////////////////////////////////////////////
+int collision_benchmark::isProperSDFFile(const std::string& filename, std::string * version)
+{
+  TiXmlDocument xmlDoc;
+  if (!xmlDoc.LoadFile(filename))
+  {
+    // std::cout<<"Could not read file "<<filename<<" so cannot check if SDF needs conversion"<<std::endl;
+    return -3;
+  }
+
+  TiXmlElement *elem = xmlDoc.FirstChildElement("sdf");
+  if (!elem)
+  {
+    // std::cout<<"No outer SDF tag"<<std::endl;
+    return -2;
+  }
+
+  if (!elem->Attribute("version"))
+  {
+    // std::cout<< "SDF Tag has no SDF version"<<std::endl;
+    return -1;
+  }
+
+  if (version)
+  {
+    *version = elem->Attribute("version");
+    // std::cout<<"SDF version "<<*version<<std::endl;
+  }
+
+  return 0;
+}
+
+/////////////////////////////////////////////////
+int collision_benchmark::isProperSDFString(const std::string& string, std::string * version)
+{
+  TiXmlDocument xmlDoc;
+  xmlDoc.Parse(string.c_str());
+  if (xmlDoc.Error())
+  {
+    //std::cout<<"Could not read SDF, so cannot check if SDF needs conversion"<<std::endl;
+    return -3;
+  }
+
+  TiXmlElement *elem = xmlDoc.FirstChildElement("sdf");
+  if (!elem)
+  {
+    //std::cout<<"No outer SDF tag"<<std::endl;
+    return -2;
+  }
+
+  if (!elem->Attribute("version"))
+  {
+    //std::cout<< "SDF Tag has no SDF version"<<std::endl;
+    return -1;
+  }
+
+  if (version)
+  {
+    *version = elem->Attribute("version");
+    // std::cout<<"SDF version "<<*version<<std::endl;
+  }
+
+  return 0;
+}
+
+
+void collision_benchmark::wrapSDF(std::string& sdf)
+{
+  std::stringstream mod;
+  mod << "<sdf version='1.6'>" << sdf << "</sdf>";
+  sdf = std::string(mod.str());
+}
+
+void collision_benchmark::wrapSDF(std::vector<std::string>& sdfs)
+{
+  for (std::vector<std::string>::iterator it = sdfs.begin(); it != sdfs.end(); ++it)
+  {
+    wrapSDF(*it);
+  }
+}
+
 

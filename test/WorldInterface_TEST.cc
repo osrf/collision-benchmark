@@ -128,14 +128,45 @@ TEST_F(WorldInterfaceTest, ModelLoading)
 
   ASSERT_NE(world.get(), nullptr) <<"Error loading world "<<worldfile<<std::endl;
 
+  // by now, the world should only have two models: the cube and the ground
+  GzWorldState state = world->GetWorldState();
+  ASSERT_EQ(state.GetModelStates().size(), 2) <<"World "<<world->GetName()<<" should have only two models.";
+
   // Now load an extra sphere to the worlds to test the PhysicsWorld::AddModel* functions
   std::string forcedModelName = "test-sphere";
-  sdf::ElementPtr sdfRoot = collision_benchmark::GetSDFElementFromFile("../test_worlds/sphere.sdf", "model", forcedModelName);
-  ASSERT_NE(sdfRoot.get(), nullptr) << " Could not get SDF for sphere";
-
-  GzPhysicsWorld::ModelLoadResult res = world->AddModelFromSDF(sdfRoot);
+  GzPhysicsWorld::ModelLoadResult res = world->AddModelFromFile("../test_worlds/sphere.sdf",forcedModelName);
   ASSERT_EQ(res.opResult, GzPhysicsWorld::SUCCESS) << " Could not add extra model to world";
   ASSERT_EQ(res.modelID, forcedModelName) << " Model name must have been forced to "<<forcedModelName<<" but is "<<res.modelID;
+  state = world->GetWorldState();
+  ASSERT_EQ(state.GetModelStates().size(), 3) <<"World "<<world->GetName()<<" should have 3 models.";
+
+  // Add another model via the String load function
+  std::string sdfStr("\
+    <model name='box'>\
+      <pose>0 0 2.0 0 0 0</pose>\
+      <link name='link'>\
+        <collision name='cube_collision'>\
+          <geometry>\
+            <box>\
+              <size>0.5 0.5 0.5</size>\
+            </box>\
+          </geometry>\
+        </collision>\
+        <visual name='cube_visual'>\
+          <geometry>\
+            <box>\
+              <size>0.5 0.5 0.5</size>\
+            </box>\
+          </geometry>\
+        </visual>\
+      </link>\
+    </model>");
+  std::string forcedModelName2 = "test-cube";
+  GzPhysicsWorld::ModelLoadResult res2 = world->AddModelFromString(sdfStr,forcedModelName2);
+  ASSERT_EQ(res2.opResult, GzPhysicsWorld::SUCCESS) << " Could not add extra model to world";
+  ASSERT_EQ(res2.modelID, forcedModelName2) << " Model name must have been forced to "<<forcedModelName2<<" but is "<<res2.modelID;
+  state = world->GetWorldState();
+  ASSERT_EQ(state.GetModelStates().size(), 4) <<"World "<<world->GetName()<<" should have 4 models.";
 
   /*std::cout<<"Now you can view it with gzclient. Press any key to start the world."<<std::endl;
   getchar();

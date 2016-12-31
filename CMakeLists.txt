@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
-find_package(gazebo 8.0 REQUIRED)
-
-
 # Qt required for GUI plugin
 find_package (Qt4)
 #find_package(Protobuf REQUIRED)
@@ -10,6 +7,7 @@ include (${QT_USE_FILE})
 add_definitions(${QT_DEFINITIONS})
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
+
 
 set(collision_benchmark_HEADERS
   collision_benchmark/boost_std_conversion.hh
@@ -42,9 +40,18 @@ add_library(collision_benchmark_gui SHARED
   collision_benchmark/ClientGui.cc
 )
 
+# Search for dependencies
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/SearchForStuff.cmake)
 
-include_directories(${PROJECT_SOURCE_DIR} ${GAZEBO_INCLUDE_DIRS} ${DART_INCLUDE_DIRS})
-link_directories(${GAZEBO_LIBRARY_DIRS})
+# expand the dependencies_* variables for the include directories and libraries
+set(dependencies_INCLUDE_DIRS
+  ${dependencies_INCLUDE_DIRS}
+  ${PROJECT_SOURCE_DIR})
+
+include_directories(${dependencies_INCLUDE_DIRS})
+link_directories(${dependencies_LIBRARY_DIRS})
+
 list(APPEND CMAKE_CXX_FLAGS "${GAZEBO_CXX_FLAGS}")
 
 add_custom_target(tests)
@@ -56,13 +63,11 @@ add_executable(multiple_worlds_server_test_simple
   collision_benchmark/multiple_worlds_server_test_simple.cc)
 
 target_link_libraries(collision_benchmark
-  ${GAZEBO_LIBRARIES}
-  ${DART_LIBRARIES})
+  ${dependencies_LIBRARIES})
 
 target_link_libraries(collision_benchmark_gui
-  ${QT_LIBRARIES}
-  ${GAZEBO_LIBRARIES}
-  ${DART_LIBRARIES})
+  ${dependencies_LIBRARIES}
+  ${QT_LIBRARIES})
 
 target_link_libraries(multiple_worlds_server_test_simple collision_benchmark)
 target_link_libraries(multiple_worlds_server collision_benchmark)

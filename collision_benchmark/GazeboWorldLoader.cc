@@ -18,6 +18,7 @@
 
 #include <collision_benchmark/GazeboWorldLoader.hh>
 #include <collision_benchmark/GazeboWorldState.hh>
+#include <collision_benchmark/GazeboHelpers.hh>
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
 
@@ -290,7 +291,7 @@ gazebo::physics::ModelPtr collision_benchmark::LoadModelFromSDF(const sdf::Eleme
 
   std::string ins=sdfRoot->ToString("");
   // the SDF has to be fixed up, otherwise gazebo::physics::World::SetState is not successful
-  collision_benchmark::fixSDF(ins);
+  collision_benchmark::wrapSDF(ins);
 
   std::vector<std::string> insertions;
   insertions.push_back(ins);

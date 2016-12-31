@@ -106,12 +106,50 @@ GazeboPhysicsWorld::OpResult GazeboPhysicsWorld::LoadFromString(const std::strin
 
 GazeboPhysicsWorld::ModelLoadResult GazeboPhysicsWorld::AddModelFromFile(const std::string& filename, const std::string& modelname)
 {
-  throw new gazebo::common::Exception(__FILE__,__LINE__,"Implement me");
+  sdf::ElementPtr sdfRoot = collision_benchmark::GetSDFElementFromFile(filename, "model", modelname);
+  ModelLoadResult ret;
+  ret.opResult=FAILED;
+  if (!sdfRoot)
+  {
+    std::cerr<< " Could not get SDF for model in "<<filename<<std::endl;
+    return ret;
+  }
+
+  ret = AddModelFromSDF(sdfRoot);
+  return ret;
 }
 
 GazeboPhysicsWorld::ModelLoadResult GazeboPhysicsWorld::AddModelFromString(const std::string& str, const std::string& modelname)
 {
-  throw new gazebo::common::Exception(__FILE__,__LINE__,"Implement me");
+  ModelLoadResult ret;
+  ret.opResult=FAILED;
+
+  std::string useStr=str;
+  int checkSDF=collision_benchmark::isProperSDFString(useStr);
+  if (checkSDF<0)
+  {
+    if (checkSDF==-2)
+    {
+      // std::cout<<"Wrapping extra SDF around string. "<<__FILE__<<std::endl;
+      collision_benchmark::wrapSDF(useStr);
+    }
+    else
+    {
+      std::cerr<<"SDF is not proper so cannot load model from the string. Value: "<<checkSDF<<std::endl;
+      return ret;
+    }
+  }
+
+  sdf::ElementPtr sdfRoot = collision_benchmark::GetSDFElementFromString(useStr, "model", modelname);
+  if (!sdfRoot)
+  {
+    std::cerr<< " Could not get SDF for model."<<std::endl;
+    return ret;
+  }
+
+  ret = AddModelFromSDF(sdfRoot);
+  return ret;
+
 }
 
 GazeboPhysicsWorld::ModelLoadResult GazeboPhysicsWorld::AddModelFromSDF(const sdf::ElementPtr& sdf, const std::string& modelname)

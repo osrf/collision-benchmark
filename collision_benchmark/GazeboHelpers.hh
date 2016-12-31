@@ -51,6 +51,46 @@ std::map<std::string,std::string> getPhysicsSettingsSdfFor(const std::vector<std
  */
 std::map<std::string,std::string> getPhysicsSettingsSdfForAllEngines();
 
+
+/**
+ * Checks whether the SDF format in the file is proper, which means an outer
+ * ``<sdf>`` tag exists and a version is given in an attribute. The version is
+ * returned in \e version (if it is not NULL).
+ * \retval 0 SDF is proper
+ * \retval -1 no version in ``<sdf>`` tag
+ * \retval -2 no outer ``<sdf>`` tag
+ * \retval -3 file could not be read
+ */
+int isProperSDFFile(const std::string& filename, std::string* version=NULL);
+
+/**
+ * Checks whether the SDF format in the string is proper, which means an outer
+ * ``<sdf>`` tag exists and a version is given in an attribute. The version is
+ * returned in \e version (if it is not NULL).
+ * \retval 0 SDF is proper
+ * \retval -1 no version in ``<sdf>`` tag
+ * \retval -2 no outer ``<sdf>`` tag
+ */
+int isProperSDFString(const std::string& str, std::string* version=NULL);
+
+/**
+ * Helper function which fixes the SDF format in the string, aimed at being part
+ * of the WorldState's <insertions> or <deletions>.
+ * Adds the <sdf version='1.6'>...</sdf> tags around the string. This is required
+ * for compatibility with World::SetState().
+ * Examle where this is required The insertions coming
+ * from WorldState::operator- are in a format not compatible and need to be fixed
+ * with this fucntion..
+ */
+void wrapSDF(std::string& sdf);
+
+/**
+ * Calls fixSDF() for all the sdf's
+ */
+void wrapSDF(std::vector<std::string>& sdf);
+
+
+
 }  // namespace
 
 #endif   // COLLISION_BENCHMARK_GAZEBOHELPERS_
