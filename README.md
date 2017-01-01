@@ -2,6 +2,14 @@
 
 Benchmark tests for collision checking and contact
 
+## Dependencies
+
+You will reqiure 
+
+* Gazebo and dependencies
+* Assimp
+* Boost libraries
+
 ## Setup
 
 If you compiled Gazebo from source, don't forget to source ``<your-gazebo-install-path>/share/setup.sh`` to set up the 

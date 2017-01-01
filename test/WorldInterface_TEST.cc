@@ -6,6 +6,7 @@
 #include <collision_benchmark/GazeboHelpers.hh>
 #include <collision_benchmark/WorldManager.hh>
 #include <collision_benchmark/PrimitiveShape.hh>
+#include <collision_benchmark/SimpleTriMeshShape.hh>
 #include <collision_benchmark/boost_std_conversion.hh>
 
 #include <gazebo/gazebo.hh>
@@ -21,6 +22,8 @@ using collision_benchmark::GazeboStateCompare;
 using collision_benchmark::WorldManager;
 using collision_benchmark::Shape;
 using collision_benchmark::PrimitiveShape;
+using collision_benchmark::MeshData;
+using collision_benchmark::SimpleTriMeshShape;
 
 
 class WorldInterfaceTest : public BasicTestFramework {};
@@ -177,7 +180,23 @@ TEST_F(WorldInterfaceTest, ModelLoading)
   //Shape::Ptr shape(PrimitiveShape::CreateBox(2,2,2));
   //Shape::Ptr shape(PrimitiveShape::CreateSphere(2));
   //Shape::Ptr shape(PrimitiveShape::CreateCylinder(1,3));
-  Shape::Ptr shape(PrimitiveShape::CreatePlane(Shape::Vector3(1,0,0),Shape::Vector2(10,10)));
+  //Shape::Ptr shape(PrimitiveShape::CreatePlane(Shape::Vector3(1,0,0),Shape::Vector2(10,10)));
+
+  // create simple mesh for testing
+  SimpleTriMeshShape::MeshDataPtr meshData(new SimpleTriMeshShape::MeshDataT());
+  typedef SimpleTriMeshShape::Vertex Vertex;
+  typedef SimpleTriMeshShape::Face Face;
+  std::vector<Vertex>& vertices=meshData->GetVertices();
+  std::vector<Face>& triangles=meshData->GetFaces();
+  vertices.push_back(Vertex(-1,0,0));
+  vertices.push_back(Vertex(0,0,-1));
+  vertices.push_back(Vertex(1,0,0));
+  vertices.push_back(Vertex(0,1,0));
+  triangles.push_back(Face(2,1,0));
+  triangles.push_back(Face(3,2,0));
+
+  Shape::Ptr shape(new SimpleTriMeshShape(meshData, "test_mesh"));
+
   shape->SetPose(Shape::Pose3(2,2,2,0,0,0));
   GzPhysicsWorld::ModelLoadResult res3 = world->AddModelFromShape(forcedModelName3, shape, shape);
   ASSERT_EQ(res3.opResult, GzPhysicsWorld::SUCCESS) << " Could not add extra model to world";
