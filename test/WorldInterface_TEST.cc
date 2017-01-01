@@ -5,6 +5,7 @@
 #include <collision_benchmark/GazeboMirrorWorld.hh>
 #include <collision_benchmark/GazeboHelpers.hh>
 #include <collision_benchmark/WorldManager.hh>
+#include <collision_benchmark/PrimitiveShape.hh>
 #include <collision_benchmark/boost_std_conversion.hh>
 
 #include <gazebo/gazebo.hh>
@@ -18,6 +19,8 @@ using collision_benchmark::GazeboPhysicsWorld;
 using collision_benchmark::GazeboMirrorWorld;
 using collision_benchmark::GazeboStateCompare;
 using collision_benchmark::WorldManager;
+using collision_benchmark::Shape;
+using collision_benchmark::PrimitiveShape;
 
 
 class WorldInterfaceTest : public BasicTestFramework {};
@@ -168,13 +171,26 @@ TEST_F(WorldInterfaceTest, ModelLoading)
   state = world->GetWorldState();
   ASSERT_EQ(state.GetModelStates().size(), 4) <<"World "<<world->GetName()<<" should have 4 models.";
 
-  /*std::cout<<"Now you can view it with gzclient. Press any key to start the world."<<std::endl;
+
+  // Add another model via the Shape load function
+  std::string forcedModelName3 = "test-cube-shape";
+  Shape::Ptr shape(PrimitiveShape::CreateBox(2,2,2));
+  shape->SetPose(Shape::Pose3(2,2,2,0,0,0));
+  GzPhysicsWorld::ModelLoadResult res3 = world->AddModelFromShape(forcedModelName3, shape, shape);
+  ASSERT_EQ(res3.opResult, GzPhysicsWorld::SUCCESS) << " Could not add extra model to world";
+  ASSERT_EQ(res3.modelID, forcedModelName3) << " Model name must have been forced to "<<forcedModelName3<<" but is "<<res3.modelID;
+  state = world->GetWorldState();
+  ASSERT_EQ(state.GetModelStates().size(), 5) <<"World "<<world->GetName()<<" should have 5 models.";
+
+
+
+  std::cout<<"Now you can view it with gzclient. Press any key to start the world."<<std::endl;
   getchar();
   while(true)
   {
     int numSteps=1;
     world->Update(numSteps);
-  }*/
+  }
 }
 
 

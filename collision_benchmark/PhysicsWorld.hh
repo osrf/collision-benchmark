@@ -226,13 +226,15 @@ class PhysicsWorld: public PhysicsWorldBase<typename PhysicsWorldTypes::WorldSta
   /// Adds this shape to the world and converts it to whichever representation
   /// is required in the implementation. The shape will become a model which can be identified
   /// with \e ModelID as well.
+  /// \param modelname name to give to the model
   /// \param shape the shape to be used for visualization (if underlying implementation supports
   ///   separate visualization shapes), and unless \e collShape is specified, this shape
   ///   will be used for collisions as well.
-  /// \param collShape optionally, a representation of \e shape to use for collision computation
+  /// \param collShape optionally, a representation of \e shape to use for collision computation.
+  ///   if not given, no collision shape is added.
   /// \return in case the underlying implementation does not support shapes, this throws and
   ///   exception (see also SupportsShapes()). Instead, the AddModel*() methods have to be used.
-  public: virtual ModelLoadResult AddModelFromShape(const ShapePtr& shape, const ShapePtr * collShape=NULL)=0;
+  public: virtual ModelLoadResult AddModelFromShape(const std::string& modelname, const Shape::Ptr& shape, const Shape::Ptr collShape=Shape::Ptr())=0;
 
   public: virtual std::vector<ModelID> GetAllModelIDs() const=0;
 

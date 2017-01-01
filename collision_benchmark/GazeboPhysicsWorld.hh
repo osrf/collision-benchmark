@@ -94,7 +94,7 @@ class GazeboPhysicsWorld: public collision_benchmark::PhysicsEngineWorld<GazeboP
 
   public: virtual bool SupportsShapes() const;
 
-  public: virtual ModelLoadResult AddModelFromShape(const ShapePtr& shape, const ShapePtr * collShape=NULL);
+  public: virtual ModelLoadResult AddModelFromShape(const std::string& modelname, const Shape::Ptr& shape, const Shape::Ptr collShape=Shape::Ptr());
 
   public: virtual std::vector<ModelID> GetAllModelIDs() const;
 

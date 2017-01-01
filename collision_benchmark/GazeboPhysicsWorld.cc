@@ -130,7 +130,6 @@ GazeboPhysicsWorld::ModelLoadResult GazeboPhysicsWorld::AddModelFromString(const
   {
     if (checkSDF==-2)
     {
-      // std::cout<<"Wrapping extra SDF around string. "<<__FILE__<<std::endl;
       collision_benchmark::wrapSDF(useStr);
     }
     else
@@ -163,7 +162,6 @@ GazeboPhysicsWorld::ModelLoadResult GazeboPhysicsWorld::AddModelFromSDF(const sd
   }
   ret.opResult=SUCCESS;
   ret.modelID=model->GetName();
-  // WorldState s(world); std::cout<<"World state: "<<s<<std::endl;
   return ret;
 }
 
@@ -172,9 +170,47 @@ bool GazeboPhysicsWorld::SupportsShapes() const
   return true;
 }
 
-GazeboPhysicsWorld::ModelLoadResult GazeboPhysicsWorld::AddModelFromShape(const ShapePtr& shape, const ShapePtr * collShape)
+GazeboPhysicsWorld::ModelLoadResult GazeboPhysicsWorld::AddModelFromShape(const std::string& modelname, const Shape::Ptr& shape, const Shape::Ptr collShape)
 {
-  throw new gazebo::common::Exception(__FILE__,__LINE__,"Implement me");
+  ModelLoadResult ret;
+  ret.opResult=FAILED;
+
+  if (modelname.empty())
+  {
+    std::cerr<<"Must specify model name"<<std::endl;
+    return ret;
+  }
+
+  // Build the SDF
+  sdf::ElementPtr root(new sdf::Element());
+  root->SetName("model");
+  root->AddAttribute("name", "string", modelname, true, "model name");
+
+  sdf::ElementPtr pose=shape->GetPoseSDF();
+  root->InsertElement(pose);
+
+  sdf::ElementPtr link(new sdf::Element());
+  link->SetName("link");
+  link->AddAttribute("name", "string", "link", true, "link name");
+  root->InsertElement(link);
+
+  sdf::ElementPtr shapeColl=shape->GetShapeSDF(false);
+  sdf::ElementPtr collision(new sdf::Element());
+  collision->SetName("collision");
+  collision->AddAttribute("name", "string", "collision", true, "collision name");
+  collision->InsertElement(shapeColl);
+  link->InsertElement(collision);
+
+  sdf::ElementPtr shapeGeom=shape->GetShapeSDF(true);
+  sdf::ElementPtr visual(new sdf::Element());
+  visual->SetName("visual");
+  visual->AddAttribute("name", "string", "visual", true, "visual name");
+  visual->InsertElement(shapeColl);
+  link->InsertElement(visual);
+
+  std::cout<<"SDF shape: "<<root->ToString("");
+
+  return AddModelFromSDF(root);
 }
 
 std::vector<GazeboPhysicsWorld::ModelID> GazeboPhysicsWorld::GetAllModelIDs() const
