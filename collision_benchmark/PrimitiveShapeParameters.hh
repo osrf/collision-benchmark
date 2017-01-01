@@ -44,8 +44,9 @@ class PrimitiveShapeParameters
 
   // Parameter values for a variety of primitive types.
   // VALX/Y/Z can be used for any primitive-specific type with x/y/z values,
-  // such as a normal.
-  public: enum ParameterType { RADIUS, LENGTH, VALX, VALY, VALZ};
+  // such as a normal. DIMX/Y/Z can be used for any x/y/z values that relate to a
+  // dimension, e.g. the size of a box.
+  public: enum ParameterType { RADIUS, LENGTH, VALX, VALY, VALZ, DIMX, DIMY, DIMZ};
 
   // Returns the value of the primitive parameter in \e result.
   // Throws a collision_benchmark::Exception if the primitive type does
@@ -127,7 +128,7 @@ class RadiusAndValueParameter: public RadiusParameter<Float>
 
 
 /**
- * All primitives which have parameters related to 3 dimensions (x,y,z)
+ * For all primitives which have parameters related to 3 dimensions (x,y,z)
  */
 template<typename Float=double>
 class Dim3Parameter: public PrimitiveShapeParameters
@@ -146,33 +147,33 @@ class Dim3Parameter: public PrimitiveShapeParameters
 
   public: virtual double Get(const typename Super::ParameterType& type)
   {
-    if (type==VALX)
+    if (type==DIMX)
     {
       return x;
     }
-    else if (type==VALY)
+    else if (type==DIMY)
     {
       return y;
     }
-    else if (type==VALZ)
+    else if (type==DIMZ)
     {
-      return y;
+      return z;
     }
     THROW_EXCEPTION("Dim3Parameter does hot have the type "<<type);
   }
   public: virtual void Set(const typename Super::ParameterType& type, const double& val)
   {
-    if (type==VALX)
+    if (type==DIMX)
     {
       x=val;
     }
-    else if (type==VALY)
+    else if (type==DIMY)
     {
       y=val;
     }
-    else if (type==VALZ)
+    else if (type==DIMZ)
     {
-      y=val;
+      z=val;
     }
     else
     {
@@ -188,13 +189,77 @@ class Dim3Parameter: public PrimitiveShapeParameters
 };
 
 /**
+ * For all primitives which have parameters related to 3 values which are not
+ * to be interpreted as dimensions (x,y,z). Example: A normal
+ */
+template<typename Float=double>
+class Val3Parameter: public PrimitiveShapeParameters
+{
+  private: typedef PrimitiveShapeParameters Super;
+  public: explicit Val3Parameter(const Float& x_, const Float& y_, const Float& z_):
+    x(x_),
+    y(y_),
+    z(z_)
+  {}
+  public: Val3Parameter(const Val3Parameter& o):
+    x(o.x),
+    y(o.y),
+    z(o.z)
+  {}
+
+  public: virtual double Get(const typename Super::ParameterType& type)
+  {
+    if (type==VALX)
+    {
+      return x;
+    }
+    else if (type==VALY)
+    {
+      return y;
+    }
+    else if (type==VALZ)
+    {
+      return z;
+    }
+    THROW_EXCEPTION("Val3Parameter does hot have the type "<<type);
+  }
+  public: virtual void Set(const typename Super::ParameterType& type, const double& val)
+  {
+    if (type==VALX)
+    {
+      x=val;
+    }
+    else if (type==VALY)
+    {
+      y=val;
+    }
+    else if (type==VALZ)
+    {
+      z=val;
+    }
+    else
+    {
+      THROW_EXCEPTION("Val3Parameter does hot have the type "<<type);
+    }
+  }
+  public: virtual typename Super::Ptr Clone() const
+  {
+    return typename Super::Ptr(new Val3Parameter(x,y,z));
+  }
+
+  protected: Float x, y, z;
+};
+
+
+
+/**
  * Plane parameters using VALX/VALY/VALZ for the normal and LENGTH
  * for the distance from the origin.
  */
 template<typename Float=double>
-class PlaneParameter: public Dim3Parameter<double>
+class PlaneParameter: public Val3Parameter<double>
 {
-  private: typedef Dim3Parameter<double> Super;
+  private: typedef Val3Parameter<double> Super;
   public: explicit PlaneParameter(const Float& x, const Float& y, const Float& z, const Float& dist):
     Super(x,y,z),
     distance(dist)
@@ -223,6 +288,65 @@ class PlaneParameter: public Dim3Parameter<double>
   }
   protected: Float distance;
 };
+
+
+/**
+ * Like PlaneParameter, but uses bounds for the plane in each direction via the DIMX and DIMY fields.
+ */
+template<typename Float=double>
+class BoundedPlaneParameter: public PlaneParameter<double>
+{
+  private: typedef PlaneParameter<double> Super;
+  public: explicit BoundedPlaneParameter(const Float& xN, const Float& yN, const Float& zN, const Float& dist,
+                                         const Float& xDim_, const Float& yDim_):
+    PlaneParameter(xN, yN, zN, dist),
+    xDim(xDim_),
+    yDim(yDim_)
+  {}
+  public: BoundedPlaneParameter(const BoundedPlaneParameter& o):
+    PlaneParameter(o),
+    xDim(o.x),
+    yDim(o.y)
+  {}
+
+  public: virtual double Get(const typename Super::ParameterType& type)
+  {
+    if (type==DIMX)
+    {
+      return xDim;
+    }
+    else if (type==DIMY)
+    {
+      return yDim;
+    }
+    return Super::Get(type);
+  }
+  public: virtual void Set(const typename Super::ParameterType& type, const double& val)
+  {
+    if (type==DIMX)
+    {
+      xDim=val;
+    }
+    else if (type==DIMY)
+    {
+      yDim=val;
+    }
+    else if (type==DIMZ)
+    {
+      yDim=val;
+    }
+    Super::Set(type,val);
+  }
+  public: virtual typename Super::Ptr Clone() const
+  {
+    return typename Super::Ptr(new BoundedPlaneParameter(Super::x, Super::y, Super::z, Super::distance,
+                                                         xDim, yDim));
+  }
+
+  protected: Float xDim, yDim;
+};
+
+
 
 
 

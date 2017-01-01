@@ -2,7 +2,8 @@
 #define COLLISION_BENCHMARK_SHAPE
 
 #include <sdf/sdf.hh>
-#include <ignition/math/Pose3.hh>
+#include <ignition/math/Vector3.hh>
+#include <ignition/math/Vector2.hh>
 #include <memory>
 
 namespace collision_benchmark
@@ -19,9 +20,11 @@ class Shape
 {
   public: typedef std::shared_ptr<Shape> Ptr;
   public: typedef std::shared_ptr<const Shape> ConstPtr;
-  public: typedef enum Types_{ BOX, SPHERE, CYLINDER, PLANE, MESH, POLYLINE} Type;
+  public: typedef enum Types_{ BOX, SPHERE, CYLINDER, PLANE, MESH} Type;
 
   public: typedef ignition::math::Pose3<double> Pose3;
+  public: typedef ignition::math::Vector3<double> Vector3;
+  public: typedef ignition::math::Vector2<double> Vector2;
 
   public: Shape(const Type& type_):
           type(type_) {}
@@ -47,7 +50,6 @@ class Shape
           {
             return pose;
           }
-
 
   /// returns the pose as SDF element
   public: sdf::ElementPtr GetPoseSDF() const

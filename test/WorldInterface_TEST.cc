@@ -174,7 +174,10 @@ TEST_F(WorldInterfaceTest, ModelLoading)
 
   // Add another model via the Shape load function
   std::string forcedModelName3 = "test-cube-shape";
-  Shape::Ptr shape(PrimitiveShape::CreateBox(2,2,2));
+  //Shape::Ptr shape(PrimitiveShape::CreateBox(2,2,2));
+  //Shape::Ptr shape(PrimitiveShape::CreateSphere(2));
+  //Shape::Ptr shape(PrimitiveShape::CreateCylinder(1,3));
+  Shape::Ptr shape(PrimitiveShape::CreatePlane(Shape::Vector3(1,0,0),Shape::Vector2(10,10)));
   shape->SetPose(Shape::Pose3(2,2,2,0,0,0));
   GzPhysicsWorld::ModelLoadResult res3 = world->AddModelFromShape(forcedModelName3, shape, shape);
   ASSERT_EQ(res3.opResult, GzPhysicsWorld::SUCCESS) << " Could not add extra model to world";
