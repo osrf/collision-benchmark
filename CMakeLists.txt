@@ -16,6 +16,8 @@ set(collision_benchmark_HEADERS
   collision_benchmark/GazeboStateCompare.hh
   collision_benchmark/MirrorWorld.hh
   collision_benchmark/Shape.hh
+  collision_benchmark/PrimitiveShape.hh
+  collision_benchmark/PrimitiveShapeParameters.hh
   collision_benchmark/WorldManager.hh
   collision_benchmark/ClientGui.hh
   collision_benchmark/GazeboHelpers.hh
@@ -32,6 +34,8 @@ add_library(collision_benchmark SHARED
   collision_benchmark/GazeboMirrorWorld.cc
   collision_benchmark/GazeboHelpers.cc
   collision_benchmark/GazeboStateCompare.cc
+  collision_benchmark/Shape.cc
+  collision_benchmark/PrimitiveShape.cc
 )
 
 QT4_WRAP_CPP(headers_MOC collision_benchmark/ClientGui.hh)
