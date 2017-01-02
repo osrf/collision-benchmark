@@ -2,6 +2,8 @@
 #define COLLISION_BENCHMARK_CONTACTINFO
 
 #include <vector>
+#include <memory>
+#include <iostream>
 
 namespace collision_benchmark
 {
@@ -16,15 +18,33 @@ class Contact
 {
   public: typedef Vector3Impl Vector3;
   public: typedef WrenchImpl Wrench;
+  private: typedef Contact<Vector3, Wrench> Self;
+  public: typedef std::shared_ptr<Self> Ptr;
+  public: typedef std::shared_ptr<const Self> ConstPtr;
 
-   public: Contact(){}
-  private: Contact(const Contact& c):
+  public: Contact(){}
+  public: Contact(const Vector3& position_,
+                  const Vector3& normal_,
+                  const Wrench& wrench_,
+                  const double depth_):
+        position(position_),
+        normal(normal_),
+        wrench(wrench_),
+        depth(depth_) {}
+
+  public: Contact(const Contact& c):
         position(c.position),
         normal(c.normal),
         wrench(c.wrench),
         depth(c.depth) {}
-  public: virtual ~Contact();
 
+  public: virtual ~Contact() {}
+
+  public: friend std::ostream& operator<<(std::ostream& o, const Self& c)
+          {
+            o<<"Position: "<<c.position<<", depth: "<<c.depth;
+            return o;
+          }
   public: Vector3 position;
   public: Vector3 normal;
   public: Wrench wrench;
@@ -55,19 +75,58 @@ class ContactInfo
   public: typedef ModelIdImpl ModelID;
   public: typedef ModelPartIdImpl ModelPartID;
 
+  private: typedef ContactInfo<Contact, ModelID, ModelPartID> Self;
+  public: typedef std::shared_ptr<Self> Ptr;
+  public: typedef std::shared_ptr<const Self> ConstPtr;
+
   public: ContactInfo(){}
-  private: ContactInfo(const ContactInfo& c):
+  /// constructor which automatically swaps model1 and model2
+  /// if necessary according to their lexicographicall order (model1 before model2)
+  public: ContactInfo(const ModelID& model1_,
+                      const ModelPartID& modelPart1_,
+                      const ModelID& model2_,
+                      const ModelPartID& modelPart2_)
+          {
+            if (model1_ < model2_)
+            {
+              model1 =  model1_;
+              modelPart1 =  modelPart1_;
+              model2 =  model2_;
+              modelPart2 =  modelPart2_;
+            }
+            else
+            {
+              model1 =  model2_;
+              modelPart1 =  modelPart2_;
+              model2 =  model1_;
+              modelPart2 =  modelPart1_;
+            }
+          }
+  public: ContactInfo(const ContactInfo& c):
         contacts(c.contacts),
         model1(c.model1),
         modelPart1(c.modelPart1),
         model2(c.model2),
         modelPart2(c.modelpart2){}
-  public: virtual ~ContactInfo();
+  public: virtual ~ContactInfo() {}
 
+  // checks for validity of the contact configuration
+  public: bool isValid() const { return model1 < model2; }
+
+  public: friend std::ostream& operator<<(std::ostream& o, const Self& c)
+          {
+            o<<"Model1: "<<c.model1<<"/"<<c.modelPart1<<". Model2: "<<c.model2<<"/"<<c.modelPart2;
+            return o;
+          }
+
+  // all contacts which happen between the models.
   public: std::vector<Contact> contacts;
 
+  // first model which is part of the contact.
+  // Is always lexicographically 'smaller' than model2.
   public: ModelID model1;
   public: ModelPartID modelPart1;
+  // second model which is part of the contact
   public: ModelID model2;
   public: ModelPartID modelPart2;
 

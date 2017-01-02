@@ -147,11 +147,13 @@ class PhysicsWorld: public PhysicsWorldBase<typename PhysicsWorldTypes::WorldSta
   /// ID type to identify individual parts of a model
   public: typedef typename PhysicsWorldTypes::ModelPartID ModelPartID;
 
-  private: typedef collision_benchmark::Contact<
+  public: typedef collision_benchmark::Contact<
               typename PhysicsWorldTypes::Vector3,
               typename PhysicsWorldTypes::Wrench> Contact;
+  public: typedef typename Contact::Ptr ContactPtr;
+
   public: typedef collision_benchmark::ContactInfo<Contact, ModelID, ModelPartID> ContactInfo;
-  public: typedef std::shared_ptr<ContactInfo> ContactInfoPtr;
+  public: typedef typename ContactInfo::Ptr ContactInfoPtr;
 
   public: typedef collision_benchmark::Shape Shape;
 
@@ -247,9 +249,6 @@ class PhysicsWorld: public PhysicsWorldBase<typename PhysicsWorldTypes::WorldSta
 
   /// In the current state of the world, get all contact points between models.
   /// The returned vector will be empty if no models collide.
-  /// This method may be less efficient than methods specific to the physics engine, because it requires
-  /// constructiong the shared data structure ContactInfo. Use this method only to compare
-  /// different implementations, and stick to the engine-specific ones in subclasses otherwise.
   ///
   /// Throws an exception if the underlying implementation does not support calculation
   /// of contact points (SupportContacts() returns false).
@@ -287,15 +286,18 @@ class PhysicsEngineWorld: public PhysicsWorld<PhysicsWorldTypes>
   public: typedef typename ParentClass::ModelID ModelID;
   public: typedef typename ParentClass::ModelPartID ModelPartID;
   public: typedef typename ParentClass::WorldState WorldState;
+  public: typedef typename ParentClass::Contact Contact;
+  public: typedef typename ParentClass::ContactPtr ContactPtr;
+  public: typedef typename ParentClass::ContactInfo ContactInfo;
   public: typedef typename ParentClass::ContactInfoPtr ContactInfoPtr;
 
   public: typedef typename PhysicsEngineWorldTypes::Model Model;
-  public: typedef typename PhysicsEngineWorldTypes::Contact Contact;
+  public: typedef typename PhysicsEngineWorldTypes::Contact NativeContact;
   public: typedef typename PhysicsEngineWorldTypes::PhysicsEngine PhysicsEngine;
   public: typedef typename PhysicsEngineWorldTypes::World World;
 
   public: typedef std::shared_ptr<Model> ModelPtr;
-  public: typedef std::shared_ptr<Contact> ContactPtr;
+  public: typedef std::shared_ptr<NativeContact> NativeContactPtr;
   public: typedef std::shared_ptr<PhysicsEngine> PhysicsEnginePtr;
   public: typedef std::shared_ptr<World> WorldPtr;
 
@@ -304,19 +306,6 @@ class PhysicsEngineWorld: public PhysicsWorld<PhysicsWorldTypes>
   public: PhysicsEngineWorld(){}
   public: PhysicsEngineWorld(const PhysicsEngineWorld& w){}
   public: virtual ~PhysicsEngineWorld(){}
-
-  /// In the current state of the world, get all contact points between models.
-  /// The returned vector will be empty if no models collide.
-  /// This method is more engine-specific than GetContactInfo(), and therefore
-  /// more specific to the engine used. However for that reason this function is not
-  /// suitable to compare different contact point implementations.
-  ///
-  /// Throws an exception if the underlying implementation does not support calculation
-  /// of contact points (SupportContacts() returns false).
-  public: virtual const std::vector<ContactPtr>& GetContacts() const=0;
-
-  /// Works as GetContact() but only returns the contact points between models \e m1 and \e m2.
-  public: virtual const std::vector<ContactPtr> GetContacts(const ModelID& m1, const ModelID& m2) const=0;
 
   /// \retval true if this is an adaptor to another world (either of type
   ///   \e PhysicsWorld or of \e WorldPtr). This means \e GetWorld() will
@@ -349,6 +338,22 @@ class PhysicsEngineWorld: public PhysicsWorld<PhysicsWorldTypes>
   /// current state of the world. Returns NULL pointer type if there
   /// is no underlying physics engine for this implementation.
   public: virtual PhysicsEnginePtr GetPhysicsEngine() const=0;
+
+
+  /// In the current state of the world, get all contact points between models.
+  /// The returned vector will be empty if no models collide.
+  /// This method is more engine-specific than GetContactInfo(), and therefore
+  /// more specific to the engine used. However for that reason this function is not
+  /// suitable to compare different contact point implementations.
+  /// It is more efficient than GetContactInfo() though because there is no need to copy
+  /// information over to the ContactInfo struct.
+  ///
+  /// Throws an exception if the underlying implementation does not support calculation
+  /// of contact points (SupportContacts() returns false).
+  public: virtual std::vector<NativeContactPtr> GetNativeContacts() const=0;
+
+  /// Works as GetNativeContact() but only returns the contact points between models \e m1 and \e m2.
+  public: virtual std::vector<NativeContactPtr> GetNativeContacts(const ModelID& m1, const ModelID& m2) const=0;
 
 };  // class PhysicsEngineWorld
 

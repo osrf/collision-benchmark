@@ -58,7 +58,8 @@ class GazeboPhysicsWorld: public collision_benchmark::PhysicsEngineWorld<GazeboP
 
 
   public: typedef typename ParentClass::Model Model;
-  public: typedef typename ParentClass::Contact Contact;
+  public: typedef typename ParentClass::NativeContact NativeContact;
+  public: typedef typename ParentClass::NativeContactPtr NativeContactPtr;
   public: typedef typename ParentClass::PhysicsEngine PhysicsEngine;
   public: typedef typename ParentClass::World World;
   public: typedef typename ParentClass::ModelPtr ModelPtr;
@@ -118,9 +119,15 @@ class GazeboPhysicsWorld: public collision_benchmark::PhysicsEngineWorld<GazeboP
 
   public: virtual std::vector<ContactInfoPtr> GetContactInfo(const ModelID& m1, const ModelID& m2) const;
 
-  public: virtual const std::vector<ContactPtr>& GetContacts() const;
+  /// Current warning for Gazebo implementation: Returned shared pointers are flakey, they will be deleted as soon as
+  /// Gazebo ContactManager deletes them. This will be resolved as soon as gazebo::physics::Contact instances are managed
+  /// as shared poitners by Gazebo as well.
+  public: virtual std::vector<NativeContactPtr> GetNativeContacts() const;
 
-  public: virtual const std::vector<ContactPtr> GetContacts(const ModelID& m1, const ModelID& m2) const;
+  /// Current warning for Gazebo implementation: Returned shared pointers are flakey, they will be deleted as soon as
+  /// Gazebo ContactManager deletes them. This will be resolved as soon as gazebo::physics::Contact instances are managed
+  /// as shared poitners by Gazebo as well.
+  public: virtual std::vector<NativeContactPtr> GetNativeContacts(const ModelID& m1, const ModelID& m2) const;
 
   public: virtual bool IsAdaptor() const;
 

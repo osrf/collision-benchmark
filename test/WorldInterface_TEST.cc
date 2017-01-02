@@ -117,18 +117,19 @@ TEST_F(WorldInterfaceTest, WorldManager)
 }
 
 
-TEST_F(WorldInterfaceTest, ModelLoading)
+/**
+ * Tests the model loading methods of the GazeboPhysicsWorld
+ */
+TEST_F(WorldInterfaceTest, GazeboModelLoading)
 {
   std::string worldfile = "../test_worlds/cube.world";
 
   std::cout << "Loading world " << worldfile << std::endl;
 
   typedef gazebo::physics::WorldState GzWorldState;
-  typedef WorldManager<GzWorldState> GzWorldManager;
-  typedef GzWorldManager::PhysicsWorldBasePtr PhysicsWorldBasePtr;
   typedef PhysicsWorld<collision_benchmark::GazeboPhysicsWorldTypes> GzPhysicsWorld;
 
-  // create one world per physics engine and load it with the cube world, and add it to the world manager
+  // create a world with a cube
   GzPhysicsWorld::Ptr world (new GazeboPhysicsWorld());
   world->LoadFromFile(worldfile);
 
@@ -205,13 +206,80 @@ TEST_F(WorldInterfaceTest, ModelLoading)
   state = world->GetWorldState();
   ASSERT_EQ(state.GetModelStates().size(), 5) <<"World "<<world->GetName()<<" should have 5 models.";
 
-  std::cout<<"Now you can view it with gzclient. Press any key to start the world."<<std::endl;
+/*  std::cout<<"Now you can view it with gzclient. Press any key to start the world."<<std::endl;
   getchar();
   while(true)
   {
     int numSteps=1;
     world->Update(numSteps);
+  }*/
+}
+
+/**
+ * Tests the GetContactInfo() methods of the GazeboPhysicsWorld
+ */
+TEST_F(WorldInterfaceTest, GazeboContacts)
+{
+  std::string worldfile = "worlds/empty.world";
+
+  std::cout << "Loading world " << worldfile << std::endl;
+
+  typedef gazebo::physics::WorldState GzWorldState;
+  typedef PhysicsWorld<collision_benchmark::GazeboPhysicsWorldTypes> GzPhysicsWorld;
+
+  // create one world per physics engine and load it with the cube world, and add it to the world manager
+  GzPhysicsWorld::Ptr world (new GazeboPhysicsWorld());
+  world->LoadFromFile(worldfile);
+  ASSERT_NE(world.get(), nullptr) <<"Error loading world "<<worldfile<<std::endl;
+
+  // Add another cube which should fall on the ground in only very few iterations
+  std::string sdfStr("\
+    <model name='box'>\
+      <pose>0 0 0.5 0 0 0</pose>\
+      <link name='link'>\
+        <collision name='cube_collision'>\
+          <geometry>\
+            <box>\
+              <size>0.5 0.5 0.5</size>\
+            </box>\
+          </geometry>\
+        </collision>\
+        <visual name='cube_visual'>\
+          <geometry>\
+            <box>\
+              <size>0.5 0.5 0.5</size>\
+            </box>\
+          </geometry>\
+        </visual>\
+      </link>\
+    </model>");
+  GzPhysicsWorld::ModelLoadResult res2 = world->AddModelFromString(sdfStr);
+  ASSERT_EQ(res2.opResult, GzPhysicsWorld::SUCCESS) << " Could not add extra model to world";
+  // by now, the world should only have two models: the cube and the ground
+  GzWorldState state = world->GetWorldState();
+  ASSERT_EQ(state.GetModelStates().size(), 2) <<"World "<<world->GetName()<<" should have only two models.";
+
+  // XXX PROBLEM: ContactManager::NewContact() only adds contacts to the manager
+  // if there are subscribers connected. Looks like we can't use ContactManager for the current implementation
+  // unless we add this option to Gazebo.
+  // For now, test this by first connecting gzclient and switch on contacts display.
+
+  std::cout<<"Now you start gzclient and enable contacts display. Then press any key to start the world."<<std::endl;
+  std::cout<<"NOTE: This is part of a temporary solution until we figure out how to enforce computation of contacts in Gazebo, even if no subscribers to contacts exits!"<<std::endl;
+  getchar();
+  while(true)
+  {
+    world->Update(1);
+    std::vector<GzPhysicsWorld::ContactInfoPtr> contacts1 = world->GetContactInfo();
+    contacts1 = world->GetContactInfo();
+    if (contacts1.size() > 0)
+    {
+      std::cout<<"World has "<<contacts1.size()<<" pair of colliding models."<<std::endl;
+      for (auto c: contacts1) std::cout<<*c<<std::endl;
+      break;
+    }
   }
+  std::cout<<"OK YOU CAN NOW CLOSE GZCLIENT"<<std::endl;
 }
 
 

@@ -29,6 +29,8 @@
 #include <gazebo/physics/physics.hh>
 
 using collision_benchmark::GazeboPhysicsWorld;
+using collision_benchmark::Contact;
+using collision_benchmark::ContactInfo;
 
 GazeboPhysicsWorld::GazeboPhysicsWorld()
 {
@@ -289,25 +291,130 @@ bool GazeboPhysicsWorld::SupportsContacts() const
   return true;
 }
 
+
+// helper function which can be used to get contact info of either all models (m1 and m2 set to NULL), or for one model
+// (m1=NULL and m2=NULL) or for two models (m1!=NULL and m2!=NULL).
+std::vector<GazeboPhysicsWorld::ContactInfoPtr> GetContactInfoHelper(const gazebo::physics::WorldPtr& world,
+                                                                     const GazeboPhysicsWorld::ModelID * m1=NULL,
+                                                                     const GazeboPhysicsWorld::ModelID * m2=NULL)
+{
+  std::vector<GazeboPhysicsWorld::ContactInfoPtr> ret;
+  const gazebo::physics::ContactManager* contactManager = world->Physics()->GetContactManager();
+  GZ_ASSERT(contactManager, "Contact manager has to be set");
+  const std::vector<gazebo::physics::Contact*>& contacts = contactManager->GetContacts();
+  // std::cout<<"World has "<<contacts.size()<<"contacts."<<std::endl;
+  for (std::vector<gazebo::physics::Contact*>::const_iterator it=contacts.begin();
+       it!=contacts.end(); ++it)
+  {
+      const gazebo::physics::Contact * c=*it;
+      GZ_ASSERT(c->collision1->GetModel(), "Model of collision1 must be set");
+      GZ_ASSERT(c->collision1->GetLink(), "Link of collision1 must be set");
+      GZ_ASSERT(c->collision2->GetModel(), "Model of collision2 must be set");
+      GZ_ASSERT(c->collision2->GetLink(), "Link of collision2 must be set");
+
+      std::string m1Name=c->collision1->GetModel()->GetName();
+      std::string m2Name=c->collision2->GetModel()->GetName();
+
+      if (m1)
+      {
+        if (m2)
+        { // m1Name and m2Name do not correspond to m1 and m2
+          if ((*m1!=m1Name || *m2!=m2Name) &&
+              (*m1!=m2Name || *m2!=m1Name)) continue;
+        }
+        else
+        { // m1 has to be m1Name or m2Name to continue
+          if (*m1!=m1Name && *m1!=m2Name) continue;
+        }
+      }
+
+      GazeboPhysicsWorld::ContactInfoPtr cInfo(new GazeboPhysicsWorld::ContactInfo(m1Name,
+                                                 c->collision1->GetLink()->GetName(),
+                                                 m2Name,
+                                                 c->collision2->GetLink()->GetName()));
+      for (int i=0; i < c->count; ++i)
+      {
+        cInfo->contacts.push_back(GazeboPhysicsWorld::Contact(c->positions[i], c->normals[i],
+                                                              c->wrench[i], c->depths[i]));
+      }
+      ret.push_back(cInfo);
+  }
+  return ret;
+}
+
+// deleter which does nothing, to be used for std::shared_ptr with extreme caution!
+template<typename Type>
+void null_deleter(Type *){}
+
+// helper function which can be used to get contact info of either all models (m1 and m2 set to NULL), or for one model
+// (m1=NULL and m2=NULL) or for two models (m1!=NULL and m2!=NULL).
+std::vector<GazeboPhysicsWorld::NativeContactPtr> GetNativeContactsHelper(const gazebo::physics::WorldPtr& world,
+                                                                     const GazeboPhysicsWorld::ModelID * m1=NULL,
+                                                                     const GazeboPhysicsWorld::ModelID * m2=NULL)
+{
+  std::vector<GazeboPhysicsWorld::NativeContactPtr> ret;
+
+  const gazebo::physics::ContactManager* contactManager = world->Physics()->GetContactManager();
+  GZ_ASSERT(contactManager, "Contact manager has to be set");
+  const std::vector<gazebo::physics::Contact*>& contacts = contactManager->GetContacts();
+  for (std::vector<gazebo::physics::Contact*>::const_iterator it=contacts.begin();
+       it!=contacts.end(); ++it)
+  {
+      gazebo::physics::Contact * c=*it;
+      GZ_ASSERT(c->collision1->GetModel(), "Model of collision1 must be set");
+      GZ_ASSERT(c->collision1->GetLink(), "Link of collision1 must be set");
+      GZ_ASSERT(c->collision2->GetModel(), "Model of collision2 must be set");
+      GZ_ASSERT(c->collision2->GetLink(), "Link of collision2 must be set");
+
+      std::string m1Name=c->collision1->GetModel()->GetName();
+      std::string m2Name=c->collision2->GetModel()->GetName();
+
+      if (m1)
+      {
+        if (m2)
+        { // m1Name and m2Name do not correspond to m1 and m2
+          if ((*m1!=m1Name || *m2!=m2Name) &&
+              (*m1!=m2Name || *m2!=m1Name)) continue;
+        }
+        else
+        { // m1 has to be m1Name or m2Name to continue
+          if (*m1!=m1Name && *m1!=m2Name) continue;
+        }
+      }
+
+      // XXX HACK -> Also remove warning in header documentation of GetNativeContacts() when this is resolved!
+      // While Gazebo doesn't manage contacts as shared pointers, unfortunately
+      // we will need to return the std::shared_ptr<gazebo::physics::Contact> pointers
+      // without deleter. This may lead to awful segfaults if the contacts are used
+      // beyond their lifetime in Gazebo. However it is expected (?) that soon Gazebo
+      // will use shared pointers for this as well, so keep this flakey solution for now.
+      GazeboPhysicsWorld::NativeContactPtr gzContact(c, &null_deleter<GazeboPhysicsWorld::NativeContact>);
+      ret.push_back(gzContact);
+  }
+  return ret;
+}
+
+
 std::vector<GazeboPhysicsWorld::ContactInfoPtr> GazeboPhysicsWorld::GetContactInfo() const
 {
-  throw new gazebo::common::Exception(__FILE__,__LINE__,"Implement me");
+  return GetContactInfoHelper(world);
 }
 
 std::vector<GazeboPhysicsWorld::ContactInfoPtr> GazeboPhysicsWorld::GetContactInfo(const ModelID& m1, const ModelID& m2) const
 {
-  throw new gazebo::common::Exception(__FILE__,__LINE__,"Implement me");
+  return GetContactInfoHelper(world, &m1, &m2);
 }
 
-const std::vector<GazeboPhysicsWorld::ContactPtr>& GazeboPhysicsWorld::GetContacts() const
+std::vector<GazeboPhysicsWorld::NativeContactPtr> GazeboPhysicsWorld::GetNativeContacts() const
 {
-  throw new gazebo::common::Exception(__FILE__,__LINE__,"Implement me");
+  return GetNativeContactsHelper(world);
 }
 
-const std::vector<GazeboPhysicsWorld::ContactPtr> GazeboPhysicsWorld::GetContacts(const ModelID& m1, const ModelID& m2) const
+std::vector<GazeboPhysicsWorld::NativeContactPtr> GazeboPhysicsWorld::GetNativeContacts(const ModelID& m1, const ModelID& m2) const
 {
-  throw new gazebo::common::Exception(__FILE__,__LINE__,"Implement me");
+  return GetNativeContactsHelper(world, &m1, &m2);
 }
+
 
 bool GazeboPhysicsWorld::IsAdaptor() const
 {
