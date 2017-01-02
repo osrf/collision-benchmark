@@ -98,11 +98,14 @@ sdf::ElementPtr collision_benchmark::GetSDFElementFromFile(const std::string& fi
     return sdf::ElementPtr();
   }
 
+
   if (fullFile.empty())
   {
     std::cerr << "Unable to find file[" << filename << "]\n";
     return sdfRoot;
   }
+
+  std::cout << "File "<<fullFile<<" (from "<<filename<<") found. " << std::endl;
 
   try
   {

@@ -21,9 +21,8 @@
 
 using collision_benchmark::SimpleTriMeshShape;
 
-const std::string SimpleTriMeshShape::MESH_OUT_DIR="/tmp/.gazebo/";
+const std::string SimpleTriMeshShape::MESH_SUB_DIR="meshes";
 const std::string SimpleTriMeshShape::MESH_EXT="stl";
-
 
 // checks if \e path is a directory, or a potential path to a non-existing directory
 bool isDirectory(const std::string& path)
@@ -70,18 +69,42 @@ bool makeDirectoryIfNeeded(const std::string& dPath)
 }
 
 
-sdf::ElementPtr SimpleTriMeshShape::GetShapeSDF(bool detailed) const
+sdf::ElementPtr SimpleTriMeshShape::GetShapeSDF(bool detailed, bool uriOnlyWithSubdir) const
 {
- if (!makeDirectoryIfNeeded(MESH_OUT_DIR))
+  // full path of subdirectories
+  std::string subdir =  (boost::filesystem::path(RESOURCE_SUB_DIR) /
+                          boost::filesystem::path(MESH_SUB_DIR)).native();
+
+  // full path to resources
+  std::string fulldir = (boost::filesystem::path(RESOURCE_OUT_DIR) /
+                          boost::filesystem::path(subdir)).native();
+
+  // filename only with the subdirectory structure
+  std::string subname = (boost::filesystem::path(subdir) /
+                         boost::filesystem::path(name +
+                         (detailed ? "" : "_lowres") + "." + MESH_EXT)).native();
+
+  // filename with the full directory structure
+  std::string fullname = (boost::filesystem::path(RESOURCE_OUT_DIR) /
+                          boost::filesystem::path(subname)).native();
+
+  if (!makeDirectoryIfNeeded(fulldir))
   {
     std::cerr<<"Could not create directory to write mesh data to"<<std::endl;
     return sdf::ElementPtr();
   }
 
-  std::string filename = (boost::filesystem::path(MESH_OUT_DIR) /
-                          boost::filesystem::path(name +
-                          (detailed ? "_detail" : "") + "." + MESH_EXT)).native();
-  if (!collision_benchmark::WriteTrimesh(filename,MESH_EXT, data))
+  std::string useURI;
+  if (uriOnlyWithSubdir)
+  {
+    useURI="file://"+subname;
+  }
+  else
+  {
+    useURI="file://"+fullname;
+  }
+
+  if (!collision_benchmark::WriteTrimesh(fullname, MESH_EXT, data))
   {
     std::cerr<<"Could not write mesh data!"<<std::endl;
     return sdf::ElementPtr();
@@ -96,7 +119,7 @@ sdf::ElementPtr SimpleTriMeshShape::GetShapeSDF(bool detailed) const
   sdf::ElementPtr uriElem(new sdf::Element());
   meshElem->InsertElement(uriElem);
   uriElem->SetName("uri");
-  uriElem->AddValue("string", filename, true, "URI to mesh file");
+  uriElem->AddValue("string", useURI, true, "URI to mesh file");
 
   sdf::ElementPtr scaleElem(new sdf::Element());
   meshElem->InsertElement(scaleElem);

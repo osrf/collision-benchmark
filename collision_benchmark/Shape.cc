@@ -19,6 +19,9 @@
 
 using collision_benchmark::Shape;
 
+const std::string Shape::RESOURCE_OUT_DIR="/tmp/.gazebo/models/";
+const std::string Shape::RESOURCE_SUB_DIR="";
+
 sdf::ElementPtr Shape::GetPoseSDF() const
 {
   sdf::ElementPtr root(new sdf::Element());

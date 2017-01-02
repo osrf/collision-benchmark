@@ -194,17 +194,16 @@ TEST_F(WorldInterfaceTest, ModelLoading)
   vertices.push_back(Vertex(0,1,0));
   triangles.push_back(Face(0,1,2));
   triangles.push_back(Face(0,2,3));
-
   Shape::Ptr shape(new SimpleTriMeshShape(meshData, "test_mesh"));
 
   shape->SetPose(Shape::Pose3(2,2,2,0,0,0));
+  std::cout<<"Adding model from shape.."<<std::endl;
   GzPhysicsWorld::ModelLoadResult res3 = world->AddModelFromShape(forcedModelName3, shape, shape);
+  std::cout<<"Added."<<std::endl;
   ASSERT_EQ(res3.opResult, GzPhysicsWorld::SUCCESS) << " Could not add extra model to world";
   ASSERT_EQ(res3.modelID, forcedModelName3) << " Model name must have been forced to "<<forcedModelName3<<" but is "<<res3.modelID;
   state = world->GetWorldState();
   ASSERT_EQ(state.GetModelStates().size(), 5) <<"World "<<world->GetName()<<" should have 5 models.";
-
-
 
   std::cout<<"Now you can view it with gzclient. Press any key to start the world."<<std::endl;
   getchar();

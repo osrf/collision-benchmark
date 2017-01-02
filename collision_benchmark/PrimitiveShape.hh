@@ -76,7 +76,7 @@ class PrimitiveShape: public Shape
                                               double dx, double dy);
 
   // Documentation inherited from parent class
-  public: virtual sdf::ElementPtr GetShapeSDF(bool detailed=true) const;
+  public: virtual sdf::ElementPtr GetShapeSDF(bool detailed=true, bool uriOnlyWithSubdir=false) const;
 
   private: PrimitiveShapeParameters::Ptr params;
 };

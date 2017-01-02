@@ -144,7 +144,7 @@ bool WriteTrimesh(const std::string& filename,
   }
   std::string fname = SetOrReplaceFileExtension(filename, outformat);
 
-  std::cout<<"Writing to file "<<fname<<std::endl;
+  // std::cout<<"Writing to file "<<fname<<std::endl;
 
   Assimp::Exporter exporter;
   if (exporter.Export(scene, outformat, fname, aiProcess_GenNormals) != AI_SUCCESS)

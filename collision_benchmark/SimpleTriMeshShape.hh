@@ -32,9 +32,6 @@ namespace collision_benchmark
  *
  * Uses double as vertex precision and supports only triangle meshes.
  *
- * Important note about GetShapeSDF() implementation: Because the SDF file requires the mesh data
- * to be at a URI, GetShapeSDF() needs to write the mesh data to a file.
- * The static variable MESH_OUT_DIR can be used to change the directory it to which it writes the files.
  *
  * \author Jennifer Buehler
  * \date December 2016
@@ -51,14 +48,12 @@ class SimpleTriMeshShape: public Shape
   public: typedef MeshDataT::Vertex Vertex;
   public: typedef MeshDataT::Face Face;
 
-  // The directory into which the mesh data is written when GetShapeSDF() is called.
-  // This is required because SDF needs the meshes to be written in a file that it can reference.
-  // For use with Gazebo, this should be a path in the GAZEBO_RESOURCE_PATH.
-  public: static const std::string MESH_OUT_DIR;
-
   // The file extension to be used for all mesh data written to file with GetShapeSDF().
   // May not start with a dot!
   public: static const std::string MESH_EXT;
+  // Subdirectory to use in addition to parents RESOURCE_SUB_DIR in GetShapeSDF().
+  // This will be a subdirectory in RESOURCE_SUB_DIR.
+  public: static const std::string MESH_SUB_DIR;
 
   /**
    * \param data__ the mesh data
@@ -77,7 +72,7 @@ class SimpleTriMeshShape: public Shape
   public: virtual ~SimpleTriMeshShape(){}
 
   // Documentation inherited from parent class
-  public: virtual sdf::ElementPtr GetShapeSDF(bool detailed=true) const;
+  public: virtual sdf::ElementPtr GetShapeSDF(bool detailed=true, bool uriOnlyWithSubdir=false) const;
 
   private: MeshDataT::Ptr data;
 
