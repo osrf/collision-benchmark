@@ -95,7 +95,12 @@ target_link_libraries(world_interface_test
 add_test(WorldInterfaceTest world_interface_test)
 add_dependencies(tests world_interface_test)
 
+# tutorials
+add_custom_target(tutorials)
 
+add_executable(transfer_world_state EXCLUDE_FROM_ALL tutorials/transfer_world_state.cc)
+target_link_libraries(transfer_world_state collision_benchmark)
+add_dependencies(tutorials transfer_world_state)
 
 # installing
 set (test_WORLDS

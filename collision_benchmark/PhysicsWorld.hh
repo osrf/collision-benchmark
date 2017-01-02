@@ -93,7 +93,7 @@ class PhysicsWorldBase
   ///   In general, this value is returned when the error is about the combination of
   ///   \e isDiff and \e state, ie. the parameters not being compatible for whichever reason.
   /// \retval FAILED Failure for other reasons than \e NOT_SUPPORTED
-  public: virtual OpResult SetWorldState(const WorldState& state, bool isDiff)=0;
+  public: virtual OpResult SetWorldState(const WorldState& state, bool isDiff=false)=0;
 
   /// Does \e steps subsequent update calls to the world. **This call blocks**.
   /// \param steps number of iterations to run the world. If 0, runs forever.
@@ -101,12 +101,38 @@ class PhysicsWorldBase
 
   /// Returns the name of the world
   public: virtual std::string GetName() const=0;
+
+  /// \return true if SDF is supported to load worlds and models.
+  public: virtual bool SupportsSDF() const = 0;
+
+  /// Loads a world from a SDF element.
+  /// Some implementations may not support directly reading from SDF,
+  /// in which case an exception is thrown (see also SupportsSDF()).
+  /// \param worldname set to non-empty string to override world name given in SDF
+  /// \retval NOT_SUPPORTED the type of model specified in the SDF is not supported
+  /// \retval FAILED Loading failed for any other reason
+  public: virtual OpResult LoadFromSDF(const sdf::ElementPtr& sdf, const std::string& worldname="")=0;
+
+  /// Loads a world from a file. The format of the file has to be
+  /// supported by the implementation.
+  /// \param worldname set to non-empty string to override world name given in the file
+  /// \retval NOT_SUPPORTED the file type, or the world specified within is not supported
+  /// \retval FAILED Loading failed for any other reason
+  public: virtual OpResult LoadFromFile(const std::string& filename, const std::string& worldname="")=0;
+
+  /// Loads a world from a string \e str. The format of the string has to be
+  /// supported by the implementation.
+  /// \param worldname set to non-empty string to override world name given in the string
+  /// \retval NOT_SUPPORTED the format of the string, or the world specified within is not supported
+  /// \retval FAILED Loading failed for any other reason
+  public: virtual OpResult LoadFromString(const std::string& str, const std::string& worldname="")=0;
+
 };
 
 
 
 /**
- * \brief Pure virtual extension of PhysicsWorldBase adding functionality to load world and models and contact information.
+ * \brief Pure virtual extension of PhysicsWorldBase adding functionality to load models and contact information.
  *
  * This interface can act as general interface to different physics
  * engines worlds, e.g. all of the Gazebo-integrated engines or any other implementation
@@ -172,32 +198,7 @@ class PhysicsWorld: public PhysicsWorldBase<typename PhysicsWorldTypes::WorldSta
   public: PhysicsWorld(const PhysicsWorld& w){}
   public: virtual ~PhysicsWorld(){}
 
-  /// \return true if SDF related methods are supported
-  public: virtual bool SupportsSDF() const = 0;
-
-  /// Like gazebo::physics::World::Load(), loads from SDF
-  /// Some implementations may not support directly reading from SDF,
-  /// in which case an exception is thrown (see also SupportsSDF()).
-  /// \param worldname set to non-empty string to override world name given in SDF
-  /// \retval NOT_SUPPORTED the type of model specified in the SDF is not supported
-  /// \retval FAILED Loading failed for any other reason
-  public: virtual OpResult LoadFromSDF(const sdf::ElementPtr& sdf, const std::string& worldname="")=0;
-
-  /// Loads a world from a file. The format of the file has to be
-  /// supported by the implementation.
-  /// \param worldname set to non-empty string to override world name given in the file
-  /// \retval NOT_SUPPORTED the file type, or the world specified within is not supported
-  /// \retval FAILED Loading failed for any other reason
-  public: virtual OpResult LoadFromFile(const std::string& filename, const std::string& worldname="")=0;
-
-  /// Loads a world from a string \e str. The format of the string has to be
-  /// supported by the implementation.
-  /// \param worldname set to non-empty string to override world name given in the string
-  /// \retval NOT_SUPPORTED the format of the string, or the world specified within is not supported
-  /// \retval FAILED Loading failed for any other reason
-  public: virtual OpResult LoadFromString(const std::string& str, const std::string& worldname="")=0;
-
-  /// Loads a model from a file and adds it to the world
+          /// Loads a model from a file and adds it to the world
   /// To subsequently set the pose of the model, use SetWorldState(),
   /// or specific methods of the subclass implementation.
   /// \param modelname set to non-empty string to override world name given in file
