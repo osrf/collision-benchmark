@@ -194,19 +194,21 @@ GazeboPhysicsWorld::ModelLoadResult GazeboPhysicsWorld::AddModelFromShape(const 
   link->AddAttribute("name", "string", "link", true, "link name");
   root->InsertElement(link);
 
-  sdf::ElementPtr shapeColl=shape->GetShapeSDF(false);
+  sdf::ElementPtr shapeGeom=shape->GetShapeSDF(true);
+  sdf::ElementPtr visual(new sdf::Element());
+  visual->SetName("visual");
+  visual->AddAttribute("name", "string", "visual", true, "visual name");
+  visual->InsertElement(shapeGeom);
+  link->InsertElement(visual);
+
+  sdf::ElementPtr shapeColl=shapeGeom;
+  if (shape->SupportLowRes())
+    shapeColl = shape->GetShapeSDF(false);
   sdf::ElementPtr collision(new sdf::Element());
   collision->SetName("collision");
   collision->AddAttribute("name", "string", "collision", true, "collision name");
   collision->InsertElement(shapeColl);
   link->InsertElement(collision);
-
-  sdf::ElementPtr shapeGeom=shape->GetShapeSDF(true);
-  sdf::ElementPtr visual(new sdf::Element());
-  visual->SetName("visual");
-  visual->AddAttribute("name", "string", "visual", true, "visual name");
-  visual->InsertElement(shapeColl);
-  link->InsertElement(visual);
 
   std::cout<<"SDF shape: "<<root->ToString("");
 

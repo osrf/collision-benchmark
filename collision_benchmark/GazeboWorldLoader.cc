@@ -123,7 +123,7 @@ sdf::ElementPtr collision_benchmark::GetSDFElementFromFile(const std::string& fi
   if (!name.empty())
   {
     sdf::ParamPtr sdfElemName = sdfRoot->GetAttribute("name");
-    std::cout << "Replacing world name: '" << sdfElemName->GetAsString() << "' with '" << name << "'" << std::endl;
+    // std::cout << "Replacing SDF name: '" << sdfElemName->GetAsString() << "' with '" << name << "'" << std::endl;
     sdfElemName->SetFromString(name);
   }
 

@@ -37,6 +37,24 @@ std::string SetOrReplaceFileExtension(const std::string& in, const std::string& 
   return swapped.string();
 }
 
+aiMaterial * GetDefaultMaterial()
+{
+
+  aiMaterial* mat = new aiMaterial();
+
+
+  /*mat->AddProperty(&srcMat.diffuse,  1,AI_MATKEY_COLOR_DIFFUSE);
+  mat->AddProperty(&srcMat.specular, 1,AI_MATKEY_COLOR_SPECULAR);
+  mat->AddProperty(&srcMat.ambient,  1,AI_MATKEY_COLOR_AMBIENT);
+  mat->AddProperty(&srcMat.transparency, 1, AI_MATKEY_SHININESS);
+  int m = (int)aiShadingMode_Phong;
+  mat->AddProperty(&m, 1, AI_MATKEY_SHADING_MODEL);
+
+  if (srcMat.name.length)
+      mat->AddProperty(&srcMat.name,AI_MATKEY_NAME);
+  */
+  return mat;
+}
 
 template<typename Float=float>
 aiScene * CreateTrimeshScene(const typename collision_benchmark::MeshData<Float, 3>::ConstPtr& meshData)
@@ -47,7 +65,19 @@ aiScene * CreateTrimeshScene(const typename collision_benchmark::MeshData<Float,
   assimpScene->mNumMeshes = 1;
   assimpScene->mMeshes = new aiMesh*[1];
   assimpScene->mMeshes[0] = assimpMesh;
-  assimpScene->mRootNode = new aiNode();
+  aiNode * rootNode = new aiNode();
+  rootNode->mName.Set("Root");
+  rootNode->mNumMeshes=1;
+  rootNode->mMeshes = new unsigned int[1];
+  rootNode->mMeshes[0] = 0;
+  assimpScene->mRootNode = rootNode;
+
+  // add an empty material (required otherwise get assimp errors
+  // in PretransformVertices when exporting)
+  assimpScene->mNumMaterials = 1;
+  assimpScene->mMaterials = new aiMaterial*[1];
+  assimpScene->mMaterials[0] = GetDefaultMaterial();
+  assimpMesh->mMaterialIndex = 0;
 
   int numVertices = meshData->GetVertices().size();
   int numFaces = meshData->GetFaces().size();
@@ -71,6 +101,11 @@ aiScene * CreateTrimeshScene(const typename collision_benchmark::MeshData<Float,
                      vertices[i].Y(),
                      vertices[i].Z());
     assimpMesh->mVertices[i] = itAIVector3d;
+    // this normal has no meaning, it will have to be
+    // calculated in a postprocessing step. Unfortunately had
+    // problems doing it locally with
+    // aiApplyPostProcessing (assimpScene, aiProcess_GenNormals)
+    // so do it in the exporter instead.
     assimpMesh->mNormals[i]  = itAIVector3d;
   }
 
@@ -87,12 +122,6 @@ aiScene * CreateTrimeshScene(const typename collision_benchmark::MeshData<Float,
     itAIFace->mIndices[2] = faces[i].val[2];
   }
 
-/*  const aiScene * checkScene = aiApplyPostProcessing (assimpScene, aiProcess_GenNormals);
-  if (!checkScene || checkScene != assimpScene)
-  {
-    std::cerr<<"Could not apply postprocessing"<<std::endl;
-    return NULL;
-  }*/
   return assimpScene;
 }
 
@@ -113,18 +142,18 @@ bool WriteTrimesh(const std::string& filename,
     std::cerr<<"Could not create trimesh scene"<<std::endl;
     return false;
   }
-  std::cout<<"Created scene. "<<std::endl;
-
   std::string fname = SetOrReplaceFileExtension(filename, outformat);
 
   std::cout<<"Writing to file "<<fname<<std::endl;
 
   Assimp::Exporter exporter;
-  if (exporter.Export(scene, outformat, fname) != AI_SUCCESS)
+  if (exporter.Export(scene, outformat, fname, aiProcess_GenNormals) != AI_SUCCESS)
   {
-    std::cerr<<"Could not write "<<fname<<" in the format "<<outformat<<std::endl;
+    std::cerr<<"Could not write "<<fname<<" in the format "
+             <<outformat<<". Error: "<<exporter.GetErrorString()<<std::endl;
     return false;
   }
+  delete scene;
   return true;
 }
 

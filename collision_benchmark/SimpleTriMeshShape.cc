@@ -21,7 +21,7 @@
 
 using collision_benchmark::SimpleTriMeshShape;
 
-const std::string SimpleTriMeshShape::MESH_OUT_DIR="/tmp/";
+const std::string SimpleTriMeshShape::MESH_OUT_DIR="/tmp/.gazebo/";
 const std::string SimpleTriMeshShape::MESH_EXT="stl";
 
 
@@ -72,27 +72,36 @@ bool makeDirectoryIfNeeded(const std::string& dPath)
 
 sdf::ElementPtr SimpleTriMeshShape::GetShapeSDF(bool detailed) const
 {
-  sdf::ElementPtr geometry(new sdf::Element());
-  geometry->SetName("geometry");
-  sdf::ElementPtr geomChild(new sdf::Element());
-  geometry->InsertElement(geomChild);
-  sdf::ElementPtr geomElem(new sdf::Element());
-  geomChild->InsertElement(geomElem);
-
-  if (!makeDirectoryIfNeeded(MESH_OUT_DIR))
+ if (!makeDirectoryIfNeeded(MESH_OUT_DIR))
   {
     std::cerr<<"Could not create directory to write mesh data to"<<std::endl;
     return sdf::ElementPtr();
   }
 
-  std::string filename = (boost::filesystem::path(MESH_OUT_DIR) / boost::filesystem::path(name)).native();
-
-  std::cout<<"Filename: "<<filename<<std::endl;
-
+  std::string filename = (boost::filesystem::path(MESH_OUT_DIR) /
+                          boost::filesystem::path(name +
+                          (detailed ? "_detail" : "") + "." + MESH_EXT)).native();
   if (!collision_benchmark::WriteTrimesh(filename,MESH_EXT, data))
   {
     std::cerr<<"Could not write mesh data!"<<std::endl;
+    return sdf::ElementPtr();
   }
+
+  sdf::ElementPtr geometry(new sdf::Element());
+  geometry->SetName("geometry");
+  sdf::ElementPtr meshElem(new sdf::Element());
+  meshElem->SetName("mesh");
+  geometry->InsertElement(meshElem);
+
+  sdf::ElementPtr uriElem(new sdf::Element());
+  meshElem->InsertElement(uriElem);
+  uriElem->SetName("uri");
+  uriElem->AddValue("string", filename, true, "URI to mesh file");
+
+  sdf::ElementPtr scaleElem(new sdf::Element());
+  meshElem->InsertElement(scaleElem);
+  scaleElem->SetName("scale");
+  scaleElem->AddValue("vector3", "1.0 1.0 1.0", false, "scale of mesh");
 
   return geometry;
 }

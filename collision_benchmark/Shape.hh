@@ -58,9 +58,16 @@ class Shape
   public: sdf::ElementPtr GetPoseSDF() const;
 
   /// returns the shape part as SDF element.
+  /// \sa SupportLowRes()
   /// \param detailed set to true to get the most detailed shape, or to false
   ///     to get an approximated shape, e.g. to use as collision shape.
   public: virtual sdf::ElementPtr GetShapeSDF(bool detailed=true) const = 0;
+
+  /// returns true if GetShapeSDF() returns a different mesh with parameter
+  /// \e detailed set to false, in which case there is a low-res representation
+  /// of the shape. If this returns false, there is only one (the detailed)
+  /// representation.
+  public: virtual bool SupportLowRes() const { return false; }
 
   private: Type type;
   private: Pose3 pose;

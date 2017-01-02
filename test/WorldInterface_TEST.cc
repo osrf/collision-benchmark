@@ -192,8 +192,8 @@ TEST_F(WorldInterfaceTest, ModelLoading)
   vertices.push_back(Vertex(0,0,-1));
   vertices.push_back(Vertex(1,0,0));
   vertices.push_back(Vertex(0,1,0));
-  triangles.push_back(Face(2,1,0));
-  triangles.push_back(Face(3,2,0));
+  triangles.push_back(Face(0,1,2));
+  triangles.push_back(Face(0,2,3));
 
   Shape::Ptr shape(new SimpleTriMeshShape(meshData, "test_mesh"));
 
