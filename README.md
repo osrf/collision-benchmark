@@ -200,6 +200,9 @@ To do this, we will first get the state of the rubble world, and set the empty w
 a number of iterations. So while you are looking at the first world with gzclient, it should switch to show
 the rubble world after a while.
 
+From then on, at each iteration, we will set the first world to the state of the second, so that the rubble moves just as in
+the second world. The two world states should be identical at each loop. The source code demonstrates how you can compare the
+states to do sanity checks as well.
 
 Start the tutorial:
 
