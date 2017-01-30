@@ -32,7 +32,8 @@ using collision_benchmark::GazeboPhysicsWorld;
 using collision_benchmark::Contact;
 using collision_benchmark::ContactInfo;
 
-GazeboPhysicsWorld::GazeboPhysicsWorld()
+GazeboPhysicsWorld::GazeboPhysicsWorld(bool _enforceContactComputation)
+  : enforceContactComputation(_enforceContactComputation)
 {
 }
 
@@ -280,6 +281,10 @@ void GazeboPhysicsWorld::Update(int steps)
   gazebo::runWorld(world,steps);
 }
 
+void GazeboPhysicsWorld::SetPaused(bool flag)
+{
+  world->SetPaused(flag);
+}
 
 std::string GazeboPhysicsWorld::GetName() const
 {
@@ -421,9 +426,33 @@ bool GazeboPhysicsWorld::IsAdaptor() const
   return true;
 }
 
+void GazeboPhysicsWorld::OnContact(ConstContactsPtr &_msg)
+{
+//  std::cout<<"DEBUG: Got contact!"<<std::endl;
+}
+
+void GazeboPhysicsWorld::SetEnforceContactsComputation(bool flag)
+{
+  enforceContactComputation=flag;
+  if (enforceContactComputation)
+  {
+#ifndef CONTACTS_ENFORCABLE
+    if (!node)
+    {
+      node = gazebo::transport::NodePtr(new gazebo::transport::Node());
+      node->Init(GetName());
+    }
+    contactsSub = node->Subscribe("~/physics/contacts", &GazeboPhysicsWorld::OnContact, this);
+#else
+    world->GetContactsManager()->Enforce(); XXX or similar
+#endif
+  }
+}
+
 GazeboPhysicsWorld::RefResult GazeboPhysicsWorld::SetWorld(const WorldPtr& _world)
 {
   world = collision_benchmark::to_boost_ptr<World>(_world);
+  SetEnforceContactsComputation(enforceContactComputation);
   return GazeboPhysicsWorld::REFERENCED;
 }
 

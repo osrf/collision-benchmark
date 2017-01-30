@@ -36,7 +36,8 @@ using collision_benchmark::WorldManager;
 
 typedef PhysicsWorldBase<gazebo::physics::WorldState> GzPhysicsWorldBase;
 typedef WorldManager<gazebo::physics::WorldState> GzWorldManager;
-
+typedef GazeboPhysicsWorld::PhysicsWorldTypes GazeboPhysicsWorldTypes;
+typedef PhysicsWorld<GazeboPhysicsWorldTypes> GzPhysicsWorld;
 
 // loads the mirror world. This should be loaded before all other Gazebo worlds, so that
 // gzclient connects to this one.
@@ -57,7 +58,7 @@ GazeboMirrorWorld::Ptr setupMirrorWorld()
 }
 
 // Main method to play the test, later to be replaced by a dedicated structure (without command line arument params)
-bool PlayTest(int argc, char **argv)
+bool Run(int argc, char **argv)
 {
   if (argc < 3)
   {
@@ -117,10 +118,13 @@ bool PlayTest(int argc, char **argv)
       return false;
     }
     // Create the GazeboPhysicsWorld object
-    GazeboPhysicsWorld::Ptr gzPhysicsWorld(new GazeboPhysicsWorld());
+    bool enforceContactCalc=true;
+    GazeboPhysicsWorld::Ptr gzPhysicsWorld(new GazeboPhysicsWorld(enforceContactCalc));
     gzPhysicsWorld->SetWorld(collision_benchmark::to_std_ptr<gazebo::physics::World>(gzworld));
     worldManager.AddPhysicsWorld(gzPhysicsWorld);
   }
+
+//  worldManager.SetDynamicsEnabled(false);
 
   std::cout << "Now start gzclient if you would like to view the test. Press [Enter] to continue."<<std::endl;
   getchar();
@@ -130,6 +134,12 @@ bool PlayTest(int argc, char **argv)
     int numSteps=1;
     worldManager.Update(numSteps);
     // gazebo::common::Time::MSleep(100);
+    GzWorldManager::PhysicsWorldBasePtr mirroredWorld = worldManager.GetMirroredWorld();
+    GzPhysicsWorld::Ptr mirroredWorldCast = std::dynamic_pointer_cast<GzPhysicsWorld>(mirroredWorld);
+    assert(mirroredWorldCast);
+    std::vector<GzPhysicsWorld::ContactInfoPtr> contacts = mirroredWorldCast->GetContactInfo();
+    std::cout<<"Number of contacts: "<<contacts.size()<<std::endl;
+    getchar();
   }
   return true;
 }
@@ -149,12 +159,12 @@ int main(int argc, char **argv)
     return 1;
   }
 
-  PlayTest(argc, argv);
+  Run(argc, argv);
 
   std::cout << "Shutting down..." <<std::endl;
 
   gazebo::shutdown();
 
-  std::cout << "Test ended." << std::endl;
+  std::cout << "Multi-world server ended." << std::endl;
   return 0;
 }

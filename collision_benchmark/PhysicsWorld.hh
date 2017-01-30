@@ -99,6 +99,9 @@ class PhysicsWorldBase
   /// \param steps number of iterations to run the world. If 0, runs forever.
   public: virtual void Update(int steps=1)=0;
 
+  /// Pauses or "freezes" the world simulation in the current state
+  public: virtual void SetPaused(bool flag)=0;
+
   /// Returns the name of the world
   public: virtual std::string GetName() const=0;
 
@@ -158,9 +161,10 @@ class PhysicsWorldBase
  * \author Jennifer Buehler
  * \date October 2016
  */
-template<class PhysicsWorldTypes>
-class PhysicsWorld: public PhysicsWorldBase<typename PhysicsWorldTypes::WorldState>
+template<class PhysicsWorldTypes_>
+class PhysicsWorld: public PhysicsWorldBase<typename PhysicsWorldTypes_::WorldState>
 {
+  public: typedef PhysicsWorldTypes_ PhysicsWorldTypes;
   private: typedef PhysicsWorld<PhysicsWorldTypes> Self;
   public: typedef std::shared_ptr<Self> Ptr;
   public: typedef std::shared_ptr<const Self> ConstPtr;

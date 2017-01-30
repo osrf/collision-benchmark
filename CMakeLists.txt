@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 
+# uncomment to use new solution which requires modified gazebo
+# allowing enforcement of contact calculation in ContactManager
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DCONTACTS_ENFORCABLE")
+
 # Search for dependencies
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/SearchForStuff.cmake)

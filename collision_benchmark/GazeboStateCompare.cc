@@ -354,7 +354,7 @@ bool GazeboStateCompare::Equal(const gazebo::physics::LinkState& s1, const gazeb
     return false;
   }
 
-  if (/*tolerances.CheckDynamics && */!EqualVectors(s1.Wrench().Pos(), s2.Wrench().Pos(), tolerances.Force))
+  if (tolerances.CheckDynamics && !EqualVectors(s1.Wrench().Pos(), s2.Wrench().Pos(), tolerances.Force))
   {
 #ifdef DEBUG
     std::cout<<"Force not equal: "<<s1.Wrench().Pos()<<", "<<s2.Wrench().Pos()<<std::endl;
@@ -362,8 +362,8 @@ bool GazeboStateCompare::Equal(const gazebo::physics::LinkState& s1, const gazeb
     return false;
   }
 
-//  if (tolerances.CheckDynamics)
-//  {
+  if (tolerances.CheckDynamics)
+  {
     ignition::math::Vector3d q1(s1.Wrench().Rot().Euler());
     ignition::math::Vector3d q2(s2.Wrench().Rot().Euler());
     if (!EqualVectors(q1,q2, tolerances.Torque))
@@ -373,7 +373,7 @@ bool GazeboStateCompare::Equal(const gazebo::physics::LinkState& s1, const gazeb
 #endif
       return false;
     }
-//  }
+  }
 
   if (!tolerances.CheckLinkCollisionStates)
     return true;

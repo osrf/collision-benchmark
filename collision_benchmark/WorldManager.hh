@@ -51,168 +51,195 @@ namespace collision_benchmark
 template<class WorldState>
 class WorldManager
 {
-    private: typedef WorldManager<WorldState> Self;
+  private: typedef WorldManager<WorldState> Self;
 
-    public: typedef std::shared_ptr<WorldManager> Ptr;
-    public: typedef std::shared_ptr<const WorldManager> ConstPtr;
+  public: typedef std::shared_ptr<WorldManager> Ptr;
+  public: typedef std::shared_ptr<const WorldManager> ConstPtr;
 
-    // the original world supporting the gazebo::physics::WorldState to synchronize to
-    public: typedef PhysicsWorldBase<gazebo::physics::WorldState> PhysicsWorldBaseT;
-    public: typedef std::shared_ptr<PhysicsWorldBaseT> PhysicsWorldBasePtr;
+  // the original world supporting the gazebo::physics::WorldState to synchronize to
+  public: typedef PhysicsWorldBase<gazebo::physics::WorldState> PhysicsWorldBaseT;
+  public: typedef std::shared_ptr<PhysicsWorldBaseT> PhysicsWorldBasePtr;
 
-    public: typedef typename MirrorWorld<WorldState>::Ptr MirrorWorldPtr;
+  public: typedef typename MirrorWorld<WorldState>::Ptr MirrorWorldPtr;
 
-    /// Constructor.
-    /// \param _mirrorWorld the main mirror world (the one which will reflect the original). Does not
-    ///    need to be set to any world yet, will automatically be set to mirror the first world added with
-    ///    AddPhysicsWorld.
-    public:  WorldManager(const MirrorWorldPtr& _mirrorWorld=MirrorWorldPtr()):
-               mirroredWorldIdx(-1)
-             {
-               SetMirrorWorld(_mirrorWorld);
-             }
+  /// Constructor.
+  /// \param _mirrorWorld the main mirror world (the one which will reflect the original). Does not
+  ///    need to be set to any world yet, will automatically be set to mirror the first world added with
+  ///    AddPhysicsWorld.
+  public:  WorldManager(const MirrorWorldPtr& _mirrorWorld=MirrorWorldPtr()):
+             mirroredWorldIdx(-1)
+           {
+             SetMirrorWorld(_mirrorWorld);
+           }
 
-    public:  ~WorldManager() {}
+  public:  ~WorldManager() {}
 
-    /// Sets the mirror world
-    /// \param _mirrorWorld the main mirror world (the one which will reflect the original). Does not
-    ///    need to be set to any world yet, will automatically be set to mirror the first world added with
-    ///    AddPhysicsWorld.
-    public: void SetMirrorWorld(const MirrorWorldPtr& _mirrorWorld)
+  /// Sets the mirror world
+  /// \param _mirrorWorld the main mirror world (the one which will reflect the original). Does not
+  ///    need to be set to any world yet, will automatically be set to mirror the first world added with
+  ///    AddPhysicsWorld.
+  public: void SetMirrorWorld(const MirrorWorldPtr& _mirrorWorld)
+          {
+            if (!_mirrorWorld)
             {
-              if (!_mirrorWorld)
-              {
-                if (mirrorWorld)
-                {
-                  mirrorWorld.reset();
-                  ctrlClientSubscriber.reset();
-                  ctrlClientPublisher.reset();
-                }
-                mirroredWorldIdx=-1;
-                return;
-              }
-              mirrorWorld=_mirrorWorld;
-              if (!worlds.empty())
-              {
-                mirrorWorld->SetOriginalWorld(worlds.front());
-                mirroredWorldIdx=0;
-              }
-              if (!node)
-              {
-                node.reset(new gazebo::transport::Node());
-                node->Init();
-              }
-              if (!ctrlClientSubscriber) ctrlClientSubscriber = node->Subscribe("mirror_world/set_world", &Self::crtlClientCallback, this);
-              if (!ctrlClientPublisher) ctrlClientPublisher  = node->Advertise<gazebo::msgs::Any>("mirror_world/get_world");
-            }
-
-    /// Adds this world and returns the index this world can be accessed at
-    /// \return positive int or zero on success (index this world can be accessed at)
-    public:  void AddPhysicsWorld(const PhysicsWorldBasePtr& _world)
-             {
-               if (worlds.empty() && mirrorWorld)
-               {
-                 mirrorWorld->SetOriginalWorld(_world);
-                 mirroredWorldIdx=0;
-               }
-               worlds.push_back(_world);
-             }
-
-    public:  void SetMirroredWorld(const int _index)
-             {
-               PhysicsWorldBasePtr world=GetPhysicsWorld(_index);
-               if (!world)
-               {
-                 gzerr<<"Cannot get world in WorldManager::SetMirroredWorld()\n";
-                 return;
-               }
-               mirrorWorld->SetOriginalWorld(world);
-               mirroredWorldIdx=_index;
-             }
-
-
-    /// Returns the original world which is mirrored by this class
-    public:  PhysicsWorldBasePtr GetPhysicsWorld(unsigned int _index) const
-             {
-               GZ_ASSERT(_index < worlds.size(), "Index out of range");
-               if (_index >= worlds.size()) return PhysicsWorldBasePtr();
-               return worlds.at(_index);
-             }
-
-
-    public: std::vector<PhysicsWorldBasePtr> GetPhysicsWorlds() const
-            {
-              return worlds;
-            }
-
-    /// Calls Update(iter) on all worlds and subsequently calls MirrorWorld::Sync() and MirrorWorld::Update().
-    public: void Update(int iter=1)
-            {
-              for (std::vector<PhysicsWorldBasePtr>::iterator it=worlds.begin(); it!= worlds.end(); ++it)
-              {
-                PhysicsWorldBasePtr w=*it;
-                w->Update(iter);
-              }
               if (mirrorWorld)
               {
-                mirrorWorld->Sync();
-                mirrorWorld->Update();
+                mirrorWorld.reset();
+                ctrlClientSubscriber.reset();
+                ctrlClientPublisher.reset();
               }
+              mirroredWorldIdx=-1;
+              return;
+            }
+            mirrorWorld=_mirrorWorld;
+            if (!worlds.empty())
+            {
+              mirrorWorld->SetOriginalWorld(worlds.front());
+              mirroredWorldIdx=0;
+            }
+            if (!node)
+            {
+              node.reset(new gazebo::transport::Node());
+              node->Init();
+            }
+            if (!ctrlClientSubscriber) ctrlClientSubscriber = node->Subscribe("mirror_world/set_world", &Self::crtlClientCallback, this);
+            if (!ctrlClientPublisher) ctrlClientPublisher  = node->Advertise<gazebo::msgs::Any>("mirror_world/get_world");
+          }
+
+  // returns the original world which is currently mirrored by the mirror world
+  public:  PhysicsWorldBasePtr GetMirroredWorld()
+           {
+             assert(mirrorWorld);
+             return mirrorWorld->GetOriginalWorld();
+           }
+
+  /// Adds this world and returns the index this world can be accessed at
+  /// \return positive int or zero on success (index this world can be accessed at)
+  public:  void AddPhysicsWorld(const PhysicsWorldBasePtr& _world)
+           {
+             if (worlds.empty() && mirrorWorld)
+             {
+               mirrorWorld->SetOriginalWorld(_world);
+               mirroredWorldIdx=0;
+             }
+             worlds.push_back(_world);
+           }
+
+  public:  void SetMirroredWorld(const int _index)
+           {
+             PhysicsWorldBasePtr world=GetPhysicsWorld(_index);
+             if (!world)
+             {
+               gzerr<<"Cannot get world in WorldManager::SetMirroredWorld()\n";
+               return;
+             }
+             mirrorWorld->SetOriginalWorld(world);
+             mirroredWorldIdx=_index;
+           }
+
+
+  /// Returns the original world which is mirrored by this class
+  public:  PhysicsWorldBasePtr GetPhysicsWorld(unsigned int _index) const
+           {
+             GZ_ASSERT(_index < worlds.size(), "Index out of range");
+             if (_index >= worlds.size()) return PhysicsWorldBasePtr();
+             return worlds.at(_index);
+           }
+
+
+  public: std::vector<PhysicsWorldBasePtr> GetPhysicsWorlds() const
+          {
+            return worlds;
+          }
+
+  public: void SetPaused(bool flag)
+          {
+            for (std::vector<PhysicsWorldBasePtr>::iterator it=worlds.begin(); it!= worlds.end(); ++it)
+            {
+              PhysicsWorldBasePtr w=*it;
+              w->SetPaused(flag);
+            }
+          }
+
+  /// Set the dynamics engine to enabled or disabled. If disabled, the objects won't react to physics
+  /// laws, but objects can be maintained in the world and collision states / contact points between them checked.
+  public: virtual void SetDynamicsEnabled(const bool flag)
+          {
+            for (std::vector<PhysicsWorldBasePtr>::iterator it=worlds.begin(); it!= worlds.end(); ++it)
+            {
+              PhysicsWorldBasePtr w=*it;
+              w->SetDynamicsEnabled(flag);
+            }
+          }
+
+  /// Calls Update(iter) on all worlds and subsequently calls MirrorWorld::Sync() and MirrorWorld::Update().
+  public: void Update(int iter=1)
+          {
+            for (std::vector<PhysicsWorldBasePtr>::iterator it=worlds.begin(); it!= worlds.end(); ++it)
+            {
+              PhysicsWorldBasePtr w=*it;
+              w->Update(iter);
+            }
+            if (mirrorWorld)
+            {
+              mirrorWorld->Sync();
+              mirrorWorld->Update();
+            }
+          }
+
+  /// Callback for control client subscriber \e ctrlClientSubscriber.
+  /// Will send back the current world name with \e ctrlClientPublisher.
+  private:  void crtlClientCallback(ConstAnyPtr &_msg)
+            {
+              // std::cout << "Received: "<<_msg->DebugString();
+              // change the world:
+              if (_msg->type() != gazebo::msgs::Any::INT32)
+              {
+                gzerr<<"Received Control message of invalid type, expecting INT32.\n"<<_msg->DebugString();
+                return;
+              }
+              int ctrl=_msg->int_value();
+              if (ctrl < 0)
+              {
+                // Switch to previous world
+                std::cout<<"Switching to previous world"<<std::endl;
+                if (mirroredWorldIdx > 0) --mirroredWorldIdx;
+                //  else mirroredWorldIdx=worlds.size()-1; // go back to last world
+              }
+              else if (ctrl > 0)
+              {
+                // Switch to next world
+                std::cout<<"Switching to next world"<<std::endl;
+                if (mirroredWorldIdx < (worlds.size()-1)) ++mirroredWorldIdx;
+                // else mirroredWorldIdx=0; // go back to first world
+              }
+
+              if (ctrl != 0)
+              {
+                // update mirrored world
+                SetMirroredWorld(mirroredWorldIdx);
+              }
+
+              // send back the name of the new world:
+              SendWorldName(mirrorWorld->GetOriginalWorld()->GetName());
             }
 
-    /// Callback for control client subscriber \e ctrlClientSubscriber.
-    /// Will send back the current world name with \e ctrlClientPublisher.
-    private:  void crtlClientCallback(ConstAnyPtr &_msg)
-              {
-                // std::cout << "Received: "<<_msg->DebugString();
-                // change the world:
-                if (_msg->type() != gazebo::msgs::Any::INT32)
-                {
-                  gzerr<<"Received Control message of invalid type, expecting INT32.\n"<<_msg->DebugString();
-                  return;
-                }
-                int ctrl=_msg->int_value();
-                if (ctrl < 0)
-                {
-                  // Switch to previous world
-                  std::cout<<"Switching to previous world"<<std::endl;
-                  if (mirroredWorldIdx > 0) --mirroredWorldIdx;
-                  //  else mirroredWorldIdx=worlds.size()-1; // go back to last world
-                }
-                else if (ctrl > 0)
-                {
-                  // Switch to next world
-                  std::cout<<"Switching to next world"<<std::endl;
-                  if (mirroredWorldIdx < (worlds.size()-1)) ++mirroredWorldIdx;
-                  // else mirroredWorldIdx=0; // go back to first world
-                }
+  /// sends the name of a word via \e ctrlClientPublisher
+  private: void SendWorldName(const std::string& name)
+           {
+              gazebo::msgs::Any m;
+              m.set_type(gazebo::msgs::Any::STRING);
+              m.set_string_value(name);
+              ctrlClientPublisher->Publish(m);
+           }
 
-                if (ctrl != 0)
-                {
-                  // update mirrored world
-                  SetMirroredWorld(mirroredWorldIdx);
-                }
+  private: gazebo::transport::SubscriberPtr ctrlClientSubscriber;
+  private: gazebo::transport::PublisherPtr ctrlClientPublisher;
+  private: gazebo::transport::NodePtr node;
 
-                // send back the name of the new world:
-                SendWorldName(mirrorWorld->GetOriginalWorld()->GetName());
-              }
-
-    /// sends the name of a word via \e ctrlClientPublisher
-    private: void SendWorldName(const std::string& name)
-             {
-                gazebo::msgs::Any m;
-                m.set_type(gazebo::msgs::Any::STRING);
-                m.set_string_value(name);
-                ctrlClientPublisher->Publish(m);
-             }
-
-    private: gazebo::transport::SubscriberPtr ctrlClientSubscriber;
-    private: gazebo::transport::PublisherPtr ctrlClientPublisher;
-    private: gazebo::transport::NodePtr node;
-
-    private: std::vector<PhysicsWorldBasePtr> worlds;
-    private: MirrorWorldPtr mirrorWorld;
-    private: int mirroredWorldIdx;
+  private: std::vector<PhysicsWorldBasePtr> worlds;
+  private: MirrorWorldPtr mirrorWorld;
+  private: int mirroredWorldIdx;
 
 };
 

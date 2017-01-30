@@ -121,7 +121,7 @@ bool PlayTest(int argc, char **argv)
   std::vector<GazeboPhysicsWorld::Ptr> worlds;
   for (int i = 0; i < gzworlds.size(); ++i)
   {
-    GazeboPhysicsWorld::Ptr gzPhysicsWorld(new GazeboPhysicsWorld());
+    GazeboPhysicsWorld::Ptr gzPhysicsWorld(new GazeboPhysicsWorld(false));
     gzPhysicsWorld->SetWorld(collision_benchmark::to_std_ptr<gazebo::physics::World>(gzworlds[i]));
     worlds.push_back(gzPhysicsWorld);
   }

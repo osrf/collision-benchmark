@@ -32,17 +32,17 @@ TEST_F(WorldInterfaceTest, TransferWorldState)
 {
   typedef collision_benchmark::PhysicsWorldBase<gazebo::physics::WorldState> GzPhysicsWorldBase;
 
-  GazeboPhysicsWorld::Ptr gzWorld1(new GazeboPhysicsWorld());
+  GazeboPhysicsWorld::Ptr gzWorld1(new GazeboPhysicsWorld(false));
   ASSERT_EQ(gzWorld1->LoadFromFile("worlds/empty.world"),GzPhysicsWorldBase::SUCCESS) << " Could not load empty world";
   gzWorld1->SetDynamicsEnabled(false);
 
-  GazeboPhysicsWorld::Ptr gzWorld2(new GazeboPhysicsWorld());
+  GazeboPhysicsWorld::Ptr gzWorld2(new GazeboPhysicsWorld(false));
   ASSERT_EQ(gzWorld2->LoadFromFile("worlds/rubble.world"),GzPhysicsWorldBase::SUCCESS) << " Could not load rubble world";
 
   GzPhysicsWorldBase::Ptr world1(gzWorld1);
   GzPhysicsWorldBase::Ptr world2(gzWorld2);
 
-  int numIters=1000;
+  int numIters=3000;
   std::cout<<"Doing "<<numIters<<" iterations on the rubble world and set the second world to the same state"<<std::endl;
   for (int i=0; i<numIters; ++i)
   {
@@ -99,7 +99,7 @@ TEST_F(WorldInterfaceTest, WorldManager)
     ASSERT_NE(gzworld.get(), nullptr) <<"Error loading world "<<worldfile<<std::endl;
 
     // Create the GazeboPhysicsWorld object
-    GazeboPhysicsWorld::Ptr gzPhysicsWorld(new GazeboPhysicsWorld());
+    GazeboPhysicsWorld::Ptr gzPhysicsWorld(new GazeboPhysicsWorld(false));
     gzPhysicsWorld->SetWorld(collision_benchmark::to_std_ptr<gazebo::physics::World>(gzworld));
     worldManager.AddPhysicsWorld(gzPhysicsWorld);
   }
@@ -131,8 +131,8 @@ TEST_F(WorldInterfaceTest, GazeboModelLoading)
   typedef PhysicsWorld<collision_benchmark::GazeboPhysicsWorldTypes> GzPhysicsWorld;
 
   // create a world with a cube
-  GzPhysicsWorld::Ptr world (new GazeboPhysicsWorld());
-  world->LoadFromFile(worldfile);
+  GzPhysicsWorld::Ptr world (new GazeboPhysicsWorld(false));
+  ASSERT_EQ(world->LoadFromFile(worldfile),GzPhysicsWorld::SUCCESS) << " Could not load world";
 
   ASSERT_NE(world.get(), nullptr) <<"Error loading world "<<worldfile<<std::endl;
 
@@ -229,9 +229,9 @@ TEST_F(WorldInterfaceTest, GazeboContacts)
   typedef PhysicsWorld<collision_benchmark::GazeboPhysicsWorldTypes> GzPhysicsWorld;
 
   // create one world per physics engine and load it with the cube world, and add it to the world manager
-  GzPhysicsWorld::Ptr world (new GazeboPhysicsWorld());
-  world->LoadFromFile(worldfile);
-  ASSERT_NE(world.get(), nullptr) <<"Error loading world "<<worldfile<<std::endl;
+  bool enforceContactComp=true;
+  GzPhysicsWorld::Ptr world (new GazeboPhysicsWorld(enforceContactComp));
+  ASSERT_EQ(world->LoadFromFile(worldfile),GzPhysicsWorld::SUCCESS) << " Could not load empty world";
 
   // Add another cube which should fall on the ground in only very few iterations
   std::string sdfStr("\
@@ -260,14 +260,6 @@ TEST_F(WorldInterfaceTest, GazeboContacts)
   GzWorldState state = world->GetWorldState();
   ASSERT_EQ(state.GetModelStates().size(), 2) <<"World "<<world->GetName()<<" should have only two models.";
 
-  // XXX PROBLEM: ContactManager::NewContact() only adds contacts to the manager
-  // if there are subscribers connected. Looks like we can't use ContactManager for the current implementation
-  // unless we add this option to Gazebo.
-  // For now, test this by first connecting gzclient and switch on contacts display.
-
-  std::cout<<"Now you start gzclient and enable contacts display. Then press any key to start the world."<<std::endl;
-  std::cout<<"NOTE: This is part of a temporary solution until we figure out how to enforce computation of contacts in Gazebo, even if no subscribers to contacts exits!"<<std::endl;
-  getchar();
   while(true)
   {
     world->Update(1);
@@ -280,7 +272,6 @@ TEST_F(WorldInterfaceTest, GazeboContacts)
       break;
     }
   }
-  std::cout<<"OK YOU CAN NOW CLOSE GZCLIENT"<<std::endl;
 }
 
 

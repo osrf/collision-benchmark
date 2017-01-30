@@ -6,6 +6,10 @@
 #include <gazebo/physics/World.hh>
 #include <gazebo/physics/Contact.hh>
 
+#ifndef CONTACTS_ENFORCABLE
+//#include <gazebo/msgs/MessageTypes.hh>
+#include <gazebo/transport/TransportTypes.hh>
+#endif
 
 namespace collision_benchmark
 {
@@ -75,7 +79,10 @@ class GazeboPhysicsWorld: public collision_benchmark::PhysicsEngineWorld<GazeboP
   // if \e OnLoadWaitForNamespace, sleep time in-between checks to wait for whether the namespace has been loaded
   public: static constexpr float OnLoadWaitForNamespaceSleep = 1;
 
-  public: GazeboPhysicsWorld();
+  // \param enforceContactComputation by default, contacts in Gazebo are only computed if
+  // there is at least one subscriber to the contacts topic. Use this flag to enforce contacts
+  // computation in any case.
+  public: GazeboPhysicsWorld(bool enforceContactComputation=false);
   public: GazeboPhysicsWorld(const GazeboPhysicsWorld& w){}
   public: virtual ~GazeboPhysicsWorld();
 
@@ -111,6 +118,8 @@ class GazeboPhysicsWorld: public collision_benchmark::PhysicsEngineWorld<GazeboP
 
   public: virtual void Update(int steps=1);
 
+  public: virtual void SetPaused(bool flag);
+
   public: virtual std::string GetName() const;
 
   public: virtual void SetDynamicsEnabled(const bool flag);
@@ -141,11 +150,27 @@ class GazeboPhysicsWorld: public collision_benchmark::PhysicsEngineWorld<GazeboP
 
   public: virtual PhysicsEnginePtr GetPhysicsEngine() const;
 
+  // Set enforcement of contact computation. Gazebo by default only computes
+  // contacts when there is a subscriber to the contacts topic.
+  // See also constructor parameter.
+  public: void SetEnforceContactsComputation(bool flag);
 
   /// wait for the namespace of this world
   private: bool WaitForNamespace(const gazebo::physics::WorldPtr& gzworld, float maxWait, float waitSleep);
 
   private: gazebo::physics::WorldPtr world;
+  // by default, contacts in Gazebo are only computed if
+  // there is at least one subscriber to the contacts topic.
+  // This flag to enforce contact computation.
+  private: bool enforceContactComputation;
+
+#ifndef CONTACTS_ENFORCABLE
+  /// \brief Callback when a Contact message is received
+  /// \param[in] _msg The Contact message
+  private: void OnContact(ConstContactsPtr &_msg);
+  private: gazebo::transport::NodePtr node;
+  private: gazebo::transport::SubscriberPtr contactsSub;
+#endif
 };  // class GazeboPhysicsWorld
 
 /// \def GazeboPhysicsWorldPtr

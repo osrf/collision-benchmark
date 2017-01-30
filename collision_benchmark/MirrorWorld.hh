@@ -22,8 +22,8 @@
 #define COLLISION_BENCHMARK_MIRRORWORLD_H
 
 #include <collision_benchmark/PhysicsWorld.hh>
+#include <mutex>
 #include <string>
-#include <iostream>
 
 namespace collision_benchmark
 {
@@ -53,12 +53,14 @@ class MirrorWorld
     /// Sets the original world to be mirrored by this MirrorWorld
     public:  void SetOriginalWorld(const OriginalWorldPtr& _originalWorld)
              {
+               std::lock_guard<std::mutex> lock(originalWorldMutex);
                originalWorld=_originalWorld;
              }
 
     /// Returns the original world which is mirrored by this class
     public:  OriginalWorldPtr GetOriginalWorld() const
              {
+               std::lock_guard<std::mutex> lock(originalWorldMutex);
                return originalWorld;
              }
 
@@ -72,6 +74,7 @@ class MirrorWorld
     public: virtual void Update(int iter=1)=0;
 
     protected:  OriginalWorldPtr originalWorld;
+    protected:  mutable std::mutex originalWorldMutex;
 };
 
 }  // namespace collision_benchmark

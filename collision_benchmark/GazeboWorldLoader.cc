@@ -330,9 +330,9 @@ gazebo::physics::ModelPtr collision_benchmark::LoadModelFromSDFString(const std:
 // Helper function which interprets the string \e str as file if \e isFile is true,
 // and as xml string  otherwise
 gazebo::physics::WorldPtr LoadWorld_helper(const std::string &str,
-                                                   const bool isFile,
-                                                   const std::string& name,
-                                                   const sdf::ElementPtr& overridePhysics)
+                                           const bool isFile,
+                                           const std::string& name,
+                                           const sdf::ElementPtr& overridePhysics)
 {
   gazebo::physics::WorldPtr world;
   sdf::ElementPtr sdfRoot;
