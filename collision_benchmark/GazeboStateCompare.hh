@@ -1,6 +1,7 @@
 #ifndef COLLISION_BENCHMARK_GAZEBOSTATE_COMPARE_HH
 #define COLLISION_BENCHMARK_GAZEBOSTATE_COMPARE_HH
 
+#include <ignition/math/Pose3.hh>
 
 // forward declarations
 namespace gazebo
@@ -102,8 +103,8 @@ struct GazeboStateCompare
 
   //  \param orientationTolerance orientation is compared with the Euler
   //         angles instead of with Quaternions, so this is the angular tolerance (radians).
-  static bool Equal(const gazebo::math::Pose& p1,
-                    const gazebo::math::Pose& p2,
+  static bool Equal(const ignition::math::Pose3d& p1,
+                    const ignition::math::Pose3d& p2,
                     const double& positionTolerance,
                     const double& orientationTolerance);
 };

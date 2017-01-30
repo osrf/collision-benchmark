@@ -443,3 +443,8 @@ GazeboPhysicsWorld::PhysicsEnginePtr GazeboPhysicsWorld::GetPhysicsEngine() cons
   if (world) return collision_benchmark::to_std_ptr<GazeboPhysicsWorld::PhysicsEngine>(world->Physics());
   return PhysicsEnginePtr();
 }
+
+void GazeboPhysicsWorld::SetDynamicsEnabled(const bool flag)
+{
+  if (world) world->SetPhysicsEnabled(flag);
+}

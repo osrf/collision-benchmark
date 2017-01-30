@@ -31,7 +31,6 @@ QSize maxHeightAddWidth(const QSize& s1, const QSize& s2, float wFact=1, float h
 }
 
 
-
 /////////////////////////////////////////////////
 ClientGui::ClientGui()
   : GUIPlugin()

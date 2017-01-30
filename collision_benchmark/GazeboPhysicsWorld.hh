@@ -22,7 +22,7 @@ struct GazeboPhysicsWorldTypes
   typedef gazebo::physics::WorldState WorldState;
 
   /// Math 3D vector implementation
-  typedef gazebo::math::Vector3 Vector3;
+  typedef ignition::math::Vector3d Vector3;
 
   /// Math wrench implementation
   typedef gazebo::physics::JointWrench Wrench;
@@ -113,6 +113,8 @@ class GazeboPhysicsWorld: public collision_benchmark::PhysicsEngineWorld<GazeboP
 
   public: virtual std::string GetName() const;
 
+  public: virtual void SetDynamicsEnabled(const bool flag);
+
   public: virtual bool SupportsContacts() const;
 
   public: virtual std::vector<ContactInfoPtr> GetContactInfo() const;
@@ -138,6 +140,7 @@ class GazeboPhysicsWorld: public collision_benchmark::PhysicsEngineWorld<GazeboP
   public: virtual ModelPtr GetModel(const ModelID& model) const;
 
   public: virtual PhysicsEnginePtr GetPhysicsEngine() const;
+
 
   /// wait for the namespace of this world
   private: bool WaitForNamespace(const gazebo::physics::WorldPtr& gzworld, float maxWait, float waitSleep);

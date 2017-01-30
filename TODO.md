@@ -1,6 +1,5 @@
 # Issues to address soon
 
-- Add a method to disable physics engines to the top-level interface - disabling the dynamics should be possible everywhere.
 - After setting the world to a state, and before advancing the world, the states should be completely equal even if dynamics is
   disabled - currently the acceleration has to be skipped in the comparison. See also transfer_world_state tutorial.
     --> look into it

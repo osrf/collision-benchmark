@@ -217,7 +217,7 @@ Ideally make sure you can see the both the first terminal and the Gazebo GUI at 
 
 Then go back to the first terminal and press ``[Enter]`` to start the tutorial.
 
-After a while, the rubble world should suddenly pop up, as the state of the world is set to the rubbble world state.
+After a while, the rubble world should suddenly pop up, as the state of the world is set to the rubble world state.
 
 Please refer to the code in 
 [transfer_world_state.cc](https://github.com/JenniferBuehler/collision-benchmark/blob/devel-2/tutorials/transfer_world_state.cc)

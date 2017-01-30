@@ -1,13 +1,10 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
-# Qt required for GUI plugin
-find_package (Qt4)
-#find_package(Protobuf REQUIRED)
-include (${QT_USE_FILE})
-add_definitions(${QT_DEFINITIONS})
-
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 
+# Search for dependencies
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/SearchForStuff.cmake)
 
 set(collision_benchmark_HEADERS
   collision_benchmark/boost_std_conversion.hh
@@ -39,16 +36,13 @@ add_library(collision_benchmark SHARED
   collision_benchmark/PrimitiveShape.cc
   collision_benchmark/SimpleTriMeshShape.cc
 )
-
-QT4_WRAP_CPP(headers_MOC collision_benchmark/ClientGui.hh)
+ 
+# when using a different folder for the header file, must to
+# QT5_WRAP_CPP despite of the AUTOMOC=ON, or it won't generate the MOC
+QT5_WRAP_CPP(ClientGui_MOC collision_benchmark/ClientGui.hh)
 add_library(collision_benchmark_gui SHARED
-  ${headers_MOC}
-  collision_benchmark/ClientGui.cc
+    collision_benchmark/ClientGui.cc
 )
-
-# Search for dependencies
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-include(${PROJECT_SOURCE_DIR}/cmake/SearchForStuff.cmake)
 
 # expand the dependencies_* variables for the include directories and libraries
 set(dependencies_INCLUDE_DIRS
@@ -72,8 +66,7 @@ target_link_libraries(collision_benchmark
   ${dependencies_LIBRARIES})
 
 target_link_libraries(collision_benchmark_gui
-  ${dependencies_LIBRARIES}
-  ${QT_LIBRARIES})
+  ${dependencies_LIBRARIES})
 
 target_link_libraries(multiple_worlds_server_test_simple collision_benchmark)
 target_link_libraries(multiple_worlds_server collision_benchmark)
@@ -88,6 +81,7 @@ target_link_libraries(multiple_worlds_test
   collision_benchmark ${GTEST_BOTH_LIBRARIES})
 add_test(MultipleWorldsTest multiple_worlds_test)
 add_dependencies(tests multiple_worlds_test)
+
 
 add_executable(world_interface_test EXCLUDE_FROM_ALL test/WorldInterface_TEST.cc)
 target_link_libraries(world_interface_test

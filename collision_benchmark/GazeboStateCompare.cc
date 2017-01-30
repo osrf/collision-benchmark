@@ -16,7 +16,7 @@ using gazebo::physics::LightState;
 using gazebo::physics::LinkState;
 using gazebo::physics::JointState;
 using gazebo::physics::CollisionState;
-using gazebo::math::Pose;
+using ignition::math::Pose3d;
 using collision_benchmark::GazeboStateCompare;
 
 const GazeboStateCompare::Tolerances GazeboStateCompare::Tolerances::Default = GazeboStateCompare::Tolerances::CreateDefault();
@@ -27,11 +27,11 @@ bool EqualFloats(const Float1& f1, const Float2& f2, const double& t)
   return fabs(f1-f2) < t;
 }
 
-bool EqualVectors(const gazebo::math::Vector3& v1, const gazebo::math::Vector3& v2, const double& t)
+bool EqualVectors(const ignition::math::Vector3d& v1, const ignition::math::Vector3d& v2, const double& t)
 {
-  return EqualFloats(v1.x,v2.x,t)
-      && EqualFloats(v1.y,v2.y,t)
-      && EqualFloats(v1.z,v2.z,t);
+  return EqualFloats(v1.X(),v2.X(),t)
+      && EqualFloats(v1.Y(),v2.Y(),t)
+      && EqualFloats(v1.Z(),v2.Z(),t);
 }
 
 template<typename Float>
@@ -179,10 +179,10 @@ bool GazeboStateCompare::Equal(const gazebo::physics::ModelState& s1, const gaze
     return false;
   }
 
-  if (!Equal(s1.GetPose(), s2.GetPose(), tolerances.Position, tolerances.Orientation))
+  if (!Equal(s1.Pose(), s2.Pose(), tolerances.Position, tolerances.Orientation))
   {
 #ifdef DEBUG
-    std::cout<<"Poses of model "<<s1.GetName()<<" not equal: "<< std::endl << s1.GetPose()<< std::endl <<s2.GetPose()<<std::endl;
+    std::cout<<"Poses of model "<<s1.GetName()<<" not equal: "<< std::endl << s1.Pose()<< std::endl <<s2.Pose()<<std::endl;
 #endif
     return false;
   }
@@ -212,7 +212,7 @@ bool GazeboStateCompare::Equal(const gazebo::physics::ModelState& s1, const gaze
       if (iter_lnk1->first != iter_lnk2->first)
       {
 #ifdef DEBUG
-    std::cout<<"Poses not equal: "<<s1.GetPose()<<", "<<s2.GetPose()<<std::endl;
+    std::cout<<"Poses not equal: "<<s1.Pose()<<", "<<s2.Pose()<<std::endl;
 #endif
         return false;
       }
@@ -330,50 +330,50 @@ bool GazeboStateCompare::Equal(const gazebo::physics::LinkState& s1, const gazeb
     return false;
   }
 
-  if (!Equal(s1.GetPose(), s2.GetPose(), tolerances.Position, tolerances.Orientation))
+  if (!Equal(s1.Pose(), s2.Pose(), tolerances.Position, tolerances.Orientation))
   {
 #ifdef DEBUG
-    std::cout<<"Poses not equal: "<<s1.GetPose()<<", "<<s2.GetPose()<<std::endl;
+    std::cout<<"Poses not equal: "<<s1.Pose()<<", "<<s2.Pose()<<std::endl;
 #endif
     return false;
   }
 
-  if (tolerances.CheckDynamics && !Equal(s1.GetVelocity(), s2.GetVelocity(), tolerances.Velocity, tolerances.VelocityOrientation))
+  if (/*tolerances.CheckDynamics && */!Equal(s1.Velocity(), s2.Velocity(), tolerances.Velocity, tolerances.VelocityOrientation))
   {
 #ifdef DEBUG
-    std::cout<<"Velocities not equal: "<<s1.GetVelocity()<<", "<<s2.GetVelocity()<<std::endl;
+    std::cout<<"Velocities not equal: "<<s1.Velocity()<<", "<<s2.Velocity()<<std::endl;
 #endif
     return false;
   }
 
-  if (tolerances.CheckDynamics && !Equal(s1.GetAcceleration(), s2.GetAcceleration(), tolerances.Acceleration, tolerances.AccelerationOrientation))
+  if (tolerances.CheckDynamics && !Equal(s1.Acceleration(), s2.Acceleration(), tolerances.Acceleration, tolerances.AccelerationOrientation))
   {
 #ifdef DEBUG
-    std::cout<<"Accelerations not equal: "<<s1.GetAcceleration()<<", "<<s2.GetAcceleration()<<std::endl;
+    std::cout<<"Accelerations not equal: "<<s1.Acceleration()<<", "<<s2.Acceleration()<<std::endl;
 #endif
     return false;
   }
 
-  if (tolerances.CheckDynamics && !EqualVectors(s1.GetWrench().pos, s2.GetWrench().pos, tolerances.Force))
+  if (/*tolerances.CheckDynamics && */!EqualVectors(s1.Wrench().Pos(), s2.Wrench().Pos(), tolerances.Force))
   {
 #ifdef DEBUG
-    std::cout<<"Force not equal: "<<s1.GetWrench().pos<<", "<<s2.GetWrench().pos<<std::endl;
+    std::cout<<"Force not equal: "<<s1.Wrench().Pos()<<", "<<s2.Wrench().Pos()<<std::endl;
 #endif
     return false;
   }
 
-  if (tolerances.CheckDynamics)
-  {
-    gazebo::math::Vector3 q1(s1.GetWrench().rot.GetAsEuler());
-    gazebo::math::Vector3 q2(s2.GetWrench().rot.GetAsEuler());
+//  if (tolerances.CheckDynamics)
+//  {
+    ignition::math::Vector3d q1(s1.Wrench().Rot().Euler());
+    ignition::math::Vector3d q2(s2.Wrench().Rot().Euler());
     if (!EqualVectors(q1,q2, tolerances.Torque))
     {
 #ifdef DEBUG
-      std::cout<<"Torque not equal: "<<s1.GetWrench().rot<<", "<<s2.GetWrench().rot<<std::endl;
+      std::cout<<"Torque not equal: "<<s1.Wrench().Rot().Euler()<<", "<<s2.Wrench().Rot().Euler()<<std::endl;
 #endif
       return false;
     }
-  }
+//  }
 
   if (!tolerances.CheckLinkCollisionStates)
     return true;
@@ -395,10 +395,10 @@ bool GazeboStateCompare::Equal(const gazebo::physics::LinkState& s1, const gazeb
 #endif
       return false;
     }
-    if (!Equal(c1.GetPose(), c2.GetPose(), tolerances.Position, tolerances.Orientation))
+    if (!Equal(c1.Pose(), c2.Pose(), tolerances.Position, tolerances.Orientation))
     {
 #ifdef DEBUG
-      std::cout<<"CollisionState pose not equal: "<<s1.GetPose()<<", "<<s2.GetPose()<<std::endl;
+      std::cout<<"CollisionState pose not equal: "<<s1.Pose()<<", "<<s2.Pose()<<std::endl;
 #endif
       return false;
     }
@@ -418,17 +418,17 @@ bool GazeboStateCompare::Equal(const gazebo::physics::JointState& s1, const gaze
   }
 
   int i = 0;
-  std::vector<gazebo::math::Angle>::const_iterator iter1, iter2;
-  for (iter1 = s1.GetAngles().begin(),
-       iter2 = s2.GetAngles().begin();
-       iter1 != s1.GetAngles().end(),
-       iter2 != s2.GetAngles().end();
+  std::vector<double>::const_iterator iter1, iter2;
+  for (iter1 = s1.Positions().begin(),
+       iter2 = s2.Positions().begin();
+       iter1 != s1.Positions().end(),
+       iter2 != s2.Positions().end();
        ++iter1, ++iter1, ++i)
   {
-    if (!EqualFloats(iter1->Radian(), iter2->Radian(), tolerances.JointAngle))
+    if (!EqualFloats(*iter1, *iter2, tolerances.JointAngle))
     {
 #ifdef DEBUG
-      std::cout<<"JointState "<<i<<" not equal: "<<iter1->Radian()<<", "<<iter2->Radian()<<std::endl;
+      std::cout<<"JointState "<<i<<" not equal: "<<*iter1<<", "<<*iter2<<std::endl;
 #endif
       return false;
     }
@@ -437,14 +437,14 @@ bool GazeboStateCompare::Equal(const gazebo::physics::JointState& s1, const gaze
   return true;
 }
 
-bool GazeboStateCompare::Equal(const gazebo::math::Pose& p1,
-                               const gazebo::math::Pose& p2,
+bool GazeboStateCompare::Equal(const ignition::math::Pose3d& p1,
+                               const ignition::math::Pose3d& p2,
                                const double& positionTolerance,
                                const double& orientationTolerance)
 {
-  gazebo::math::Vector3 q1(p1.rot.GetAsEuler());
-  gazebo::math::Vector3 q2(p2.rot.GetAsEuler());
+  ignition::math::Vector3d q1(p1.Rot().Euler());
+  ignition::math::Vector3d q2(p2.Rot().Euler());
 
-  return EqualVectors(p1.pos, p2.pos, positionTolerance) &&
+  return EqualVectors(p1.Pos(), p2.Pos(), positionTolerance) &&
          EqualVectors(q1, q2, orientationTolerance);
 }

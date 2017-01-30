@@ -64,7 +64,7 @@ int main(int argc, char** argv)
   // The physics engine can be disabled to enforce that the state is always the state we set
   // manually (otherwise the world would jitter between when we set the state and when its
   // physics engine reacts to it).
-  gzWorld1->GetWorld()->SetPhysicsEnabled(false);
+  gzWorld1->SetDynamicsEnabled(false);
 
   // make sure we access the first world only via the basic interface GzPhysicsWorldBase
   // from now on.

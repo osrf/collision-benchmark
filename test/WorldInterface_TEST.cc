@@ -34,7 +34,7 @@ TEST_F(WorldInterfaceTest, TransferWorldState)
 
   GazeboPhysicsWorld::Ptr gzWorld1(new GazeboPhysicsWorld());
   ASSERT_EQ(gzWorld1->LoadFromFile("worlds/empty.world"),GzPhysicsWorldBase::SUCCESS) << " Could not load empty world";
-  gzWorld1->GetWorld()->SetPhysicsEnabled(false);
+  gzWorld1->SetDynamicsEnabled(false);
 
   GazeboPhysicsWorld::Ptr gzWorld2(new GazeboPhysicsWorld());
   ASSERT_EQ(gzWorld2->LoadFromFile("worlds/rubble.world"),GzPhysicsWorldBase::SUCCESS) << " Could not load rubble world";
@@ -47,7 +47,8 @@ TEST_F(WorldInterfaceTest, TransferWorldState)
   for (int i=0; i<numIters; ++i)
   {
     gazebo::physics::WorldState target=world2->GetWorldState(); // get the rubble world
-    ASSERT_EQ(world1->SetWorldState(target, false), GzPhysicsWorldBase::SUCCESS) << " Could not set world state";
+    GzPhysicsWorldBase::OpResult setStateRet=world1->SetWorldState(target, false);
+    ASSERT_EQ(setStateRet, GzPhysicsWorldBase::SUCCESS) << " Could not set world state";
     gazebo::physics::WorldState newState = world1->GetWorldState();
     GazeboStateCompare::Tolerances t=GazeboStateCompare::Tolerances::CreateDefault(1e-03);
     t.CheckDynamics=false; // don't check dynamics because we disable physics engine in gzWorld1

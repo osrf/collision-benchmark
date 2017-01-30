@@ -127,6 +127,9 @@ class PhysicsWorldBase
   /// \retval FAILED Loading failed for any other reason
   public: virtual OpResult LoadFromString(const std::string& str, const std::string& worldname="")=0;
 
+  /// Set the dynamics engine to enabledl or disabled. If disabled, the objects won't react to physics
+  /// laws, but objects can be maintained in the world and collision states / contact points between them checked.
+  public: virtual void SetDynamicsEnabled(const bool flag) = 0;
 };
 
 
