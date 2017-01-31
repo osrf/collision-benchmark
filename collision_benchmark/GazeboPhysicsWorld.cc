@@ -426,27 +426,34 @@ bool GazeboPhysicsWorld::IsAdaptor() const
   return true;
 }
 
+#ifndef CONTACTS_ENFORCABLE
 void GazeboPhysicsWorld::OnContact(ConstContactsPtr &_msg)
 {
 //  std::cout<<"DEBUG: Got contact!"<<std::endl;
 }
+#endif
 
 void GazeboPhysicsWorld::SetEnforceContactsComputation(bool flag)
 {
   enforceContactComputation=flag;
+#ifndef CONTACTS_ENFORCABLE
   if (enforceContactComputation)
   {
-#ifndef CONTACTS_ENFORCABLE
     if (!node)
     {
       node = gazebo::transport::NodePtr(new gazebo::transport::Node());
       node->Init(GetName());
     }
     contactsSub = node->Subscribe("~/physics/contacts", &GazeboPhysicsWorld::OnContact, this);
-#else
-    world->GetContactsManager()->Enforce(); XXX or similar
-#endif
   }
+  else
+  {
+    contactsSub.reset();
+  }
+#else
+  assert(world->Physics() && world->Physics()->GetContactManager());
+  world->Physics()->GetContactManager()->SetEnforceContacts(flag);
+#endif
 }
 
 GazeboPhysicsWorld::RefResult GazeboPhysicsWorld::SetWorld(const WorldPtr& _world)
