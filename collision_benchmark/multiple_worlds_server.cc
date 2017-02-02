@@ -19,6 +19,7 @@
 #include <collision_benchmark/PhysicsWorld.hh>
 #include <collision_benchmark/GazeboWorldState.hh>
 #include <collision_benchmark/GazeboMirrorWorld.hh>
+#include <collision_benchmark/GazeboTopicForwarder.hh>
 #include <collision_benchmark/GazeboPhysicsWorld.hh>
 #include <collision_benchmark/boost_std_conversion.hh>
 #include <collision_benchmark/GazeboHelpers.hh>
@@ -33,6 +34,7 @@ using collision_benchmark::PhysicsWorld;
 using collision_benchmark::GazeboPhysicsWorld;
 using collision_benchmark::MirrorWorld;
 using collision_benchmark::GazeboMirrorWorld;
+using collision_benchmark::GazeboTopicForwarder;
 using collision_benchmark::WorldManager;
 
 typedef WorldManager<gazebo::physics::WorldState> GzWorldManager;
@@ -69,12 +71,16 @@ bool Run(int argc, char **argv)
 
   // first, load the mirror world (it has to be loaded first for gzclient to connect to it)
 
+#if 0
   GazeboMirrorWorld::Ptr mirrorWorld = setupMirrorWorld();
   if(!mirrorWorld)
   {
     std::cerr<<"Could not load mirror world."<<std::endl;
     return false;
   }
+#else
+  GazeboTopicForwarder::Ptr mirrorWorld(new GazeboTopicForwarder("def"));
+#endif
 
   // now, load the worlds as given in command line arguments with the different engines given
   std::string worldfile = argv[1];

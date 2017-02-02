@@ -279,6 +279,9 @@ void GazeboPhysicsWorld::Update(int steps)
   // Run simulation for given number of steps.
   // This method calls world->RunBlocking();
   gazebo::runWorld(world,steps);
+  // iterations is always 1 if it has been set with steps!=0
+  // in call above. Should fix this in Gazebo::World?
+  // std::cout<<"Iterations: "<<world->Iterations()<<std::endl;
 }
 
 void GazeboPhysicsWorld::SetPaused(bool flag)

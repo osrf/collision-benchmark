@@ -21,13 +21,7 @@
 #include <collision_benchmark/GazeboMirrorWorld.hh>
 #include <collision_benchmark/GazeboStateCompare.hh>
 #include <collision_benchmark/GazeboWorldState.hh>
-/*#include <collision_benchmark/GazeboPhysicsWorld.hh>
-#include <collision_benchmark/GazeboHelpers.hh>*/
 #include <collision_benchmark/Exception.hh>
-
-//#include <gazebo/physics/PhysicsIface.hh>
-//#include <gazebo/physics/PhysicsEngine.hh>
-//#include <gazebo/physics/ContactManager.hh>
 
 using collision_benchmark::GazeboMirrorWorld;
 
