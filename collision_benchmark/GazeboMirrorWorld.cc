@@ -45,21 +45,17 @@ gazebo::physics::WorldPtr GazeboMirrorWorld::GetMirrorWorld() const
   return mirrorWorld;
 }
 
-void GazeboMirrorWorld::ClearModels()
-{
-  if (mirrorWorld) collision_benchmark::ClearModels(mirrorWorld);
-}
-
 void GazeboMirrorWorld::Sync()
 {
-  assert(originalWorld);
+  OriginalWorldPtr origWorld = GetOriginalWorld();
+  assert(origWorld);
 
 /*
   XXX TODO support Pause and Step functions, though this will have to be done for all worlds,
   so probably rather in WorldManager with a common interface... not of high priority now though.
   Best is probably to re-write mirror world and receive all the Gui commands from a dedicated interface,
   instead of having the whole cloned world.
-  GazeboPhysicsWorld::Ptr gzOrigWorld = std::dynamic_pointer_cast<GazeboPhysicsWorld>(originalWorld);
+  GazeboPhysicsWorld::Ptr gzOrigWorld = std::dynamic_pointer_cast<GazeboPhysicsWorld>(origWorld);
   bool isPaused=false;
   if (gzOrigWorld)
   {
@@ -70,7 +66,7 @@ void GazeboMirrorWorld::Sync()
   }
   if (isPaused) return;*/
 
-  gazebo::physics::WorldState origState = originalWorld->GetWorldState();
+  gazebo::physics::WorldState origState = origWorld->GetWorldState();
   collision_benchmark::SetWorldState(mirrorWorld, origState);
 #ifdef DEBUG
   gazebo::physics::WorldState _currentState(mirrorWorld);
@@ -81,10 +77,6 @@ void GazeboMirrorWorld::Sync()
     std::cerr<<"Target state was not set as supposed to!!"<<std::endl;
   }
 #endif
+  // update the mirror world
   gazebo::runWorld(mirrorWorld, 1);
 }
-
-/*void GazeboMirrorWorld::Update(int iter)
-{
-  gazebo::runWorld(mirrorWorld, iter);
-}*/

@@ -56,7 +56,6 @@ class GazeboPhysicsWorld: public collision_benchmark::PhysicsEngineWorld<GazeboP
   public: typedef typename ParentClass::ContactInfo ContactInfo;
   public: typedef typename ParentClass::ContactInfoPtr ContactInfoPtr;
   public: typedef typename ParentClass::Shape Shape;
-  public: typedef typename ParentClass::RefResult RefResult;
   public: typedef typename ParentClass::ModelLoadResult ModelLoadResult;
 
 

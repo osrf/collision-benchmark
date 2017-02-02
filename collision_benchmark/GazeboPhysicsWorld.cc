@@ -456,11 +456,11 @@ void GazeboPhysicsWorld::SetEnforceContactsComputation(bool flag)
 #endif
 }
 
-GazeboPhysicsWorld::RefResult GazeboPhysicsWorld::SetWorld(const WorldPtr& _world)
+collision_benchmark::RefResult GazeboPhysicsWorld::SetWorld(const WorldPtr& _world)
 {
   world = collision_benchmark::to_boost_ptr<World>(_world);
   SetEnforceContactsComputation(enforceContactComputation);
-  return GazeboPhysicsWorld::REFERENCED;
+  return collision_benchmark::REFERENCED;
 }
 
 GazeboPhysicsWorld::WorldPtr GazeboPhysicsWorld::GetWorld() const

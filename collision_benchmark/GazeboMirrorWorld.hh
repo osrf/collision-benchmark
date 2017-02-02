@@ -93,12 +93,6 @@ class GazeboMirrorWorld:
     /// Documentation inherited
     public:  virtual void Sync();
 
-    /// Documentation inherited
-    public: virtual void ClearModels();
-
-    /// Documentation inherited
-    // public: virtual void Update(int iter=1);
-
     protected:  gazebo::physics::WorldPtr mirrorWorld;
 };
 

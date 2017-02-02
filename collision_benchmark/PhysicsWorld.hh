@@ -26,10 +26,16 @@
 namespace collision_benchmark
 {
 
+/// Type to indicate success or failure of an operation
 /// NOT_SUPPORTED: depending on the context of the function, this means
 ///   something about what the method does is not supported (eg. file format not supported)
 typedef enum _OpResult {FAILED, NOT_SUPPORTED, SUCCESS} OpResult;
 
+// Type to indicate the result of setting a field using an object.
+// CLONED: the object was deep copied
+// SHALLOW_COPIED: the object was shallow copied
+// REFERENCED: the object was referenced
+typedef enum _RefResult {ERROR, CLONED, SHALLOW_COPIED, REFERENCED} RefResult;
 
 /**
  * \brief Minimal pure virtual interface for various physics world implementations
@@ -141,29 +147,24 @@ class PhysicsWorldBaseInterface
 /**
  * \brief Can be used as extending interface to PhysicsWorldBase, adding functionality to load and access models and shapes.
  *
- * \param PhysicsWorldTypes any struct which defines the following typedefs. There is no specification
- * on what these types may be, in this interface they are just needed to define the API.
- * - ModelID: ID type used to identify models in the world
- * - ModelPartID: ID type to identify individual parts of a model
+ * Template parameters: There is no specification on what these types may be, in this interface
+ * they are just needed to define the API.
+ *
+ * \param ModelID_ ID type used to identify models in the world
+ * \param ModelPartID_ ID type to identify individual parts of a model
  *
  * \author Jennifer Buehler
  * \date October 2016
  */
-template<class PhysicsWorldTypes_>
+template<class ModelID_, class ModelPartID_>
 class PhysicsWorldModelInterface
 {
-  public: typedef PhysicsWorldTypes_ PhysicsWorldTypes;
-  private: typedef PhysicsWorldModelInterface<PhysicsWorldTypes> Self;
+  public: typedef ModelID_ ModelID;
+  public: typedef ModelPartID_ ModelPartID;
+  private: typedef PhysicsWorldModelInterface<ModelID, ModelPartID> Self;
   public: typedef std::shared_ptr<Self> Ptr;
   public: typedef std::shared_ptr<const Self> ConstPtr;
-
-  /// ID type used to identify models in the world
-  public: typedef typename PhysicsWorldTypes::ModelID ModelID;
-  /// ID type to identify individual parts of a model
-  public: typedef typename PhysicsWorldTypes::ModelPartID ModelPartID;
-
   public: typedef collision_benchmark::Shape Shape;
-
 
   /// Results returned for loading models
   public: typedef struct _ModelLoadResult
@@ -227,32 +228,30 @@ class PhysicsWorldModelInterface
 /**
  * \brief Can be used as extending interface to PhysicsWorldBase, adding functionality related to contact points.
  *
- * \param PhysicsWorldTypes any struct which defines the following typedefs. There is no specification
- * on what these types may be, in this interface they are just needed to define the API.
- * - ModelID: ID type used to identify models in the world
- * - ModelPartID: ID type to identify individual parts of a model
- * - Vector3: Math 3D vector implementation
- * - Wrench: Math wrench implementation
+ * Template parameters: There is no specification on what these types may be, in this interface
+ * they are just needed to define the API.
+ *
+ * \param ModelID_ ID type used to identify models in the world
+ * \param ModelPartID_ ID type to identify individual parts of a model
+ * \param Vector3_ Math 3D vector implementation
+ * \param Wrench_ Math wrench implementation
  *
  * \author Jennifer Buehler
  * \date October 2016
  */
-template<class PhysicsWorldTypes_>
+template<class ModelID_, class ModelPartID_, class Vector3_, class Wrench_>
 class PhysicsWorldContactInterface
 {
-  public: typedef PhysicsWorldTypes_ PhysicsWorldTypes;
-  private: typedef PhysicsWorldContactInterface<PhysicsWorldTypes> Self;
+  public: typedef ModelID_ ModelID;
+  public: typedef ModelPartID_ ModelPartID;
+  public: typedef Vector3_ Vector3;
+  public: typedef Wrench_ Wrench;
+
+  private: typedef PhysicsWorldContactInterface<ModelID, ModelPartID, Vector3, Wrench> Self;
   public: typedef std::shared_ptr<Self> Ptr;
   public: typedef std::shared_ptr<const Self> ConstPtr;
 
-  /// ID type used to identify models in the world
-  public: typedef typename PhysicsWorldTypes::ModelID ModelID;
-  /// ID type to identify individual parts of a model
-  public: typedef typename PhysicsWorldTypes::ModelPartID ModelPartID;
-
-  public: typedef collision_benchmark::Contact<
-              typename PhysicsWorldTypes::Vector3,
-              typename PhysicsWorldTypes::Wrench> Contact;
+  public: typedef collision_benchmark::Contact<Vector3,Wrench> Contact;
   public: typedef typename Contact::Ptr ContactPtr;
 
   public: typedef collision_benchmark::ContactInfo<Contact, ModelID, ModelPartID> ContactInfo;
@@ -275,101 +274,43 @@ class PhysicsWorldContactInterface
   public: virtual std::vector<ContactInfoPtr> GetContactInfo(const ModelID& m1, const ModelID& m2) const=0;
 };
 
-
-
-/**
- * \brief Common interface for all physics worlds, combining basic, model and contact points functionality.
- *
- * If possible, all implementations of PhysicsWorld should derive from the subclass PhysicsEngineWorld.
- * This pure virtual interface only guarantees a minimal common subset of functionality between implementations.
- *
- * \param PhysicsWorldTypes any struct which defines the following typedefs. There is no specification
- * on what these types may be, in this interface they are just needed to define the API.
- * - WorldState: Describing the state of the world
- * - ModelID: ID type used to identify models in the world
- * - ModelPartID: ID type to identify individual parts of a model
- * - Vector3: Math 3D vector implementation
- * - Wrench: Math wrench implementation
- */
-template<class PhysicsWorldTypes_>
-class PhysicsWorld:
-  public PhysicsWorldBaseInterface<typename PhysicsWorldTypes_::WorldState>,
-  public PhysicsWorldModelInterface<PhysicsWorldTypes_>,
-  public PhysicsWorldContactInterface<PhysicsWorldTypes_>
-{
-  public: typedef PhysicsWorldTypes_ PhysicsWorldTypes;
-  private: typedef PhysicsWorld<PhysicsWorldTypes> Self;
-  public: typedef std::shared_ptr<Self> Ptr;
-  public: typedef std::shared_ptr<const Self> ConstPtr;
-
-  private: typedef PhysicsWorldBaseInterface<typename PhysicsWorldTypes::WorldState> PhysicsWorldBaseParent;
-  private: typedef PhysicsWorldModelInterface<PhysicsWorldTypes> PhysicsWorldModelParent;
-  private: typedef PhysicsWorldContactInterface<PhysicsWorldTypes> PhysicsWorldContactParent;
-
-  public: typedef typename PhysicsWorldTypes::WorldState WorldState;
-
-  /// ID type used to identify models in the world
-  public: typedef typename PhysicsWorldModelParent::ModelID ModelID;
-  /// ID type to identify individual parts of a model
-  public: typedef typename PhysicsWorldModelParent::ModelPartID ModelPartID;
-  public: typedef typename PhysicsWorldModelParent::Shape Shape;
-
-  public: typedef typename PhysicsWorldContactParent::Contact Contact;
-  public: typedef typename Contact::Ptr ContactPtr;
-
-  public: typedef typename PhysicsWorldContactParent::ContactInfo ContactInfo;
-  public: typedef typename ContactInfo::Ptr ContactInfoPtr;
-};
-
-
 /**
  * \brief A more engine-specific pure virtual interface of PhysicsWorld which adds a broader access to physics engine functionality
  *
  * If applicable, all implementations of PhysicsWorld should derive from this class, while the base
  * class(es) only guarantees a minimal common subset of functionality between implementations.
  *
- * \param PhysicsWorldTypes see PhysicsWorld
- * \param PhysicsEngineWorldTypes has to be a struct with the following typedefs:
- * - Model: The model class type
- * - Contact: Class for engine-specific implementation of a contact point
- * - PhysicsEngine: Class for the physics engine, if there is any (set to void* if there is none)
- * - World: Class type of the world, if there is any (set to void* if there is none).
+ * \param ModelID_ ID to use for identifying a model
+ * \param Model_ The model class type
+ * \param NativeContact_ Class for engine-specific implementation of a contact point
+ * \param PhysicsEngine_ Class for the physics engine, if there is any (set to void* if there is none)
+ * \param World_ Class type of the world, if there is any (set to void* if there is none).
  *
  * \author Jennifer Buehler
  * \date October 2016
  */
-template<class PhysicsWorldTypes, class PhysicsEngineWorldTypes>
-class PhysicsEngineWorld: public PhysicsWorld<PhysicsWorldTypes>
+template<class ModelID_, class Model_, class NativeContact_, class PhysicsEngine_, class World_>
+class PhysicsEngineWorldInterface
 {
-  private: typedef PhysicsWorld<PhysicsWorldTypes> ParentClass;
+  public: typedef ModelID_ ModelID;
+  public: typedef Model_ Model;
+  public: typedef NativeContact_ NativeContact;
+  public: typedef PhysicsEngine_ PhysicsEngine;
+  public: typedef World_ World;
 
-  private: typedef PhysicsEngineWorld<PhysicsWorldTypes, PhysicsEngineWorldTypes> Self;
+  private: typedef PhysicsEngineWorldInterface<
+              ModelID, Model, NativeContact,
+              PhysicsEngine, World> Self;
   public: typedef std::shared_ptr<Self> Ptr;
   public: typedef std::shared_ptr<const Self> ConstPtr;
-
-  public: typedef typename ParentClass::ModelID ModelID;
-  public: typedef typename ParentClass::ModelPartID ModelPartID;
-  public: typedef typename ParentClass::WorldState WorldState;
-  public: typedef typename ParentClass::Contact Contact;
-  public: typedef typename ParentClass::ContactPtr ContactPtr;
-  public: typedef typename ParentClass::ContactInfo ContactInfo;
-  public: typedef typename ParentClass::ContactInfoPtr ContactInfoPtr;
-
-  public: typedef typename PhysicsEngineWorldTypes::Model Model;
-  public: typedef typename PhysicsEngineWorldTypes::Contact NativeContact;
-  public: typedef typename PhysicsEngineWorldTypes::PhysicsEngine PhysicsEngine;
-  public: typedef typename PhysicsEngineWorldTypes::World World;
 
   public: typedef std::shared_ptr<Model> ModelPtr;
   public: typedef std::shared_ptr<NativeContact> NativeContactPtr;
   public: typedef std::shared_ptr<PhysicsEngine> PhysicsEnginePtr;
   public: typedef std::shared_ptr<World> WorldPtr;
 
-  public: typedef enum _RefResult {ERROR, COPIED, REFERENCED} RefResult;
-
-  public: PhysicsEngineWorld(){}
-  public: PhysicsEngineWorld(const PhysicsEngineWorld& w){}
-  public: virtual ~PhysicsEngineWorld(){}
+  public: PhysicsEngineWorldInterface(){}
+  public: virtual ~PhysicsEngineWorldInterface(){}
 
   /// \retval true if this is an adaptor to another world (either of type
   ///   \e PhysicsWorld or of \e WorldPtr). This means \e GetWorld() will
@@ -403,7 +344,6 @@ class PhysicsEngineWorld: public PhysicsWorld<PhysicsWorldTypes>
   /// is no underlying physics engine for this implementation.
   public: virtual PhysicsEnginePtr GetPhysicsEngine() const=0;
 
-
   /// In the current state of the world, get all contact points between models.
   /// The returned vector will be empty if no models collide.
   /// This method is more engine-specific than GetContactInfo(), and therefore
@@ -420,6 +360,126 @@ class PhysicsEngineWorld: public PhysicsWorld<PhysicsWorldTypes>
   public: virtual std::vector<NativeContactPtr> GetNativeContacts(const ModelID& m1, const ModelID& m2) const=0;
 
 };  // class PhysicsEngineWorld
+
+
+/**
+ * \brief Common interface for all physics worlds, combining basic, model and contact points functionality.
+ *
+ * If possible, all implementations of PhysicsWorld should derive from the subclass PhysicsEngineWorld.
+ * This pure virtual interface only guarantees a minimal common subset of functionality between implementations.
+ *
+ * \param PhysicsWorldTypes any struct which defines the following typedefs. There is no specification
+ * on what these types may be, in this interface they are just needed to define the API.
+ * - WorldState: Describing the state of the world
+ * - ModelID: ID type used to identify models in the world
+ * - ModelPartID: ID type to identify individual parts of a model
+ * - Vector3: Math 3D vector implementation
+ * - Wrench: Math wrench implementation
+ *
+ * \author Jennifer Buehler
+ * \date October 2016
+ */
+template<class PhysicsWorldTypes_>
+class PhysicsWorld:
+  public PhysicsWorldBaseInterface<typename PhysicsWorldTypes_::WorldState>,
+  public PhysicsWorldModelInterface<
+      typename PhysicsWorldTypes_::ModelID,
+      typename PhysicsWorldTypes_::ModelPartID>,
+  public PhysicsWorldContactInterface<
+      typename PhysicsWorldTypes_::ModelID,
+      typename PhysicsWorldTypes_::ModelPartID,
+      typename PhysicsWorldTypes_::Vector3,
+      typename PhysicsWorldTypes_::Wrench>
+{
+  public: typedef PhysicsWorldTypes_ PhysicsWorldTypes;
+  private: typedef PhysicsWorld<PhysicsWorldTypes> Self;
+  public: typedef std::shared_ptr<Self> Ptr;
+  public: typedef std::shared_ptr<const Self> ConstPtr;
+
+  private: typedef PhysicsWorldBaseInterface<typename PhysicsWorldTypes::WorldState> PhysicsWorldBaseParent;
+  private: typedef PhysicsWorldModelInterface<
+      typename PhysicsWorldTypes_::ModelID,
+      typename PhysicsWorldTypes_::ModelPartID> PhysicsWorldModelParent;
+  private: typedef PhysicsWorldContactInterface<
+              typename PhysicsWorldTypes_::ModelID,
+              typename PhysicsWorldTypes_::ModelPartID,
+              typename PhysicsWorldTypes_::Vector3,
+              typename PhysicsWorldTypes_::Wrench> PhysicsWorldContactParent;
+
+
+  public: typedef typename PhysicsWorldTypes::WorldState WorldState;
+  public: typedef typename PhysicsWorldTypes::ModelID ModelID;
+  public: typedef typename PhysicsWorldTypes::ModelPartID ModelPartID;
+  public: typedef typename PhysicsWorldTypes::Vector3 Vector3;
+  public: typedef typename PhysicsWorldTypes::Wrench Wrench;
+
+  public: typedef typename PhysicsWorldModelParent::Shape Shape;
+
+  public: typedef typename PhysicsWorldContactParent::Contact Contact;
+  public: typedef typename Contact::Ptr ContactPtr;
+
+  public: typedef typename PhysicsWorldContactParent::ContactInfo ContactInfo;
+  public: typedef typename ContactInfo::Ptr ContactInfoPtr;
+};
+
+
+/**
+ * \brief Specialization of PhysicsWorld which additionally implements PhysicsEngineWorldInterface
+ * \param PhysicsWorldTypes_ parameter for PhysicsWorld
+ * \param PhysicsEngineWorldTypes_ has to be a struct with the following typedefs:
+ * - Model: The model class type
+ * - Contact: Class for engine-specific implementation of a contact point
+ * - PhysicsEngine: Class for the physics engine, if there is any (set to void* if there is none)
+ * - World: Class type of the world, if there is any (set to void* if there is none).
+ *
+ * \author Jennifer Buehler
+ * \date October 2016
+ */
+template<class PhysicsWorldTypes_, class PhysicsEngineWorldTypes_>
+class PhysicsEngineWorld:
+  public PhysicsWorld<PhysicsWorldTypes_>,
+  public PhysicsEngineWorldInterface<
+              typename PhysicsWorldTypes_::ModelID,
+              typename PhysicsEngineWorldTypes_::Model,
+              typename PhysicsEngineWorldTypes_::Contact,
+              typename PhysicsEngineWorldTypes_::PhysicsEngine,
+              typename PhysicsEngineWorldTypes_::World>
+{
+  public: typedef PhysicsWorldTypes_ PhysicsWorldTypes;
+  public: typedef PhysicsEngineWorldTypes_ PhysicsEngineWorldTypes;
+
+  private: typedef PhysicsWorld<PhysicsWorldTypes> PhysicsWorldParent;
+  private: typedef PhysicsEngineWorldInterface<
+              typename PhysicsWorldTypes_::ModelID,
+              typename PhysicsEngineWorldTypes_::Model,
+              typename PhysicsEngineWorldTypes_::Contact,
+              typename PhysicsEngineWorldTypes_::PhysicsEngine,
+              typename PhysicsEngineWorldTypes_::World> PhysicsEngineWorldParent;
+
+
+  private: typedef PhysicsEngineWorld<PhysicsWorldTypes, PhysicsEngineWorldTypes> Self;
+  public: typedef std::shared_ptr<Self> Ptr;
+  public: typedef std::shared_ptr<const Self> ConstPtr;
+
+  public: typedef typename PhysicsWorldTypes::WorldState WorldState;
+  public: typedef typename PhysicsWorldTypes::ModelID ModelID;
+  public: typedef typename PhysicsWorldTypes::ModelPartID ModelPartID;
+  public: typedef typename PhysicsWorldTypes::Vector3 Vector3;
+  public: typedef typename PhysicsWorldTypes::Wrench Wrench;
+
+  public: typedef typename PhysicsEngineWorldTypes::Model Model;
+  public: typedef typename PhysicsEngineWorldTypes::Contact NativeContact;
+  public: typedef typename PhysicsEngineWorldTypes::PhysicsEngine PhysicsEngine;
+  public: typedef typename PhysicsEngineWorldTypes::World World;
+
+  public: typedef std::shared_ptr<Model> ModelPtr;
+  public: typedef std::shared_ptr<NativeContact> NativeContactPtr;
+  public: typedef std::shared_ptr<PhysicsEngine> PhysicsEnginePtr;
+  public: typedef std::shared_ptr<World> WorldPtr;
+};
+
+
+
 
 }  // namespace
 

@@ -57,6 +57,7 @@ class MirrorWorld
              {
                std::lock_guard<std::mutex> lock(originalWorldMutex);
                originalWorld=_originalWorld;
+               NotifyOriginalWorldChanged();
              }
 
     /// Returns the original world which is mirrored by this class
@@ -69,14 +70,11 @@ class MirrorWorld
     /// Synchronizes the world with the original
     public:  virtual void Sync()=0;
 
-    /// Clears all models from the current mirror world.
-    public: virtual void ClearModels()=0;
-
-    /// Updates the mirror world. Typically should be called right after Sync().
-    // public: virtual void Update(int iter=1)=0;
-
-    protected:  OriginalWorldPtr originalWorld;
-    protected:  mutable std::mutex originalWorldMutex;
+    // Will be called when the original world was changed in
+    // SetOriginalWorld. Can be used by subclasses.
+    protected: virtual void NotifyOriginalWorldChanged() {}
+    private:  OriginalWorldPtr originalWorld;
+    private:  mutable std::mutex originalWorldMutex;
 };
 
 }  // namespace collision_benchmark

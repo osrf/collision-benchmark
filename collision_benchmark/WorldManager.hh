@@ -183,7 +183,6 @@ class WorldManager
             if (mirrorWorld)
             {
               mirrorWorld->Sync();
-              //mirrorWorld->Update();
             }
           }
 
