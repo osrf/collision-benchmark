@@ -32,7 +32,7 @@ namespace collision_benchmark
 
 /**
  * \brief MirrorWorld implementation which uses gazebo::physics::World for the mirror world.
- * Only supports PhysicsWorldBase<gazebo::physics::WorldState> as original world.
+ * Only supports PhysicsWorldBaseInterface<gazebo::physics::WorldState> as original world.
  *
  * The world contains a *copy* of the other worlds state (models, lights, etc)
  * but maintains its own collision engine, which is disabled.
@@ -75,7 +75,7 @@ class GazeboMirrorWorld:
     public: typedef std::shared_ptr<const GazeboMirrorWorld> ConstPtr;
 
     // the original world supporting the gazebo::physics::WorldState to synchronize to
-    public: typedef PhysicsWorldBase<gazebo::physics::WorldState> OriginalWorld;
+    public: typedef PhysicsWorldBaseInterface<gazebo::physics::WorldState> OriginalWorld;
     public: typedef std::shared_ptr<OriginalWorld> OriginalWorldPtr;
 
     /// Constructor.
@@ -97,7 +97,7 @@ class GazeboMirrorWorld:
     public: virtual void ClearModels();
 
     /// Documentation inherited
-    public: virtual void Update(int iter=1);
+    // public: virtual void Update(int iter=1);
 
     protected:  gazebo::physics::WorldPtr mirrorWorld;
 };

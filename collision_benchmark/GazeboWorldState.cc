@@ -212,10 +212,10 @@ void collision_benchmark::PrintWorldStates(const std::vector<gazebo::physics::Wo
   std::cout << "#####" << std::endl;
 }
 
-void collision_benchmark::PrintWorldStates(const std::vector<PhysicsWorldBase<gazebo::physics::WorldState>::Ptr>& worlds)
+void collision_benchmark::PrintWorldStates(const std::vector<PhysicsWorldBaseInterface<gazebo::physics::WorldState>::Ptr>& worlds)
 {
   std::cout << "## World states ###" << std::endl;
-  for (std::vector<PhysicsWorldBase<gazebo::physics::WorldState>::Ptr>::const_iterator w = worlds.begin();
+  for (std::vector<PhysicsWorldBaseInterface<gazebo::physics::WorldState>::Ptr>::const_iterator w = worlds.begin();
       w != worlds.end(); ++w)
   {
     gazebo::physics::WorldState s=(*w)->GetWorldState();

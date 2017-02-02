@@ -27,14 +27,14 @@
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
 
-using collision_benchmark::PhysicsWorldBase;
+using collision_benchmark::PhysicsWorldBaseInterface;
 using collision_benchmark::PhysicsWorld;
 using collision_benchmark::GazeboPhysicsWorld;
 using collision_benchmark::MirrorWorld;
 using collision_benchmark::GazeboMirrorWorld;
 using collision_benchmark::WorldManager;
 
-typedef PhysicsWorldBase<gazebo::physics::WorldState> GzPhysicsWorldBase;
+typedef PhysicsWorldBaseInterface<gazebo::physics::WorldState> GzPhysicsWorldBase;
 typedef WorldManager<gazebo::physics::WorldState> GzWorldManager;
 typedef GazeboPhysicsWorld::PhysicsWorldTypes GazeboPhysicsWorldTypes;
 typedef PhysicsWorld<GazeboPhysicsWorldTypes> GzPhysicsWorld;

@@ -61,49 +61,49 @@ bool GazeboPhysicsWorld::WaitForNamespace(const gazebo::physics::WorldPtr& gzwor
 }
 
 
-GazeboPhysicsWorld::OpResult GazeboPhysicsWorld::LoadFromSDF(const sdf::ElementPtr& sdf, const std::string& worldname)
+collision_benchmark::OpResult GazeboPhysicsWorld::LoadFromSDF(const sdf::ElementPtr& sdf, const std::string& worldname)
 {
   gazebo::physics::WorldPtr gzworld = collision_benchmark::LoadWorldFromSDF(sdf, worldname);
 
   if (!gzworld)
-    return GazeboPhysicsWorld::FAILED;
+    return collision_benchmark::FAILED;
 
   if (OnLoadWaitForNamespace && !WaitForNamespace(gzworld, OnLoadMaxWaitForNamespace, OnLoadWaitForNamespaceSleep))
-    return GazeboPhysicsWorld::FAILED;
+    return collision_benchmark::FAILED;
 
   SetWorld(collision_benchmark::to_std_ptr<gazebo::physics::World>(gzworld));
 
-  return GazeboPhysicsWorld::SUCCESS;
+  return collision_benchmark::SUCCESS;
 }
 
-GazeboPhysicsWorld::OpResult GazeboPhysicsWorld::LoadFromFile(const std::string& filename, const std::string& worldname)
+collision_benchmark::OpResult GazeboPhysicsWorld::LoadFromFile(const std::string& filename, const std::string& worldname)
 {
   gazebo::physics::WorldPtr gzworld = collision_benchmark::LoadWorldFromFile(filename, worldname);
 
   if (!gzworld)
-    return GazeboPhysicsWorld::FAILED;
+    return collision_benchmark::FAILED;
 
   if (OnLoadWaitForNamespace && !WaitForNamespace(gzworld, OnLoadMaxWaitForNamespace, OnLoadWaitForNamespaceSleep))
-    return GazeboPhysicsWorld::FAILED;
+    return collision_benchmark::FAILED;
 
   SetWorld(collision_benchmark::to_std_ptr<gazebo::physics::World>(gzworld));
 
-  return GazeboPhysicsWorld::SUCCESS;
+  return collision_benchmark::SUCCESS;
 }
 
-GazeboPhysicsWorld::OpResult GazeboPhysicsWorld::LoadFromString(const std::string& str, const std::string& worldname)
+collision_benchmark::OpResult GazeboPhysicsWorld::LoadFromString(const std::string& str, const std::string& worldname)
 {
   gazebo::physics::WorldPtr gzworld = collision_benchmark::LoadWorldFromSDFString(str, worldname);
 
   if (!gzworld)
-    return GazeboPhysicsWorld::FAILED;
+    return collision_benchmark::FAILED;
 
   if (OnLoadWaitForNamespace && !WaitForNamespace(gzworld, OnLoadMaxWaitForNamespace, OnLoadWaitForNamespaceSleep))
-    return GazeboPhysicsWorld::FAILED;
+    return collision_benchmark::FAILED;
 
   SetWorld(collision_benchmark::to_std_ptr<gazebo::physics::World>(gzworld));
 
-  return GazeboPhysicsWorld::SUCCESS;
+  return collision_benchmark::SUCCESS;
 
 }
 
@@ -256,7 +256,7 @@ GazeboPhysicsWorld::WorldState GazeboPhysicsWorld::GetWorldStateDiff(const World
   return diffState;
 }
 
-GazeboPhysicsWorld::OpResult GazeboPhysicsWorld::SetWorldState(const WorldState& state, bool isDiff)
+collision_benchmark::OpResult GazeboPhysicsWorld::SetWorldState(const WorldState& state, bool isDiff)
 {
   collision_benchmark::SetWorldState(world, state);
 
@@ -270,7 +270,7 @@ GazeboPhysicsWorld::OpResult GazeboPhysicsWorld::SetWorldState(const WorldState&
   }
 #endif
 
-  return PhysicsWorldBase::SUCCESS;
+  return collision_benchmark::SUCCESS;
 }
 
 void GazeboPhysicsWorld::Update(int steps)

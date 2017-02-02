@@ -29,9 +29,11 @@ namespace collision_benchmark
 {
 
 /**
- * \brief Maintains a world of its own, and can be set to mirror another physics::World.
+ * \brief World which can be set to mirror another physics::World.
  *
  * The world which mirrors another world is called the ''mirror world''.
+ * Because it is a mirror, manipulation of the original world should not
+ * be possible via this interface.
  *
  * This is just a basic interface which can have a variety of implementations.
  *
@@ -45,7 +47,7 @@ class MirrorWorld
     public: typedef std::shared_ptr<const MirrorWorld> ConstPtr;
 
     // the original world type
-    public: typedef PhysicsWorldBase<WorldState> OriginalWorld;
+    public: typedef PhysicsWorldBaseInterface<WorldState> OriginalWorld;
     public: typedef std::shared_ptr<OriginalWorld> OriginalWorldPtr;
 
     public:  ~MirrorWorld(){}
@@ -71,7 +73,7 @@ class MirrorWorld
     public: virtual void ClearModels()=0;
 
     /// Updates the mirror world. Typically should be called right after Sync().
-    public: virtual void Update(int iter=1)=0;
+    // public: virtual void Update(int iter=1)=0;
 
     protected:  OriginalWorldPtr originalWorld;
     protected:  mutable std::mutex originalWorldMutex;

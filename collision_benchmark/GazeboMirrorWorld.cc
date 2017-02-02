@@ -81,9 +81,10 @@ void GazeboMirrorWorld::Sync()
     std::cerr<<"Target state was not set as supposed to!!"<<std::endl;
   }
 #endif
+  gazebo::runWorld(mirrorWorld, 1);
 }
 
-void GazeboMirrorWorld::Update(int iter)
+/*void GazeboMirrorWorld::Update(int iter)
 {
   gazebo::runWorld(mirrorWorld, iter);
-}
+}*/

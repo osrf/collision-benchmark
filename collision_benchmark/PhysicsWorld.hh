@@ -26,6 +26,11 @@
 namespace collision_benchmark
 {
 
+/// NOT_SUPPORTED: depending on the context of the function, this means
+///   something about what the method does is not supported (eg. file format not supported)
+typedef enum _OpResult {FAILED, NOT_SUPPORTED, SUCCESS} OpResult;
+
+
 /**
  * \brief Minimal pure virtual interface for various physics world implementations
  *
@@ -35,10 +40,12 @@ namespace collision_benchmark
  * of a **world used for physics engines**.
  *
  * If possible, all implementations should derive from the subclass PhysicsEngineWorld.
- * This pure virtual base class only guarantees a minimal common subset of functionality between implementations.
+ * This pure virtual base class only guarantees a minimal common subset of
+ * functionality between implementations.
+ * If possible, all implementations should agree on a common basic interface, such as PhysicsEngineWorld.
  *
  * Adding and removing of models, lights, or anything part of a world *has to be*
- * supported via the general SetWorldState(). This is to keep things fairly general in-between implementations.
+ * supported via the general SetWorldState(), as well as via the Add* functions and RemoveModel().
  *
  * \param WorldStateImpl The WorldState can be used to retrieve all sorts of information about the world, including the
  * model states. Most of the functionality offered via this interface is accessible via the
@@ -49,23 +56,18 @@ namespace collision_benchmark
  * \date October 2016
  */
 template<class WorldStateImpl>
-class PhysicsWorldBase
+class PhysicsWorldBaseInterface
 {
 
-  private: typedef PhysicsWorldBase<WorldStateImpl> Self;
+  private: typedef PhysicsWorldBaseInterface<WorldStateImpl> Self;
   public: typedef std::shared_ptr<Self> Ptr;
   public: typedef std::shared_ptr<const Self> ConstPtr;
-
-  /// NOT_SUPPORTED: depending on the context of the function, this means
-  ///   something about what the method does is not supported (eg. file format not supported)
-  public: typedef enum _OpResult {FAILED, NOT_SUPPORTED, SUCCESS} OpResult;
 
   /// Describes a state of the world
   public: typedef WorldStateImpl WorldState;
 
-  public: PhysicsWorldBase(){}
-  public: PhysicsWorldBase(const PhysicsWorldBase& w){}
-  public: virtual ~PhysicsWorldBase(){}
+  public: PhysicsWorldBaseInterface(){}
+  public: virtual ~PhysicsWorldBaseInterface(){}
 
   /// Clears the world of all models, lights and anything else that can be
   /// in the world implementation.
@@ -136,57 +138,29 @@ class PhysicsWorldBase
 };
 
 
-
 /**
- * \brief Pure virtual extension of PhysicsWorldBase adding functionality to load models and contact information.
- *
- * This interface can act as general interface to different physics
- * engines worlds, e.g. all of the Gazebo-integrated engines or any other implementation
- * (eg. "brute force"). It is designed with the aim of comparing results of the engines, e.g. contact points.
- *
- * If possible, all implementations of PhysicsWorld should derive from the subclass PhysicsEngineWorld.
- * This pure virtual interface only guarantees a minimal common subset of functionality between implementations.
- *
- * Adding and removing of models, lights, or anything part of a world *has to be*
- * supported via the general SetWorldState(), as well as via the Add* functions and RemoveModel().
+ * \brief Can be used as extending interface to PhysicsWorldBase, adding functionality to load and access models and shapes.
  *
  * \param PhysicsWorldTypes any struct which defines the following typedefs. There is no specification
  * on what these types may be, in this interface they are just needed to define the API.
- * - WorldState: Describes a state of the world
  * - ModelID: ID type used to identify models in the world
  * - ModelPartID: ID type to identify individual parts of a model
- * - Vector3: Math 3D vector implementation
- * - Wrench: Math wrench implementation
  *
  * \author Jennifer Buehler
  * \date October 2016
  */
 template<class PhysicsWorldTypes_>
-class PhysicsWorld: public PhysicsWorldBase<typename PhysicsWorldTypes_::WorldState>
+class PhysicsWorldModelInterface
 {
   public: typedef PhysicsWorldTypes_ PhysicsWorldTypes;
-  private: typedef PhysicsWorld<PhysicsWorldTypes> Self;
+  private: typedef PhysicsWorldModelInterface<PhysicsWorldTypes> Self;
   public: typedef std::shared_ptr<Self> Ptr;
   public: typedef std::shared_ptr<const Self> ConstPtr;
-
-  /// Describes a state of the world
-  public: typedef typename PhysicsWorldTypes::WorldState WorldState;
-  private: typedef PhysicsWorldBase<typename PhysicsWorldTypes::WorldState> BaseClass;
-
-  public: typedef typename BaseClass::OpResult OpResult;
 
   /// ID type used to identify models in the world
   public: typedef typename PhysicsWorldTypes::ModelID ModelID;
   /// ID type to identify individual parts of a model
   public: typedef typename PhysicsWorldTypes::ModelPartID ModelPartID;
-
-  public: typedef collision_benchmark::Contact<
-              typename PhysicsWorldTypes::Vector3,
-              typename PhysicsWorldTypes::Wrench> Contact;
-  public: typedef typename Contact::Ptr ContactPtr;
-
-  public: typedef collision_benchmark::ContactInfo<Contact, ModelID, ModelPartID> ContactInfo;
-  public: typedef typename ContactInfo::Ptr ContactInfoPtr;
 
   public: typedef collision_benchmark::Shape Shape;
 
@@ -201,13 +175,10 @@ class PhysicsWorld: public PhysicsWorldBase<typename PhysicsWorldTypes_::WorldSt
       } ModelLoadResult;
 
 
-  public: PhysicsWorld(){}
-  public: PhysicsWorld(const PhysicsWorld& w){}
-  public: virtual ~PhysicsWorld(){}
+  public: PhysicsWorldModelInterface(){}
+  public: virtual ~PhysicsWorldModelInterface(){}
 
-          /// Loads a model from a file and adds it to the world
-  /// To subsequently set the pose of the model, use SetWorldState(),
-  /// or specific methods of the subclass implementation.
+  /// Loads a model from a file and adds it to the world. Doesn't set the model pose.
   /// \param modelname set to non-empty string to override world name given in file
   /// \retval NOT_SUPPORTED the file type, or the model specified within is not supported
   /// \retval FAILED Loading failed for any other reason
@@ -251,6 +222,44 @@ class PhysicsWorld: public PhysicsWorldBase<typename PhysicsWorldTypes_::WorldSt
   /// removes a model from the world
   /// \retval false the model was not in the world
   public: virtual bool RemoveModel(const ModelID& id)=0;
+};
+
+/**
+ * \brief Can be used as extending interface to PhysicsWorldBase, adding functionality related to contact points.
+ *
+ * \param PhysicsWorldTypes any struct which defines the following typedefs. There is no specification
+ * on what these types may be, in this interface they are just needed to define the API.
+ * - ModelID: ID type used to identify models in the world
+ * - ModelPartID: ID type to identify individual parts of a model
+ * - Vector3: Math 3D vector implementation
+ * - Wrench: Math wrench implementation
+ *
+ * \author Jennifer Buehler
+ * \date October 2016
+ */
+template<class PhysicsWorldTypes_>
+class PhysicsWorldContactInterface
+{
+  public: typedef PhysicsWorldTypes_ PhysicsWorldTypes;
+  private: typedef PhysicsWorldContactInterface<PhysicsWorldTypes> Self;
+  public: typedef std::shared_ptr<Self> Ptr;
+  public: typedef std::shared_ptr<const Self> ConstPtr;
+
+  /// ID type used to identify models in the world
+  public: typedef typename PhysicsWorldTypes::ModelID ModelID;
+  /// ID type to identify individual parts of a model
+  public: typedef typename PhysicsWorldTypes::ModelPartID ModelPartID;
+
+  public: typedef collision_benchmark::Contact<
+              typename PhysicsWorldTypes::Vector3,
+              typename PhysicsWorldTypes::Wrench> Contact;
+  public: typedef typename Contact::Ptr ContactPtr;
+
+  public: typedef collision_benchmark::ContactInfo<Contact, ModelID, ModelPartID> ContactInfo;
+  public: typedef typename ContactInfo::Ptr ContactInfoPtr;
+
+  public: PhysicsWorldContactInterface(){}
+  public: virtual ~PhysicsWorldContactInterface(){}
 
   /// \return false if the underlying implementation does not compute contact points, true otherwise.
   public: virtual bool SupportsContacts() const=0;
@@ -265,6 +274,53 @@ class PhysicsWorld: public PhysicsWorldBase<typename PhysicsWorldTypes_::WorldSt
   /// Works as GetContactInfo() but only returns the contact points between models \e m1 and \e m2.
   public: virtual std::vector<ContactInfoPtr> GetContactInfo(const ModelID& m1, const ModelID& m2) const=0;
 };
+
+
+
+/**
+ * \brief Common interface for all physics worlds, combining basic, model and contact points functionality.
+ *
+ * If possible, all implementations of PhysicsWorld should derive from the subclass PhysicsEngineWorld.
+ * This pure virtual interface only guarantees a minimal common subset of functionality between implementations.
+ *
+ * \param PhysicsWorldTypes any struct which defines the following typedefs. There is no specification
+ * on what these types may be, in this interface they are just needed to define the API.
+ * - WorldState: Describing the state of the world
+ * - ModelID: ID type used to identify models in the world
+ * - ModelPartID: ID type to identify individual parts of a model
+ * - Vector3: Math 3D vector implementation
+ * - Wrench: Math wrench implementation
+ */
+template<class PhysicsWorldTypes_>
+class PhysicsWorld:
+  public PhysicsWorldBaseInterface<typename PhysicsWorldTypes_::WorldState>,
+  public PhysicsWorldModelInterface<PhysicsWorldTypes_>,
+  public PhysicsWorldContactInterface<PhysicsWorldTypes_>
+{
+  public: typedef PhysicsWorldTypes_ PhysicsWorldTypes;
+  private: typedef PhysicsWorld<PhysicsWorldTypes> Self;
+  public: typedef std::shared_ptr<Self> Ptr;
+  public: typedef std::shared_ptr<const Self> ConstPtr;
+
+  private: typedef PhysicsWorldBaseInterface<typename PhysicsWorldTypes::WorldState> PhysicsWorldBaseParent;
+  private: typedef PhysicsWorldModelInterface<PhysicsWorldTypes> PhysicsWorldModelParent;
+  private: typedef PhysicsWorldContactInterface<PhysicsWorldTypes> PhysicsWorldContactParent;
+
+  public: typedef typename PhysicsWorldTypes::WorldState WorldState;
+
+  /// ID type used to identify models in the world
+  public: typedef typename PhysicsWorldModelParent::ModelID ModelID;
+  /// ID type to identify individual parts of a model
+  public: typedef typename PhysicsWorldModelParent::ModelPartID ModelPartID;
+  public: typedef typename PhysicsWorldModelParent::Shape Shape;
+
+  public: typedef typename PhysicsWorldContactParent::Contact Contact;
+  public: typedef typename Contact::Ptr ContactPtr;
+
+  public: typedef typename PhysicsWorldContactParent::ContactInfo ContactInfo;
+  public: typedef typename ContactInfo::Ptr ContactInfoPtr;
+};
+
 
 /**
  * \brief A more engine-specific pure virtual interface of PhysicsWorld which adds a broader access to physics engine functionality

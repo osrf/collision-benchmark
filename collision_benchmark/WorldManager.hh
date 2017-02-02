@@ -57,8 +57,8 @@ class WorldManager
   public: typedef std::shared_ptr<const WorldManager> ConstPtr;
 
   // the original world supporting the gazebo::physics::WorldState to synchronize to
-  public: typedef PhysicsWorldBase<gazebo::physics::WorldState> PhysicsWorldBaseT;
-  public: typedef std::shared_ptr<PhysicsWorldBaseT> PhysicsWorldBasePtr;
+  public: typedef PhysicsWorldBaseInterface<gazebo::physics::WorldState> PhysicsWorldBase;
+  public: typedef std::shared_ptr<PhysicsWorldBase> PhysicsWorldBasePtr;
 
   public: typedef typename MirrorWorld<WorldState>::Ptr MirrorWorldPtr;
 
@@ -183,7 +183,7 @@ class WorldManager
             if (mirrorWorld)
             {
               mirrorWorld->Sync();
-              mirrorWorld->Update();
+              //mirrorWorld->Update();
             }
           }
 

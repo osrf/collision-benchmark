@@ -42,7 +42,7 @@ void PrintWorldStates(const std::vector<gazebo::physics::WorldPtr>& worlds);
 /**
  * Print the world states. Can be used for testing.
  */
-void PrintWorldStates(const std::vector<PhysicsWorldBase<gazebo::physics::WorldState>::Ptr>& worlds);
+void PrintWorldStates(const std::vector<PhysicsWorldBaseInterface<gazebo::physics::WorldState>::Ptr>& worlds);
 
 }
 
