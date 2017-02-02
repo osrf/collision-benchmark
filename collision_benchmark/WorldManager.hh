@@ -57,10 +57,10 @@ class WorldManager
   public: typedef std::shared_ptr<const WorldManager> ConstPtr;
 
   // the original world supporting the gazebo::physics::WorldState to synchronize to
-  public: typedef PhysicsWorldBaseInterface<gazebo::physics::WorldState> PhysicsWorldBase;
-  public: typedef std::shared_ptr<PhysicsWorldBase> PhysicsWorldBasePtr;
+  //public: typedef PhysicsWorldStateInterface<gazebo::physics::WorldState> PhysicsWorldBase;
 
-  public: typedef typename MirrorWorld<WorldState>::Ptr MirrorWorldPtr;
+  //public: typedef typename MirrorWorld<WorldState>::Ptr MirrorWorldPtr;
+  public: typedef typename MirrorWorld::Ptr MirrorWorldPtr;
 
   /// Constructor.
   /// \param _mirrorWorld the main mirror world (the one which will reflect the original). Does not
@@ -73,6 +73,7 @@ class WorldManager
            }
 
   public:  ~WorldManager() {}
+
 
   /// Sets the mirror world
   /// \param _mirrorWorld the main mirror world (the one which will reflect the original). Does not
@@ -107,7 +108,7 @@ class WorldManager
           }
 
   // returns the original world which is currently mirrored by the mirror world
-  public:  PhysicsWorldBasePtr GetMirroredWorld()
+  public:  PhysicsWorldBaseInterface::Ptr GetMirroredWorld()
            {
              assert(mirrorWorld);
              return mirrorWorld->GetOriginalWorld();
@@ -115,7 +116,7 @@ class WorldManager
 
   /// Adds this world and returns the index this world can be accessed at
   /// \return positive int or zero on success (index this world can be accessed at)
-  public:  void AddPhysicsWorld(const PhysicsWorldBasePtr& _world)
+  public:  void AddPhysicsWorld(const PhysicsWorldBaseInterface::Ptr& _world)
            {
              if (worlds.empty() && mirrorWorld)
              {
@@ -127,7 +128,7 @@ class WorldManager
 
   public:  void SetMirroredWorld(const int _index)
            {
-             PhysicsWorldBasePtr world=GetPhysicsWorld(_index);
+             PhysicsWorldBaseInterface::Ptr world=GetPhysicsWorld(_index);
              if (!world)
              {
                gzerr<<"Cannot get world in WorldManager::SetMirroredWorld()\n";
@@ -139,24 +140,30 @@ class WorldManager
 
 
   /// Returns the original world which is mirrored by this class
-  public:  PhysicsWorldBasePtr GetPhysicsWorld(unsigned int _index) const
+  public:  PhysicsWorldBaseInterface::Ptr GetPhysicsWorld(unsigned int _index) const
            {
              GZ_ASSERT(_index < worlds.size(), "Index out of range");
-             if (_index >= worlds.size()) return PhysicsWorldBasePtr();
+             if (_index >= worlds.size()) return PhysicsWorldBaseInterface::Ptr();
              return worlds.at(_index);
            }
 
-
-  public: std::vector<PhysicsWorldBasePtr> GetPhysicsWorlds() const
+  public: std::vector<PhysicsWorldBaseInterface::Ptr> GetPhysicsWorlds() const
           {
             return worlds;
           }
 
+  // Convenience method which casts the world \e w to a PhysicsWorldStateInterface with the given state
+  public: template<class WorldState_>
+          static typename PhysicsWorldStateInterface<WorldState_>::Ptr ToWorldWithState(PhysicsWorldBaseInterface::Ptr& w)
+          {
+            return std::dynamic_pointer_cast<PhysicsWorldStateInterface<WorldState_>>(w);
+          }
+
   public: void SetPaused(bool flag)
           {
-            for (std::vector<PhysicsWorldBasePtr>::iterator it=worlds.begin(); it!= worlds.end(); ++it)
+            for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator it=worlds.begin(); it!= worlds.end(); ++it)
             {
-              PhysicsWorldBasePtr w=*it;
+              PhysicsWorldBaseInterface::Ptr w=*it;
               w->SetPaused(flag);
             }
           }
@@ -165,9 +172,9 @@ class WorldManager
   /// laws, but objects can be maintained in the world and collision states / contact points between them checked.
   public: virtual void SetDynamicsEnabled(const bool flag)
           {
-            for (std::vector<PhysicsWorldBasePtr>::iterator it=worlds.begin(); it!= worlds.end(); ++it)
+            for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator it=worlds.begin(); it!= worlds.end(); ++it)
             {
-              PhysicsWorldBasePtr w=*it;
+              PhysicsWorldBaseInterface::Ptr w=*it;
               w->SetDynamicsEnabled(flag);
             }
           }
@@ -175,9 +182,9 @@ class WorldManager
   /// Calls Update(iter) on all worlds and subsequently calls MirrorWorld::Sync() and MirrorWorld::Update().
   public: void Update(int iter=1)
           {
-            for (std::vector<PhysicsWorldBasePtr>::iterator it=worlds.begin(); it!= worlds.end(); ++it)
+            for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator it=worlds.begin(); it!= worlds.end(); ++it)
             {
-              PhysicsWorldBasePtr w=*it;
+              PhysicsWorldBaseInterface::Ptr w=*it;
               w->Update(iter);
             }
             if (mirrorWorld)
@@ -236,7 +243,7 @@ class WorldManager
   private: gazebo::transport::PublisherPtr ctrlClientPublisher;
   private: gazebo::transport::NodePtr node;
 
-  private: std::vector<PhysicsWorldBasePtr> worlds;
+  private: std::vector<PhysicsWorldBaseInterface::Ptr> worlds;
   private: MirrorWorldPtr mirrorWorld;
   private: int mirroredWorldIdx;
 

@@ -45,32 +45,19 @@ typedef enum _RefResult {ERROR, CLONED, SHALLOW_COPIED, REFERENCED} RefResult;
  * An "underlying implementation" can be an adaptor to, or a complete implementation
  * of a **world used for physics engines**.
  *
- * If possible, all implementations should derive from the subclass PhysicsEngineWorld.
  * This pure virtual base class only guarantees a minimal common subset of
  * functionality between implementations.
  * If possible, all implementations should agree on a common basic interface, such as PhysicsEngineWorld.
  *
- * Adding and removing of models, lights, or anything part of a world *has to be*
- * supported via the general SetWorldState(), as well as via the Add* functions and RemoveModel().
- *
- * \param WorldStateImpl The WorldState can be used to retrieve all sorts of information about the world, including the
- * model states. Most of the functionality offered via this interface is accessible via the
- * world state.
- * There is no specification on what the world state type may be, in this interface they are just needed to define the API.
- *
  * \author Jennifer Buehler
  * \date October 2016
  */
-template<class WorldStateImpl>
 class PhysicsWorldBaseInterface
 {
 
-  private: typedef PhysicsWorldBaseInterface<WorldStateImpl> Self;
+  private: typedef PhysicsWorldBaseInterface Self;
   public: typedef std::shared_ptr<Self> Ptr;
   public: typedef std::shared_ptr<const Self> ConstPtr;
-
-  /// Describes a state of the world
-  public: typedef WorldStateImpl WorldState;
 
   public: PhysicsWorldBaseInterface(){}
   public: virtual ~PhysicsWorldBaseInterface(){}
@@ -79,29 +66,6 @@ class PhysicsWorldBaseInterface
   /// in the world implementation.
   /// A new world can be built with SetWorldState() and/or the Add* functions.
   public: virtual void Clear()=0;
-
-  /// Get the current state of the world
-  public: virtual WorldState GetWorldState() const=0;
-
-  /// Gets the difference to the world state in \e other as differential state.
-  /// Which means, if the returned state is applied on the current world, it will
-  /// be in the state of \e other (this includes adding or removing of models and any
-  /// other entities in the underlying world)
-  public: virtual WorldState GetWorldStateDiff(const WorldState& other) const=0;
-
-  /// Set the current state of the world. It can be used to *update* the state, like model poses etc.,
-  /// and also to *add and remove* models, lights, or whichever entities the underlying world supports.
-  /// A \e state can also be a "differential" state (when param \e isDiff is true)
-  /// which is applied on the *existing* world, as opposed to resetting the world to the exact state \e state.
-  /// \param isDiff if true, this state is a "diff" state which is to be applied/added onto the
-  ///     current state of the world. If false, the world is reset to *exactly* this state.
-  /// \retval NOT_SUPPORTED this combination of \e state and \e isDiff is not supported, eg.
-  ///   \e state as differential state can't be applied to the current world.
-  ///   This could happen when trying to add a model which already exists in the current state.
-  ///   In general, this value is returned when the error is about the combination of
-  ///   \e isDiff and \e state, ie. the parameters not being compatible for whichever reason.
-  /// \retval FAILED Failure for other reasons than \e NOT_SUPPORTED
-  public: virtual OpResult SetWorldState(const WorldState& state, bool isDiff=false)=0;
 
   /// Does \e steps subsequent update calls to the world. **This call blocks**.
   /// \param steps number of iterations to run the world. If 0, runs forever.
@@ -143,9 +107,59 @@ class PhysicsWorldBaseInterface
   public: virtual void SetDynamicsEnabled(const bool flag) = 0;
 };
 
+/**
+ * \brief Extension to the PhysicsWorldBaseInterface offering functionality relating to a world state.
+ *
+ * Adding and removing of models, lights, or anything part of a world *has to be*
+ * supported via the general SetWorldState(), as well as via the Add* functions and RemoveModel().
+ *
+ * \param WorldStateImpl The WorldState can be used to retrieve all sorts of information about the world, including the
+ * model states. Most of the functionality offered via this interface is accessible via the
+ * world state.
+ * There is no specification on what the world state type may be, in this interface they are just needed to define the API.
+ *
+ * \author Jennifer Buehler
+ * \date February 2016
+ */
+template<class WorldStateImpl>
+class PhysicsWorldStateInterface
+{
+  private: typedef PhysicsWorldStateInterface<WorldStateImpl> Self;
+  public: typedef std::shared_ptr<Self> Ptr;
+  public: typedef std::shared_ptr<const Self> ConstPtr;
+
+  /// Describes a state of the world
+  public: typedef WorldStateImpl WorldState;
+
+  public: PhysicsWorldStateInterface(){}
+  public: virtual ~PhysicsWorldStateInterface(){}
+
+  /// Get the current state of the world
+  public: virtual WorldState GetWorldState() const=0;
+
+  /// Gets the difference to the world state in \e other as differential state.
+  /// Which means, if the returned state is applied on the current world, it will
+  /// be in the state of \e other (this includes adding or removing of models and any
+  /// other entities in the underlying world)
+  public: virtual WorldState GetWorldStateDiff(const WorldState& other) const=0;
+
+  /// Set the current state of the world. It can be used to *update* the state, like model poses etc.,
+  /// and also to *add and remove* models, lights, or whichever entities the underlying world supports.
+  /// A \e state can also be a "differential" state (when param \e isDiff is true)
+  /// which is applied on the *existing* world, as opposed to resetting the world to the exact state \e state.
+  /// \param isDiff if true, this state is a "diff" state which is to be applied/added onto the
+  ///     current state of the world. If false, the world is reset to *exactly* this state.
+  /// \retval NOT_SUPPORTED this combination of \e state and \e isDiff is not supported, eg.
+  ///   \e state as differential state can't be applied to the current world.
+  ///   This could happen when trying to add a model which already exists in the current state.
+  ///   In general, this value is returned when the error is about the combination of
+  ///   \e isDiff and \e state, ie. the parameters not being compatible for whichever reason.
+  /// \retval FAILED Failure for other reasons than \e NOT_SUPPORTED
+  public: virtual OpResult SetWorldState(const WorldState& state, bool isDiff=false)=0;
+};
 
 /**
- * \brief Can be used as extending interface to PhysicsWorldBase, adding functionality to load and access models and shapes.
+ * \brief Extension to PhysicsWorldBaseInterface, adding functionality to load and access models and shapes.
  *
  * Template parameters: There is no specification on what these types may be, in this interface
  * they are just needed to define the API.
@@ -226,7 +240,7 @@ class PhysicsWorldModelInterface
 };
 
 /**
- * \brief Can be used as extending interface to PhysicsWorldBase, adding functionality related to contact points.
+ * \brief Extension to PhysicsWorldBaseInterface, adding functionality related to contact points.
  *
  * Template parameters: There is no specification on what these types may be, in this interface
  * they are just needed to define the API.
@@ -275,10 +289,7 @@ class PhysicsWorldContactInterface
 };
 
 /**
- * \brief A more engine-specific pure virtual interface of PhysicsWorld which adds a broader access to physics engine functionality
- *
- * If applicable, all implementations of PhysicsWorld should derive from this class, while the base
- * class(es) only guarantees a minimal common subset of functionality between implementations.
+ * \brief Extension of PhysicsWorldBaseInterface which provides more engine-specific functionality.
  *
  * \param ModelID_ ID to use for identifying a model
  * \param Model_ The model class type
@@ -381,7 +392,8 @@ class PhysicsEngineWorldInterface
  */
 template<class PhysicsWorldTypes_>
 class PhysicsWorld:
-  public PhysicsWorldBaseInterface<typename PhysicsWorldTypes_::WorldState>,
+  public PhysicsWorldBaseInterface,
+  public PhysicsWorldStateInterface<typename PhysicsWorldTypes_::WorldState>,
   public PhysicsWorldModelInterface<
       typename PhysicsWorldTypes_::ModelID,
       typename PhysicsWorldTypes_::ModelPartID>,
@@ -396,16 +408,17 @@ class PhysicsWorld:
   public: typedef std::shared_ptr<Self> Ptr;
   public: typedef std::shared_ptr<const Self> ConstPtr;
 
-  private: typedef PhysicsWorldBaseInterface<typename PhysicsWorldTypes::WorldState> PhysicsWorldBaseParent;
+  private: typedef PhysicsWorldBaseInterface PhysicsWorldBaseParent;
+  private: typedef PhysicsWorldStateInterface<
+              typename PhysicsWorldTypes::WorldState> PhysicsWorldStateParent;
   private: typedef PhysicsWorldModelInterface<
-      typename PhysicsWorldTypes_::ModelID,
-      typename PhysicsWorldTypes_::ModelPartID> PhysicsWorldModelParent;
+              typename PhysicsWorldTypes_::ModelID,
+              typename PhysicsWorldTypes_::ModelPartID> PhysicsWorldModelParent;
   private: typedef PhysicsWorldContactInterface<
               typename PhysicsWorldTypes_::ModelID,
               typename PhysicsWorldTypes_::ModelPartID,
               typename PhysicsWorldTypes_::Vector3,
               typename PhysicsWorldTypes_::Wrench> PhysicsWorldContactParent;
-
 
   public: typedef typename PhysicsWorldTypes::WorldState WorldState;
   public: typedef typename PhysicsWorldTypes::ModelID ModelID;
@@ -425,6 +438,10 @@ class PhysicsWorld:
 
 /**
  * \brief Specialization of PhysicsWorld which additionally implements PhysicsEngineWorldInterface
+ *
+ * All implementations of PhysicsWorld should derive from this class, while the base
+ * class(es) only guarantees a minimal common subset of functionality between implementations.
+ *
  * \param PhysicsWorldTypes_ parameter for PhysicsWorld
  * \param PhysicsEngineWorldTypes_ has to be a struct with the following typedefs:
  * - Model: The model class type
@@ -477,9 +494,6 @@ class PhysicsEngineWorld:
   public: typedef std::shared_ptr<PhysicsEngine> PhysicsEnginePtr;
   public: typedef std::shared_ptr<World> WorldPtr;
 };
-
-
-
 
 }  // namespace
 

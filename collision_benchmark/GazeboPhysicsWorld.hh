@@ -16,14 +16,14 @@ namespace collision_benchmark
 
 struct GazeboPhysicsWorldTypes
 {
+  /// Describes a state of the world
+  typedef gazebo::physics::WorldState WorldState;
+
   /// ID type used to identify models in the world
   typedef std::string ModelID;
 
   /// ID type to identify individual parts of a model
   typedef std::string ModelPartID;
-
-  /// Describes a state of the world
-  typedef gazebo::physics::WorldState WorldState;
 
   /// Math 3D vector implementation
   typedef ignition::math::Vector3d Vector3;

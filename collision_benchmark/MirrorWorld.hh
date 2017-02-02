@@ -40,41 +40,45 @@ namespace collision_benchmark
  * \author Jennifer Buehler
  * \date December 2016
  */
-template<class WorldState>
+//template<class WorldState_>
 class MirrorWorld
 {
-    public: typedef std::shared_ptr<MirrorWorld> Ptr;
-    public: typedef std::shared_ptr<const MirrorWorld> ConstPtr;
+//  public: typedef WorldState_ WorldState;
+//  public: typedef MirrorWorld<WorldState> Self;
+  public: typedef MirrorWorld Self;
+  public: typedef std::shared_ptr<Self> Ptr;
+  public: typedef std::shared_ptr<const Self> ConstPtr;
 
-    // the original world type
-    public: typedef PhysicsWorldBaseInterface<WorldState> OriginalWorld;
-    public: typedef std::shared_ptr<OriginalWorld> OriginalWorldPtr;
+  // the original world type
+  //public: typedef PhysicsWorldStateInterface<WorldState> OriginalWorld;
+  public: typedef PhysicsWorldBaseInterface OriginalWorld;
+  public: typedef std::shared_ptr<OriginalWorld> OriginalWorldPtr;
 
-    public:  ~MirrorWorld(){}
+  public:  ~MirrorWorld(){}
 
-    /// Sets the original world to be mirrored by this MirrorWorld
-    public:  void SetOriginalWorld(const OriginalWorldPtr& _originalWorld)
-             {
-               std::lock_guard<std::mutex> lock(originalWorldMutex);
-               originalWorld=_originalWorld;
-               NotifyOriginalWorldChanged();
-             }
+  /// Sets the original world to be mirrored by this MirrorWorld
+  public:  void SetOriginalWorld(const OriginalWorldPtr& _originalWorld)
+           {
+             std::lock_guard<std::recursive_mutex> lock(originalWorldMutex);
+             originalWorld=_originalWorld;
+             NotifyOriginalWorldChanged();
+           }
 
-    /// Returns the original world which is mirrored by this class
-    public:  OriginalWorldPtr GetOriginalWorld() const
-             {
-               std::lock_guard<std::mutex> lock(originalWorldMutex);
-               return originalWorld;
-             }
+  /// Returns the original world which is mirrored by this class
+  public:  OriginalWorldPtr GetOriginalWorld() const
+           {
+             std::lock_guard<std::recursive_mutex> lock(originalWorldMutex);
+             return originalWorld;
+           }
 
-    /// Synchronizes the world with the original
-    public:  virtual void Sync()=0;
+  /// Synchronizes the world with the original
+  public:  virtual void Sync()=0;
 
-    // Will be called when the original world was changed in
-    // SetOriginalWorld. Can be used by subclasses.
-    protected: virtual void NotifyOriginalWorldChanged() {}
-    private:  OriginalWorldPtr originalWorld;
-    private:  mutable std::mutex originalWorldMutex;
+  // Will be called when the original world was changed in
+  // SetOriginalWorld. Can be used by subclasses.
+  protected: virtual void NotifyOriginalWorldChanged() {}
+  private:  OriginalWorldPtr originalWorld;
+  private:  mutable std::recursive_mutex originalWorldMutex;
 };
 
 }  // namespace collision_benchmark

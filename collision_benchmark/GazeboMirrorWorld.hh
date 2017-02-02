@@ -69,14 +69,14 @@ namespace collision_benchmark
  * \date December 2016
  */
 class GazeboMirrorWorld:
-  public MirrorWorld<gazebo::physics::WorldState>
+  public MirrorWorld
+  //public MirrorWorld<gazebo::physics::WorldState>
 {
     public: typedef std::shared_ptr<GazeboMirrorWorld> Ptr;
     public: typedef std::shared_ptr<const GazeboMirrorWorld> ConstPtr;
 
     // the original world supporting the gazebo::physics::WorldState to synchronize to
-    public: typedef PhysicsWorldBaseInterface<gazebo::physics::WorldState> OriginalWorld;
-    public: typedef std::shared_ptr<OriginalWorld> OriginalWorldPtr;
+    private : typedef PhysicsWorldStateInterface<gazebo::physics::WorldState> GzPhysicsWorld;
 
     /// Constructor.
     /// \param mirrorWorld the main mirror world (the one which will reflect the original).
@@ -92,6 +92,8 @@ class GazeboMirrorWorld:
 
     /// Documentation inherited
     public:  virtual void Sync();
+
+    protected: virtual void NotifyOriginalWorldChanged();
 
     protected:  gazebo::physics::WorldPtr mirrorWorld;
 };

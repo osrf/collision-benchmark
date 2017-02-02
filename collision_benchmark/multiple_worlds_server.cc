@@ -28,13 +28,13 @@
 #include <gazebo/physics/physics.hh>
 
 using collision_benchmark::PhysicsWorldBaseInterface;
+using collision_benchmark::PhysicsWorldStateInterface;
 using collision_benchmark::PhysicsWorld;
 using collision_benchmark::GazeboPhysicsWorld;
 using collision_benchmark::MirrorWorld;
 using collision_benchmark::GazeboMirrorWorld;
 using collision_benchmark::WorldManager;
 
-typedef PhysicsWorldBaseInterface<gazebo::physics::WorldState> GzPhysicsWorldBase;
 typedef WorldManager<gazebo::physics::WorldState> GzWorldManager;
 typedef GazeboPhysicsWorld::PhysicsWorldTypes GazeboPhysicsWorldTypes;
 typedef PhysicsWorld<GazeboPhysicsWorldTypes> GzPhysicsWorld;
@@ -111,12 +111,13 @@ bool Run(int argc, char **argv)
     // std::cout<<"Physics: "<<physics->ToString("")<<std::endl;
     std::cout<<"Loading world from "<<worldfile<<std::endl;
     gazebo::physics::WorldPtr gzworld = collision_benchmark::LoadWorldFromFile(worldfile, worldname, physics);
-
     if (!gzworld)
     {
       std::cout<<"Error loading world "<<worldfile<<std::endl;
       return false;
     }
+
+    std::cout<<"Creating GazeboPhysicsWorld. "<<std::endl;
     // Create the GazeboPhysicsWorld object
     bool enforceContactCalc=true;
     GazeboPhysicsWorld::Ptr gzPhysicsWorld(new GazeboPhysicsWorld(enforceContactCalc));
@@ -134,12 +135,12 @@ bool Run(int argc, char **argv)
     int numSteps=1;
     worldManager.Update(numSteps);
     // gazebo::common::Time::MSleep(100);
-    GzWorldManager::PhysicsWorldBasePtr mirroredWorld = worldManager.GetMirroredWorld();
+  /*  PhysicsWorldBaseInterface::Ptr mirroredWorld = worldManager.GetMirroredWorld();
     GzPhysicsWorld::Ptr mirroredWorldCast = std::dynamic_pointer_cast<GzPhysicsWorld>(mirroredWorld);
     assert(mirroredWorldCast);
     std::vector<GzPhysicsWorld::ContactInfoPtr> contacts = mirroredWorldCast->GetContactInfo();
     std::cout<<"Number of contacts: "<<contacts.size()<<std::endl;
-    getchar();
+    getchar();*/
   }
   return true;
 }

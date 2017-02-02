@@ -14,18 +14,20 @@
  * limitations under the License.
  *
 */
-/* Desc: World adaptor mirroring another physics::World
+/*
  * Author: Jennifer Buehler
  * Date: December 2016
  */
 #include <collision_benchmark/GazeboMirrorWorld.hh>
-#include <collision_benchmark/GazeboPhysicsWorld.hh>
 #include <collision_benchmark/GazeboStateCompare.hh>
 #include <collision_benchmark/GazeboWorldState.hh>
-#include <collision_benchmark/GazeboHelpers.hh>
-#include <gazebo/physics/PhysicsIface.hh>
-#include <gazebo/physics/PhysicsEngine.hh>
-#include <gazebo/physics/ContactManager.hh>
+/*#include <collision_benchmark/GazeboPhysicsWorld.hh>
+#include <collision_benchmark/GazeboHelpers.hh>*/
+#include <collision_benchmark/Exception.hh>
+
+//#include <gazebo/physics/PhysicsIface.hh>
+//#include <gazebo/physics/PhysicsEngine.hh>
+//#include <gazebo/physics/ContactManager.hh>
 
 using collision_benchmark::GazeboMirrorWorld;
 
@@ -45,9 +47,21 @@ gazebo::physics::WorldPtr GazeboMirrorWorld::GetMirrorWorld() const
   return mirrorWorld;
 }
 
+void GazeboMirrorWorld::NotifyOriginalWorldChanged()
+{
+  GzPhysicsWorld::Ptr origWorld =
+    std::dynamic_pointer_cast<GzPhysicsWorld>(GetOriginalWorld());
+  if (!origWorld)
+  {
+    THROW_EXCEPTION("Only Gazebo original worlds supported");
+  }
+}
+
 void GazeboMirrorWorld::Sync()
 {
-  OriginalWorldPtr origWorld = GetOriginalWorld();
+  GzPhysicsWorld::Ptr origWorld =
+    std::dynamic_pointer_cast<GzPhysicsWorld>(GetOriginalWorld());
+  // this should always cast successfully as we've checked it in NotifyOriginalWorldChanged
   assert(origWorld);
 
 /*
