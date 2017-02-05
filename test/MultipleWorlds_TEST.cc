@@ -2,7 +2,6 @@
 #include <collision_benchmark/PhysicsWorld.hh>
 #include <collision_benchmark/GazeboPhysicsWorld.hh>
 #include <collision_benchmark/GazeboStateCompare.hh>
-#include <collision_benchmark/GazeboMirrorWorld.hh>
 #include <collision_benchmark/GazeboHelpers.hh>
 #include <collision_benchmark/WorldManager.hh>
 #include <collision_benchmark/boost_std_conversion.hh>
@@ -12,10 +11,8 @@
 
 #include "BasicTestFramework.hh"
 
-using collision_benchmark::PhysicsWorldBase;
 using collision_benchmark::PhysicsWorld;
 using collision_benchmark::GazeboPhysicsWorld;
-using collision_benchmark::GazeboMirrorWorld;
 using collision_benchmark::GazeboStateCompare;
 using collision_benchmark::WorldManager;
 

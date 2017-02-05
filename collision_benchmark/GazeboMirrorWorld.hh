@@ -93,7 +93,8 @@ class GazeboMirrorWorld:
     /// Documentation inherited
     public:  virtual void Sync();
 
-    protected: virtual void NotifyOriginalWorldChanged();
+    protected: virtual void NotifyOriginalWorldChange
+                          (const OriginalWorldPtr &_newWorld);
 
     protected:  gazebo::physics::WorldPtr mirrorWorld;
 };

@@ -41,11 +41,11 @@ gazebo::physics::WorldPtr GazeboMirrorWorld::GetMirrorWorld() const
   return mirrorWorld;
 }
 
-void GazeboMirrorWorld::NotifyOriginalWorldChanged()
+void GazeboMirrorWorld::NotifyOriginalWorldChange(const OriginalWorldPtr &_newWorld)
 {
-  GzPhysicsWorld::Ptr origWorld =
-    std::dynamic_pointer_cast<GzPhysicsWorld>(GetOriginalWorld());
-  if (!origWorld)
+  GzPhysicsWorld::Ptr gzNewWorld =
+    std::dynamic_pointer_cast<GzPhysicsWorld>(_newWorld);
+  if (!gzNewWorld)
   {
     THROW_EXCEPTION("Only Gazebo original worlds supported");
   }
@@ -55,7 +55,7 @@ void GazeboMirrorWorld::Sync()
 {
   GzPhysicsWorld::Ptr origWorld =
     std::dynamic_pointer_cast<GzPhysicsWorld>(GetOriginalWorld());
-  // this should always cast successfully as we've checked it in NotifyOriginalWorldChanged
+  // this should always cast successfully as we've checked it in NotifyOriginalWorldChange
   assert(origWorld);
 
 /*

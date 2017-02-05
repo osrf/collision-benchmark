@@ -60,8 +60,8 @@ class MirrorWorld
   public:  void SetOriginalWorld(const OriginalWorldPtr& _originalWorld)
            {
              std::lock_guard<std::recursive_mutex> lock(originalWorldMutex);
+             NotifyOriginalWorldChange(_originalWorld);
              originalWorld=_originalWorld;
-             NotifyOriginalWorldChanged();
            }
 
   /// Returns the original world which is mirrored by this class
@@ -74,9 +74,10 @@ class MirrorWorld
   /// Synchronizes the world with the original
   public:  virtual void Sync()=0;
 
-  // Will be called when the original world was changed in
+  // Will be called when the original world is about to be changed in
   // SetOriginalWorld. Can be used by subclasses.
-  protected: virtual void NotifyOriginalWorldChanged() {}
+  protected: virtual void NotifyOriginalWorldChange
+                (const OriginalWorldPtr &_newWorld) {}
   private:  OriginalWorldPtr originalWorld;
   private:  mutable std::recursive_mutex originalWorldMutex;
 };

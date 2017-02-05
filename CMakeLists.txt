@@ -4,7 +4,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 
 # uncomment to use new solution which requires modified gazebo
 # allowing enforcement of contact calculation in ContactManager
-# add_definitions("-DCONTACTS_ENFORCABLE")
+add_definitions("-DCONTACTS_ENFORCABLE")
 
 # Search for dependencies
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
@@ -14,6 +14,8 @@ set(collision_benchmark_HEADERS
   collision_benchmark/boost_std_conversion.hh
   collision_benchmark/ContactInfo.hh
   collision_benchmark/GazeboMirrorWorld.hh
+  collision_benchmark/GazeboTopicForwarder.hh
+  collision_benchmark/GazeboTopicForwardingMirror.hh
   collision_benchmark/GazeboStateCompare.hh
   collision_benchmark/MirrorWorld.hh
   collision_benchmark/Shape.hh
@@ -27,6 +29,7 @@ set(collision_benchmark_HEADERS
   collision_benchmark/GazeboWorldState.hh
   collision_benchmark/PhysicsWorld.hh
   collision_benchmark/GazeboWorldLoader.hh
+  collision_benchmark/TypeHelper.hh
 )
 
 add_library(collision_benchmark SHARED
@@ -34,11 +37,13 @@ add_library(collision_benchmark SHARED
   collision_benchmark/GazeboPhysicsWorld.cc
   collision_benchmark/GazeboWorldState.cc
   collision_benchmark/GazeboMirrorWorld.cc
+  collision_benchmark/GazeboTopicForwardingMirror.cc
   collision_benchmark/GazeboHelpers.cc
   collision_benchmark/GazeboStateCompare.cc
   collision_benchmark/Shape.cc
   collision_benchmark/PrimitiveShape.cc
   collision_benchmark/SimpleTriMeshShape.cc
+  collision_benchmark/TypeHelper.cc
 )
  
 # when using a different folder for the header file, must to

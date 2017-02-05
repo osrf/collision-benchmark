@@ -10,6 +10,13 @@ You will reqiure
 * Assimp
 * Boost libraries
 
+Current requirement is also to use the [dart-6](https://bitbucket.org/JenniferBuehler/gazebo/branch/dart-6)
+branch (see [PR #2547](https://bitbucket.org/osrf/gazebo/pull-requests/2547/dart-6/diff)),
+and for some functionality with the contact points it needs to be
+the [dart-6-dev](https://bitbucket.org/JenniferBuehler/gazebo/src/6b01e236886123ae0a9d3c585a841a303bb8a3bd/?at=dart-6-dev)
+branch which is merged with the PR for [contact_manager_enforcable_additions](https://bitbucket.org/JenniferBuehler/gazebo/branch/contact_manager_enforcable_additions)
+(see [PR #2629](https://bitbucket.org/osrf/gazebo/pull-requests/2629/possibility-to-enforce-contact-addition-in/diff) which is meant to merge a predecessor of contact_manager_enforcable).
+
 ## Setup
 
 If you compiled Gazebo from source, don't forget to source ``<your-gazebo-install-path>/share/setup.sh`` to set up the 
