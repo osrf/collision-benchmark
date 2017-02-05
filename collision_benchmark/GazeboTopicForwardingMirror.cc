@@ -94,20 +94,6 @@ void GazeboTopicForwardingMirror::DisconnectFromOriginal()
   this->guiFwd->DisconnectSubscriber();
 }
 
-/*class ModelsChangeTrigger:
-  public TopicTrigger
-{
-  public: ModelsChangeTrigger(GazeboTopicForwardingMirror * _mirror):
-          mirror(_mirror) {}
-
-  public: virtual void Trigger(const std::string& _oldTopic,
-                               const std::string& _newTopic,
-                               bool _incoming) const = 0;
-
-  public: ModelsChangeTrigger(GazeboTopicForwardingMirror * _mirror):
-};*/
-
-
 
 void GazeboTopicForwardingMirror::Init()
 {
@@ -176,6 +162,11 @@ void GazeboTopicForwardingMirror::NotifyOriginalWorldChange
 
   if (oldWorld)
   {
+    // if we were already connected to a world, we need to delete all
+    // the old world's models and insert all the new world's models.
+    // This can be optimized by deleting only the models/lights which only exist
+    // in the old world, and update only the pose of the models/lights which
+    // are in both worlds. This optimization may be added at a later point.
     DisconnectFromOriginal();
     GazeboPhysicsEngineWorld::Ptr gzOldWorld =
       std::dynamic_pointer_cast<GazeboPhysicsEngineWorld>(oldWorld);
@@ -197,6 +188,11 @@ void GazeboTopicForwardingMirror::NotifyOriginalWorldChange
       delete msg;
     }
 
+    // create a temporary publisher which will be used to publish
+    // the insertion of new models (of the new world) to
+    gazebo::transport::PublisherPtr pub =
+      this->node->Advertise<gazebo::msgs::Model>("~/model/info", 1000, 0);
+
     // insert all new models
     std::cout<<"Inserting all new world's models"<<std::endl;
     // delete all new models
@@ -205,10 +201,10 @@ void GazeboTopicForwardingMirror::NotifyOriginalWorldChange
          it != newModels.end(); ++it)
     {
       gazebo::physics::ModelPtr m=*it;
-      std::cout<<"Requesting insertion of "<<m->GetScopedName()<<std::endl;
+      std::cout<<"Triggering insertion of "<<m->GetScopedName()<<std::endl;
       gazebo::msgs::Model insModelMsg;
       m->FillMsg(insModelMsg);
-      gazebo::transport::PublisherPtr pub = this->modelFwd->GetPublisher();
+      //gazebo::transport::PublisherPtr pub = this->modelFwd->GetPublisher();
       pub->Publish(insModelMsg);
     }
   }
