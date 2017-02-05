@@ -91,11 +91,23 @@ class GazeboTopicForwardingMirror:
     /// \brief topic forwarder for gui messages.
     private: GazeboTopicForwarder<gazebo::msgs::GUI>::Ptr guiFwd;
 
-    /// \brief topic forwarder for light messages.
-    private: GazeboTopicForwarder<gazebo::msgs::Light>::Ptr lightFwd;
-
     /// \brief topic forwarder for pose messages.
     private: GazeboTopicForwarder<gazebo::msgs::PosesStamped>::Ptr poseFwd;
+
+    /// \brief topic forwarder for joint messages.
+    private: GazeboTopicForwarder<gazebo::msgs::Joint>::Ptr jointFwd;
+
+    /// \brief topic forwarder for contact messages.
+    private: GazeboTopicForwarder<gazebo::msgs::Contacts>::Ptr contactFwd;
+
+    /// \brief topic forwarder for visual messages.
+    private: GazeboTopicForwarder<gazebo::msgs::Visual>::Ptr visualFwd;
+
+    /// \brief topic forwarder for road messages.
+    private: GazeboTopicForwarder<gazebo::msgs::Road>::Ptr roadFwd;
+
+    /// \brief topic forwarder for poseAnim messages.
+    private: GazeboTopicForwarder<gazebo::msgs::PoseAnimation>::Ptr poseAnimFwd;
 
     /// \brief Publisher for request messages to use for clients subscribed
     /// the the mirror world (e.g. visualization/gzclient).
@@ -105,18 +117,12 @@ class GazeboTopicForwardingMirror:
     /// when switching between worlds.
     private: gazebo::transport::PublisherPtr modelPub;
 
-/*
-    /// \brief Subscriber to request messages.
-    private: gazebo::transport::SubscriberPtr requestSub;*/
-
     /// \brief Forwards service calls to the original world
     private: GazeboServiceForwarder::Ptr origServiceFwd;
 
-    /// \brief Publisher to send request messages to original world.
-/*    private: gazebo::transport::PublisherPtr requestOrigPub;
-
-    /// \brief Subscriber to receive responses from original world.
-    private: gazebo::transport::SubscriberPtr responseOrigSub;*/
+    // all topics which are not supported are subscribed to and a
+    // message is printed as information when message is received.
+    private: std::vector<GazeboTopicBlockPrinterInterface::Ptr> blockPrinters;
 
     private: std::string worldName;
 };

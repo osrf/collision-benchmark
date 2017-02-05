@@ -57,27 +57,6 @@ class MessageFilter
 };
 
 /**
- * \brief Strategy pattern which will be applied when a topic changes.
- * To be used with GazeboTopicForwarder.
- * \author Jennifer Buehler
- * \date February 2017
- */
-/*class TopicTrigger
-{
-  public: typedef std::shared_ptr<TopicTrigger> Ptr;
-  public: typedef std::shared_ptr<const TopicTrigger> ConstPtr;
-
-  // Called when a topic changes from \e _oldTopic to \e _newTopic.
-  // \param _incoming If true it is the incoming topic
-  // (subscribed to) that changes. Otherwise, it is the outgoing (published to)
-  public: virtual void Trigger(const std::string& _oldTopic,
-                               const std::string& _newTopic,
-                               bool _incoming) const = 0;
-};*/
-
-
-
-/**
  * \brief forwards messages from one topic to another
  * \author Jennifer Buehler
  * \date February 2017
@@ -190,7 +169,9 @@ class GazeboTopicForwarder
   /// \brief Subscriber to get the messages to forward.
   private: gazebo::transport::SubscriberPtr sub;
 
+  /// \brief the message filter (optional)
   private: MessageFilterPtr msgFilter;
+
   /// \brief for debugging
   private: bool verbose;
 };
@@ -345,6 +326,84 @@ class GazeboServiceForwarder
   /// \brief for debugging
   private: bool verbose;
 
+};
+
+class GazeboTopicBlockPrinterInterface
+{
+  private: typedef GazeboTopicBlockPrinterInterface Self;
+  public: typedef std::shared_ptr<Self> Ptr;
+  public: typedef std::shared_ptr<const Self> ConstPtr;
+
+};
+
+/**
+ * \brief received messages of this type on a topic and prints an error that they are not supported.
+ * Can also use a MessageFilter to print the blocking message only certain messages.
+ *
+ * \author Jennifer Buehler
+ * \date February 2017
+ */
+template<typename Msg_>
+class GazeboTopicBlockPrinter:
+  public GazeboTopicBlockPrinterInterface
+{
+  public: typedef Msg_ Msg;
+  private: typedef GazeboTopicBlockPrinter<Msg> Self;
+  public: typedef std::shared_ptr<Self> Ptr;
+  public: typedef std::shared_ptr<const Self> ConstPtr;
+  public: typedef typename MessageFilter<Msg>::Ptr MessageFilterPtr;
+
+  // \brief Constructor
+  // \param _topic topic to receive this message on
+  // \param _node node to use for subscription
+ public: GazeboTopicBlockPrinter(const std::string &_topic,
+                              const gazebo::transport::NodePtr &_node,
+                              const MessageFilterPtr _filter=nullptr):
+          msgFilter(_filter)
+          {
+            Init(_topic,_node, false);
+          }
+  public: virtual ~GazeboTopicBlockPrinter(){}
+
+  // \brief Disconnects the subscribers
+  public: void DisconnectSubscriber()
+          {
+            if (this->sub) this->sub->Unsubscribe();
+          }
+
+  private: void Init(const std::string &_topic,
+                     const gazebo::transport::NodePtr &_node,
+                     const bool _subLatching=false)
+          {
+            if (this->sub)
+              this->sub->Unsubscribe();
+            this->sub = _node->Subscribe(_topic, &GazeboTopicBlockPrinter::OnMsg,
+                                         this, _subLatching);
+            std::cout<<"Catching messages of type "
+                      <<GetTypeName<Msg>()<<" from topic "<<_topic<<std::endl;
+          }
+
+  private: void OnMsg(const boost::shared_ptr<Msg const> &_msg)
+  {
+    std::cout<<"Got message of type "
+      <<GetTypeName<Msg>();
+    if (this->sub) std::cout<<" on topic "<<this->sub->GetTopic();
+    else std::cout<<" <null>";
+    std::cout<<std::endl;
+
+    assert(_msg);
+    if (!msgFilter || msgFilter->Filter(_msg))
+    {
+      std::cout<<"Blocked message of type "
+          <<GetTypeName<Msg>()<<std::endl;
+    }
+  }
+
+  /// \brief Subscriber to get the messages to forward.
+  private: gazebo::transport::SubscriberPtr sub;
+
+  /// \brief the message filter (optional)
+  private: MessageFilterPtr msgFilter;
 };
 
 

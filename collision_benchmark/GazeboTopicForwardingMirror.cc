@@ -80,9 +80,12 @@ void GazeboTopicForwardingMirror::ConnectOriginalWorld(const std::string origWor
 {
   std::cout<<"Mirror is connecting to world '"<<origWorldName<<"'"<<std::endl;
 
+  // connect services
   assert(this->origServiceFwd);
   this->origServiceFwd->Forward("/gazebo/"+origWorldName+"/request",
                                 "/gazebo/"+origWorldName+"/response", this->node);
+
+  // connect topic forwarders
   bool latch=false;
   assert(this->statFwd);
   this->statFwd->ForwardFrom("/gazebo/"+origWorldName+"/world_stats", this->node, latch);
@@ -90,14 +93,26 @@ void GazeboTopicForwardingMirror::ConnectOriginalWorld(const std::string origWor
   assert(this->modelFwd);
   this->modelFwd->ForwardFrom("/gazebo/"+origWorldName+"/model/info", this->node, latch);
 
-  assert(this->lightFwd);
-  this->lightFwd->ForwardFrom("/gazebo/"+origWorldName+"/light/modify", this->node, latch);
-
   assert(this->poseFwd);
   this->poseFwd->ForwardFrom("/gazebo/"+origWorldName+"/pose/info", this->node, latch);
 
   assert(this->guiFwd);
   this->guiFwd->ForwardFrom("/gazebo/"+origWorldName+"/gui", this->node, latch);
+
+  assert(this->jointFwd);
+  this->jointFwd->ForwardFrom("/gazebo/"+origWorldName+"/joint", this->node, latch);
+
+  assert(this->contactFwd);
+  this->contactFwd->ForwardFrom("/gazebo/"+origWorldName+"/physics/contacts", this->node, latch);
+
+  assert(this->visualFwd);
+  this->visualFwd->ForwardFrom("/gazebo/"+origWorldName+"/visual", this->node, latch);
+
+  assert(this->roadFwd);
+  this->roadFwd->ForwardFrom("/gazebo/"+origWorldName+"/roads", this->node, latch);
+
+  assert(this->poseAnimFwd);
+  this->poseAnimFwd->ForwardFrom("/gazebo/"+origWorldName+"/skeleton_pose/info", this->node, latch);
 }
 
 void GazeboTopicForwardingMirror::DisconnectFromOriginal()
@@ -111,21 +126,119 @@ void GazeboTopicForwardingMirror::DisconnectFromOriginal()
   assert(this->modelFwd);
   this->modelFwd->DisconnectSubscriber();
 
-  assert(this->lightFwd);
-  this->lightFwd->DisconnectSubscriber();
-
   assert(this->poseFwd);
   this->poseFwd->DisconnectSubscriber();
 
   assert(this->guiFwd);
   this->guiFwd->DisconnectSubscriber();
+
+  assert(this->jointFwd);
+  this->jointFwd->DisconnectSubscriber();
+
+  assert(this->contactFwd);
+  this->contactFwd->DisconnectSubscriber();
+
+  assert(this->visualFwd);
+  this->visualFwd->DisconnectSubscriber();
+
+  assert(this->roadFwd);
+  this->roadFwd->DisconnectSubscriber();
+
+  assert(this->poseAnimFwd);
+  this->poseAnimFwd->DisconnectSubscriber();
 }
 
 
 void GazeboTopicForwardingMirror::Init()
 {
+  // initialize node
   this->node = gazebo::transport::NodePtr(new gazebo::transport::Node());
   this->node->Init(this->worldName);
+
+  // initialize topic block printers (for user information printing)
+  ////////////////////////////////////////////////
+
+  GazeboTopicBlockPrinterInterface::Ptr physicsBlock
+    (new GazeboTopicBlockPrinter<gazebo::msgs::Physics>("~/physics",
+                                                        this->node));
+  this->blockPrinters.push_back(physicsBlock);
+
+  GazeboTopicBlockPrinterInterface::Ptr lightModBlock
+    (new GazeboTopicBlockPrinter<gazebo::msgs::Light>("~/light/modify",
+                                                        this->node));
+  this->blockPrinters.push_back(lightModBlock);
+
+  GazeboTopicBlockPrinterInterface::Ptr atmosphereBlock
+    (new GazeboTopicBlockPrinter<gazebo::msgs::Atmosphere>("~/atmosphere",
+                                                        this->node));
+  this->blockPrinters.push_back(atmosphereBlock);
+
+  GazeboTopicBlockPrinterInterface::Ptr factoryBlock
+    (new GazeboTopicBlockPrinter<gazebo::msgs::Factory>("~/factory",
+                                                        this->node));
+  this->blockPrinters.push_back(factoryBlock);
+
+  GazeboTopicBlockPrinterInterface::Ptr factoryLightBlock
+    (new GazeboTopicBlockPrinter<gazebo::msgs::Light>("~/factory/light",
+                                                        this->node));
+  this->blockPrinters.push_back(factoryLightBlock);
+
+  GazeboTopicBlockPrinterInterface::Ptr logControlBlock
+    (new GazeboTopicBlockPrinter<gazebo::msgs::LogControl>("~/log/control",
+                                                        this->node));
+  this->blockPrinters.push_back(logControlBlock);
+
+  GazeboTopicBlockPrinterInterface::Ptr logStatusBlock
+    (new GazeboTopicBlockPrinter<gazebo::msgs::LogStatus>("~/log/status",
+                                                        this->node));
+  this->blockPrinters.push_back(logStatusBlock);
+
+  GazeboTopicBlockPrinterInterface::Ptr logPlaybackCtrlBlock
+    (new GazeboTopicBlockPrinter<gazebo::msgs::LogPlaybackControl>("~/playback_control",
+                                                        this->node));
+  this->blockPrinters.push_back(logPlaybackCtrlBlock);
+
+
+  GazeboTopicBlockPrinterInterface::Ptr modelModifyBlock
+    (new GazeboTopicBlockPrinter<gazebo::msgs::Model>("~/model/modify",
+                                                        this->node));
+  this->blockPrinters.push_back(modelModifyBlock);
+
+  GazeboTopicBlockPrinterInterface::Ptr poseModifyBlock
+    (new GazeboTopicBlockPrinter<gazebo::msgs::Pose>("~/pose/modify",
+                                                        this->node));
+  this->blockPrinters.push_back(poseModifyBlock);
+
+  GazeboTopicBlockPrinterInterface::Ptr undoRedoBlock
+    (new GazeboTopicBlockPrinter<gazebo::msgs::UndoRedo>("~/undo_redo",
+                                                        this->node));
+  this->blockPrinters.push_back(undoRedoBlock);
+
+  GazeboTopicBlockPrinterInterface::Ptr userCmdBlock
+    (new GazeboTopicBlockPrinter<gazebo::msgs::UserCmd>("~/user_cmd",
+                                                        this->node));
+  this->blockPrinters.push_back(userCmdBlock);
+
+  GazeboTopicBlockPrinterInterface::Ptr windBlock
+    (new GazeboTopicBlockPrinter<gazebo::msgs::Wind>("~/wind",
+                                                        this->node));
+  this->blockPrinters.push_back(windBlock);
+
+  GazeboTopicBlockPrinterInterface::Ptr worldControlBlock
+    (new GazeboTopicBlockPrinter<gazebo::msgs::Wind>("~/world_control",
+                                                        this->node));
+  this->blockPrinters.push_back(worldControlBlock);
+
+
+  // initialize services
+  ////////////////////////////////////////////////
+  this->origServiceFwd.reset(new GazeboServiceForwarder
+                             ("~/request", "~/response",
+                              RequestMessageFilter::Ptr(new RequestMessageFilter()),
+                              1000, 0));
+
+  // initialize topic forwarders
+  ////////////////////////////////////////////////
 
   this->statFwd.reset(new GazeboTopicForwarder<gazebo::msgs::WorldStatistics>
                       ("~/world_stats", this->node));
@@ -133,21 +246,29 @@ void GazeboTopicForwardingMirror::Init()
   this->modelFwd.reset(new GazeboTopicForwarder<gazebo::msgs::Model>
                       ("~/model/info", this->node, 1000, 0, nullptr, true));
 
-  this->lightFwd.reset(new GazeboTopicForwarder<gazebo::msgs::Light>
-                      ("~/light/modify", this->node));
-
   this->poseFwd.reset(new GazeboTopicForwarder<gazebo::msgs::PosesStamped>
                       ("~/pose/info", this->node));
 
   this->guiFwd.reset(new GazeboTopicForwarder<gazebo::msgs::GUI>
                       ("~/gui", this->node));
 
-  this->origServiceFwd.reset(new GazeboServiceForwarder
-                             ("~/request", "~/response",
-                              RequestMessageFilter::Ptr(new RequestMessageFilter()),
-                              1000, 0));
+  this->jointFwd.reset(new GazeboTopicForwarder<gazebo::msgs::Joint>
+                      ("~/joint", this->node));
+
+  this->contactFwd.reset(new GazeboTopicForwarder<gazebo::msgs::Contacts>
+                      ("~/physics/contacts", this->node));
+
+  this->visualFwd.reset(new GazeboTopicForwarder<gazebo::msgs::Visual>
+                      ("~/visual", this->node));
+
+  this->roadFwd.reset(new GazeboTopicForwarder<gazebo::msgs::Road>
+                      ("~/roads", this->node));
+
+  this->poseAnimFwd.reset(new GazeboTopicForwarder<gazebo::msgs::PoseAnimation>
+                      ("~/skeleton_pose/info", this->node));
 
   // create the helper publishers
+  ////////////////////////////////////////////////
   this->requestPub = this->node->Advertise<gazebo::msgs::Request>("~/request");
   this->modelPub = this->node->Advertise<gazebo::msgs::Model>("~/model/info");
 }
