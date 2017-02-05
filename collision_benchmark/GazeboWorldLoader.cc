@@ -207,7 +207,9 @@ sdf::ElementPtr collision_benchmark::GetPhysicsFromSDF(const std::string& filena
   return sdfRoot;
 }
 
-gazebo::physics::WorldPtr collision_benchmark::LoadWorldFromSDF(const sdf::ElementPtr& sdfRoot, const std::string& name)
+gazebo::physics::WorldPtr collision_benchmark::LoadWorldFromSDF(const sdf::ElementPtr& sdfRoot,
+                                                                const std::string& name,
+                                                                const bool forceSensorsInit)
 {
   if (sdfRoot->GetName() != "world")
   {
@@ -241,6 +243,14 @@ gazebo::physics::WorldPtr collision_benchmark::LoadWorldFromSDF(const sdf::Eleme
     std::cout<<"Initializing world..."<<std::endl;
     // call to world->init
     if (world) gazebo::physics::init_world(world);
+
+    // See also gazebo::Server::Run()
+    // (see World::Step() where this->sensorsInitialized() will otherwise
+    // return false).
+    // We cannot use SensorManager::Update() as called by sensors::run_once(),
+    // in turn called by gazebo::Server, because this only initializes
+    // the sensors of the current world, physics::get_world();
+    if (forceSensorsInit) world->_SetSensorsInitialized(true);
   }
   catch (gazebo::common::Exception& e)
   {

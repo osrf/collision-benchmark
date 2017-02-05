@@ -40,7 +40,16 @@ sdf::ElementPtr GetSDFElementFromString(const std::string& xmlString,
 /// loads a world given a SDF element
 /// \param name if not empty string, then this name is used to override the name in \e sdfRoot, which will
 ///       change \e sdfRoot itself
-gazebo::physics::WorldPtr LoadWorldFromSDF(const sdf::ElementPtr& sdfRoot, const std::string& name="");
+/// \param forceSensorsInit This is for a HACK. It enforces that
+///   the sensors are set as initialized in the world by calling World::_SetSensorsInitialized().
+///   This is required in order to get the plugins loaded properly if we don't use sensors.
+///   Use this if you cannot use SensorManager::Update() as called by sensors::run_once(),
+///   (which is in turn called by gazebo::Server), because this only initializes
+///   the sensors of the current world, physics::get_world();
+///   See also gazebo::Server::Run(), and World::Step() where this->sensorsInitialized() will otherwise
+///   return false
+gazebo::physics::WorldPtr LoadWorldFromSDF(const sdf::ElementPtr& sdfRoot, const std::string& name="",
+                                           const bool forceSensorsInit=true);
 
 /// loads a world from file
 /// \param name if not empty string, then this name is used to override the name in \e worldfile

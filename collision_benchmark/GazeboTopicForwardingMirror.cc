@@ -299,27 +299,27 @@ void GazeboTopicForwardingMirror::NotifyOriginalWorldChange
       THROW_EXCEPTION("Only Gazebo original worlds supported");
     }
 
-    std::cout<<"Deleting all old world's models"<<std::endl;
     // delete all old models
+    // std::cout<<"Deleting all old world's models"<<std::endl;
     gazebo::physics::Model_V oldModels = gzOldWorld->GetWorld()->Models();
     for (gazebo::physics::Model_V::iterator it = oldModels.begin();
          it != oldModels.end(); ++it)
     {
       gazebo::physics::ModelPtr m=*it;
-      std::cout<<"Requesting delete of "<<m->GetScopedName()<<std::endl;
+      // std::cout<<"Requesting delete of "<<m->GetScopedName()<<std::endl;
       auto msg = gazebo::msgs::CreateRequest("entity_delete", m->GetScopedName());
       this->requestPub->Publish(*msg, true);
       delete msg;
     }
 
     // insert all new models
-    std::cout<<"Inserting all new world's models"<<std::endl;
+    // std::cout<<"Inserting all new world's models"<<std::endl;
     gazebo::physics::Model_V newModels = gzNewWorld->GetWorld()->Models();
     for (gazebo::physics::Model_V::iterator it = newModels.begin();
          it != newModels.end(); ++it)
     {
       gazebo::physics::ModelPtr m=*it;
-      std::cout<<"Triggering insertion of "<<m->GetScopedName()<<std::endl;
+      // std::cout<<"Triggering insertion of "<<m->GetScopedName()<<std::endl;
       gazebo::msgs::Model insModelMsg;
       m->FillMsg(insModelMsg);
       this->modelPub->Publish(insModelMsg);

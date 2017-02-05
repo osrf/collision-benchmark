@@ -27,6 +27,7 @@
 
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
+#include <gazebo/sensors/SensorsIface.hh>
 
 using collision_benchmark::PhysicsWorldBaseInterface;
 using collision_benchmark::PhysicsWorldStateInterface;
@@ -140,7 +141,7 @@ bool Run(int argc, char **argv)
   {
     int numSteps=1;
     worldManager.Update(numSteps);
-    // gazebo::common::Time::MSleep(100);
+   // gazebo::common::Time::MSleep(1000);
   /*  PhysicsWorldBaseInterface::Ptr mirroredWorld = worldManager.GetMirroredWorld();
     GzPhysicsWorld::Ptr mirroredWorldCast = std::dynamic_pointer_cast<GzPhysicsWorld>(mirroredWorld);
     assert(mirroredWorldCast);
@@ -155,6 +156,8 @@ bool Run(int argc, char **argv)
 /////////////////////////////////////////////////
 int main(int argc, char **argv)
 {
+  gazebo::common::Console::SetQuiet(false);
+
   // Initialize gazebo.
   try
   {
@@ -165,6 +168,12 @@ int main(int argc, char **argv)
     std::cerr<<"Could not setup server"<<std::endl;
     return 1;
   }
+
+  // See also gazebo::Server::Run() which is a procedure we probably
+  // like to mimick here.
+  // See also the hack required for the sensors, explained
+  // in LoadWorldFromSDF() - using  gazebo::sensors::run_once(true) here
+  // will have no effect as it does in gazebo::Server.
 
   Run(argc, argv);
 

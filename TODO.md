@@ -3,12 +3,13 @@
 - Iterations are not counted globally if World::RunBlocking is called with steps!=0. Is this intended?
   In this case if we control the world update process from outside (repeated runBlocking calls) we can't really use
   iterations...
-- Problems with topic forwarding:
-    - rendering::Scene keeps visuals associated with parents, and that's the world for the root, so there's problems switching (see Scene::ProcessVisualMsg)
-    - No methods are provided to delete models from server-side. All has to be tricked, e.g. creating modified model messages where
-      visual's delete_me field is set to true, and even then it wasn't deleting the shapes, I abandoned it for the other "hacky" solution reasons before getting it to work.
-      The visuals were gone (not in the map any more) but still shown and there were still messages kept in the system which did try to keep deleting it (see e.g. AddPendingChild and instances
-      of ProcessVisualMsg returning false).
+- Problem solved: Rubble world sometimes doesn't load up the rubbles, especially noticable if several worlds loaded. Tracked down to 
+  World::Step():  LoadPlugins() not called because SensorsInitialized() return false for some worlds.
+  However SensorManager::Update is never called - in fact World::dataPtr::sensorsInitialized ***is not initialized in constructor***,
+  and it's set randomly to true or false. If always set to false, rubble world will never work!
+  Actually sensors::run_once(true) has to be called, which is done from Server::Run(), but we don't use this.
+  We need to manually hack this by calling World::_SetSensorsInitialized(true); in GazeboWorldLoader.cc
+
 
 # Issues to address soon
 

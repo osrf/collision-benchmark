@@ -109,10 +109,10 @@ class GazeboTopicForwarder
               this->sub->Unsubscribe();
             this->sub = _node->Subscribe(_from, &GazeboTopicForwarder::OnMsg,
                                          this, _subLatching);
-            std::cout<<"Forwarding messages of type "
+            /*std::cout<<"Forwarding messages of type "
                       <<GetTypeName<Msg>()<<" from topic "<<_from<<" to topic ";
             if (this->pub) std::cout<<this->pub->GetTopic()<<std::endl;
-            else std::cout<<"<none>"<<std::endl;
+            else std::cout<<"<none>"<<std::endl;*/
           }
 
   public: gazebo::transport::PublisherPtr GetPublisher() const { return this->pub; }
@@ -379,8 +379,8 @@ class GazeboTopicBlockPrinter:
               this->sub->Unsubscribe();
             this->sub = _node->Subscribe(_topic, &GazeboTopicBlockPrinter::OnMsg,
                                          this, _subLatching);
-            std::cout<<"Catching messages of type "
-                      <<GetTypeName<Msg>()<<" from topic "<<_topic<<std::endl;
+//            std::cout<<"Catching messages of type "
+//                      <<GetTypeName<Msg>()<<" from topic "<<_topic<<std::endl;
           }
 
   private: void OnMsg(const boost::shared_ptr<Msg const> &_msg)
