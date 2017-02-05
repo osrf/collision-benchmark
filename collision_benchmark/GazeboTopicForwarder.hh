@@ -23,6 +23,7 @@
 
 #include <collision_benchmark/MirrorWorld.hh>
 #include <collision_benchmark/TypeHelper.hh>
+#include <collision_benchmark/Exception.hh>
 
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/World.hh>
@@ -61,7 +62,7 @@ class MessageFilter
  * \author Jennifer Buehler
  * \date February 2017
  */
-class TopicTrigger
+/*class TopicTrigger
 {
   public: typedef std::shared_ptr<TopicTrigger> Ptr;
   public: typedef std::shared_ptr<const TopicTrigger> ConstPtr;
@@ -72,7 +73,7 @@ class TopicTrigger
   public: virtual void Trigger(const std::string& _oldTopic,
                                const std::string& _newTopic,
                                bool _incoming) const = 0;
-};
+};*/
 
 
 
@@ -89,99 +90,74 @@ class GazeboTopicForwarder
   public: typedef std::shared_ptr<Self> Ptr;
   public: typedef std::shared_ptr<const Self> ConstPtr;
   public: typedef typename MessageFilter<Msg>::Ptr MessageFilterPtr;
-  public: typedef TopicTrigger::Ptr TopicTriggerPtr;
-  // Constructor
-  // \param _from topic to dedirect from
-  // \param _to topic to redirect to
-  // \param _node the node to use for creating publishers and subscribers
-  // \param _pubQueueLimit limit of the queue for the re-publisher
-  // \param _pubHzRate update rate for publisher (0=fastest possible)
-  // \param _subLatching latch for latest incoming message of
-  //      subscriber to topic to be forwarded
-  // \param _filter filters out all messages to which the filter applies
-  //      and does not republish them. If NULL, does not filter any messages.
-  // \param _topicTrigger method TopicTrigger::Trigger() will be called
-  //      each time the topic changes (except the first time when it
-  //      wasn't subscribed yet).
-  public: GazeboTopicForwarder(const std::string &_from,
-                               const std::string &_to,
-                               const gazebo::transport::NodePtr &_node,
-                               unsigned int _pubQueueLimit = 1000,
-                               double _pubHzRate = 0,
-                               const bool _subLatching=true,
-                               const MessageFilterPtr &_filter=nullptr,
-                               const TopicTriggerPtr &_topicTrigger=nullptr,
-                               const bool _verbose=false):
-          msgFilter(_filter),
-          topicTrigger(_topicTrigger),
-          verbose(_verbose)
-          {
-            Init(_to,_node,_pubQueueLimit,_pubHzRate);
-            RedirectFrom(_from, _node, _subLatching);
-          }
 
-  // Constructor
-  // \param _from topic to dedirect from
+  // \brief Constructor
+  // \param _to topic to forward to
   // \param _node the node to use for creating publishers and subscribers
   // \param _pubQueueLimit limit of the queue for the re-publisher
   // \param _pubHzRate update rate for publisher (0=fastest possible)
   // \param _filter filters out all messages to which the filter applies
   //      and does not republish them. If NULL, does not filter any messages.
-  // \param _topicTrigger method TopicTrigger::Trigger() will be called
-  //      each time the topic changes (except the first time when it
-  //      wasn't subscribed yet).
- public: GazeboTopicForwarder(const std::string& _from,
-                              const gazebo::transport::NodePtr& _node,
+ public: GazeboTopicForwarder(const std::string &_to,
+                              const gazebo::transport::NodePtr &_node,
                               unsigned int _pubQueueLimit = 1000,
                               double _pubHzRate = 0,
                               const MessageFilterPtr _filter=nullptr,
-                              const TopicTriggerPtr &_topicTrigger=nullptr,
                               const bool _verbose=false):
           msgFilter(_filter),
           verbose(_verbose)
           {
-            Init(_from,_node,_pubQueueLimit,_pubHzRate);
+            ForwardTo(_to,_node,_pubQueueLimit,_pubHzRate);
           }
   public: virtual ~GazeboTopicForwarder(){}
 
-  // Disconnects the subscribers
+  // \brief Disconnects the subscribers
   public: void DisconnectSubscriber()
           {
             if (this->sub) this->sub->Unsubscribe();
           }
 
-  // Sets the topic to redirect from
-  // \param _from topic to dedirect from
+  // \brief Initiates the forwarding
+  // \param _from topic to forward from
   // \param _subLatching latch for latest incoming message of
   //      subscriber to topic to be forwarded
   // \param _node the node to use for creating the subscriber
-  public: void RedirectFrom(const std::string& _from,
-                            const gazebo::transport::NodePtr& _node,
+  public: void ForwardFrom(const std::string &_from,
+                            const gazebo::transport::NodePtr &_node,
                             const bool _subLatching=true)
           {
             if (this->sub)
-            {
               this->sub->Unsubscribe();
-              if (this->topicTrigger)
-                this->topicTrigger->Trigger(this->sub->GetTopic(),_from, true);
-            }
             this->sub = _node->Subscribe(_from, &GazeboTopicForwarder::OnMsg,
                                          this, _subLatching);
+            std::cout<<"Forwarding messages of type "
+                      <<GetTypeName<Msg>()<<" from topic "<<_from<<" to topic ";
+            if (this->pub) std::cout<<this->pub->GetTopic()<<std::endl;
+            else std::cout<<"<none>"<<std::endl;
           }
 
   public: gazebo::transport::PublisherPtr GetPublisher() const { return this->pub; }
   public: gazebo::transport::SubscriberPtr GetSubscriber() const { return this->sub; }
 
-  // \param _to topic to redirect to
+  // \brief Initializes the destination topic and publisher
+  // \param _to topic to forward to
   // \param _node the node to use for creating the publisher
   // \param _pubQueueLimit limit of the queue for the re-publisher
   // \param _pubHzRate update rate for publisher (0=fastest possible)
-  private: void Init(const std::string& _to,
+  private: void ForwardTo(const std::string& _to,
                      const gazebo::transport::NodePtr& _node,
                      unsigned int _pubQueueLimit = 1000,
                      double _pubHzRate = 0)
            {
-              this->pub = _node->Advertise<Msg>(_to, _pubQueueLimit, _pubHzRate);
+             // std::cout<<"Forwarding messages of type "
+             //         <<GetTypeName<Msg>()<<" to topic "<<_to<<std::endl;
+             try
+             {
+                this->pub = _node->Advertise<Msg>(_to, _pubQueueLimit, _pubHzRate);
+             } catch (gazebo::common::Exception &e)
+             {
+               THROW_EXCEPTION("Could not create forwarder to "<<_to<<" with message type "<<GetTypeName<Msg>()<<": "<<e);
+             }
            }
 
   private: void OnMsg(const boost::shared_ptr<Msg const> &_msg)
@@ -192,7 +168,7 @@ class GazeboTopicForwarder
         <<GetTypeName<Msg>();
       if (this->sub) std::cout<<" on topic "<<this->sub->GetTopic();
       else std::cout<<" Subscriber NULL?!";
-      if (this->pub) std::cout<<" to topic "<<this->pub->GetTopic();
+      if (this->pub) std::cout<<" forwarded to topic "<<this->pub->GetTopic();
       else std::cout<<" Publisher NULL?!";
       std::cout<<std::endl;
     }
@@ -204,6 +180,8 @@ class GazeboTopicForwarder
           <<GetTypeName<Msg>()<<std::endl;
       return;
     }
+
+    // this->pub->WaitForConnection();
     this->pub->Publish(*_msg);
   }
 
@@ -213,10 +191,163 @@ class GazeboTopicForwarder
   private: gazebo::transport::SubscriberPtr sub;
 
   private: MessageFilterPtr msgFilter;
-  private: TopicTriggerPtr topicTrigger;
   /// \brief for debugging
   private: bool verbose;
 };
+
+
+
+/**
+ * \brief Forwards requests and responses from one request/response pair to another.
+ *
+ * This can forward requests and responses from one source service to another destination service:
+ *
+ * ```
+ * ---request---> <SourceService>  ----request forward---->  <DestinationService>
+ * <--response--- <SourceService>  <---response forward----  <DestinationService>
+ * ```
+ * \author Jennifer Buehler
+ * \date February 2017
+ */
+class GazeboServiceForwarder
+{
+  private: typedef GazeboServiceForwarder Self;
+  private: typedef GazeboTopicForwarder<gazebo::msgs::Request> RequestForwarder;
+  private: typedef GazeboTopicForwarder<gazebo::msgs::Response> ResponseForwarder;
+
+  public: typedef typename MessageFilter<gazebo::msgs::Request>::Ptr RequestMessageFilterPtr;
+  public: typedef typename MessageFilter<gazebo::msgs::Response>::Ptr ResponseMessageFilterPtr;
+
+  public: typedef std::shared_ptr<Self> Ptr;
+  public: typedef std::shared_ptr<const Self> ConstPtr;
+
+  // \brief Constructor
+  // \param _pubQueueLimit limit of the queue for the re-publisher
+  //      of messages to be published
+  // \param _pubHzRate update rate for re-publisher of messages
+  //      (0=fastest possible)
+  // \param _requestFilter filters out all request messages coming from
+  //    the source service to which the filter
+  //    applies and does not forward them.
+  //    If NULL, does not filter messages.
+ public: GazeboServiceForwarder(const RequestMessageFilterPtr &_requestFilter=nullptr,
+                                unsigned int _pubQueueLimit = 1000,
+                                double _pubHzRate = 0,
+                                const bool _verbose=false):
+          pubQueueLimit(_pubQueueLimit),
+          pubHzRate(_pubHzRate),
+          requestFilter(_requestFilter),
+          verbose(_verbose)
+          {}
+
+  // Constructor
+  // \param _requestSourceTopic the source service request topic
+  // \param _responseSourceTopic the source service response topic
+  // \param _pubQueueLimit limit of the queue for the re-publisher
+  //      of messages to be published
+  // \param _pubHzRate update rate for re-publisher of messages
+  //      (0=fastest possible)
+  // \param _requestFilter filters out all request messages coming from
+  //    the source service to which the filter
+  //    applies and does not forward them.
+  //    If NULL, does not filter messages.
+ public: GazeboServiceForwarder(const std::string &_requestSourceTopic,
+                                const std::string &_responseSourceTopic,
+                                const RequestMessageFilterPtr &_requestFilter=nullptr,
+                                unsigned int _pubQueueLimit = 1000,
+                                double _pubHzRate = 0,
+                                const bool _verbose=false):
+          requestSourceTopic(_requestSourceTopic),
+          responseSourceTopic(_responseSourceTopic),
+          pubQueueLimit(_pubQueueLimit),
+          pubHzRate(_pubHzRate),
+          requestFilter(_requestFilter),
+          verbose(_verbose)
+          {}
+
+
+
+  public: virtual ~GazeboServiceForwarder(){}
+
+  // \brief Disconnects the subscribers
+  public: void Disconnect()
+          {
+            if (reqFwd) reqFwd->DisconnectSubscriber();
+            if (resFwd) resFwd->DisconnectSubscriber();
+          }
+
+  // Initiates the fowarding with the source topics which were already
+  // set (previously, or in constructor)
+  // \param _requestDestTopic the destination service request topic
+  // \param _responseDestTopic the destination service response topic
+  public: void Forward(const std::string &_requestDestTopic,
+                        const std::string &_responseDestTopic,
+                        const gazebo::transport::NodePtr& _node)
+          {
+            if (requestSourceTopic.empty() || responseSourceTopic.empty())
+            {
+              THROW_EXCEPTION("Source topics must have been previously set");
+            }
+            Forward(requestSourceTopic, responseSourceTopic,
+                    _requestDestTopic, _responseDestTopic, _node);
+          }
+
+
+  // \brief Initiates the fowarding
+  // \param _requestSourceTopic the source service request topic
+  // \param _responseSourceTopic the source service response topic
+  // \param _requestDestTopic the destination service request topic
+  // \param _responseDestTopic the destination service response topic
+  public: void Forward(const std::string &_requestSourceTopic,
+                        const std::string &_responseSourceTopic,
+                        const std::string &_requestDestTopic,
+                        const std::string &_responseDestTopic,
+                        const gazebo::transport::NodePtr& _node)
+          {
+            requestSourceTopic=_requestSourceTopic;
+            responseSourceTopic=_responseSourceTopic;
+            requestDestTopic=_requestDestTopic;
+            responseDestTopic=_responseDestTopic;
+            if (reqFwd) reqFwd->DisconnectSubscriber();
+            if (resFwd) resFwd->DisconnectSubscriber();
+            reqFwd.reset(new RequestForwarder(_requestDestTopic, _node, pubQueueLimit, pubHzRate, requestFilter, verbose));
+            resFwd.reset(new ResponseForwarder(_responseSourceTopic, _node, pubQueueLimit, pubHzRate, nullptr, verbose));
+            bool latching=false;
+            reqFwd->ForwardFrom(_requestSourceTopic, _node, latching);
+            resFwd->ForwardFrom(_responseDestTopic, _node, latching);
+          }
+
+  // \brief the source service request topic.
+  private: std::string requestSourceTopic;
+  // \brief the source service response topic.
+  private: std::string responseSourceTopic;
+
+  // \brief the destination service request topic.
+  private: std::string requestDestTopic;
+  // \brief the destination service response topic.
+  private: std::string responseDestTopic;
+
+
+  /// \brief Forwarder for requests
+  private: RequestForwarder::Ptr reqFwd;
+  /// \brief Forwarder for responses
+  private: ResponseForwarder::Ptr resFwd;
+
+  // \brief limit of the queue for the re-publisher
+  //      of messages to be published
+  private: unsigned int pubQueueLimit;
+  // \brief update rate for re-publisher of messages (0=fastest possible)
+  private: double pubHzRate;
+  // \brief filters out all request messages to which the filter
+  //      applies and does not forward them. If NULL, does not filter messages.
+  private: const RequestMessageFilterPtr requestFilter;
+
+  /// \brief for debugging
+  private: bool verbose;
+
+};
+
+
 
 }  // namespace collision_benchmark
 #endif

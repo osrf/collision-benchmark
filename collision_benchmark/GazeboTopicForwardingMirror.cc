@@ -46,37 +46,64 @@ GazeboTopicForwardingMirror::~GazeboTopicForwardingMirror()
 {
 }
 
+/**
+ * \brief Strategy pattern to filter request messages
+ * \author Jennifer Buehler
+ * \date February 2017
+ */
+class RequestMessageFilter:
+  public collision_benchmark::MessageFilter<gazebo::msgs::Request>
+{
+  private: typedef  RequestMessageFilter Self;
+  public: typedef std::shared_ptr<Self> Ptr;
+  public: typedef std::shared_ptr<const Self> ConstPtr;
+
+  // Determines whether a message is filtered out
+  // \return true if the filter applies to the message
+  public: virtual bool Filter(const boost::shared_ptr<gazebo::msgs::Request const>
+                              &_msg) const
+          {
+              if (_msg->request() == "entity_delete")
+              {
+                // std::cout<<"Entity deletion not forwarded, handled privately!"<<std::endl;
+                return true;
+              }
+              else
+              {
+                std::cout<<"Got a request: "<<_msg->request()<<std::endl;
+              }
+              return false;
+          }
+};
+
 void GazeboTopicForwardingMirror::ConnectOriginalWorld(const std::string origWorldName)
 {
   std::cout<<"Mirror is connecting to world '"<<origWorldName<<"'"<<std::endl;
 
-  this->responseOrigSub = this->node->Subscribe("/gazebo/"+origWorldName+"/response",
-                                           &GazeboTopicForwardingMirror::OnOrigResponse, this, true);
-
-  this->requestOrigPub = this->node->Advertise<gazebo::msgs::Request>
-                                          ("/gazebo/"+origWorldName+"/request");
-
+  assert(this->origServiceFwd);
+  this->origServiceFwd->Forward("/gazebo/"+origWorldName+"/request",
+                                "/gazebo/"+origWorldName+"/response", this->node);
   bool latch=false;
   assert(this->statFwd);
-  this->statFwd->RedirectFrom("/gazebo/"+origWorldName+"/world_stats", this->node, latch);
+  this->statFwd->ForwardFrom("/gazebo/"+origWorldName+"/world_stats", this->node, latch);
 
   assert(this->modelFwd);
-  this->modelFwd->RedirectFrom("/gazebo/"+origWorldName+"/model/info", this->node, latch);
+  this->modelFwd->ForwardFrom("/gazebo/"+origWorldName+"/model/info", this->node, latch);
 
   assert(this->lightFwd);
-  this->lightFwd->RedirectFrom("/gazebo/"+origWorldName+"/light/modify", this->node, latch);
+  this->lightFwd->ForwardFrom("/gazebo/"+origWorldName+"/light/modify", this->node, latch);
 
   assert(this->poseFwd);
-  this->poseFwd->RedirectFrom("/gazebo/"+origWorldName+"/pose/info", this->node, latch);
+  this->poseFwd->ForwardFrom("/gazebo/"+origWorldName+"/pose/info", this->node, latch);
 
   assert(this->guiFwd);
-  this->guiFwd->RedirectFrom("/gazebo/"+origWorldName+"/gui", this->node, latch);
+  this->guiFwd->ForwardFrom("/gazebo/"+origWorldName+"/gui", this->node, latch);
 }
 
 void GazeboTopicForwardingMirror::DisconnectFromOriginal()
 {
-  assert(this->responseOrigSub);
-//  this->responseOrigSub = this->node->Disconnect();
+  assert(this->origServiceFwd);
+  this->origServiceFwd->Disconnect();
 
   assert(this->statFwd);
   this->statFwd->DisconnectSubscriber();
@@ -104,7 +131,7 @@ void GazeboTopicForwardingMirror::Init()
                       ("~/world_stats", this->node));
 
   this->modelFwd.reset(new GazeboTopicForwarder<gazebo::msgs::Model>
-                      ("~/model/info", this->node, 1000, 0, nullptr, nullptr, true));
+                      ("~/model/info", this->node, 1000, 0, nullptr, true));
 
   this->lightFwd.reset(new GazeboTopicForwarder<gazebo::msgs::Light>
                       ("~/light/modify", this->node));
@@ -115,38 +142,14 @@ void GazeboTopicForwardingMirror::Init()
   this->guiFwd.reset(new GazeboTopicForwarder<gazebo::msgs::GUI>
                       ("~/gui", this->node));
 
-  this->requestSub = this->node->Subscribe("~/request",
-                                           &GazeboTopicForwardingMirror::OnRequest, this, true);
-  this->responsePub = this->node->Advertise<gazebo::msgs::Response>(
-      "~/response");
+  this->origServiceFwd.reset(new GazeboServiceForwarder
+                             ("~/request", "~/response",
+                              RequestMessageFilter::Ptr(new RequestMessageFilter()),
+                              1000, 0));
 
+  // create the helper publishers
   this->requestPub = this->node->Advertise<gazebo::msgs::Request>("~/request");
-}
-
-void GazeboTopicForwardingMirror::OnRequest(ConstRequestPtr &_msg)
-{
-  std::cout<<"Got a request: "<<_msg->request()<<std::endl;
-  if (_msg->request() == "entity_delete")
-  {
-    std::cout<<"Entity deletion not forwarded, handled privately!"<<std::endl;
-  }
-  else
-  {
-    if (!this->requestOrigPub) THROW_EXCEPTION("Need to have initialized request publisher");
-    std::cout<<"Waiting for connection.."<<std::endl;
-    this->requestOrigPub->WaitForConnection();
-    std::cout<<"Publishing message"<<std::endl;
-    this->requestOrigPub->Publish(*_msg);
-    // tried to use a condition variable and wait here until
-    // the response comes but this blocks the callback loop
-    // and the request via requestOrigPub never arrives in gazebo::World...
-  }
-}
-
-void GazeboTopicForwardingMirror::OnOrigResponse(ConstResponsePtr &_msg)
-{
-  std::cout<<"Got a response: "<<_msg->response()<<std::endl;
-  this->responsePub->Publish(*_msg);
+  this->modelPub = this->node->Advertise<gazebo::msgs::Model>("~/model/info");
 }
 
 void GazeboTopicForwardingMirror::NotifyOriginalWorldChange
@@ -174,6 +177,7 @@ void GazeboTopicForwardingMirror::NotifyOriginalWorldChange
     {
       THROW_EXCEPTION("Only Gazebo original worlds supported");
     }
+
     std::cout<<"Deleting all old world's models"<<std::endl;
     // delete all old models
     gazebo::physics::Model_V oldModels = gzOldWorld->GetWorld()->Models();
@@ -183,19 +187,12 @@ void GazeboTopicForwardingMirror::NotifyOriginalWorldChange
       gazebo::physics::ModelPtr m=*it;
       std::cout<<"Requesting delete of "<<m->GetScopedName()<<std::endl;
       auto msg = gazebo::msgs::CreateRequest("entity_delete", m->GetScopedName());
-//      msg->set_parent_name(mirrorWorldName);
       this->requestPub->Publish(*msg, true);
       delete msg;
     }
 
-    // create a temporary publisher which will be used to publish
-    // the insertion of new models (of the new world) to
-    gazebo::transport::PublisherPtr pub =
-      this->node->Advertise<gazebo::msgs::Model>("~/model/info", 1000, 0);
-
     // insert all new models
     std::cout<<"Inserting all new world's models"<<std::endl;
-    // delete all new models
     gazebo::physics::Model_V newModels = gzNewWorld->GetWorld()->Models();
     for (gazebo::physics::Model_V::iterator it = newModels.begin();
          it != newModels.end(); ++it)
@@ -204,8 +201,7 @@ void GazeboTopicForwardingMirror::NotifyOriginalWorldChange
       std::cout<<"Triggering insertion of "<<m->GetScopedName()<<std::endl;
       gazebo::msgs::Model insModelMsg;
       m->FillMsg(insModelMsg);
-      //gazebo::transport::PublisherPtr pub = this->modelFwd->GetPublisher();
-      pub->Publish(insModelMsg);
+      this->modelPub->Publish(insModelMsg);
     }
   }
 

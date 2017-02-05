@@ -79,12 +79,6 @@ class GazeboTopicForwardingMirror:
 
     private: void DisconnectFromOriginal();
 
-    /// \brief Called when a request message is received.
-    private: void OnRequest(ConstRequestPtr &_msg);
-
-    /// \brief Called when a response to the original world comes back
-    private: void OnOrigResponse(ConstResponsePtr &_msg);
-
     /// \brief Transportation node.
     private: gazebo::transport::NodePtr node;
 
@@ -103,21 +97,26 @@ class GazeboTopicForwardingMirror:
     /// \brief topic forwarder for pose messages.
     private: GazeboTopicForwarder<gazebo::msgs::PosesStamped>::Ptr poseFwd;
 
-    /// \brief Publisher for request response messages.
-    private: gazebo::transport::PublisherPtr responsePub;
-
     /// \brief Publisher for request messages to use for clients subscribed
     /// the the mirror world (e.g. visualization/gzclient).
     private: gazebo::transport::PublisherPtr requestPub;
+    /// \brief Publisher for model messages to use for clients subscribed
+    /// the the mirror world (e.g. visualization/gzclient), required
+    /// when switching between worlds.
+    private: gazebo::transport::PublisherPtr modelPub;
 
+/*
     /// \brief Subscriber to request messages.
-    private: gazebo::transport::SubscriberPtr requestSub;
+    private: gazebo::transport::SubscriberPtr requestSub;*/
+
+    /// \brief Forwards service calls to the original world
+    private: GazeboServiceForwarder::Ptr origServiceFwd;
 
     /// \brief Publisher to send request messages to original world.
-    private: gazebo::transport::PublisherPtr requestOrigPub;
+/*    private: gazebo::transport::PublisherPtr requestOrigPub;
 
     /// \brief Subscriber to receive responses from original world.
-    private: gazebo::transport::SubscriberPtr responseOrigSub;
+    private: gazebo::transport::SubscriberPtr responseOrigSub;*/
 
     private: std::string worldName;
 };
