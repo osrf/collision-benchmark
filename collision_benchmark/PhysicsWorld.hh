@@ -69,7 +69,12 @@ class PhysicsWorldBaseInterface
 
   /// Does \e steps subsequent update calls to the world. **This call blocks**.
   /// \param steps number of iterations to run the world. If 0, runs forever.
-  public: virtual void Update(int steps=1) = 0;
+  /// \param force if set to true, the update is forced even if the
+  ///   world is paused. This is like temporarily unpausing the world,
+  ///   but it will only have an effect for this calling thread
+  ///   (if other threads try to call this with force set to false
+  ///   the world will not update for the call from the other thread).
+  public: virtual void Update(int steps=1, bool force=false) = 0;
 
   /// Pauses or "freezes" the world simulation in the current state.
   /// If the world is paused, any calls of Update() will have no effect.

@@ -114,7 +114,7 @@ class GazeboPhysicsWorld: public collision_benchmark::PhysicsEngineWorld<GazeboP
 
   public: virtual OpResult SetWorldState(const WorldState& state, bool isDiff);
 
-  public: virtual void Update(int steps=1);
+  public: virtual void Update(int steps=1, bool force=false);
 
   public: virtual void SetPaused(bool flag);
 

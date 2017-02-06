@@ -287,12 +287,11 @@ void GazeboPhysicsWorld::PostWorldLoaded()
   world->Run(0);
 #endif
 }
-void GazeboPhysicsWorld::Update(int steps)
+void GazeboPhysicsWorld::Update(int steps, bool force)
 {
   // std::cout<<"Running "<<steps<<" steps for world "<<world->Name()<<", physics engine: "<<world->Physics()->GetType()<<std::endl;
 #ifdef NEW_WORLDRUN_SOLUTION
-
-  if (IsPaused()) return;
+  if (!force && IsPaused()) return;
 
   // if the world is not paused, it is updating itself already
   // automatically (started in PostWorldLoaded().

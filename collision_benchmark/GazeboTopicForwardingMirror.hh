@@ -45,7 +45,8 @@ namespace collision_benchmark
  * \date February 2016
  */
 class GazeboTopicForwardingMirror:
-  public MirrorWorld//<gazebo::physics::WorldState>
+  public MirrorWorld,//<gazebo::physics::WorldState>
+  public std::enable_shared_from_this<GazeboTopicForwardingMirror>
 {
     public: typedef std::shared_ptr<GazeboTopicForwardingMirror> Ptr;
     public: typedef std::shared_ptr<const GazeboTopicForwardingMirror> ConstPtr;
@@ -69,10 +70,14 @@ class GazeboTopicForwardingMirror:
 
     /// Documentation inherited
     public:  virtual void Sync();
+
+    // Initializes the topic forwarder. Will be called
+    // internally by relevant functions but it can be done
+    // explicitly from outside.
+    public: void Init();
+
     protected: virtual void NotifyOriginalWorldChange
                   (const OriginalWorldPtr &_newWorld);
-
-    private: void Init();
 
     // connect the subscribers to the world name of this topic
     private: void ConnectOriginalWorld(const std::string origWorldName);
@@ -125,6 +130,7 @@ class GazeboTopicForwardingMirror:
     private: std::vector<GazeboTopicBlockPrinterInterface::Ptr> blockPrinters;
 
     private: std::string worldName;
+    private: bool initialized;
 };
 
 }  // namespace collision_benchmark

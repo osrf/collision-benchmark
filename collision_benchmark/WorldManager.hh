@@ -220,32 +220,35 @@ class WorldManager
             }
           }
 
-  /// Calls Update(iter) on all worlds and subsequently calls MirrorWorld::Sync() and MirrorWorld::Update().
-  public: void Update(int iter=1)
+  /// Calls PhysicsWorld::Update(iter,force) on all worlds and subsequently
+  /// calls MirrorWorld::Sync() and MirrorWorld::Update().
+  public: void Update(int iter=1, bool force=false)
           {
             // we cannot just lock the worldMutex with a lock here, because
             // calling Update() may trigger the call of callbacks in this
             // class, called by the ControlServer. ControlServer implementations
             // may trigger the call of the callbacks from a different thread, therefore
-            // there will be a deadlock for accessing the worlds.
+            // there will be a deadlock for accessing the worlds in the
+            // callback functions of this class. Only block the worlds vector
+            // while absolutey necessary.
             // std::cout<<"__________UPDATE__________"<<std::endl;
             this->worldsMutex.lock();
             int numWorlds=this->worlds.size();
             this->worldsMutex.unlock();
             for (int i=0; i< numWorlds; ++i)
             {
-              // get the i'th world
-              this->worldsMutex.lock();
-              // update vector size in case more worlds were
-              // added asynchronously
-              numWorlds=this->worlds.size();
-              // break loop if size of worlds has decreased
-              if (i >= numWorlds) break;
-
-              PhysicsWorldBaseInterface::Ptr w=worlds[i];
-              this->worldsMutex.unlock();
-
-              w->Update(iter);
+              PhysicsWorldBaseInterface::Ptr world;
+              {
+                // get the i'th world
+                std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
+                // update vector size in case more worlds were
+                // added asynchronously
+                numWorlds=this->worlds.size();
+                // break loop if size of worlds has decreased
+                if (i >= numWorlds) break;
+                world=worlds[i];
+              }
+              world->Update(iter, force);
             }
             if (this->mirrorWorld)
             {
@@ -262,7 +265,7 @@ class WorldManager
   private: void NotifyUpdate(const int _numSteps)
            {
              std::cout<<"UPDATE "<<_numSteps<<std::endl;
-             Update(_numSteps);
+             Update(_numSteps, true);
            }
   private: void NotifyStateChange(const WorldState &_state,
                                     const bool _isDiff)

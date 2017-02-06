@@ -37,9 +37,9 @@ using collision_benchmark::GazeboTopicForwarder;
 using collision_benchmark::GazeboTopicForwardingMirror;
 
 GazeboTopicForwardingMirror::GazeboTopicForwardingMirror(const std::string& worldname):
-  worldName(worldname)
+  worldName(worldname),
+  initialized(false)
 {
-  Init();
 }
 
 GazeboTopicForwardingMirror::~GazeboTopicForwardingMirror()
@@ -73,25 +73,53 @@ class RequestMessageFilter:
 
 /**
  * \brief Strategy pattern to modify world statistics messages
+ * The paused state has to be modified to the paused state given by PhysicsWorld.
  * \author Jennifer Buehler
  * \date February 2017
  */
-/*class WorldStatMsgFilter:
+class WorldStatMsgFilter:
   public collision_benchmark::MessageFilter<gazebo::msgs::WorldStatistics>
 {
   private: typedef  WorldStatMsgFilter Self;
   public: typedef std::shared_ptr<Self> Ptr;
   public: typedef std::shared_ptr<const Self> ConstPtr;
-  public: virtual boost::shared_ptr<gazebo::msgs::WorldStatistics const> Filter
-          (const boost::shared_ptr<gazebo::msgs::WorldStatistics const> &_msg) const
+
+  public: typedef std::shared_ptr<GazeboTopicForwardingMirror> MirrorPtr;
+  public: typedef std::weak_ptr<GazeboTopicForwardingMirror> MirrorWeakPtr;
+
+  public: typedef gazebo::msgs::WorldStatistics WorldStatistics;
+  public: typedef boost::shared_ptr<WorldStatistics> WorldStatisticsPtr;
+  public: typedef boost::shared_ptr<WorldStatistics const> WorldStatisticsConstPtr;
+
+  public: WorldStatMsgFilter(const MirrorWeakPtr &_mirror):
+          mirror(_mirror) {}
+  public: virtual WorldStatisticsConstPtr Filter(const WorldStatisticsConstPtr &_msg) const
           {
+            GZ_ASSERT(_msg, "Message must not be NULL");
+            MirrorPtr mirrorPtr = this->mirror.lock();
+            if (!mirrorPtr)
+            {
+              // mirror world has been deleted so filter out message
+              return nullptr;
+            }
+            if (!mirrorPtr->GetOriginalWorld())
+            {
+              std::cout<<"DEBUG ERROR: Mirror world must have original world!";
+              return nullptr;
+            }
+            WorldStatisticsPtr msgCopy(new WorldStatistics(*_msg));
+            msgCopy->set_paused(mirrorPtr->GetOriginalWorld()->IsPaused());
+            return msgCopy;
           }
-};*/
+  private: MirrorWeakPtr mirror;
+};
 
 
 
 void GazeboTopicForwardingMirror::ConnectOriginalWorld(const std::string origWorldName)
 {
+  if (!this->initialized) Init();
+
   std::cout<<"Mirror is connecting to world '"<<origWorldName<<"'"<<std::endl;
 
   // connect services
@@ -258,9 +286,18 @@ void GazeboTopicForwardingMirror::Init()
   // initialize topic forwarders
   ////////////////////////////////////////////////
   bool verboseLevel=1;
-  this->statFwd.reset(new GazeboTopicForwarder<gazebo::msgs::WorldStatistics>
+  try
+  {
+    this->statFwd.reset(new GazeboTopicForwarder<gazebo::msgs::WorldStatistics>
                       ("~/world_stats", this->node, 1000, 0,
-                       nullptr, verboseLevel>3));
+                       WorldStatMsgFilter::Ptr(new WorldStatMsgFilter(shared_from_this())),
+                       verboseLevel>3));
+  }
+  catch(std::bad_weak_ptr& e)
+  {
+    THROW_EXCEPTION("Can only initialize GazeboTopicForwarder \
+                    if there is already a shared pointer for it");
+  }
 
   this->modelFwd.reset(new GazeboTopicForwarder<gazebo::msgs::Model>
                       ("~/model/info", this->node, 1000, 0,
@@ -298,11 +335,16 @@ void GazeboTopicForwardingMirror::Init()
   ////////////////////////////////////////////////
   this->requestPub = this->node->Advertise<gazebo::msgs::Request>("~/request");
   this->modelPub = this->node->Advertise<gazebo::msgs::Model>("~/model/info");
+
+
+  this->initialized = true;
 }
 
 void GazeboTopicForwardingMirror::NotifyOriginalWorldChange
           (const OriginalWorldPtr &_newWorld)
 {
+  if (!this->initialized) Init();
+
   OriginalWorldPtr oldWorld = GetOriginalWorld();
   GazeboPhysicsEngineWorld::Ptr gzNewWorld =
     std::dynamic_pointer_cast<GazeboPhysicsEngineWorld>(_newWorld);
