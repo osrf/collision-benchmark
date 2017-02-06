@@ -354,11 +354,15 @@ class GazeboTopicBlockPrinter:
   public: typedef typename MessageFilter<Msg>::Ptr MessageFilterPtr;
 
   // \brief Constructor
+  // \param _printPrefix a string that is printed first
+  //    with every message
   // \param _topic topic to receive this message on
   // \param _node node to use for subscription
- public: GazeboTopicBlockPrinter(const std::string &_topic,
-                              const gazebo::transport::NodePtr &_node,
-                              const MessageFilterPtr _filter=nullptr):
+  public: GazeboTopicBlockPrinter(const std::string &_printPrefix,
+                                  const std::string &_topic,
+                                  const gazebo::transport::NodePtr &_node,
+                                  const MessageFilterPtr _filter=nullptr):
+          printPrefix(_printPrefix),
           msgFilter(_filter)
           {
             Init(_topic,_node, false);
@@ -385,19 +389,17 @@ class GazeboTopicBlockPrinter:
 
   private: void OnMsg(const boost::shared_ptr<Msg const> &_msg)
   {
-    std::cout<<"Got message of type "
-      <<GetTypeName<Msg>();
-    if (this->sub) std::cout<<" on topic "<<this->sub->GetTopic();
-    else std::cout<<" <null>";
-    std::cout<<std::endl;
-
     assert(_msg);
     if (!msgFilter || msgFilter->Filter(_msg))
     {
-      std::cout<<"Blocked message of type "
-          <<GetTypeName<Msg>()<<std::endl;
+      std::cout<<printPrefix<<": Blocked message of type "<<GetTypeName<Msg>();
+      if (this->sub) std::cout<<" on topic "<<this->sub->GetTopic();
+      else std::cout<<" <null>";
+      std::cout<<std::endl;
     }
   }
+
+  private: std::string printPrefix;
 
   /// \brief Subscriber to get the messages to forward.
   private: gazebo::transport::SubscriberPtr sub;

@@ -68,13 +68,39 @@ class RequestMessageFilter:
                 // std::cout<<"Entity deletion not forwarded, handled privately!"<<std::endl;
                 return true;
               }
-              else
-              {
-                std::cout<<"Got a request: "<<_msg->request()<<std::endl;
-              }
+              std::cout<<"Got a request: "<<_msg->request()<<std::endl;
               return false;
           }
 };
+
+/**
+ * \brief Strategy pattern to filter request messages
+ * \author Jennifer Buehler
+ * \date February 2017
+ */
+class WorldStatMsgFilter:
+  public collision_benchmark::MessageFilter<gazebo::msgs::WorldStatistics>
+{
+  private: typedef  WorldStatMsgFilter Self;
+  public: typedef std::shared_ptr<Self> Ptr;
+  public: typedef std::shared_ptr<const Self> ConstPtr;
+
+  // Determines whether a message is filtered out
+  // \return true if the filter applies to the message
+  public: virtual bool Filter(const boost::shared_ptr<gazebo::msgs::WorldStatistics const>
+                              &_msg) const
+          {
+              if (_msg->request() == "entity_delete")
+              {
+                // std::cout<<"Entity deletion not forwarded, handled privately!"<<std::endl;
+                return true;
+              }
+              std::cout<<"Got a request: "<<_msg->request()<<std::endl;
+              return false;
+          }
+};
+
+
 
 void GazeboTopicForwardingMirror::ConnectOriginalWorld(const std::string origWorldName)
 {
@@ -157,78 +183,82 @@ void GazeboTopicForwardingMirror::Init()
 
   // initialize topic block printers (for user information printing)
   ////////////////////////////////////////////////
+  bool verbose=true;  // later replace by global static variable or so
+  if (verbose)
+  {
+    static const std::string printPrefix="Gazebo topic forwarding mirror";
 
-  GazeboTopicBlockPrinterInterface::Ptr physicsBlock
-    (new GazeboTopicBlockPrinter<gazebo::msgs::Physics>("~/physics",
-                                                        this->node));
-  this->blockPrinters.push_back(physicsBlock);
+    GazeboTopicBlockPrinterInterface::Ptr physicsBlock
+      (new GazeboTopicBlockPrinter<gazebo::msgs::Physics>
+       (printPrefix, "~/physics", this->node));
+    this->blockPrinters.push_back(physicsBlock);
 
-  GazeboTopicBlockPrinterInterface::Ptr lightModBlock
-    (new GazeboTopicBlockPrinter<gazebo::msgs::Light>("~/light/modify",
-                                                        this->node));
-  this->blockPrinters.push_back(lightModBlock);
+    GazeboTopicBlockPrinterInterface::Ptr lightModBlock
+      (new GazeboTopicBlockPrinter<gazebo::msgs::Light>(printPrefix,
+            "~/light/modify", this->node));
+    this->blockPrinters.push_back(lightModBlock);
 
-  GazeboTopicBlockPrinterInterface::Ptr atmosphereBlock
-    (new GazeboTopicBlockPrinter<gazebo::msgs::Atmosphere>("~/atmosphere",
-                                                        this->node));
-  this->blockPrinters.push_back(atmosphereBlock);
+    GazeboTopicBlockPrinterInterface::Ptr atmosphereBlock
+      (new GazeboTopicBlockPrinter<gazebo::msgs::Atmosphere>(printPrefix,
+          "~/atmosphere", this->node));
+    this->blockPrinters.push_back(atmosphereBlock);
 
-  GazeboTopicBlockPrinterInterface::Ptr factoryBlock
-    (new GazeboTopicBlockPrinter<gazebo::msgs::Factory>("~/factory",
-                                                        this->node));
-  this->blockPrinters.push_back(factoryBlock);
+    GazeboTopicBlockPrinterInterface::Ptr factoryBlock
+      (new GazeboTopicBlockPrinter<gazebo::msgs::Factory>(printPrefix,
+            "~/factory", this->node));
+    this->blockPrinters.push_back(factoryBlock);
 
-  GazeboTopicBlockPrinterInterface::Ptr factoryLightBlock
-    (new GazeboTopicBlockPrinter<gazebo::msgs::Light>("~/factory/light",
-                                                        this->node));
-  this->blockPrinters.push_back(factoryLightBlock);
+    GazeboTopicBlockPrinterInterface::Ptr factoryLightBlock
+      (new GazeboTopicBlockPrinter<gazebo::msgs::Light>(printPrefix,
+            "~/factory/light", this->node));
+    this->blockPrinters.push_back(factoryLightBlock);
 
-  GazeboTopicBlockPrinterInterface::Ptr logControlBlock
-    (new GazeboTopicBlockPrinter<gazebo::msgs::LogControl>("~/log/control",
-                                                        this->node));
-  this->blockPrinters.push_back(logControlBlock);
+    GazeboTopicBlockPrinterInterface::Ptr logControlBlock
+      (new GazeboTopicBlockPrinter<gazebo::msgs::LogControl>(printPrefix,
+            "~/log/control", this->node));
+    this->blockPrinters.push_back(logControlBlock);
 
-  GazeboTopicBlockPrinterInterface::Ptr logStatusBlock
-    (new GazeboTopicBlockPrinter<gazebo::msgs::LogStatus>("~/log/status",
-                                                        this->node));
-  this->blockPrinters.push_back(logStatusBlock);
+    GazeboTopicBlockPrinterInterface::Ptr logStatusBlock
+      (new GazeboTopicBlockPrinter<gazebo::msgs::LogStatus>(printPrefix,
+            "~/log/status", this->node));
+    this->blockPrinters.push_back(logStatusBlock);
 
-  GazeboTopicBlockPrinterInterface::Ptr logPlaybackCtrlBlock
-    (new GazeboTopicBlockPrinter<gazebo::msgs::LogPlaybackControl>("~/playback_control",
-                                                        this->node));
-  this->blockPrinters.push_back(logPlaybackCtrlBlock);
+    GazeboTopicBlockPrinterInterface::Ptr logPlaybackCtrlBlock
+      (new GazeboTopicBlockPrinter<gazebo::msgs::LogPlaybackControl>(printPrefix,
+          "~/playback_control", this->node));
+    this->blockPrinters.push_back(logPlaybackCtrlBlock);
 
 
-  GazeboTopicBlockPrinterInterface::Ptr modelModifyBlock
-    (new GazeboTopicBlockPrinter<gazebo::msgs::Model>("~/model/modify",
-                                                        this->node));
-  this->blockPrinters.push_back(modelModifyBlock);
+    GazeboTopicBlockPrinterInterface::Ptr modelModifyBlock
+      (new GazeboTopicBlockPrinter<gazebo::msgs::Model>(printPrefix,
+          "~/model/modify", this->node));
+    this->blockPrinters.push_back(modelModifyBlock);
 
-  GazeboTopicBlockPrinterInterface::Ptr poseModifyBlock
-    (new GazeboTopicBlockPrinter<gazebo::msgs::Pose>("~/pose/modify",
-                                                        this->node));
-  this->blockPrinters.push_back(poseModifyBlock);
+    GazeboTopicBlockPrinterInterface::Ptr poseModifyBlock
+      (new GazeboTopicBlockPrinter<gazebo::msgs::Pose>(printPrefix,
+          "~/pose/modify", this->node));
+    this->blockPrinters.push_back(poseModifyBlock);
 
-  GazeboTopicBlockPrinterInterface::Ptr undoRedoBlock
-    (new GazeboTopicBlockPrinter<gazebo::msgs::UndoRedo>("~/undo_redo",
-                                                        this->node));
-  this->blockPrinters.push_back(undoRedoBlock);
+    GazeboTopicBlockPrinterInterface::Ptr undoRedoBlock
+      (new GazeboTopicBlockPrinter<gazebo::msgs::UndoRedo>(printPrefix,
+            "~/undo_redo", this->node));
+    this->blockPrinters.push_back(undoRedoBlock);
 
-  GazeboTopicBlockPrinterInterface::Ptr userCmdBlock
-    (new GazeboTopicBlockPrinter<gazebo::msgs::UserCmd>("~/user_cmd",
-                                                        this->node));
-  this->blockPrinters.push_back(userCmdBlock);
+    GazeboTopicBlockPrinterInterface::Ptr userCmdBlock
+      (new GazeboTopicBlockPrinter<gazebo::msgs::UserCmd>(printPrefix,
+            "~/user_cmd", this->node));
+    this->blockPrinters.push_back(userCmdBlock);
 
-  GazeboTopicBlockPrinterInterface::Ptr windBlock
-    (new GazeboTopicBlockPrinter<gazebo::msgs::Wind>("~/wind",
-                                                        this->node));
-  this->blockPrinters.push_back(windBlock);
+    GazeboTopicBlockPrinterInterface::Ptr windBlock
+      (new GazeboTopicBlockPrinter<gazebo::msgs::Wind>(printPrefix, "~/wind",
+                                                          this->node));
+    this->blockPrinters.push_back(windBlock);
 
-  GazeboTopicBlockPrinterInterface::Ptr worldControlBlock
-    (new GazeboTopicBlockPrinter<gazebo::msgs::Wind>("~/world_control",
-                                                        this->node));
-  this->blockPrinters.push_back(worldControlBlock);
-
+    GazeboTopicBlockPrinterInterface::Ptr worldControlBlock
+      (new GazeboTopicBlockPrinter<gazebo::msgs::WorldControl>
+            (printPrefix, "~/world_control",this->node));
+    this->blockPrinters.push_back(worldControlBlock);
+  }
 
   // initialize services
   ////////////////////////////////////////////////
@@ -239,33 +269,42 @@ void GazeboTopicForwardingMirror::Init()
 
   // initialize topic forwarders
   ////////////////////////////////////////////////
-
+  bool verboseLevel=1;
   this->statFwd.reset(new GazeboTopicForwarder<gazebo::msgs::WorldStatistics>
-                      ("~/world_stats", this->node));
+                      ("~/world_stats", this->node, 1000, 0,
+                       nullptr, verboseLevel>3));
 
   this->modelFwd.reset(new GazeboTopicForwarder<gazebo::msgs::Model>
-                      ("~/model/info", this->node, 1000, 0, nullptr, true));
+                      ("~/model/info", this->node, 1000, 0,
+                       nullptr, verboseLevel>0));
 
   this->poseFwd.reset(new GazeboTopicForwarder<gazebo::msgs::PosesStamped>
-                      ("~/pose/info", this->node));
+                      ("~/pose/info", this->node, 1000, 0,
+                       nullptr, verboseLevel>1));
 
   this->guiFwd.reset(new GazeboTopicForwarder<gazebo::msgs::GUI>
-                      ("~/gui", this->node));
+                      ("~/gui", this->node, 1000, 0, nullptr,
+                       verboseLevel>0));
 
   this->jointFwd.reset(new GazeboTopicForwarder<gazebo::msgs::Joint>
-                      ("~/joint", this->node));
+                      ("~/joint", this->node, 1000, 0, nullptr,
+                       verboseLevel>0));
 
   this->contactFwd.reset(new GazeboTopicForwarder<gazebo::msgs::Contacts>
-                      ("~/physics/contacts", this->node));
+                      ("~/physics/contacts", this->node, 1000, 0,
+                       nullptr, verboseLevel>2));
 
   this->visualFwd.reset(new GazeboTopicForwarder<gazebo::msgs::Visual>
-                      ("~/visual", this->node));
+                      ("~/visual", this->node, 1000, 0, nullptr,
+                       verboseLevel>0));
 
   this->roadFwd.reset(new GazeboTopicForwarder<gazebo::msgs::Road>
-                      ("~/roads", this->node));
+                      ("~/roads", this->node, 1000, 0, nullptr,
+                       verboseLevel>0));
 
   this->poseAnimFwd.reset(new GazeboTopicForwarder<gazebo::msgs::PoseAnimation>
-                      ("~/skeleton_pose/info", this->node));
+                      ("~/skeleton_pose/info", this->node,
+                       1000, 0, nullptr, verboseLevel>0));
 
   // create the helper publishers
   ////////////////////////////////////////////////

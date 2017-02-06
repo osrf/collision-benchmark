@@ -24,6 +24,7 @@
 #include <collision_benchmark/boost_std_conversion.hh>
 #include <collision_benchmark/GazeboHelpers.hh>
 #include <collision_benchmark/WorldManager.hh>
+#include <collision_benchmark/GazeboControlServer.hh>
 
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
@@ -37,6 +38,7 @@ using collision_benchmark::MirrorWorld;
 using collision_benchmark::GazeboMirrorWorld;
 using collision_benchmark::GazeboTopicForwardingMirror;
 using collision_benchmark::WorldManager;
+using collision_benchmark::GazeboControlServer;
 
 typedef WorldManager<gazebo::physics::WorldState> GzWorldManager;
 typedef GazeboPhysicsWorld::PhysicsWorldTypes GazeboPhysicsWorldTypes;
@@ -80,7 +82,8 @@ bool Run(int argc, char **argv)
     return false;
   }
 #else
-  GazeboTopicForwardingMirror::Ptr mirrorWorld(new GazeboTopicForwardingMirror("def"));
+  GazeboTopicForwardingMirror::Ptr mirrorWorld(new GazeboTopicForwardingMirror("mirror_world"));
+  GazeboControlServer::Ptr controlServer(new GazeboControlServer("mirror_world"));
 #endif
 
   // now, load the worlds as given in command line arguments with the different engines given
@@ -94,7 +97,7 @@ bool Run(int argc, char **argv)
 
   std::cout << "Loading world " << worldfile << " with "<<physicsEngines.size()<<" engines."<<std::endl;
 
-  GzWorldManager worldManager(mirrorWorld);
+  GzWorldManager worldManager(mirrorWorld, controlServer);
   int i=1;
   for (std::map<std::string,std::string>::iterator it = physicsEngines.begin(); it!=physicsEngines.end(); ++it, ++i)
   {
@@ -137,17 +140,26 @@ bool Run(int argc, char **argv)
   std::cout << "Now start gzclient if you would like to view the test. Press [Enter] to continue."<<std::endl;
   getchar();
   std::cout << "Now starting to update worlds."<<std::endl;
+  const int printCnt=100;
+  int print=printCnt;
   while(true)
   {
     int numSteps=1;
     worldManager.Update(numSteps);
-   // gazebo::common::Time::MSleep(1000);
+    // while (true) gazebo::common::Time::MSleep(1000);
   /*  PhysicsWorldBaseInterface::Ptr mirroredWorld = worldManager.GetMirroredWorld();
     GzPhysicsWorld::Ptr mirroredWorldCast = std::dynamic_pointer_cast<GzPhysicsWorld>(mirroredWorld);
     assert(mirroredWorldCast);
     std::vector<GzPhysicsWorld::ContactInfoPtr> contacts = mirroredWorldCast->GetContactInfo();
     std::cout<<"Number of contacts: "<<contacts.size()<<std::endl;
     getchar();*/
+
+    if (print <= 0)
+    {
+      std::cout<<"Updating world still going."<<std::endl;
+      print=printCnt;
+    }
+    --print;
   }
   return true;
 }

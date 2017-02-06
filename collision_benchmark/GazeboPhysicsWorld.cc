@@ -33,7 +33,8 @@ using collision_benchmark::Contact;
 using collision_benchmark::ContactInfo;
 
 GazeboPhysicsWorld::GazeboPhysicsWorld(bool _enforceContactComputation)
-  : enforceContactComputation(_enforceContactComputation)
+  : enforceContactComputation(_enforceContactComputation),
+    paused(false)
 {
 }
 
@@ -72,7 +73,6 @@ collision_benchmark::OpResult GazeboPhysicsWorld::LoadFromSDF(const sdf::Element
     return collision_benchmark::FAILED;
 
   SetWorld(collision_benchmark::to_std_ptr<gazebo::physics::World>(gzworld));
-
   return collision_benchmark::SUCCESS;
 }
 
@@ -87,7 +87,6 @@ collision_benchmark::OpResult GazeboPhysicsWorld::LoadFromFile(const std::string
     return collision_benchmark::FAILED;
 
   SetWorld(collision_benchmark::to_std_ptr<gazebo::physics::World>(gzworld));
-
   return collision_benchmark::SUCCESS;
 }
 
@@ -102,7 +101,6 @@ collision_benchmark::OpResult GazeboPhysicsWorld::LoadFromString(const std::stri
     return collision_benchmark::FAILED;
 
   SetWorld(collision_benchmark::to_std_ptr<gazebo::physics::World>(gzworld));
-
   return collision_benchmark::SUCCESS;
 
 }
@@ -273,20 +271,74 @@ collision_benchmark::OpResult GazeboPhysicsWorld::SetWorldState(const WorldState
   return collision_benchmark::SUCCESS;
 }
 
+#define NEW_WORLDRUN_SOLUTION
+
+void GazeboPhysicsWorld::PostWorldLoaded()
+{
+  GZ_ASSERT(world, "World is null, must have been loaded!");
+#ifdef NEW_WORLDRUN_SOLUTION
+  // Stop the world just in case it has been started already.
+  // We want to start it under controlled conitions here.
+  world->Stop();
+  world->SetPaused(true);
+  // Run the world in paused mode so that the main
+  // loop of the gazebo world is working and calls of
+  // Update() will do a World::Step().
+  world->Run(0);
+#endif
+}
 void GazeboPhysicsWorld::Update(int steps)
 {
   // std::cout<<"Running "<<steps<<" steps for world "<<world->Name()<<", physics engine: "<<world->Physics()->GetType()<<std::endl;
-  // Run simulation for given number of steps.
+#ifdef NEW_WORLDRUN_SOLUTION
+
+  if (IsPaused()) return;
+
+  // if the world is not paused, it is updating itself already
+  // automatically (started in PostWorldLoaded().
+  // We should either return and don't call
+  // Step(), or first pause the world.
+  if (!world->IsPaused())
+  {
+    static bool printOnce=true;
+    if (printOnce)
+    {
+      std::cout<<"DEBUG WARNING: The Gazebo world is not paused. \
+        In this interface we operate it in paused mode and manually \
+        do the updates."<<std::endl;
+      printOnce=false;
+    }
+    world->SetPaused(true);
+  }
+
+  // Step() only works if the world is paused.
+  // It advances the state despite the paused state.
+  world->Step(steps);
+#else
   // This method calls world->RunBlocking();
   gazebo::runWorld(world,steps);
   // iterations is always 1 if it has been set with steps!=0
   // in call above. Should fix this in Gazebo::World?
   // std::cout<<"Iterations: "<<world->Iterations()<<std::endl;
+#endif
 }
 
 void GazeboPhysicsWorld::SetPaused(bool flag)
 {
+#ifdef NEW_WORLDRUN_SOLUTION
+  paused = flag;
+#else
   world->SetPaused(flag);
+#endif
+}
+
+bool GazeboPhysicsWorld::IsPaused() const
+{
+#ifdef NEW_WORLDRUN_SOLUTION
+  return paused;
+#else
+  return world->IsPaused();
+#endif
 }
 
 std::string GazeboPhysicsWorld::GetName() const
@@ -463,6 +515,7 @@ collision_benchmark::RefResult GazeboPhysicsWorld::SetWorld(const WorldPtr& _wor
 {
   world = collision_benchmark::to_boost_ptr<World>(_world);
   SetEnforceContactsComputation(enforceContactComputation);
+  PostWorldLoaded();
   return collision_benchmark::REFERENCED;
 }
 

@@ -23,6 +23,7 @@
 
 #include <collision_benchmark/PhysicsWorld.hh>
 #include <collision_benchmark/MirrorWorld.hh>
+#include <collision_benchmark/ControlServer.hh>
 
 #include <gazebo/gazebo.hh>
 #include <gazebo/transport/transport.hh>
@@ -30,6 +31,7 @@
 
 #include <string>
 #include <iostream>
+#include <mutex>
 
 namespace collision_benchmark
 {
@@ -48,28 +50,51 @@ namespace collision_benchmark
  * \author Jennifer Buehler
  * \date December 2016
  */
-template<class WorldState>
+template<class _WorldState>
 class WorldManager
 {
+  public: typedef _WorldState WorldState;
   private: typedef WorldManager<WorldState> Self;
 
   public: typedef std::shared_ptr<WorldManager> Ptr;
   public: typedef std::shared_ptr<const WorldManager> ConstPtr;
 
-  // the original world supporting the gazebo::physics::WorldState to synchronize to
-  //public: typedef PhysicsWorldStateInterface<gazebo::physics::WorldState> PhysicsWorldStateInterfaceT;
+  // the world interface supporting the WorldState
+  public: typedef PhysicsWorldStateInterface<WorldState>
+              PhysicsWorldStateInterfaceT;
+  public: typedef typename PhysicsWorldStateInterfaceT::Ptr
+              PhysicsWorldStateInterfacePtr;
 
   //public: typedef typename MirrorWorld<WorldState>::Ptr MirrorWorldPtr;
   public: typedef typename MirrorWorld::Ptr MirrorWorldPtr;
+  public: typedef typename ControlServer<WorldState>::Ptr ControlServerPtr;
 
   /// Constructor.
-  /// \param _mirrorWorld the main mirror world (the one which will reflect the original). Does not
-  ///    need to be set to any world yet, will automatically be set to mirror the first world added with
-  ///    AddPhysicsWorld.
-  public:  WorldManager(const MirrorWorldPtr& _mirrorWorld=MirrorWorldPtr()):
-             mirroredWorldIdx(-1)
+  /// \param _mirrorWorld the main mirror world (the one which will reflect
+  ///   the original). Does not need to be set to mirror any particular world
+  ///     yet, will automatically be set to mirror the first world added with
+  ///     AddPhysicsWorld().
+  /// \param _controlServer server which receives control commands
+  ///     for the world(s). If NULL, worlds cannot be controlled.
+  public:  WorldManager(const MirrorWorldPtr &_mirrorWorld=MirrorWorldPtr(),
+                        const ControlServerPtr &_controlServer=ControlServerPtr()):
+             mirroredWorldIdx(-1),
+             controlServer(_controlServer)
            {
-             SetMirrorWorld(_mirrorWorld);
+             this->SetMirrorWorld(_mirrorWorld);
+             if (this->controlServer)
+             {
+               this->controlServer->RegisterPauseCallback
+                 (std::bind(&Self::NotifyPause, this, std::placeholders::_1));
+               this->controlServer->RegisterUpdateCallback
+                 (std::bind(&Self::NotifyUpdate, this, std::placeholders::_1));
+               this->controlServer->RegisterStateChangeCallback
+                 (std::bind(&Self::NotifyStateChange, this,
+                            std::placeholders::_1,
+                            std::placeholders::_2));
+               this->controlServer->RegisterSelectWorldService
+                 (std::bind(&Self::ChangeMirrorWorld, this, std::placeholders::_1));
+             }
            }
 
   public:  ~WorldManager() {}
@@ -83,74 +108,84 @@ class WorldManager
           {
             if (!_mirrorWorld)
             {
-              if (mirrorWorld)
+              if (this->mirrorWorld)
               {
-                mirrorWorld.reset();
-                ctrlClientSubscriber.reset();
-                ctrlClientPublisher.reset();
+                this->mirrorWorld.reset();
+//                this->ctrlClientSubscriber.reset();
+//                this->ctrlClientPublisher.reset();
               }
-              mirroredWorldIdx=-1;
+              this->mirroredWorldIdx=-1;
               return;
             }
-            mirrorWorld=_mirrorWorld;
-            if (!worlds.empty())
+            this->mirrorWorld=_mirrorWorld;
             {
-              mirrorWorld->SetOriginalWorld(worlds.front());
-              mirroredWorldIdx=0;
+              std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
+              if (!this->worlds.empty())
+              {
+                this->mirrorWorld->SetOriginalWorld(worlds.front());
+                this->mirroredWorldIdx=0;
+              }
             }
-            if (!node)
-            {
-              node.reset(new gazebo::transport::Node());
-              node->Init();
-            }
-            if (!ctrlClientSubscriber) ctrlClientSubscriber = node->Subscribe("mirror_world/set_world", &Self::crtlClientCallback, this);
-            if (!ctrlClientPublisher) ctrlClientPublisher  = node->Advertise<gazebo::msgs::Any>("mirror_world/get_world");
           }
 
   // returns the original world which is currently mirrored by the mirror world
   public:  PhysicsWorldBaseInterface::Ptr GetMirroredWorld()
            {
-             assert(mirrorWorld);
-             return mirrorWorld->GetOriginalWorld();
+             assert(this->mirrorWorld);
+             return this->mirrorWorld->GetOriginalWorld();
            }
 
   /// Adds this world and returns the index this world can be accessed at
   /// \return positive int or zero on success (index this world can be accessed at)
   public:  void AddPhysicsWorld(const PhysicsWorldBaseInterface::Ptr& _world)
            {
-             if (worlds.empty() && mirrorWorld)
+             std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
+             if (this->worlds.empty() && this->mirrorWorld)
              {
-               mirrorWorld->SetOriginalWorld(_world);
-               mirroredWorldIdx=0;
+               this->mirrorWorld->SetOriginalWorld(_world);
+               this->mirroredWorldIdx=0;
              }
-             worlds.push_back(_world);
+             this->worlds.push_back(_world);
            }
 
   public:  void SetMirroredWorld(const int _index)
            {
+             std::cout<<"Getting world at idx "<<_index<<std::endl;
              PhysicsWorldBaseInterface::Ptr world=GetPhysicsWorld(_index);
              if (!world)
              {
                gzerr<<"Cannot get world in WorldManager::SetMirroredWorld()\n";
                return;
              }
-             mirrorWorld->SetOriginalWorld(world);
-             mirroredWorldIdx=_index;
+             this->mirrorWorld->SetOriginalWorld(world);
+             this->mirroredWorldIdx=_index;
+           }
+
+  /// Returns the original world which is mirrored by this class
+  public:  size_t GetNumWorlds() const
+           {
+             std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
+             return this->worlds.size();
            }
 
 
   /// Returns the original world which is mirrored by this class
   public:  PhysicsWorldBaseInterface::Ptr GetPhysicsWorld(unsigned int _index) const
            {
-             GZ_ASSERT(_index < worlds.size(), "Index out of range");
-             if (_index >= worlds.size()) return PhysicsWorldBaseInterface::Ptr();
-             return worlds.at(_index);
+             std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
+             GZ_ASSERT(_index >=0 && _index < this->worlds.size(), "Index out of range");
+             if (_index >= this->worlds.size())
+             {
+               return PhysicsWorldBaseInterface::Ptr();
+             }
+             return this->worlds.at(_index);
            }
 
-  public: std::vector<PhysicsWorldBaseInterface::Ptr> GetPhysicsWorlds() const
+/*  public: std::vector<PhysicsWorldBaseInterface::Ptr> GetPhysicsWorlds() const
           {
-            return worlds;
-          }
+            std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
+            return this->worlds;
+          }*/
 
   // Convenience method which casts the world \e w to a PhysicsWorldStateInterface with the given state
   public: template<class WorldState_>
@@ -161,7 +196,10 @@ class WorldManager
 
   public: void SetPaused(bool flag)
           {
-            for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator it=worlds.begin(); it!= worlds.end(); ++it)
+            std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
+            for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator
+                 it=this->worlds.begin();
+                 it != this->worlds.end(); ++it)
             {
               PhysicsWorldBaseInterface::Ptr w=*it;
               w->SetPaused(flag);
@@ -172,7 +210,10 @@ class WorldManager
   /// laws, but objects can be maintained in the world and collision states / contact points between them checked.
   public: virtual void SetDynamicsEnabled(const bool flag)
           {
-            for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator it=worlds.begin(); it!= worlds.end(); ++it)
+            std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
+            for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator
+                 it = this->worlds.begin();
+                 it != this->worlds.end(); ++it)
             {
               PhysicsWorldBaseInterface::Ptr w=*it;
               w->SetDynamicsEnabled(flag);
@@ -182,70 +223,94 @@ class WorldManager
   /// Calls Update(iter) on all worlds and subsequently calls MirrorWorld::Sync() and MirrorWorld::Update().
   public: void Update(int iter=1)
           {
-            for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator it=worlds.begin(); it!= worlds.end(); ++it)
+            // we cannot just lock the worldMutex with a lock here, because
+            // calling Update() may trigger the call of callbacks in this
+            // class, called by the ControlServer. ControlServer implementations
+            // may trigger the call of the callbacks from a different thread, therefore
+            // there will be a deadlock for accessing the worlds.
+            // std::cout<<"__________UPDATE__________"<<std::endl;
+            this->worldsMutex.lock();
+            int numWorlds=this->worlds.size();
+            this->worldsMutex.unlock();
+            for (int i=0; i< numWorlds; ++i)
             {
-              PhysicsWorldBaseInterface::Ptr w=*it;
+              // get the i'th world
+              this->worldsMutex.lock();
+              // update vector size in case more worlds were
+              // added asynchronously
+              numWorlds=this->worlds.size();
+              // break loop if size of worlds has decreased
+              if (i >= numWorlds) break;
+
+              PhysicsWorldBaseInterface::Ptr w=worlds[i];
+              this->worldsMutex.unlock();
+
               w->Update(iter);
             }
-            if (mirrorWorld)
+            if (this->mirrorWorld)
             {
-              mirrorWorld->Sync();
+              this->mirrorWorld->Sync();
             }
+            // std::cout<<"__________UPDATE END__________"<<std::endl;
           }
 
-  /// Callback for control client subscriber \e ctrlClientSubscriber.
-  /// Will send back the current world name with \e ctrlClientPublisher.
-  private:  void crtlClientCallback(ConstAnyPtr &_msg)
-            {
-              // std::cout << "Received: "<<_msg->DebugString();
-              // change the world:
-              if (_msg->type() != gazebo::msgs::Any::INT32)
-              {
-                gzerr<<"Received Control message of invalid type, expecting INT32.\n"<<_msg->DebugString();
-                return;
-              }
-              int ctrl=_msg->int_value();
+  private: void NotifyPause(const bool _flag)
+           {
+             std::cout<<"PAUSE FLAG "<<_flag<<std::endl;
+             SetPaused(_flag);
+           }
+  private: void NotifyUpdate(const int _numSteps)
+           {
+             std::cout<<"UPDATE "<<_numSteps<<std::endl;
+             Update(_numSteps);
+           }
+  private: void NotifyStateChange(const WorldState &_state,
+                                    const bool _isDiff)
+           {
+             std::cout<<"State change "<<_state<<std::endl;
+           }
+
+  private: std::string ChangeMirrorWorld(const int ctrl)
+           {
+              std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
+              int oldMirrorIdx = mirroredWorldIdx;
               if (ctrl < 0)
               {
                 // Switch to previous world
                 std::cout<<"Switching to previous world"<<std::endl;
                 if (mirroredWorldIdx > 0) --mirroredWorldIdx;
-                //  else mirroredWorldIdx=worlds.size()-1; // go back to last world
+                else mirroredWorldIdx=worlds.size()-1; // go back to last world
               }
               else if (ctrl > 0)
               {
                 // Switch to next world
                 std::cout<<"Switching to next world"<<std::endl;
                 if (mirroredWorldIdx < (worlds.size()-1)) ++mirroredWorldIdx;
-                // else mirroredWorldIdx=0; // go back to first world
+                else mirroredWorldIdx=0; // go back to first world
               }
 
-              if (ctrl != 0)
-              {
-                // update mirrored world
-                SetMirroredWorld(mirroredWorldIdx);
-              }
+              if (mirroredWorldIdx == oldMirrorIdx)
+                  return mirrorWorld->GetOriginalWorld()->GetName();
 
-              // send back the name of the new world:
-              SendWorldName(mirrorWorld->GetOriginalWorld()->GetName());
+              // update mirrored world
+              this->SetMirroredWorld(mirroredWorldIdx);
+
+              std::cout<<" New world is "<<mirrorWorld->GetOriginalWorld()->GetName()<<std::endl;
+
+              // return the name of the new world
+              return mirrorWorld->GetOriginalWorld()->GetName();
             }
 
-  /// sends the name of a word via \e ctrlClientPublisher
-  private: void SendWorldName(const std::string& name)
-           {
-              gazebo::msgs::Any m;
-              m.set_type(gazebo::msgs::Any::STRING);
-              m.set_string_value(name);
-              ctrlClientPublisher->Publish(m);
-           }
 
-  private: gazebo::transport::SubscriberPtr ctrlClientSubscriber;
-  private: gazebo::transport::PublisherPtr ctrlClientPublisher;
-  private: gazebo::transport::NodePtr node;
-
+  // all the worlds
   private: std::vector<PhysicsWorldBaseInterface::Ptr> worlds;
+  // mutex protecting the worlds vector (not the worlds itself!)
+  private: mutable std::recursive_mutex worldsMutex;
+
   private: MirrorWorldPtr mirrorWorld;
   private: int mirroredWorldIdx;
+
+  private: ControlServerPtr controlServer;
 
 };
 

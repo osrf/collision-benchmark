@@ -118,6 +118,8 @@ class GazeboPhysicsWorld: public collision_benchmark::PhysicsEngineWorld<GazeboP
 
   public: virtual void SetPaused(bool flag);
 
+  public: virtual bool IsPaused() const;
+
   public: virtual std::string GetName() const;
 
   public: virtual void SetDynamicsEnabled(const bool flag);
@@ -156,6 +158,9 @@ class GazeboPhysicsWorld: public collision_benchmark::PhysicsEngineWorld<GazeboP
   /// wait for the namespace of this world
   private: bool WaitForNamespace(const gazebo::physics::WorldPtr& gzworld, float maxWait, float waitSleep);
 
+  // called after a world has been loaded
+  private: void PostWorldLoaded();
+
   private: gazebo::physics::WorldPtr world;
   // by default, contacts in Gazebo are only computed if
   // there is at least one subscriber to the contacts topic.
@@ -169,6 +174,14 @@ class GazeboPhysicsWorld: public collision_benchmark::PhysicsEngineWorld<GazeboP
   private: gazebo::transport::NodePtr node;
   private: gazebo::transport::SubscriberPtr contactsSub;
 #endif
+
+  // flag whether the world has been paused. Paused in
+  // gazebo::World has a slightly different effect because
+  // we can still call Step() and Update() etc. while the
+  // world is paused. So the paused state has to be managed
+  // separately.
+  private: bool paused;
+
 };  // class GazeboPhysicsWorld
 
 /// \def GazeboPhysicsWorldPtr

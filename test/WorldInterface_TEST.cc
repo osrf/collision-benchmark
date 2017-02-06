@@ -105,14 +105,13 @@ TEST_F(WorldInterfaceTest, WorldManager)
     worldManager.AddPhysicsWorld(gzPhysicsWorld);
   }
 
-  std::vector<PhysicsWorldBaseInterface::Ptr> allWorlds = worldManager.GetPhysicsWorlds();
-  ASSERT_EQ(allWorlds.size(), physicsEngines.size()) << "As many worlds as physics engines should have been loaded";
+  ASSERT_EQ(worldManager.GetNumWorlds(), physicsEngines.size()) << "As many worlds as physics engines should have been loaded";
 
   // All worlds should have a cube named "box", and only two models (ground and cube).
-  for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator wit=allWorlds.begin(); wit!=allWorlds.end(); ++wit)
+  for (int i=0; i<worldManager.GetNumWorlds(); ++i)
   {
-    PhysicsWorldBaseInterface::Ptr world=*wit;
-    GzPhysicsWorldStateInterface::Ptr sWorld=worldManager.ToWorldWithState<GzWorldState>(*wit);
+    PhysicsWorldBaseInterface::Ptr world=worldManager.GetPhysicsWorld(i);
+    GzPhysicsWorldStateInterface::Ptr sWorld=worldManager.ToWorldWithState<GzWorldState>(world);
     ASSERT_NE(sWorld, nullptr) <<"World should have been of Gazebo type";
     GzWorldState state = sWorld->GetWorldState();
     ASSERT_EQ(state.GetModelStates().size(), 2) <<"World "<<world->GetName()<<" should have only two models.";

@@ -29,6 +29,8 @@ set(collision_benchmark_HEADERS
   collision_benchmark/GazeboWorldState.hh
   collision_benchmark/PhysicsWorld.hh
   collision_benchmark/GazeboWorldLoader.hh
+  collision_benchmark/ControlServer.hh
+  collision_benchmark/GazeboControlServer.hh
   collision_benchmark/TypeHelper.hh
 )
 
@@ -43,6 +45,7 @@ add_library(collision_benchmark SHARED
   collision_benchmark/Shape.cc
   collision_benchmark/PrimitiveShape.cc
   collision_benchmark/SimpleTriMeshShape.cc
+  collision_benchmark/GazeboControlServer.cc
   collision_benchmark/TypeHelper.cc
 )
  
