@@ -39,7 +39,8 @@ namespace collision_benchmark
 {
 
 /**
- * \brief Strategy pattern to filter messages
+ * \brief Strategy pattern to filter messages.
+ * Messages may be simply filtered out, or modified by the filter.
  * \author Jennifer Buehler
  * \date February 2017
  */
@@ -51,9 +52,12 @@ class MessageFilter
   public: typedef std::shared_ptr<Self> Ptr;
   public: typedef std::shared_ptr<const Self> ConstPtr;
 
-  // Determines whether a message is filtered out
-  // \return true if the filter applies to the message
-  public: virtual bool Filter(const boost::shared_ptr<Msg const> &_msg) const = 0;
+  // Determines whether a message is filtered out. If it is not filtered
+  // out, it may have been modified.
+  // \return NULL if the filter does not apply
+  //    to the message, otherwise the message itself (or a modification of it).
+  public: virtual boost::shared_ptr<Msg const> Filter
+          (const boost::shared_ptr<Msg const> &_msg) const = 0;
 };
 
 /**
@@ -152,7 +156,10 @@ class GazeboTopicForwarder
       std::cout<<std::endl;
     }
     assert(_msg);
-    if (msgFilter && msgFilter->Filter(_msg))
+    boost::shared_ptr<Msg const> msgToFwd(nullptr);
+    if (!msgFilter) msgToFwd = _msg;
+    else msgToFwd = msgFilter->Filter(_msg);
+    if (!msgToFwd)
     {
       if (this->verbose)
         std::cout<<"Debug: Rejected message of type "
@@ -161,7 +168,7 @@ class GazeboTopicForwarder
     }
 
     // this->pub->WaitForConnection();
-    this->pub->Publish(*_msg);
+    this->pub->Publish(*msgToFwd);
   }
 
   /// \brief Publisher for forwarding messages.

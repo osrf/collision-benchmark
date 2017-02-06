@@ -58,47 +58,35 @@ class RequestMessageFilter:
   public: typedef std::shared_ptr<Self> Ptr;
   public: typedef std::shared_ptr<const Self> ConstPtr;
 
-  // Determines whether a message is filtered out
-  // \return true if the filter applies to the message
-  public: virtual bool Filter(const boost::shared_ptr<gazebo::msgs::Request const>
-                              &_msg) const
+  public: virtual boost::shared_ptr<gazebo::msgs::Request const> Filter
+          (const boost::shared_ptr<gazebo::msgs::Request const> &_msg) const
           {
               if (_msg->request() == "entity_delete")
               {
                 // std::cout<<"Entity deletion not forwarded, handled privately!"<<std::endl;
-                return true;
+                return nullptr;
               }
               std::cout<<"Got a request: "<<_msg->request()<<std::endl;
-              return false;
+              return _msg;
           }
 };
 
 /**
- * \brief Strategy pattern to filter request messages
+ * \brief Strategy pattern to modify world statistics messages
  * \author Jennifer Buehler
  * \date February 2017
  */
-class WorldStatMsgFilter:
+/*class WorldStatMsgFilter:
   public collision_benchmark::MessageFilter<gazebo::msgs::WorldStatistics>
 {
   private: typedef  WorldStatMsgFilter Self;
   public: typedef std::shared_ptr<Self> Ptr;
   public: typedef std::shared_ptr<const Self> ConstPtr;
-
-  // Determines whether a message is filtered out
-  // \return true if the filter applies to the message
-  public: virtual bool Filter(const boost::shared_ptr<gazebo::msgs::WorldStatistics const>
-                              &_msg) const
+  public: virtual boost::shared_ptr<gazebo::msgs::WorldStatistics const> Filter
+          (const boost::shared_ptr<gazebo::msgs::WorldStatistics const> &_msg) const
           {
-              if (_msg->request() == "entity_delete")
-              {
-                // std::cout<<"Entity deletion not forwarded, handled privately!"<<std::endl;
-                return true;
-              }
-              std::cout<<"Got a request: "<<_msg->request()<<std::endl;
-              return false;
           }
-};
+};*/
 
 
 
