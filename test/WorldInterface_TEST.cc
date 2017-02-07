@@ -72,7 +72,7 @@ TEST_F(WorldInterfaceTest, WorldManager)
   std::cout << "Loading world " << worldfile << " with "<<physicsEngines.size()<<" engines."<<std::endl;
 
   typedef gazebo::physics::WorldState GzWorldState;
-  typedef WorldManager<GzWorldState> GzWorldManager;
+  typedef WorldManager<GzWorldState, std::string> GzWorldManager;
   typedef PhysicsWorldStateInterface<GzWorldState> GzPhysicsWorldStateInterface;
 
   // create one world per physics engine and load it with the cube world, and add it to the world manager

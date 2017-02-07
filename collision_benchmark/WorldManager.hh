@@ -24,6 +24,7 @@
 #include <collision_benchmark/PhysicsWorld.hh>
 #include <collision_benchmark/MirrorWorld.hh>
 #include <collision_benchmark/ControlServer.hh>
+#include <collision_benchmark/BasicTypes.hh>
 
 #include <gazebo/gazebo.hh>
 #include <gazebo/transport/transport.hh>
@@ -47,14 +48,18 @@ namespace collision_benchmark
  * Each time a message is received, the current world name is sent back in a gazebo::Any message
  * with type STRING.
  *
+ * \param _WorldState describes the state of a world. XXX Note: will probably be removed?
+ * \param _ModelID the identifier for a specific model
+ *
  * \author Jennifer Buehler
  * \date December 2016
  */
-template<class _WorldState>
+template<class _WorldState, class _ModelID>
 class WorldManager
 {
   public: typedef _WorldState WorldState;
-  private: typedef WorldManager<WorldState> Self;
+  public: typedef _ModelID ModelID;
+  private: typedef WorldManager<WorldState, ModelID> Self;
 
   public: typedef std::shared_ptr<WorldManager> Ptr;
   public: typedef std::shared_ptr<const WorldManager> ConstPtr;
@@ -67,7 +72,7 @@ class WorldManager
 
   //public: typedef typename MirrorWorld<WorldState>::Ptr MirrorWorldPtr;
   public: typedef typename MirrorWorld::Ptr MirrorWorldPtr;
-  public: typedef typename ControlServer<WorldState>::Ptr ControlServerPtr;
+  public: typedef typename ControlServer<ModelID>::Ptr ControlServerPtr;
 
   /// Constructor.
   /// \param _mirrorWorld the main mirror world (the one which will reflect
@@ -88,8 +93,8 @@ class WorldManager
                  (std::bind(&Self::NotifyPause, this, std::placeholders::_1));
                this->controlServer->RegisterUpdateCallback
                  (std::bind(&Self::NotifyUpdate, this, std::placeholders::_1));
-               this->controlServer->RegisterStateChangeCallback
-                 (std::bind(&Self::NotifyStateChange, this,
+               this->controlServer->RegisterSetModelStateCallback
+                 (std::bind(&Self::NotifyModelStateChange, this,
                             std::placeholders::_1,
                             std::placeholders::_2));
                this->controlServer->RegisterSelectWorldService
@@ -267,10 +272,10 @@ class WorldManager
              std::cout<<"UPDATE "<<_numSteps<<std::endl;
              Update(_numSteps, true);
            }
-  private: void NotifyStateChange(const WorldState &_state,
-                                    const bool _isDiff)
+  private: void NotifyModelStateChange(const ModelID  &_id,
+                                    const BasicState &_state)
            {
-             std::cout<<"State change "<<_state<<std::endl;
+             std::cout<<"STATE CHANGE "<<_id<<std::endl;
            }
 
   private: std::string ChangeMirrorWorld(const int ctrl)

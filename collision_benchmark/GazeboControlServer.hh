@@ -40,9 +40,9 @@ namespace collision_benchmark
  * \date February 2017
  */
 class GazeboControlServer:
-  public ControlServer<gazebo::physics::WorldState>
+  public ControlServer<std::string>
 {
-  private: typedef ControlServer<gazebo::physics::WorldState> Super;
+  private: typedef ControlServer<std::string> Super;
   public: typedef std::shared_ptr<GazeboControlServer> Ptr;
   public: typedef std::shared_ptr<const GazeboControlServer> ConstPtr;
 

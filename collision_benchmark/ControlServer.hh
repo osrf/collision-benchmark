@@ -22,6 +22,7 @@
 #define COLLISION_BENCHMARK_CONTROLSERVER_H
 
 #include <collision_benchmark/Exception.hh>
+#include <collision_benchmark/BasicTypes.hh>
 
 #include <string>
 #include <iostream>
@@ -33,29 +34,44 @@ namespace collision_benchmark
 {
 
 /**
+ * \brief Implements certain controls that can be applied to a world.
+ * Detaches the implementation of how the controls are received from
+ * the application to the worlds. Application to the worlds can be
+ * done via callbacks which need to be registered via this interface.
+ *
+ * \param _ModelID the identifier for a specific model
  * \author Jennifer Buehler
  * \date February 2017
  */
-template<class _WorldState>
+template<class _ModelID>
 class ControlServer
 {
-  public: typedef _WorldState WorldState;
+  public: typedef _ModelID ModelID;
   public: typedef std::shared_ptr<ControlServer> Ptr;
   public: typedef std::shared_ptr<const ControlServer> ConstPtr;
 
+  // function to set a paused flag
   public: typedef std::function<void(const bool)> NotifyPauseFct;
+
+  // function to trigger an update of the world with a
+  // number of steps/iterations
   public: typedef std::function<void(const int)> NotifyUpdateFct;
-  public: typedef std::function<void(const WorldState&, const bool)>
-            NotifyStateChangeFct;
+
+  // funciton to select one of several worlds (identified by
+  // and index) as the currently selected world.
   public: typedef std::function<std::string(const int)>
             NotifySelectWorldFct;
+
+  // function to set the position, rotation and scale of a model.
+  public: typedef std::function<void(const ModelID&, const BasicState&)>
+            NotifySetModelStateFct;
 
   /// Constructor.
   public:  ControlServer() {}
   public: ControlServer(const ControlServer& o):
           pauseCallbacks(o.pauseCallbacks),
           updateCallbacks(o.updateCallbacks),
-          stateChangeCallbacks(o.stateChangeCallbacks) {}
+          modelStateCallbacks(o.modelStateCallbacks) {}
   public:  virtual ~ControlServer() {}
 
   // register a pause callback which will be called
@@ -74,18 +90,11 @@ class ControlServer
             updateCallbacks.push_back(_fct);
           }
 
-  // register a state change callback. Called when the world state
-  // is to be changed. All changes to the world must be
-  // encoded in \e_state, which either describes the full
-  // world state, or the differential state (e.g. containing
-  // only one model with only a reference to the new pose).
-  // \param _isDiff true if \e _state is differential, false
-  //   if \e _state contains exactly the state the whole world
-  //   shoudl be set to.
-
-  public: void RegisterStateChangeCallback(const NotifyStateChangeFct &_fct)
+  // register model change callback, called when the state of the model
+  // is to be updated.
+  public: void RegisterSetModelStateCallback(const NotifySetModelStateFct &_fct)
           {
-            stateChangeCallbacks.push_back(_fct);
+            modelStateCallbacks.push_back(_fct);
           }
 
   // register callback for requests that the world with this index
@@ -130,22 +139,16 @@ class ControlServer
                   (*it)(_numSteps);
                 }
              }
-  // must be called by subclasses when the world state is
-  // to be changed. All changes to the world must be
-  // encoded in \e_state, which either describes the full
-  // world state, or the differential state (e.g. containing
-  // only one model with only a reference to the new pose).
-  // \param _isDiff true if \e _state is differential, false
-  //   if \e _state contains exactly the state the whole world
-  //   shoudl be set to.
-  protected: void NotifyStateChange(const WorldState &_state,
-                                    const bool _isDiff)
+
+  // must be called by subclasses when the model is to be changed
+  protected: void NotifySetModelState(const ModelID& id,
+                                      const BasicState &_state)
              {
-                typename std::vector<NotifyStateChangeFct>::iterator it;
-                for (it=stateChangeCallbacks.begin();
-                     it!=stateChangeCallbacks.end(); ++it)
+                typename std::vector<NotifySetModelStateFct>::iterator it;
+                for (it=modelStateCallbacks.begin();
+                     it!=modelStateCallbacks.end(); ++it)
                 {
-                  (*it)(_state, _isDiff);
+                  (*it)(_state);
                 }
              }
 
@@ -165,7 +168,7 @@ class ControlServer
 
   private: std::vector<NotifyPauseFct> pauseCallbacks;
   private: std::vector<NotifyUpdateFct> updateCallbacks;
-  private: std::vector<NotifyStateChangeFct> stateChangeCallbacks;
+  private: std::vector<NotifySetModelStateFct> modelStateCallbacks;
   private: std::shared_ptr<NotifySelectWorldFct> selectWorldCallback;
 
 

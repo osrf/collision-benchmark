@@ -42,20 +42,13 @@ using collision_benchmark::GazeboTopicForwardingMirror;
 using collision_benchmark::WorldManager;
 using collision_benchmark::GazeboControlServer;
 
-typedef WorldManager<gazebo::physics::WorldState> GzWorldManager;
+typedef WorldManager<gazebo::physics::WorldState, std::string> GzWorldManager;
 typedef GazeboPhysicsWorld::PhysicsWorldTypes GazeboPhysicsWorldTypes;
 typedef PhysicsWorld<GazeboPhysicsWorldTypes> GzPhysicsWorld;
 
 // test is paused or not
 std::atomic<bool> g_unpaused(false);
 std::atomic<bool> g_keypressed(false);
-
-ssize_t
-ngetc (char *c)
-{
-  std::cout<<"FIN: "<<STDIN_FILENO<<std::endl;
-  return read(0, c, 1);
-}
 
 // waits until enter has been pressed and sets g_keypressed to true
 void WaitForEnter()
@@ -69,14 +62,13 @@ void WaitForEnter()
 void WaitForUnpause()
 {
   std::thread * t = new std::thread(WaitForEnter);
-  t->detach();
+  t->detach();  // detach so it can be terminated
   while (!g_unpaused && !g_keypressed)
   {
     gazebo::common::Time::MSleep(100);
   }
   delete t;
 }
-
 
 // loads the mirror world. This should be loaded before all other Gazebo worlds, so that
 // gzclient connects to this one.
@@ -98,7 +90,7 @@ GazeboMirrorWorld::Ptr setupMirrorWorld()
 
 void pauseCallback(bool pause)
 {
-  std::cout<<"############ Pause callback: "<<pause<<std::endl;
+  //std::cout<<"############ Pause callback: "<<pause<<std::endl;
   g_unpaused = !pause;
 }
 
@@ -195,6 +187,7 @@ bool Run(int argc, char **argv)
   {
     int numSteps=1;
     worldManager.Update(numSteps);
+
     // while (true) gazebo::common::Time::MSleep(1000);
   /*  PhysicsWorldBaseInterface::Ptr mirroredWorld = worldManager.GetMirroredWorld();
     GzPhysicsWorld::Ptr mirroredWorldCast = std::dynamic_pointer_cast<GzPhysicsWorld>(mirroredWorld);
@@ -203,6 +196,10 @@ bool Run(int argc, char **argv)
     std::cout<<"Number of contacts: "<<contacts.size()<<std::endl;
     getchar();*/
 
+    // temporary fix: wen paused, idle a little,
+    // to not make this print too often
+    if (!g_unpaused)
+      gazebo::common::Time::MSleep(100);
     if (print <= 0)
     {
       std::cout<<"Updating world still going."<<std::endl;

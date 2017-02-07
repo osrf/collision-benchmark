@@ -56,6 +56,18 @@ void GetNewEntities(const gazebo::physics::WorldState& _state1,
   }
 }
 
+/*void collision_benchmark::AddDiffWorldState(gazebo::physics::WorldPtr& world, const gazebo::physics::WorldState& diffState)
+{
+  bool pauseState = world->IsPaused();
+  world->SetPaused(true);
+  gazebo::physics::WorldState currentState(world);
+
+  gazebo::physics::WorldState newState = currentState + diffState;
+  world->SetState(newState);
+
+  world->SetPaused(pauseState);
+}*/
+
 
 // XXX TODO REMOVE: Flags for testing
 #define FORCE_TARGET_TIME_VALUES
@@ -154,10 +166,8 @@ void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr& world, const 
     l->SetState(light);
   }
 
-
-  currentState = gazebo::physics::WorldState(world);
-
 #ifdef DEBUGWORLDSTATE
+  currentState = gazebo::physics::WorldState(world);
   std::cout << "New state after insertions " << std::endl << currentState << std::endl;
 #endif
 
@@ -175,13 +185,14 @@ void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr& world, const 
   newState.SetRealTime(targetState.GetRealTime());
   newState.SetSimTime(targetState.GetSimTime());
 #else
+  currentState = gazebo::physics::WorldState(world);
   newState.SetIterations(currentState.GetIterations());
   newState.SetWallTime(currentState.GetWallTime());
   newState.SetRealTime(currentState.GetRealTime());
   newState.SetSimTime(currentState.GetSimTime());
 #endif*/
 
-  // apply the state of Step 1 to the world
+  // apply the state of Step 2 to the world
   world->SetState(newState);
 
 #ifdef DEBUGWORLDSTATE
