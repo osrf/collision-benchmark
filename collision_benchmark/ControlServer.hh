@@ -148,7 +148,7 @@ class ControlServer
                 for (it=modelStateCallbacks.begin();
                      it!=modelStateCallbacks.end(); ++it)
                 {
-                  (*it)(_state);
+                  (*it)(id,_state);
                 }
              }
 

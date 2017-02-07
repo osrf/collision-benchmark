@@ -19,6 +19,7 @@
 
 #include <collision_benchmark/ContactInfo.hh>
 #include <collision_benchmark/Shape.hh>
+#include <collision_benchmark/BasicTypes.hh>
 #include <sdf/sdf.hh>
 
 #include <memory>
@@ -239,13 +240,19 @@ class PhysicsWorldModelInterface
   ///   if not given, no collision shape is added.
   /// \return in case the underlying implementation does not support shapes, this throws and
   ///   exception (see also SupportsShapes()). Instead, the AddModel*() methods have to be used.
-  public: virtual ModelLoadResult AddModelFromShape(const std::string& modelname, const Shape::Ptr& shape, const Shape::Ptr collShape=Shape::Ptr()) = 0;
+  public: virtual ModelLoadResult AddModelFromShape(const std::string& modelname,
+                                                    const Shape::Ptr& shape,
+                                                    const Shape::Ptr collShape=Shape::Ptr()) = 0;
 
   public: virtual std::vector<ModelID> GetAllModelIDs() const = 0;
 
   /// removes a model from the world
   /// \retval false the model was not in the world
   public: virtual bool RemoveModel(const ModelID& id) = 0;
+
+  /// sets the pose and scale of a model.
+  /// \retval false the model was not in the world
+  public: virtual bool SetBasicModelState(const ModelID& id, const BasicState& state) = 0;
 };
 
 /**

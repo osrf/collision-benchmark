@@ -271,6 +271,32 @@ collision_benchmark::OpResult GazeboPhysicsWorld::SetWorldState(const WorldState
   return collision_benchmark::SUCCESS;
 }
 
+
+bool GazeboPhysicsWorld::SetBasicModelState(const ModelID  &_id,
+                                            const BasicState &_state)
+{
+  gazebo::physics::ModelPtr m=world->ModelByName(_id);
+  if (!m) return false;
+  ignition::math::Pose3d pose = m->WorldPose();
+  if (_state.PosEnabled()) pose.Pos().Set(_state.position.x,
+                                          _state.position.y,
+                                          _state.position.z);
+  if (_state.RotEnabled()) pose.Rot().Set(_state.rotation.w,
+                                          _state.rotation.x,
+                                          _state.rotation.y,
+                                          _state.rotation.z);
+  m->SetWorldPose(pose);
+
+  if (_state.ScaleEnabled())
+  {
+    ignition::math::Vector3d s(_state.scale.x,
+                               _state.scale.y,
+                               _state.scale.z);
+    m->SetScale(s);
+  }
+  return true;
+}
+
 #define NEW_WORLDRUN_SOLUTION
 
 void GazeboPhysicsWorld::PostWorldLoaded()
@@ -287,6 +313,8 @@ void GazeboPhysicsWorld::PostWorldLoaded()
   world->Run(0);
 #endif
 }
+
+
 void GazeboPhysicsWorld::Update(int steps, bool force)
 {
   // std::cout<<"Running "<<steps<<" steps for world "<<world->Name()<<", physics engine: "<<world->Physics()->GetType()<<std::endl;

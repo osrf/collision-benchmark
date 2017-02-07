@@ -42,7 +42,7 @@ using collision_benchmark::GazeboTopicForwardingMirror;
 using collision_benchmark::WorldManager;
 using collision_benchmark::GazeboControlServer;
 
-typedef WorldManager<gazebo::physics::WorldState, std::string> GzWorldManager;
+typedef WorldManager<gazebo::physics::WorldState, std::string, std::string> GzWorldManager;
 typedef GazeboPhysicsWorld::PhysicsWorldTypes GazeboPhysicsWorldTypes;
 typedef PhysicsWorld<GazeboPhysicsWorldTypes> GzPhysicsWorld;
 
@@ -181,8 +181,8 @@ bool Run(int argc, char **argv)
   worldManager.SetPaused(false);
 
   std::cout << "Now starting to update worlds."<<std::endl;
-  const int printCnt=100;
-  int print=printCnt;
+  //const int printCnt=100;
+  //int print=printCnt;
   while(true)
   {
     int numSteps=1;
@@ -198,14 +198,14 @@ bool Run(int argc, char **argv)
 
     // temporary fix: wen paused, idle a little,
     // to not make this print too often
-    if (!g_unpaused)
+    /*if (!g_unpaused)
       gazebo::common::Time::MSleep(100);
     if (print <= 0)
     {
       std::cout<<"Updating world still going."<<std::endl;
       print=printCnt;
     }
-    --print;
+    --print;*/
   }
   return true;
 }

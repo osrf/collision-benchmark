@@ -37,10 +37,17 @@ namespace collision_benchmark
 // just for portability of data
 class Vector3
 {
-  public: Vector3(double _x, double _y, double _z):
+  public: Vector3(double _x=0, double _y=0, double _z=0):
     x(_x), y(_y), z(_z) {}
   public: Vector3(const Vector3& o):
     x(o.x), y(o.y), z(o.z) {}
+
+  public: friend std::ostream&
+          operator<<(std::ostream& _o, const Vector3& _v)
+          {
+            _o<<"["<<_v.x<<", "<<_v.y<<", "<<_v.z<<"]";
+            return _o;
+          }
   public: double x,y,z;
 };
 
@@ -48,10 +55,17 @@ class Vector3
 // just for portability of data
 class Quaternion: public Vector3
 {
-  public: Quaternion(double _x, double _y, double _z, double _w):
+  public: Quaternion(double _x=0, double _y=0, double _z=0, double _w=0):
           Vector3(_x,_y,_z), w(_w) {}
   public: Quaternion(const Quaternion& o):
           Vector3(o), w(o.w) {}
+
+  public: friend std::ostream&
+          operator<<(std::ostream& _o, const Quaternion& _q)
+          {
+            _o<<"["<<_q.x<<", "<<_q.y<<", "<<_q.z<<", "<<_q.w<<"]";
+            return _o;
+          }
   public: double w;
 };
 
@@ -61,7 +75,7 @@ class Quaternion: public Vector3
 class BasicState
 {
   // constructor which enables only fields which are not NULL
-  public: BasicState(const Vector3 *_position,
+  public: BasicState(const Vector3 *_position=NULL,
                      const Quaternion *_rotation=NULL,
                      const Vector3 *_scale=NULL):
     position(_position ? *_position : Vector3(0,0,0)),
@@ -77,6 +91,48 @@ class BasicState
     posEnabled(o.posEnabled),
     rotEnabled(o.rotEnabled),
     scaleEnabled(o.scaleEnabled) {}
+
+  public: void SetPosition(double x, double y, double z)
+          {
+            position=Vector3(x,y,z);
+            posEnabled=true;
+          }
+  public: void SetPosition(const Vector3 &_pos)
+          {
+            SetPosition(_pos.x, _pos.y, _pos.z);
+          }
+  public: void SetRotation(double x, double y, double z, double w)
+          {
+            rotation=Quaternion(x,y,z,w);
+            rotEnabled=true;
+          }
+  public: void SetRotation(const Quaternion &_q)
+          {
+            SetRotation(_q.x, _q.y, _q.z, _q.w);
+          }
+
+  public: void SetScale(double x, double y, double z)
+          {
+            scale=Vector3(x,y,z);
+            scaleEnabled=true;
+          }
+  public: void SetScale(const Vector3 &_scale)
+          {
+            SetScale(_scale.x, _scale.y, _scale.z);
+          }
+
+  public: friend std::ostream&
+          operator<<(std::ostream& _o, const BasicState& _s)
+          {
+            if (_s.posEnabled) _o<<"Position: "<<_s.position<<" ";
+            if (_s.rotEnabled) _o<<"Rotation: "<<_s.rotation<<" ";
+            if (_s.scaleEnabled) _o<<"Scale: "<<_s.scale;
+            return _o;
+          }
+
+  public: bool PosEnabled() const { return posEnabled; }
+  public: bool RotEnabled() const { return rotEnabled; }
+  public: bool ScaleEnabled() const { return scaleEnabled; }
 
   public: Vector3 position;
   public: Quaternion rotation;

@@ -25,6 +25,7 @@
 #include <collision_benchmark/MirrorWorld.hh>
 #include <collision_benchmark/ControlServer.hh>
 #include <collision_benchmark/BasicTypes.hh>
+#include <collision_benchmark/TypeHelper.hh>
 
 #include <gazebo/gazebo.hh>
 #include <gazebo/transport/transport.hh>
@@ -50,16 +51,18 @@ namespace collision_benchmark
  *
  * \param _WorldState describes the state of a world. XXX Note: will probably be removed?
  * \param _ModelID the identifier for a specific model
+ * \param _ModelPartID the identifier for a part of a model
  *
  * \author Jennifer Buehler
  * \date December 2016
  */
-template<class _WorldState, class _ModelID>
+template<class _WorldState, class _ModelID, class _ModelPartID>
 class WorldManager
 {
   public: typedef _WorldState WorldState;
   public: typedef _ModelID ModelID;
-  private: typedef WorldManager<WorldState, ModelID> Self;
+  public: typedef _ModelPartID ModelPartID;
+  private: typedef WorldManager<WorldState, ModelID, ModelPartID> Self;
 
   public: typedef std::shared_ptr<WorldManager> Ptr;
   public: typedef std::shared_ptr<const WorldManager> ConstPtr;
@@ -194,10 +197,19 @@ class WorldManager
 
   // Convenience method which casts the world \e w to a PhysicsWorldStateInterface with the given state
   public: template<class WorldState_>
-          static typename PhysicsWorldStateInterface<WorldState_>::Ptr ToWorldWithState(PhysicsWorldBaseInterface::Ptr& w)
+          static typename PhysicsWorldStateInterface<WorldState_>::Ptr
+            ToWorldWithState(const PhysicsWorldBaseInterface::Ptr& w)
           {
             return std::dynamic_pointer_cast<PhysicsWorldStateInterface<WorldState_>>(w);
           }
+  // Convenience method which casts the world \e w to a PhysicsWorldStateInterface with the given state
+  public: template<class ModelID_, class ModelPartID_>
+          static typename PhysicsWorldModelInterface<ModelID_, ModelPartID_>::Ptr
+            ToWorldWithModel(const PhysicsWorldBaseInterface::Ptr& w)
+          {
+            return std::dynamic_pointer_cast<PhysicsWorldModelInterface<ModelID_, ModelPartID_>>(w);
+          }
+
 
   public: void SetPaused(bool flag)
           {
@@ -264,18 +276,39 @@ class WorldManager
 
   private: void NotifyPause(const bool _flag)
            {
-             std::cout<<"PAUSE FLAG "<<_flag<<std::endl;
+             // std::cout<<"PAUSE FLAG "<<_flag<<std::endl;
              SetPaused(_flag);
            }
+
   private: void NotifyUpdate(const int _numSteps)
            {
-             std::cout<<"UPDATE "<<_numSteps<<std::endl;
+             // std::cout<<"UPDATE "<<_numSteps<<std::endl;
              Update(_numSteps, true);
            }
+
   private: void NotifyModelStateChange(const ModelID  &_id,
                                     const BasicState &_state)
            {
-             std::cout<<"STATE CHANGE "<<_id<<std::endl;
+              // std::cout<<"STATE CHANGE "<<_id<<": "<<_state<<std::endl;
+              std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
+              for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator
+                   it = this->worlds.begin();
+                   it != this->worlds.end(); ++it)
+              {
+                typename PhysicsWorldModelInterface<ModelID, ModelPartID>::Ptr w =
+                  ToWorldWithModel<ModelID, ModelPartID>(*it);
+                if (!w)
+                {
+                  THROW_EXCEPTION("Only support worlds which have the interface "
+                                  <<"PhysicsWorldModelInterface<"<<GetTypeName<ModelID>()
+                                  <<", "<<GetTypeName<ModelPartID>()<<">");
+                }
+                if (!w->SetBasicModelState(_id,_state))
+                {
+                  std::cerr<<"Could not set basic model state because model "<<
+                    _id<<" does not exist."<<std::endl;
+                }
+              }
            }
 
   private: std::string ChangeMirrorWorld(const int ctrl)

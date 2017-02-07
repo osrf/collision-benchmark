@@ -155,6 +155,8 @@ class GazeboPhysicsWorld: public collision_benchmark::PhysicsEngineWorld<GazeboP
   // See also constructor parameter.
   public: void SetEnforceContactsComputation(bool flag);
 
+  public: virtual bool SetBasicModelState(const ModelID& id, const BasicState& state);
+
   /// wait for the namespace of this world
   private: bool WaitForNamespace(const gazebo::physics::WorldPtr& gzworld, float maxWait, float waitSleep);
 

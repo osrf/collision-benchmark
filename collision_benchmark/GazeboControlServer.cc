@@ -20,10 +20,14 @@
  */
 #include <collision_benchmark/GazeboControlServer.hh>
 #include <collision_benchmark/Exception.hh>
+#include <collision_benchmark/BasicTypes.hh>
 
 #include <gazebo/transport/TransportIface.hh>
 
 using collision_benchmark::GazeboControlServer;
+using collision_benchmark::Vector3;
+using collision_benchmark::Quaternion;
+using collision_benchmark::BasicState;
 
 GazeboControlServer::GazeboControlServer(const std::string &_worldName)
 {
@@ -75,201 +79,37 @@ void GazeboControlServer::OnWorldControl
     this->NotifyUpdate(_msg->multi_step());
 }
 
-/*sdf::ElementPtr GetCollisionSDF(const gazebo::msgs::Collision &_msg)
+BasicState GetModelChangeState(const gazebo::msgs::Model &_msg)
 {
-  if (!_msg.has_pose())
+  BasicState state;
+
+  if (_msg.has_pose())
   {
-    std::cout<<"WARNING: GazeboControlServer expects collision message \
-      to have at least pose specified. Skipping message."<<std::endl;
-    return nullptr;
+    ignition::math::Pose3d p = ConvertIgn(_msg.pose());
+    state.SetPosition(p.Pos().X(), p.Pos().Y(), p.Pos().Z());
+    state.SetRotation(p.Rot().X(), p.Rot().Y(), p.Rot().Z(), p.Rot().W());
   }
 
-  // need to go via an SDF to load the state because CollisionState does not
-  // provide options to set individual fields (there are only getters)
-  sdf::ElementPtr sdf(new sdf::Element());
-  sdf->SetName("collision");
-  sdf->AddValue("string", _msg.name(), true, "Collision name");
-
-  sdf::ElementPtr poseSDF(new sdf::Element());
-  poseSDF->SetName("pose");
-  poseSDF->Set(gazebo::msgs::ConvertIgn(_msg.pose()));
-  sdf->InsertElement(poseSDF);
-
-  // CollisionState does not have a field for laser_retro
-  if (_msg.has_laser_retro())
+  if (_msg.has_scale())
   {
-    std::cout<<"WARNING: GazeboControlServer is ignoring link \
-      message laser_retro field. Not supported."<<std::endl;
+    ignition::math::Vector3d s = ConvertIgn(_msg.scale());
+    state.SetScale(s.X(), s.Y(), s.Z());
   }
 
-  // CollisionState does not have a field for max_contacts
-  if (_msg.has_max_contacts())
+  // cannot support links at this point, only changes for
+  // model itself
+  if (_msg.link_size() > 0)
   {
-    std::cout<<"WARNING: GazeboControlServer is ignoring link \
-      message max_contacts field. Not supported."<<std::endl;
+    std::cout<<"WARNING: GazeboControlServer is ignoring model \
+      message link field. Not supported."<<std::endl;
   }
 
-  // CollisionState does not have a field for geometry
-  if (_msg.has_geometry())
+  // cannot support nested models at this point, only changes for
+  // model itself
+  if (_msg.model_size() > 0)
   {
-    std::cout<<"WARNING: GazeboControlServer is ignoring link \
-      message geometry field. Not supported."<<std::endl;
-  }
-
-  // CollisionState does not have a field for surface
-  if (_msg.has_surface())
-  {
-    std::cout<<"WARNING: GazeboControlServer is ignoring link \
-      message surface field. Not supported."<<std::endl;
-  }
-
-
-  // CollisionState does not have any visuals
-  if (_msg.visual_size() > 0)
-  {
-    std::cout<<"WARNING: GazeboControlServer is ignoring link \
-      message visual field. Not supported."<<std::endl;
-  }
-
-
-  return sdf;
-}
-
-bool GetCollisionState(const gazebo::msgs::Collision &_msg, gazebo::physics::CollisionState& cState)
-{
-  sdf::ElementPtr sdf = GetCollisionSDF(_msg);
-  if (!sdf) return false;
-  cState.Load(sdf);
-  std::cout<<"DEBUG "<<__FILE__<<": Loaded collision state: "<<cState<<std::endl;
-  return true;
-}*/
-
-sdf::ElementPtr GetLinkSDF(const gazebo::msgs::Link &_msg)
-{
-  // message must have at least a pose in order to have
-  // any effect
-  if (!_msg.has_pose())
-  {
-    std::cout<<"WARNING: GazeboControlServer expects link message \
-      to have at least pose specified. Skipping message."<<std::endl;
-    return nullptr;
-  }
-
-  // need to go via an SDF to load the state because CollisionState does not
-  // provide options to set individual fields (there are only getters)
-  sdf::ElementPtr sdf(new sdf::Element());
-  sdf->SetName("link");
-  sdf->AddValue("string", _msg.name(), true, "Name");
-
-  sdf::ElementPtr poseSDF(new sdf::Element());
-  poseSDF->SetName("pose");
-  poseSDF->Set(gazebo::msgs::ConvertIgn(_msg.pose()));
-  sdf->InsertElement(poseSDF);
-
-  // LinkState does not have a field for self collision.
-  if (_msg.has_self_collide())
-  {
-    std::cout<<"WARNING: GazeboControlServer is ignoring link \
-      message self_collide field. Not supported."<<std::endl;
-  }
-
-  // LinkState has no field to change gravity.
-  if (_msg.has_gravity())
-  {
-    std::cout<<"WARNING: GazeboControlServer is ignoring link \
-      message gravity field. Not supported."<<std::endl;
-  }
-
-  // LinkState has no field to enable wind.
-  if (_msg.has_enable_wind())
-  {
-    std::cout<<"WARNING: GazeboControlServer is ignoring link \
-      message enable_wind field. Not supported."<<std::endl;
-  }
-
-  if (_msg.has_kinematic())
-  {
-    std::cout<<"WARNING: GazeboControlServer is ignoring link \
-      message kinematic field. Not supported."<<std::endl;
-  }
-
-  if (_msg.has_inertial())
-  {
-    std::cout<<"WARNING: GazeboControlServer is ignoring link \
-      message inertial field. Not supported."<<std::endl;
-  }
-
-  if (_msg.visual_size()>0)
-  {
-    std::cout<<"WARNING: GazeboControlServer is ignoring link \
-      message inertial field. Not supported."<<std::endl;
-  }
-
-  // the SDF does not support adding of collisions, but it looks
-  // anyway as it's not used at the moment, as in LinkState all
-  // functionality is commented out.
-/*  for (int i = 0; i < _msg.collision_size(); i++)
-  {
-    sdf::ElementPtr collSDF = GetCollisionSDF(_msg.collision(i));
-    if (collSDF) sdf->InsertElement(collSDF);
-  }*/
-
-  return sdf;
-}
-
-bool GetLinkState(const gazebo::msgs::Link &_msg, gazebo::physics::LinkState& lState)
-{
-  sdf::ElementPtr sdf = GetLinkSDF(_msg);
-  if (!sdf) return false;
-  lState.Load(sdf);
-  std::cout<<"DEBUG "<<__FILE__<<": Loaded link state: "<<lState<<std::endl;
-  return true;
-}
-
-
-sdf::ElementPtr GetModelSDF(const gazebo::msgs::Model &_msg)
-{
-  if (!_msg.has_pose() ||
-      !_msg.has_scale())
-  {
-    std::cout<<"WARNING: GazeboControlServer expects model message \
-      to have at least pose and scale specified. Skipping message."<<std::endl;
-    std::cout<<_msg.DebugString()<<std::endl;
-    return nullptr;
-  }
-
-  // need to go via an SDF to load the state because CollisionState does not
-  // provide options to set individual fields (there are only getters)
-  sdf::ElementPtr sdf(new sdf::Element());
-  sdf->SetName("model");
-  sdf->AddValue("string", _msg.name(), true, "Name");
-
-  sdf::ElementPtr poseSDF(new sdf::Element());
-  poseSDF->SetName("pose");
-  poseSDF->Set(gazebo::msgs::ConvertIgn(_msg.pose()));
-  sdf->InsertElement(poseSDF);
-
-  sdf::ElementPtr scaleSDF(new sdf::Element());
-  scaleSDF->SetName("scale");
-  scaleSDF->Set(gazebo::msgs::ConvertIgn(_msg.scale()));
-  sdf->InsertElement(scaleSDF);
-
-  for (int i = 0; i < _msg.link_size(); i++)
-  {
-    sdf::ElementPtr linkSDF = GetLinkSDF(_msg.link(i));
-    if (linkSDF)
-      sdf->InsertElement(linkSDF);
-  }
-
-  // at this point, physics::Model ignores nested models in the
-  // state message, but copy it anyway.
-  for (int i = 0; i < _msg.model_size(); i++)
-  {
-    sdf::ElementPtr nModelSDF = GetModelSDF(_msg.model(i));
-    if (nModelSDF)
-    {
-      sdf->InsertElement(nModelSDF);
-    }
+    std::cout<<"WARNING: GazeboControlServer is ignoring model \
+      message model field. Not supported."<<std::endl;
   }
 
   // cannot support is_static as it's not part of ModelState
@@ -316,39 +156,16 @@ sdf::ElementPtr GetModelSDF(const gazebo::msgs::Model &_msg)
     std::cout<<"WARNING: GazeboControlServer is ignoring model \
       message plugin field. Not supported."<<std::endl;
   }
-  return sdf;
-}
-
-bool GetModelState(const gazebo::msgs::Model &_msg, gazebo::physics::ModelState& mState)
-{
-  sdf::ElementPtr sdf = GetModelSDF(_msg);
-  if (!sdf) return false;
-  mState.Load(sdf);
-  std::cout<<"DEBUG "<<__FILE__<<": Loaded model state: "<<mState<<std::endl;
-  return true;
+  return state;
 }
 
 void GazeboControlServer::OnModelModify
       (const boost::shared_ptr<gazebo::msgs::Model const> &_msg)
 {
   std::cout<<"GazeboControlServer: Received model modify"<<std::endl;
-
-  // get the model state
-  gazebo::physics::ModelState mState;
-  if (GetModelState(*_msg, mState))
-  {
-    std::cout<<"Constructed model state: "<<mState<<std::endl;
-  }
-  else
-  {
-    std::cerr<<"ERROR: Could not use the model state in the\
-      message to construct a state: "<<_msg->DebugString()<<std::endl;
-    return;
-  }
-
-  // construct world state
-  gazebo::physics::WorldState worldState;
-//  worldState.
+  BasicState mState = GetModelChangeState(*_msg);
+  // std::cout<<"Constructed model state: "<<mState<<std::endl;
+  this->NotifySetModelState(_msg->name(), mState);
 }
 
 void GazeboControlServer::OnPoseModify

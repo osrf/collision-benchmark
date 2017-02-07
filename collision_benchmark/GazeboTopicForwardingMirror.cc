@@ -285,7 +285,7 @@ void GazeboTopicForwardingMirror::Init()
 
   // initialize topic forwarders
   ////////////////////////////////////////////////
-  bool verboseLevel=1;
+  bool verboseLevel=0;
   try
   {
     this->statFwd.reset(new GazeboTopicForwarder<gazebo::msgs::WorldStatistics>
