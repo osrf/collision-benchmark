@@ -272,11 +272,6 @@ void GazeboTopicForwardingMirror::Init()
             "~/undo_redo", this->node));
     this->blockPrinters.push_back(undoRedoBlock);
 
-    GazeboTopicBlockPrinterInterface::Ptr userCmdBlock
-      (new GazeboTopicBlockPrinter<gazebo::msgs::UserCmd>(printPrefix,
-            "~/user_cmd", this->node));
-    this->blockPrinters.push_back(userCmdBlock);
-
     GazeboTopicBlockPrinterInterface::Ptr windBlock
       (new GazeboTopicBlockPrinter<gazebo::msgs::Wind>(printPrefix, "~/wind",
                                                           this->node));
@@ -286,12 +281,17 @@ void GazeboTopicForwardingMirror::Init()
       (new GazeboTopicBlockPrinter<gazebo::msgs::WorldControl>
             (printPrefix, "~/world_control",this->node));
     this->blockPrinters.push_back(worldControlBlock);
+
+    GazeboTopicBlockPrinterInterface::Ptr userCmdBlock
+      (new GazeboTopicBlockPrinter<gazebo::msgs::UserCmd>
+            (printPrefix, "~/user_cmd",this->node));
+    this->blockPrinters.push_back(userCmdBlock);
   }
 
 
   // initialize topic forwarders
   ////////////////////////////////////////////////
-  int verboseLevel=0;
+  int verboseLevel=1;
   try
   {
     this->statFwd.reset(new GazeboTopicForwarder<gazebo::msgs::WorldStatistics>

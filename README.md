@@ -90,7 +90,7 @@ and update each world once again. At each update it should print "ode" and "bull
 You may also look at the test with gzclient. Use a higher number of iterations for that:
 
 ```
-multiple_worlds_server_test_simple 800 \
+multiple_worlds_server_test_simple 2000 \
     test_worlds/cube_ode.world \
     test_worlds/sphere_bullet.world
 ```
@@ -101,7 +101,7 @@ Then load gzclient in another terminal:
 
 and then press ``[Enter]`` in the first terminal to continue with the test.
 
-After 800 iterations, this should switch from the cube to the sphere.
+After 2000 iterations, this should switch from the cube to the sphere.
 
 ### One world, different engines
 

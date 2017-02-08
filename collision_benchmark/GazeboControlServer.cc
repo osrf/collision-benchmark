@@ -52,6 +52,9 @@ void GazeboControlServer::Init(const std::string &_worldName)
   this->poseModSub = this->node->Subscribe<gazebo::msgs::Pose>(
       "~/pose/modify", &GazeboControlServer::OnPoseModify, this);
 
+  this->userCmdSub = this->node->Subscribe<gazebo::msgs::UserCmd>(
+      "~/user_cmd", &GazeboControlServer::OnUserCmd, this);
+
   if (!this->generalCtrlNode)
   {
     this->generalCtrlNode.reset(new gazebo::transport::Node());
@@ -71,13 +74,21 @@ void GazeboControlServer::OnWorldControl
       (const boost::shared_ptr<gazebo::msgs::WorldControl const> &_msg)
 {
   std::cout<<"GazeboControlServer: Received world control"<<std::endl;
-  if (_msg->has_pause())
-    this->NotifyPause(_msg->pause());
-  if (_msg->has_step())
-    this->NotifyUpdate(1);
-  if (_msg->has_multi_step())
-    this->NotifyUpdate(_msg->multi_step());
+  this->HandleWorldControl(*_msg);
 }
+
+void GazeboControlServer::HandleWorldControl
+  (const gazebo::msgs::WorldControl &_msg)
+{
+  if (_msg.has_pause())
+    this->NotifyPause(_msg.pause());
+  if (_msg.has_step())
+    this->NotifyUpdate(1);
+  if (_msg.has_multi_step())
+    this->NotifyUpdate(_msg.multi_step());
+}
+
+
 
 BasicState GetModelChangeState(const gazebo::msgs::Model &_msg)
 {
@@ -100,61 +111,61 @@ BasicState GetModelChangeState(const gazebo::msgs::Model &_msg)
   // model itself
   if (_msg.link_size() > 0)
   {
-    std::cout<<"WARNING: GazeboControlServer is ignoring model \
-      message link field. Not supported."<<std::endl;
+    std::cout<<"WARNING: GazeboControlServer is ignoring model "
+      <<"message link field. Not supported."<<std::endl;
   }
 
   // cannot support nested models at this point, only changes for
   // model itself
   if (_msg.model_size() > 0)
   {
-    std::cout<<"WARNING: GazeboControlServer is ignoring model \
-      message model field. Not supported."<<std::endl;
+    std::cout<<"WARNING: GazeboControlServer is ignoring model "
+      <<"message model field. Not supported."<<std::endl;
   }
 
   // cannot support is_static as it's not part of ModelState
   if (_msg.has_is_static())
   {
-    std::cout<<"WARNING: GazeboControlServer is ignoring model \
-      message is_static field. Not supported."<<std::endl;
+    std::cout<<"WARNING: GazeboControlServer is ignoring model "
+      <<"message is_static field. Not supported."<<std::endl;
   }
 
   // cannot support enable_wind as it's not part of ModelState
   if (_msg.has_enable_wind())
   {
-    std::cout<<"WARNING: GazeboControlServer is ignoring model \
-      message enable_wind field. Not supported."<<std::endl;
+    std::cout<<"WARNING: GazeboControlServer is ignoring model "
+      <<"message enable_wind field. Not supported."<<std::endl;
   }
 
   // cannot support joint as it's not part of ModelState
   if (_msg.joint_size() > 0)
   {
-    std::cout<<"WARNING: GazeboControlServer is ignoring model \
-      message joint field. Not supported."<<std::endl;
+    std::cout<<"WARNING: GazeboControlServer is ignoring model "
+      <<"message joint field. Not supported."<<std::endl;
   }
   // cannot support deleted as it's not part of ModelState
   if (_msg.has_deleted())
   {
-    std::cout<<"WARNING: GazeboControlServer is ignoring model \
-      message deleted field. Not supported."<<std::endl;
+    std::cout<<"WARNING: GazeboControlServer is ignoring model "
+      <<"message deleted field. Not supported."<<std::endl;
   }
   // cannot support visual as it's not part of ModelState
   if (_msg.visual_size() > 0)
   {
-    std::cout<<"WARNING: GazeboControlServer is ignoring model \
-      message visual field. Not supported."<<std::endl;
+    std::cout<<"WARNING: GazeboControlServer is ignoring model "
+      <<"message visual field. Not supported."<<std::endl;
   }
   // cannot support self_collide as it's not part of ModelState
   if (_msg.has_self_collide())
   {
-    std::cout<<"WARNING: GazeboControlServer is ignoring model \
-      message self_collide field. Not supported."<<std::endl;
+    std::cout<<"WARNING: GazeboControlServer is ignoring model "
+      <<"message self_collide field. Not supported."<<std::endl;
   }
   // cannot support plugin as it's not part of ModelState
   if (_msg.plugin_size() > 0)
   {
-    std::cout<<"WARNING: GazeboControlServer is ignoring model \
-      message plugin field. Not supported."<<std::endl;
+    std::cout<<"WARNING: GazeboControlServer is ignoring model "
+      <<"message plugin field. Not supported."<<std::endl;
   }
   return state;
 }
@@ -174,6 +185,77 @@ void GazeboControlServer::OnPoseModify
   std::cout<<"GazeboControlServer: Received pose modify"<<std::endl;
 }
 
+
+void GazeboControlServer::OnUserCmd
+  (const boost::shared_ptr<gazebo::msgs::UserCmd const> &_msg)
+{
+  std::cout<<"GazeboControlServer: Received user cmd"<<std::endl;
+
+  // Forward message after we've saved the current state
+  switch (_msg->type())
+  {
+    case gazebo::msgs::UserCmd::MOVING:
+    {
+      for (int i = 0; i < _msg->model_size(); ++i)
+      {
+        BasicState mState = GetModelChangeState(_msg->model(i));
+        // std::cout<<"Constructed model state: "<<mState<<std::endl;
+        this->NotifySetModelState(_msg->model(i).name(), mState);
+      }
+
+      if (_msg->light_size() > 0)
+      {
+        std::cout<<"WARNING: GazeboControlServer is ignoring light "
+          <<"modification field in user command. Not supported."<<std::endl;
+      }
+      break;
+    }
+    case gazebo::msgs::UserCmd::SCALING:
+    {
+      for (int i = 0; i < _msg->model_size(); ++i)
+      {
+        BasicState mState = GetModelChangeState(_msg->model(i));
+        // std::cout<<"Constructed model state: "<<mState<<std::endl;
+        this->NotifySetModelState(_msg->model(i).name(), mState);
+      }
+      break;
+    }
+    case gazebo::msgs::UserCmd::WORLD_CONTROL:
+    {
+      if (_msg->has_world_control())
+      {
+        HandleWorldControl(_msg->world_control());
+      }
+      else
+      {
+        gzwarn << "World control command [" << _msg->description() <<
+            "] without a world control message. Command won't be executed."
+            << std::endl;
+      }
+      break;
+    }
+    case gazebo::msgs::UserCmd::WRENCH:
+    {
+      gzwarn << "WARNING: GazeboControlServer is ignoring wrench "
+          <<"field in user command. Not supported (yet)."<<std::endl;
+      // Set publisher
+      /*std::string topicName = "~/";
+      topicName += _msg->entity_name() + "/wrench";
+      boost::replace_all(topicName, "::", "/");
+      auto wrenchPub = this->dataPtr->node->Advertise<msgs::Wrench>(topicName);
+      wrenchPub->Publish(_msg->wrench());
+      wrenchPub->Fini();*/
+      break;
+    }
+    default:
+    {
+      gzwarn << "Unsupported command type [" << _msg->type() << "]" <<
+          std::endl;
+      break;
+    }
+  }
+}
+
 void GazeboControlServer::SendWorldName(const std::string& name)
 {
   gazebo::msgs::Any m;
@@ -188,7 +270,8 @@ void GazeboControlServer::WorldSelectClientCallback(ConstAnyPtr &_msg)
   // std::cout << "Received: "<<_msg->DebugString();
   if (_msg->type() != gazebo::msgs::Any::INT32)
   {
-    gzerr<<"Received Control message of invalid type, expecting INT32.\n"<<_msg->DebugString();
+    gzerr<<"Received Control message of invalid type, expecting INT32: "
+      <<_msg->DebugString()<<std::endl;
     return;
   }
   int ctrl=_msg->int_value();

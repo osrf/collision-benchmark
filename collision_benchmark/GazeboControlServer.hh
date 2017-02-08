@@ -61,6 +61,11 @@ class GazeboControlServer:
            (const boost::shared_ptr<gazebo::msgs::Model const> &_msg);
   private: void OnPoseModify
            (const boost::shared_ptr<gazebo::msgs::Pose const> &_msg);
+  private: void OnUserCmd
+           (const boost::shared_ptr<gazebo::msgs::UserCmd const> &_msg);
+
+
+  private: void HandleWorldControl (const gazebo::msgs::WorldControl &_msg);
 
   /// Callback for control client subscriber \e wldIdxCtrlSubscriber.
   /// Will send back the current world name with \e wldIdxCtrlPublisher.
@@ -79,6 +84,9 @@ class GazeboControlServer:
 
   /// \brief Subscriber to pose modify messages.
   private: gazebo::transport::SubscriberPtr poseModSub;
+
+  /// \brief Subscriber to UserCmd messages.
+  private: gazebo::transport::SubscriberPtr userCmdSub;
 
   // subscriber for change of world index
   private: gazebo::transport::SubscriberPtr wldIdxCtrlSubscriber;

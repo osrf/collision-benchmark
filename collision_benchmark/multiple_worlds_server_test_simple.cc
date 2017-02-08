@@ -119,7 +119,7 @@ bool PlayTest(int argc, char **argv)
     collision_benchmark::PrintWorldStates(gzworlds);
   }
 
-  std::cout << "Now start gzclient if you would like to view the test. Press any key to continue."<<std::endl;
+  std::cout << "Now start gzclient if you would like to view the test. Press [Enter] to continue."<<std::endl;
   getchar();
 
   // Go through all worlds, mirroring each for the given number of iterations.
