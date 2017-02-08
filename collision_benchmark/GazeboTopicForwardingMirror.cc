@@ -25,26 +25,21 @@
 #include <collision_benchmark/GazeboStateCompare.hh>
 #include <collision_benchmark/GazeboWorldState.hh>
 #include <collision_benchmark/GazeboHelpers.hh>
+
 #include <gazebo/physics/PhysicsIface.hh>
 #include <gazebo/physics/PhysicsEngine.hh>
 #include <gazebo/physics/ContactManager.hh>
 #include <gazebo/physics/Model.hh>
 
-
+#include <gazebo/transport/TopicManager.hh>
 #include <gazebo/transport/TransportIface.hh>
+#include <list>
+#include <sstream>
 
 using collision_benchmark::GazeboTopicForwarder;
 using collision_benchmark::GazeboTopicForwardingMirror;
 
-GazeboTopicForwardingMirror::GazeboTopicForwardingMirror(const std::string& worldname):
-  worldName(worldname),
-  initialized(false)
-{
-}
 
-GazeboTopicForwardingMirror::~GazeboTopicForwardingMirror()
-{
-}
 
 /**
  * \brief Strategy pattern to filter request messages
@@ -66,10 +61,19 @@ class RequestMessageFilter:
                 // std::cout<<"Entity deletion not forwarded, handled privately!"<<std::endl;
                 return nullptr;
               }
-              std::cout<<"Got a request: "<<_msg->request()<<std::endl;
+              // std::cout<<"Got a request: "<<_msg->request()<<std::endl;
               return _msg;
           }
+  public: static ConstPtr Instance()
+          {
+            if (!singleton) singleton.reset(new RequestMessageFilter());
+            return singleton;
+          }
+
+  private: static RequestMessageFilter::Ptr singleton;
 };
+
+RequestMessageFilter::Ptr RequestMessageFilter::singleton;
 
 /**
  * \brief Strategy pattern to modify world statistics messages
@@ -100,11 +104,14 @@ class WorldStatMsgFilter:
             if (!mirrorPtr)
             {
               // mirror world has been deleted so filter out message
+              std::cout<<"DEBUG ERROR: No mirror world set!";
               return nullptr;
             }
             if (!mirrorPtr->GetOriginalWorld())
             {
-              std::cout<<"DEBUG ERROR: Mirror world must have original world!";
+              std::cout<<"DEBUG: Mirror world must have original world, ";
+              std::cout<<"this could happen when messages arrive during ";
+              std::cout<<"initializaion process."<<std::endl;
               return nullptr;
             }
             WorldStatisticsPtr msgCopy(new WorldStatistics(*_msg));
@@ -116,86 +123,91 @@ class WorldStatMsgFilter:
 
 
 
-void GazeboTopicForwardingMirror::ConnectOriginalWorld(const std::string origWorldName)
+
+GazeboTopicForwardingMirror::GazeboTopicForwardingMirror(const std::string& worldname):
+  worldName(worldname),
+  initialized(false)
 {
-  if (!this->initialized) Init();
+  // register the topic namespace first off, in order to allow gzclient to connect
+  // to it. This should be done before Init(), which can only be called once a shared
+  // pointer to this object exists. But Init() may be called later.
+  RegisterNamespace(this->worldName);
 
-  std::cout<<"Mirror is connecting to world '"<<origWorldName<<"'"<<std::endl;
+  // initialize node
+  this->node = gazebo::transport::NodePtr(new gazebo::transport::Node());
+  this->node->Init(this->worldName);
 
-  // connect services
-  assert(this->origServiceFwd);
-  this->origServiceFwd->Forward("/gazebo/"+origWorldName+"/request",
-                                "/gazebo/"+origWorldName+"/response", this->node);
+  // initialize service forwarder (required before Init() so that
+  // we can buffer incoming requests before call of Init())
+  this->origServiceFwd.reset(new GazeboServiceForwarder
+                             ("~/request", "~/response",
+                              1000, 0));
 
-  // connect topic forwarders
-  bool latch=false;
-  assert(this->statFwd);
-  this->statFwd->ForwardFrom("/gazebo/"+origWorldName+"/world_stats", this->node, latch);
 
-  assert(this->modelFwd);
-  this->modelFwd->ForwardFrom("/gazebo/"+origWorldName+"/model/info", this->node, latch);
-
-  assert(this->poseFwd);
-  this->poseFwd->ForwardFrom("/gazebo/"+origWorldName+"/pose/info", this->node, latch);
-
-  assert(this->guiFwd);
-  this->guiFwd->ForwardFrom("/gazebo/"+origWorldName+"/gui", this->node, latch);
-
-  assert(this->jointFwd);
-  this->jointFwd->ForwardFrom("/gazebo/"+origWorldName+"/joint", this->node, latch);
-
-  assert(this->contactFwd);
-  this->contactFwd->ForwardFrom("/gazebo/"+origWorldName+"/physics/contacts", this->node, latch);
-
-  assert(this->visualFwd);
-  this->visualFwd->ForwardFrom("/gazebo/"+origWorldName+"/visual", this->node, latch);
-
-  assert(this->roadFwd);
-  this->roadFwd->ForwardFrom("/gazebo/"+origWorldName+"/roads", this->node, latch);
-
-  assert(this->poseAnimFwd);
-  this->poseAnimFwd->ForwardFrom("/gazebo/"+origWorldName+"/skeleton_pose/info", this->node, latch);
+  this->origServiceFwd->BufferRequests("~/request", this->node, true);
 }
 
-void GazeboTopicForwardingMirror::DisconnectFromOriginal()
+void GazeboTopicForwardingMirror::RegisterNamespace(const std::string& worldname) const
 {
-  assert(this->origServiceFwd);
-  this->origServiceFwd->Disconnect();
+  std::cout<<"Registering gazebo namespace "<<worldname<<" for mirror world."<<std::endl;
 
-  assert(this->statFwd);
-  this->statFwd->DisconnectSubscriber();
+  std::list<std::string> topicNames;
+  gazebo::transport::TopicManager::Instance()->GetTopicNamespaces(topicNames);
+  if (!topicNames.empty())
+  {
+    std::stringstream str;
+    str<<"Topics already have been registered before mirror world, which";
+    str<<"means gzclient is not going to connect with mirror world!"<<std::endl;
+    gzwarn<<str.str();
+  }
+  std::cout<<"Registering mirror world name "<<worldname<<" as topic"<<std::endl;
+  gazebo::transport::TopicManager::Instance()->RegisterTopicNamespace(worldname);
 
-  assert(this->modelFwd);
-  this->modelFwd->DisconnectSubscriber();
 
-  assert(this->poseFwd);
-  this->poseFwd->DisconnectSubscriber();
+  // Wait for namespaces to make sure the mirror world name has arrived.
+  gazebo::common::Time waitTime(1, 0);
+  int waitCount = 0;
+  int maxWaitCount = 10;
+  while (!gazebo::transport::waitForNamespaces(waitTime) &&
+      (waitCount++) < maxWaitCount)
+  {
+    gzwarn << "Waited " << waitTime.Double() << "seconds for namespaces.\n";
+  }
+  if (waitCount >= maxWaitCount)
+  {
+    THROW_EXCEPTION("Waited " << (waitTime * waitCount).Double()
+      << " seconds for namespaces. Giving up.");
+  }
 
-  assert(this->guiFwd);
-  this->guiFwd->DisconnectSubscriber();
+  // Make sure the mirror world was in fact the first to arrive
+  topicNames.clear();
+  gazebo::transport::TopicManager::Instance()->GetTopicNamespaces(topicNames);
+  if (topicNames.empty())
+    THROW_EXCEPTION("There must have been at least one topic namespace recevied");
 
-  assert(this->jointFwd);
-  this->jointFwd->DisconnectSubscriber();
+  if (topicNames.front() != worldname)
+  {
+    std::stringstream str;
+    str<<"Topic "<<topicNames.front()<<" already has been registered ";
+    str<<"before mirror world "<<worldname<<", which means gzclient ";
+    str<<"is not going to connect with mirror world!"<<std::endl;
+    gzwarn<<str.str();
+  }
+  for (auto name: topicNames)
+    std::cout<<"Name: "<<name<<std::endl;
 
-  assert(this->contactFwd);
-  this->contactFwd->DisconnectSubscriber();
-
-  assert(this->visualFwd);
-  this->visualFwd->DisconnectSubscriber();
-
-  assert(this->roadFwd);
-  this->roadFwd->DisconnectSubscriber();
-
-  assert(this->poseAnimFwd);
-  this->poseAnimFwd->DisconnectSubscriber();
 }
+
+GazeboTopicForwardingMirror::~GazeboTopicForwardingMirror()
+{
+}
+
 
 
 void GazeboTopicForwardingMirror::Init()
 {
-  // initialize node
-  this->node = gazebo::transport::NodePtr(new gazebo::transport::Node());
-  this->node->Init(this->worldName);
+  std::cout<<"Initializing GazeboTopicForwardingMirror."<<std::endl;
+
 
   // initialize topic block printers (for user information printing)
   ////////////////////////////////////////////////
@@ -276,22 +288,16 @@ void GazeboTopicForwardingMirror::Init()
     this->blockPrinters.push_back(worldControlBlock);
   }
 
-  // initialize services
-  ////////////////////////////////////////////////
-  this->origServiceFwd.reset(new GazeboServiceForwarder
-                             ("~/request", "~/response",
-                              RequestMessageFilter::Ptr(new RequestMessageFilter()),
-                              1000, 0));
 
   // initialize topic forwarders
   ////////////////////////////////////////////////
-  bool verboseLevel=0;
+  int verboseLevel=0;
   try
   {
     this->statFwd.reset(new GazeboTopicForwarder<gazebo::msgs::WorldStatistics>
                       ("~/world_stats", this->node, 1000, 0,
                        WorldStatMsgFilter::Ptr(new WorldStatMsgFilter(shared_from_this())),
-                       verboseLevel>3));
+                       verboseLevel>2));
   }
   catch(std::bad_weak_ptr& e)
   {
@@ -335,14 +341,94 @@ void GazeboTopicForwardingMirror::Init()
   ////////////////////////////////////////////////
   this->requestPub = this->node->Advertise<gazebo::msgs::Request>("~/request");
   this->modelPub = this->node->Advertise<gazebo::msgs::Model>("~/model/info");
-
-
+  std::cout<<"GazeboTopicForwardingMirror initialized."<<std::endl;
   this->initialized = true;
 }
+
+
+void GazeboTopicForwardingMirror::ConnectOriginalWorld(const std::string origWorldName)
+{
+  if (!this->initialized) Init();
+
+  std::cout<<"Mirror is connecting to world '"<<origWorldName<<"'"<<std::endl;
+
+  // connect services
+  assert(this->origServiceFwd);
+  this->origServiceFwd->Forward("/gazebo/"+origWorldName+"/request",
+                                "/gazebo/"+origWorldName+"/response",
+                                RequestMessageFilter::Instance(),
+                                this->node);
+
+  // connect topic forwarders
+  bool latch=false;
+  assert(this->statFwd);
+  this->statFwd->ForwardFrom("/gazebo/"+origWorldName+"/world_stats", this->node, latch);
+
+  assert(this->modelFwd);
+  this->modelFwd->ForwardFrom("/gazebo/"+origWorldName+"/model/info", this->node, latch);
+
+  assert(this->poseFwd);
+  this->poseFwd->ForwardFrom("/gazebo/"+origWorldName+"/pose/info", this->node, latch);
+
+  assert(this->guiFwd);
+  this->guiFwd->ForwardFrom("/gazebo/"+origWorldName+"/gui", this->node, latch);
+
+  assert(this->jointFwd);
+  this->jointFwd->ForwardFrom("/gazebo/"+origWorldName+"/joint", this->node, latch);
+
+  assert(this->contactFwd);
+  this->contactFwd->ForwardFrom("/gazebo/"+origWorldName+"/physics/contacts", this->node, latch);
+
+  assert(this->visualFwd);
+  this->visualFwd->ForwardFrom("/gazebo/"+origWorldName+"/visual", this->node, latch);
+
+  assert(this->roadFwd);
+  this->roadFwd->ForwardFrom("/gazebo/"+origWorldName+"/roads", this->node, latch);
+
+  assert(this->poseAnimFwd);
+  this->poseAnimFwd->ForwardFrom("/gazebo/"+origWorldName+"/skeleton_pose/info", this->node, latch);
+}
+
+void GazeboTopicForwardingMirror::DisconnectFromOriginal()
+{
+  assert(this->origServiceFwd);
+  this->origServiceFwd->Disconnect();
+
+  assert(this->statFwd);
+  this->statFwd->DisconnectSubscriber();
+
+  assert(this->modelFwd);
+  this->modelFwd->DisconnectSubscriber();
+
+  assert(this->poseFwd);
+  this->poseFwd->DisconnectSubscriber();
+
+  assert(this->guiFwd);
+  this->guiFwd->DisconnectSubscriber();
+
+  assert(this->jointFwd);
+  this->jointFwd->DisconnectSubscriber();
+
+  assert(this->contactFwd);
+  this->contactFwd->DisconnectSubscriber();
+
+  assert(this->visualFwd);
+  this->visualFwd->DisconnectSubscriber();
+
+  assert(this->roadFwd);
+  this->roadFwd->DisconnectSubscriber();
+
+  assert(this->poseAnimFwd);
+  this->poseAnimFwd->DisconnectSubscriber();
+}
+
+
 
 void GazeboTopicForwardingMirror::NotifyOriginalWorldChange
           (const OriginalWorldPtr &_newWorld)
 {
+  // std::cout<<"GazeboTopicForwardingMirror::NotifyOriginalWorldChange"<<std::endl;
+
   if (!this->initialized) Init();
 
   OriginalWorldPtr oldWorld = GetOriginalWorld();

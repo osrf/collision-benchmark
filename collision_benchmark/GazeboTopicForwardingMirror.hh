@@ -71,18 +71,24 @@ class GazeboTopicForwardingMirror:
     /// Documentation inherited
     public:  virtual void Sync();
 
-    // Initializes the topic forwarder. Will be called
-    // internally by relevant functions but it can be done
-    // explicitly from outside.
-    public: void Init();
 
     protected: virtual void NotifyOriginalWorldChange
                   (const OriginalWorldPtr &_newWorld);
 
     // connect the subscribers to the world name of this topic
-    private: void ConnectOriginalWorld(const std::string origWorldName);
+    public: void ConnectOriginalWorld(const std::string origWorldName);
 
     private: void DisconnectFromOriginal();
+
+    // Initializes the topic forwarder. Will be called
+    // internally by relevant functions but it can be done
+    // explicitly from outside.
+    private: void Init();
+
+    // registers the namespace and waits until this has been done.
+    // Throws an exception if it didn't work after a maximum time
+    // (current default is 10 seconds)
+    private: void RegisterNamespace(const std::string& worldname) const;
 
     /// \brief Transportation node.
     private: gazebo::transport::NodePtr node;
@@ -124,6 +130,7 @@ class GazeboTopicForwardingMirror:
 
     /// \brief Forwards service calls to the original world
     private: GazeboServiceForwarder::Ptr origServiceFwd;
+
 
     // all topics which are not supported are subscribed to and a
     // message is printed as information when message is received.

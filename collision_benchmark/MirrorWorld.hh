@@ -59,15 +59,29 @@ class MirrorWorld
   /// Sets the original world to be mirrored by this MirrorWorld
   public:  void SetOriginalWorld(const OriginalWorldPtr& _originalWorld)
            {
-             std::lock_guard<std::recursive_mutex> lock(originalWorldMutex);
              NotifyOriginalWorldChange(_originalWorld);
+             // DEVELOPER MEMO for Gazebo implementation:
+             // transport::Node::Subscribe() locks Node::incomingMutex.
+             // Before a callback is called with Node::HandleMessage,
+             // incomingMutex is locked as well. Now if the implementation
+             // of NotifyOriginalWorldChange calls GetOriginalWorld() and
+             // locks the originalWorldMutex WHILE an already incoming
+             // message from another thread also calls GetOriginalWorld()
+             // while Node::incomingMutex being locked (from Node::ProcessIncoming),
+             // we have a deadlock.
+             // Therefore, as we don't know what excatly is done in
+             // the implementation of NotifyOriginalWorldChange, we can't
+             // have a lock in place while calling it, even if it is recursvie.
+             // Hence lock it only around the actual access to the local
+             // variable.
+             std::lock_guard<std::mutex> lock(originalWorldMutex);
              originalWorld=_originalWorld;
            }
 
   /// Returns the original world which is mirrored by this class
   public:  OriginalWorldPtr GetOriginalWorld() const
            {
-             std::lock_guard<std::recursive_mutex> lock(originalWorldMutex);
+             std::lock_guard<std::mutex> lock(originalWorldMutex);
              return originalWorld;
            }
 
@@ -79,7 +93,7 @@ class MirrorWorld
   protected: virtual void NotifyOriginalWorldChange
                 (const OriginalWorldPtr &_newWorld) {}
   private:  OriginalWorldPtr originalWorld;
-  private:  mutable std::recursive_mutex originalWorldMutex;
+  private:  mutable std::mutex originalWorldMutex;
 };
 
 }  // namespace collision_benchmark

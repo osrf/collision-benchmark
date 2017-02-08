@@ -318,14 +318,14 @@ class WorldManager
               if (ctrl < 0)
               {
                 // Switch to previous world
-                std::cout<<"Switching to previous world"<<std::endl;
+                std::cout<<"WorldManager: Switching to previous world"<<std::endl;
                 if (mirroredWorldIdx > 0) --mirroredWorldIdx;
                 else mirroredWorldIdx=worlds.size()-1; // go back to last world
               }
               else if (ctrl > 0)
               {
                 // Switch to next world
-                std::cout<<"Switching to next world"<<std::endl;
+                std::cout<<"WorldManager: Switching to next world"<<std::endl;
                 if (mirroredWorldIdx < (worlds.size()-1)) ++mirroredWorldIdx;
                 else mirroredWorldIdx=0; // go back to first world
               }
@@ -336,7 +336,7 @@ class WorldManager
               // update mirrored world
               this->SetMirroredWorld(mirroredWorldIdx);
 
-              std::cout<<" New world is "<<mirrorWorld->GetOriginalWorld()->GetName()<<std::endl;
+              std::cout<<"WorldManager: New world is "<<mirrorWorld->GetOriginalWorld()->GetName()<<std::endl;
 
               // return the name of the new world
               return mirrorWorld->GetOriginalWorld()->GetName();

@@ -13,7 +13,6 @@ include(${PROJECT_SOURCE_DIR}/cmake/SearchForStuff.cmake)
 set(collision_benchmark_HEADERS
   collision_benchmark/boost_std_conversion.hh
   collision_benchmark/ContactInfo.hh
-  collision_benchmark/GazeboMirrorWorld.hh
   collision_benchmark/GazeboTopicForwarder.hh
   collision_benchmark/GazeboTopicForwardingMirror.hh
   collision_benchmark/GazeboStateCompare.hh
@@ -38,7 +37,6 @@ add_library(collision_benchmark SHARED
   collision_benchmark/GazeboWorldLoader.cc
   collision_benchmark/GazeboPhysicsWorld.cc
   collision_benchmark/GazeboWorldState.cc
-  collision_benchmark/GazeboMirrorWorld.cc
   collision_benchmark/GazeboTopicForwardingMirror.cc
   collision_benchmark/GazeboHelpers.cc
   collision_benchmark/GazeboStateCompare.cc

@@ -18,7 +18,7 @@
 #include <collision_benchmark/GazeboWorldLoader.hh>
 #include <collision_benchmark/PhysicsWorld.hh>
 #include <collision_benchmark/GazeboWorldState.hh>
-#include <collision_benchmark/GazeboMirrorWorld.hh>
+//#include <collision_benchmark/GazeboMirrorWorld.hh>
 #include <collision_benchmark/GazeboTopicForwardingMirror.hh>
 #include <collision_benchmark/GazeboPhysicsWorld.hh>
 #include <collision_benchmark/boost_std_conversion.hh>
@@ -37,7 +37,7 @@ using collision_benchmark::PhysicsWorldStateInterface;
 using collision_benchmark::PhysicsWorld;
 using collision_benchmark::GazeboPhysicsWorld;
 using collision_benchmark::MirrorWorld;
-using collision_benchmark::GazeboMirrorWorld;
+//using collision_benchmark::GazeboMirrorWorld;
 using collision_benchmark::GazeboTopicForwardingMirror;
 using collision_benchmark::WorldManager;
 using collision_benchmark::GazeboControlServer;
@@ -72,7 +72,7 @@ void WaitForUnpause()
 
 // loads the mirror world. This should be loaded before all other Gazebo worlds, so that
 // gzclient connects to this one.
-GazeboMirrorWorld::Ptr setupMirrorWorld()
+/*GazeboMirrorWorld::Ptr setupMirrorWorld()
 {
     std::cout << "Setting up mirror world..." << std::endl;
     std::string mirrorName = "mirror_world";
@@ -86,7 +86,7 @@ GazeboMirrorWorld::Ptr setupMirrorWorld()
     std::cout<<"Creating mirror world object."<<std::endl;
     GazeboMirrorWorld::Ptr mirrorWorld(new GazeboMirrorWorld(_mirrorWorld));
     return mirrorWorld;
-}
+}*/
 
 void pauseCallback(bool pause)
 {
@@ -106,20 +106,17 @@ bool Run(int argc, char **argv)
     return false;
   }
 
-  // first, load the mirror world (it has to be loaded first for gzclient to connect to it)
-
-#ifdef USE_NEW_MIRRORWORLD
+  // first, load the mirror world (it has to be loaded first for gzclient to connect to it,
+  // see transport::Node::Init(), called from gui::MainWindow constructor with empty string)
   GazeboTopicForwardingMirror::Ptr mirrorWorld(new GazeboTopicForwardingMirror("mirror_world"));
   GazeboControlServer::Ptr controlServer(new GazeboControlServer("mirror_world"));
   controlServer->RegisterPauseCallback(std::bind(pauseCallback, std::placeholders::_1));
-#else
-  GazeboMirrorWorld::Ptr mirrorWorld = setupMirrorWorld();
+  /*GazeboMirrorWorld::Ptr mirrorWorld = setupMirrorWorld();
   if(!mirrorWorld)
   {
     std::cerr<<"Could not load mirror world."<<std::endl;
     return false;
-  }
-#endif
+  }*/
 
   // now, load the worlds as given in command line arguments with the different engines given
   std::string worldfile = argv[1];
