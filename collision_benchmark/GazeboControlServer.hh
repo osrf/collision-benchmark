@@ -63,7 +63,8 @@ class GazeboControlServer:
            (const boost::shared_ptr<gazebo::msgs::Pose const> &_msg);
   private: void OnUserCmd
            (const boost::shared_ptr<gazebo::msgs::UserCmd const> &_msg);
-
+  private: void OnFactory
+           (const boost::shared_ptr<gazebo::msgs::Factory const> &_msg);
 
   private: void HandleWorldControl (const gazebo::msgs::WorldControl &_msg);
 
@@ -87,6 +88,9 @@ class GazeboControlServer:
 
   /// \brief Subscriber to UserCmd messages.
   private: gazebo::transport::SubscriberPtr userCmdSub;
+
+  /// \brief Subscriber to Factory messages.
+  private: gazebo::transport::SubscriberPtr factorySub;
 
   // subscriber for change of world index
   private: gazebo::transport::SubscriberPtr wldIdxCtrlSubscriber;

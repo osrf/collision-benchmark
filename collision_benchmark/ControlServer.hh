@@ -66,6 +66,13 @@ class ControlServer
   public: typedef std::function<void(const ModelID&, const BasicState&)>
             NotifySetModelStateFct;
 
+  // function to load a model from a SDF, either from a string (boolean
+  // parameter true) or from a file (boolean parameter false). The model
+  // will be spawned with the given state.
+  public: typedef std::function<void(const std::string&, const bool,
+                                     const BasicState&)>
+            NotifySdfModelLoadFct;
+
   /// Constructor.
   public:  ControlServer() {}
   public: ControlServer(const ControlServer& o):
@@ -96,6 +103,13 @@ class ControlServer
           {
             modelStateCallbacks.push_back(_fct);
           }
+
+  // register model load callback, called when a model is to be loaded
+  public: void RegisterSdfModelLoadCallback(const NotifySdfModelLoadFct &_fct)
+          {
+            modelLoadCallbacks.push_back(_fct);
+          }
+
 
   // register callback for requests that the world with this index
   // is to be chosen as the currently selected world.
@@ -141,16 +155,31 @@ class ControlServer
              }
 
   // must be called by subclasses when the model is to be changed
-  protected: void NotifySetModelState(const ModelID& id,
+  protected: void NotifySetModelState(const ModelID& _id,
                                       const BasicState &_state)
              {
                 typename std::vector<NotifySetModelStateFct>::iterator it;
                 for (it=modelStateCallbacks.begin();
                      it!=modelStateCallbacks.end(); ++it)
                 {
-                  (*it)(id,_state);
+                  (*it)(_id,_state);
                 }
              }
+
+  // must be called by subclasses when the model is to be changed
+  protected: void NotifySdfModelLoad(const std::string& _sdf,
+                                     const bool _isString,
+                                     const BasicState &_state)
+             {
+                typename std::vector<NotifySdfModelLoadFct>::iterator it;
+                for (it=modelLoadCallbacks.begin();
+                     it!=modelLoadCallbacks.end(); ++it)
+                {
+                  (*it)(_sdf, _isString, _state);
+                }
+             }
+
+
 
   // must be called by subclasses when the world with this
   // index is to be chosen as the selected world.\
@@ -169,6 +198,7 @@ class ControlServer
   private: std::vector<NotifyPauseFct> pauseCallbacks;
   private: std::vector<NotifyUpdateFct> updateCallbacks;
   private: std::vector<NotifySetModelStateFct> modelStateCallbacks;
+  private: std::vector<NotifySdfModelLoadFct> modelLoadCallbacks;
   private: std::shared_ptr<NotifySelectWorldFct> selectWorldCallback;
 
 

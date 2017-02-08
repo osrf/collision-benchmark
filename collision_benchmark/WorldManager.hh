@@ -100,6 +100,12 @@ class WorldManager
                  (std::bind(&Self::NotifyModelStateChange, this,
                             std::placeholders::_1,
                             std::placeholders::_2));
+               this->controlServer->RegisterSdfModelLoadCallback
+                 (std::bind(&Self::NotifySdfModelLoad, this,
+                            std::placeholders::_1,
+                            std::placeholders::_2,
+                            std::placeholders::_3));
+
                this->controlServer->RegisterSelectWorldService
                  (std::bind(&Self::ChangeMirrorWorld, this, std::placeholders::_1));
              }
@@ -307,6 +313,36 @@ class WorldManager
                 {
                   std::cerr<<"Could not set basic model state because model "<<
                     _id<<" does not exist."<<std::endl;
+                }
+              }
+           }
+
+
+  private: void NotifySdfModelLoad(const std::string& _sdf,
+                                   const bool _isString,
+                                   const BasicState &_state)
+           {
+              std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
+              for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator
+                   it = this->worlds.begin();
+                   it != this->worlds.end(); ++it)
+              {
+                typename PhysicsWorldModelInterface<ModelID, ModelPartID>::Ptr w =
+                  ToWorldWithModel<ModelID, ModelPartID>(*it);
+                if (!w)
+                {
+                  THROW_EXCEPTION("Only support worlds which have the interface "
+                                  <<"PhysicsWorldModelInterface<"<<GetTypeName<ModelID>()
+                                  <<", "<<GetTypeName<ModelPartID>()<<">");
+                }
+
+                if (_isString)
+                {
+                  w->AddModelFromString(_sdf);
+                }
+                else
+                {
+                  w->AddModelFromFile(_sdf);
                 }
               }
            }

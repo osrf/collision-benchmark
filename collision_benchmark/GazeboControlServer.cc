@@ -29,66 +29,20 @@ using collision_benchmark::Vector3;
 using collision_benchmark::Quaternion;
 using collision_benchmark::BasicState;
 
-GazeboControlServer::GazeboControlServer(const std::string &_worldName)
+BasicState GetBasicState(const gazebo::msgs::Factory &_msg)
 {
-  Init(_worldName);
-}
-
-GazeboControlServer::~GazeboControlServer()
-{
-}
-
-void GazeboControlServer::Init(const std::string &_worldName)
-{
-  this->node = gazebo::transport::NodePtr(new gazebo::transport::Node());
-  this->node->Init(_worldName);
-
-  this->controlSub = this->node->Subscribe("~/world_control",
-       &GazeboControlServer::OnWorldControl, this);
-
-  this->modelModSub = this->node->Subscribe<gazebo::msgs::Model>(
-      "~/model/modify", &GazeboControlServer::OnModelModify, this);
-
-  this->poseModSub = this->node->Subscribe<gazebo::msgs::Pose>(
-      "~/pose/modify", &GazeboControlServer::OnPoseModify, this);
-
-  this->userCmdSub = this->node->Subscribe<gazebo::msgs::UserCmd>(
-      "~/user_cmd", &GazeboControlServer::OnUserCmd, this);
-
-  if (!this->generalCtrlNode)
+  BasicState state;
+  if (_msg.has_pose())
   {
-    this->generalCtrlNode.reset(new gazebo::transport::Node());
-    this->generalCtrlNode->Init();
+    ignition::math::Pose3d p = ConvertIgn(_msg.pose());
+    state.SetPosition(p.Pos().X(), p.Pos().Y(), p.Pos().Z());
+    state.SetRotation(p.Rot().X(), p.Rot().Y(), p.Rot().Z(), p.Rot().W());
   }
-  if (!this->wldIdxCtrlSubscriber)
-    this->wldIdxCtrlSubscriber =
-      generalCtrlNode->Subscribe("mirror_world/set_world",
-                      &GazeboControlServer::WorldSelectClientCallback, this);
-  if (!this->wldIdxCtrlPublisher)
-    this->wldIdxCtrlPublisher  =
-      generalCtrlNode->Advertise<gazebo::msgs::Any>("mirror_world/get_world");
 
+  state.SetScale(1,1,1);
+
+  return state;
 }
-
-void GazeboControlServer::OnWorldControl
-      (const boost::shared_ptr<gazebo::msgs::WorldControl const> &_msg)
-{
-  std::cout<<"GazeboControlServer: Received world control"<<std::endl;
-  this->HandleWorldControl(*_msg);
-}
-
-void GazeboControlServer::HandleWorldControl
-  (const gazebo::msgs::WorldControl &_msg)
-{
-  if (_msg.has_pause())
-    this->NotifyPause(_msg.pause());
-  if (_msg.has_step())
-    this->NotifyUpdate(1);
-  if (_msg.has_multi_step())
-    this->NotifyUpdate(_msg.multi_step());
-}
-
-
 
 BasicState GetModelChangeState(const gazebo::msgs::Model &_msg)
 {
@@ -169,6 +123,71 @@ BasicState GetModelChangeState(const gazebo::msgs::Model &_msg)
   }
   return state;
 }
+
+
+
+GazeboControlServer::GazeboControlServer(const std::string &_worldName)
+{
+  Init(_worldName);
+}
+
+GazeboControlServer::~GazeboControlServer()
+{
+}
+
+void GazeboControlServer::Init(const std::string &_worldName)
+{
+  this->node = gazebo::transport::NodePtr(new gazebo::transport::Node());
+  this->node->Init(_worldName);
+
+  this->controlSub = this->node->Subscribe("~/world_control",
+       &GazeboControlServer::OnWorldControl, this);
+
+  this->modelModSub = this->node->Subscribe<gazebo::msgs::Model>(
+      "~/model/modify", &GazeboControlServer::OnModelModify, this);
+
+  this->poseModSub = this->node->Subscribe<gazebo::msgs::Pose>(
+      "~/pose/modify", &GazeboControlServer::OnPoseModify, this);
+
+  this->userCmdSub = this->node->Subscribe<gazebo::msgs::UserCmd>(
+      "~/user_cmd", &GazeboControlServer::OnUserCmd, this);
+
+  this->factorySub = this->node->Subscribe<gazebo::msgs::Factory>(
+      "~/factory", &GazeboControlServer::OnFactory, this);
+
+  if (!this->generalCtrlNode)
+  {
+    this->generalCtrlNode.reset(new gazebo::transport::Node());
+    this->generalCtrlNode->Init();
+  }
+  if (!this->wldIdxCtrlSubscriber)
+    this->wldIdxCtrlSubscriber =
+      generalCtrlNode->Subscribe("mirror_world/set_world",
+                      &GazeboControlServer::WorldSelectClientCallback, this);
+  if (!this->wldIdxCtrlPublisher)
+    this->wldIdxCtrlPublisher  =
+      generalCtrlNode->Advertise<gazebo::msgs::Any>("mirror_world/get_world");
+
+}
+
+void GazeboControlServer::OnWorldControl
+      (const boost::shared_ptr<gazebo::msgs::WorldControl const> &_msg)
+{
+  std::cout<<"GazeboControlServer: Received world control"<<std::endl;
+  this->HandleWorldControl(*_msg);
+}
+
+void GazeboControlServer::HandleWorldControl
+  (const gazebo::msgs::WorldControl &_msg)
+{
+  if (_msg.has_pause())
+    this->NotifyPause(_msg.pause());
+  if (_msg.has_step())
+    this->NotifyUpdate(1);
+  if (_msg.has_multi_step())
+    this->NotifyUpdate(_msg.multi_step());
+}
+
 
 void GazeboControlServer::OnModelModify
       (const boost::shared_ptr<gazebo::msgs::Model const> &_msg)
@@ -254,6 +273,46 @@ void GazeboControlServer::OnUserCmd
       break;
     }
   }
+}
+
+
+void GazeboControlServer::OnFactory
+  (const boost::shared_ptr<gazebo::msgs::Factory const> &_msg)
+{
+  std::string sdf;
+  bool isString=true;
+
+  if (_msg->has_sdf() && !_msg->sdf().empty())
+  {
+    sdf=_msg->sdf();
+  }
+  else if (_msg->has_sdf_filename() &&
+          !_msg->sdf_filename().empty())
+  {
+    sdf=_msg->sdf();
+    isString=false;
+  }
+  else if (_msg->has_clone_model_name())
+  {
+    gzwarn << "WARNING: GazeboControlServer is ignoring clone model "
+        <<"field in factory message. Not supported."<<std::endl;
+    return;
+  }
+  else
+  {
+    gzerr << "Unable to load sdf from factory message."
+      << "No SDF or SDF filename specified."<<std::endl;
+    return;
+  }
+
+  if (_msg->has_edit_name())
+  {
+    gzwarn << "WARNING: GazeboControlServer is ignoring name edit "
+        <<"field in factory message. Not supported."<<std::endl;
+  }
+
+  BasicState state = GetBasicState(*_msg);
+  NotifySdfModelLoad(sdf, isString, state);
 }
 
 void GazeboControlServer::SendWorldName(const std::string& name)

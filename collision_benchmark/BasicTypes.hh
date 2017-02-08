@@ -80,7 +80,7 @@ class BasicState
                      const Vector3 *_scale=NULL):
     position(_position ? *_position : Vector3(0,0,0)),
     rotation(_rotation ? *_rotation : Quaternion(0,0,0,0)),
-    scale(_scale ? *_scale : Vector3(0,0,0)),
+    scale(_scale ? *_scale : Vector3(1,1,1)),
     posEnabled(_position ? true : false),
     rotEnabled(_rotation ? true : false),
     scaleEnabled(_scale ? true : false) {}
