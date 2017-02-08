@@ -4,7 +4,7 @@
 
 #include <gazebo/gazebo.hh>
 
-using collision_benchmark::PhysicsWorldBase;
+using collision_benchmark::PhysicsWorldBaseInterface;
 using collision_benchmark::PhysicsWorld;
 using collision_benchmark::GazeboPhysicsWorld;
 using collision_benchmark::GazeboStateCompare;
@@ -33,7 +33,7 @@ int main(int argc, char** argv)
 
   // set the number of iterations after which we will set the state of the first world
   // loaded to the same state of the second world.
-  int switchAfterIter=2000;
+  int switchAfterIter=1000;
   // run the test for this many iterations
   int runForIter=10000;
   // set this to false to skip a comparison test in the main loop below. More about this later.
@@ -45,42 +45,53 @@ int main(int argc, char** argv)
       runForIter=atoi(argv[2]);
   }
 
-  // typedef for the most basic interface, depending only on the gazebo world state type.
+  // typedef for the basic interface depending only on the gazebo world state type.
   // Create this for convenience so you don't have to type the full template type each time.
-  typedef collision_benchmark::PhysicsWorldBase<gazebo::physics::WorldState> GzPhysicsWorldBase;
+  typedef collision_benchmark::PhysicsWorldStateInterface<gazebo::physics::WorldState> GzPhysicsWorld;
 
-  // Load an empty gazebo world and initially use the low-level interface GazeboPhysicsWorld because
-  // we will need to disable the physics engine for the demonstration in this tutorial.
-  // The first world loaded will be the world which is displayed in the gzclient, so that will
-  // be this world.
-  GazeboPhysicsWorld::Ptr gzWorld1(new GazeboPhysicsWorld());
-  if (gzWorld1->LoadFromFile("worlds/empty.world") != GzPhysicsWorldBase::SUCCESS)
+  // two worlds with the full interface of collision_engine::PhysicsEngineWorld.
+  GazeboPhysicsWorld::Ptr gazeboWorld1(new GazeboPhysicsWorld());
+  GazeboPhysicsWorld::Ptr gazeboWorld2(new GazeboPhysicsWorld());
+
+  // pointers to access the worlds via the GzPhysicsWorld interface depending only
+  // on the gazebo state.
+  GzPhysicsWorld::Ptr gzWorld1(gazeboWorld1);
+  GzPhysicsWorld::Ptr gzWorld2(gazeboWorld2);
+
+  // pointers to access the worlds via the basic interface PhysicsWorldBaseInterface.
+  PhysicsWorldBaseInterface::Ptr world1(gazeboWorld1);
+  PhysicsWorldBaseInterface::Ptr world2(gazeboWorld2);
+
+  // Load the empty world.
+  // The first world loaded will be the world which is displayed in the gzclient,
+  // so that will be this world.
+  // While we will use the basic interface PhysicsWorldBaseInterface for loading
+  // worlds, the actual loading of the world will only work for
+  // implementations which support SDF files (which is the rubble world), and for
+  // implementations which look for the files in the GAZEBO_RESOURCE_PATH
+  // (or we would need to specify the full path here).
+  // Because we instantiate the world with a GazeboPhysicsWorld, it will work.
+
+  if (world1->LoadFromFile("worlds/empty.world") != collision_benchmark::SUCCESS)
   {
     std::cerr << "Could not load empty world" << std::endl;
     return 1;
   }
 
-  // Disable the physics engine: We will set the state of this world manually in this example.
+  // Disable the physics engine in the first world:
+  // We will set the state of this world manually in this example.
   // The physics engine can be disabled to enforce that the state is always the state we set
   // manually (otherwise the world would jitter between when we set the state and when its
   // physics engine reacts to it).
-  gzWorld1->SetDynamicsEnabled(false);
+  world1->SetDynamicsEnabled(false);
 
-  // make sure we access the first world only via the basic interface GzPhysicsWorldBase
-  // from now on.
-  GzPhysicsWorldBase::Ptr world1(gzWorld1);
-
-  // Create a second world and load the rubble world. While we will use the basic interface
-  // GzPhysicsWorldBase for this world, the actual loading of the world will only work for
-  // implementations which support SDF files (which is the rubble world), and for implementations
-  // which look for the files in the GAZEBO_RESOURCE_PATH (or we would need to specify the
-  // full paht here). Because we instantiate the world with a GazeboPhysicsWorld, it will work.
-  GzPhysicsWorldBase::Ptr world2(new GazeboPhysicsWorld());
-  if (world2->LoadFromFile("worlds/rubble.world") != GzPhysicsWorldBase::SUCCESS)
+  // In the second world, load the rubble world.
+  if (world2->LoadFromFile("worlds/rubble.world") != collision_benchmark::SUCCESS)
   {
     std::cerr << "Could not load rubble world" << std::endl;
     return 1;
   }
+
 
   // print a messsage to notify you that you can now start the client to view the world.
   std::cout<<"You may now start gzclient to view the first world. Press [Enter] to start the simulation after gzclient has started."<<std::endl;
@@ -97,16 +108,16 @@ int main(int argc, char** argv)
         std::cout<<"Now starting to set the world to the rubble state"<<std::endl;
 
       // get the rubble world state
-      gazebo::physics::WorldState rubbleState=world2->GetWorldState();
+      gazebo::physics::WorldState rubbleState=gzWorld2->GetWorldState();
       // set the first world to the same state
-      world1->SetWorldState(rubbleState);
+      gzWorld1->SetWorldState(rubbleState);
 
       // do a test: the states of both worlds should be the same, or something went wrong!
       // The class GazeboStateCompare can help us with this.
       if (doTestComparison)
       {
         // First get the new state of the first world:
-        gazebo::physics::WorldState newState1 = world1->GetWorldState();
+        gazebo::physics::WorldState newState1 = gzWorld1->GetWorldState();
         // Now, set the tolerances we want to use for comparing. We will just use the default tolerances.
         GazeboStateCompare::Tolerances t=GazeboStateCompare::Tolerances::Default;
         // However, in the tolerances we disable the check for the dynamic properties, because we

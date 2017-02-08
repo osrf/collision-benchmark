@@ -33,9 +33,12 @@ make tests
 make install
 ```
 
-Make sure the library ``libcollision_benchmark_gui.so`` compiled by this project (installed to ``<your-install-prefix>/lib``)
-is in your GAZEBO_PLUGIN_PATH, and that you add ``<your-install-prefix>/share`` to your GAZEBO_RESOURCE_PATH.
-You may also want the ``<your-install-prefix>/bin`` path in your PATH.
+Make sure that:
+
+1. the library ``libcollision_benchmark_gui.so`` compiled by this project (installed to ``<your-install-prefix>/lib``)
+is in your GAZEBO_PLUGIN_PATH, and
+2. that you add ``<your-install-prefix>/share`` to your GAZEBO_RESOURCE_PATH.
+3. You may also want to add the ``<your-install-prefix>/bin`` path to your PATH.
 
 ## Simulating multiple parallel worlds
 
@@ -148,38 +151,62 @@ between the bullet and ode worlds.
 
 ## Short introduction to the API
 
-The interface of the API can be found in *PhysicsWorld.hh*. There are a few classes which
-inherit its parent and gradually refine the interface to be more specific to physics engines.
-They are all template classes which accept certain types to define the interface. The further
-down the hierarchy, the more types are added to the interface.
+The API aims at subsuming a large number of physics engine implementations under one common
+interface. This way several physics engines operating under the same interface can be used
+together and compared.
 
-*   **PhysicsWorldBase** is the most basic interface which only has one template type specifying the world
-    state. So there can be several different physics engines operating under this basic interface, as long
-    as they all support the same world state type. This interface is as independent of the underlying physics
-    engine as possible, the world state being a general data type which can be supported by many different engines.
-    The world state is expected to have all information about the world.
-*   **PhysicsWorld** derives from *PhysicsWorldBase* and is a bit more specific in that it adds methods to 
-    load models to the world, and query it for contact points. The interface only requires to specify the ID of
-    models (e.g. a std::string to identify a model via its name), but not the actual data type for a model.
-    Therefore, this interface is still fairly idependent of the physics engine, but all subclasses must support the
-    same identifier types for models.
-*   **PhyicsEngineWorld** derives from *PhysicsWorld* and is even more specific to the physics engine used.
+The main interface of the API can be found in *PhysicsWorld.hh*. There are a few classes which provide
+different interfaces, each depending on different template types. The main class which puts most
+of the interfaces together is **PhysicsWorld**. However for accessing a world, a pointer of only
+a partial interface may be required (which does not depend on many template parameters).
+
+There are the following abstract (pure virtual) interfaces:
+
+*   **PhysicsWorldBaseInterface** is the most basic interface which does not depend on template types.
+    This interface is as independent of the underlying physics engine as possible. It provides the most
+    basic functionality.
+*   **PhysicsWorldStateInterface** is a very basic interface which only has one template type specifying the world
+    state. So there can be several different physics engines operating under this interface, as long
+    as they all support the same world state type. This interface is quite independent of the underlying physics,
+    the world state can be defined as a general data type which can be supported by many different engines.
+    The world state is expected to contain all information about the world.    
+    The idea is that there may be several different physics engines, all supporting the same world state.
+    With this, states of the different worlds can be directly compared.
+*   **PhysicsWorldModelInterface** defines functions to access and load models in the world.
+    The interface only requires to specify the ID of
+    models used (e.g. a std::string to identify a model via its name),
+    but not the actual data type for a model.
+    Therefore, this interface is still fairly idependent of the physics engine, the only restriction being
+    that all classes operating under this interface must support the same identifier types for models.
+*   **PhysicsWorldContactInterface** defines functions to access contact points.
+*   **PhysicsWorldEngineInterface** adds a few functions which provide low-level access to the 
+    underlying implementation of the physics engine. This interface is highly dependent on the
+    physics engine used.
+
+There are two main classes which put together the above interfaces:
+
+*   **PhysicsWorld** implements *PhysicsWorldBaseInterface*, *PhysicsWorldStateInterface*,
+    *PhysicsWorldModelInterface* and *PhysicsWordlContactInterface*.
+    It provides the base for all physics worlds with access to almost the entire functionality provided
+    by the interfaces, except *PhysicsWorldEngineInterface* which is highly physics engine dependent.
+*   **PhyicsEngineWorld** derives from *PhysicsWorld* and further implements *PhysicsWorldEngineInterface*.
+    It is therefore very specific to the physics engine used.
     It requires the types of the classes for the the models and the contact points and optionally, of 
-    the world class and of the class for a physics engine. This interface is mainly useful as a common superclass
-    for the more specific implementations. It can be used to get low-level pointers to the actual model types.
+    the world class and of the class for a physics engine.
+    This interface is mainly useful as a common superclass
+    for the more specific implementations.
+    It can be used to get low-level pointers to the actual model types.
 
 The main implementation of the main interface is **GazeboPhysicsWorld**. It derives from *PhysicsEngineWorld* and
 implements the full interface.
 
-The idea is that there may be several different physics engines, all operating on the same world state. With this,
-states of the different worlds can be directly compared.    
-The most useful but still abstract iterface is probably *PhysicsWorld*. Several implementations of the same
-template instantiation of *PhysicsWorld* can be made for different engines. For example, all engines supported in
-Gazebo are automatically available via *GazeboPhysicsWorld*. We may then add a new brute-force implementation of a
-physics engine which derives from the same *PhysicsWorld* instantiation as *GazeboPhysicsWorld* does. We can
-then directly compare contact points, collision states, and anything else in the WorldState, between the Gazebo
-implementation and the brute-force implementation. This can be very useful for testing and debugging.
-
+The main idea is that several implementations of the same template instantiation of *PhysicsWorld*,
+which is still quite engine-independent, can be added for different engines.
+For example, all engines supported in Gazebo are automatically available via *GazeboPhysicsWorld*.
+We may then add a new brute-force implementation of a physics engine which derives from the same *PhysicsWorld*
+instantiation as *GazeboPhysicsWorld* does. We can then directly compare contact points,
+model states, and anything else in the WorldState, between the Gazebo implementation and
+the brute-force implementation. This can be very useful for testing and debugging.
 
 ## API tutorials 
 
@@ -226,15 +253,9 @@ Ideally make sure you can see the both the first terminal and the Gazebo GUI at 
 
 Then go back to the first terminal and press ``[Enter]`` to start the tutorial.
 
-After a while, the rubble world should suddenly pop up, as the state of the world is set to the rubble world state.
+First, you will see the empty world for 1000 iterations.
+Then, the rubble world should suddenly pop up, as the state of the world is set to the rubble world state.
 
 Please refer to the code in 
 [transfer_world_state.cc](https://github.com/JenniferBuehler/collision-benchmark/blob/devel-2/tutorials/transfer_world_state.cc)
 which contains detailed documentation about how this is done.
-
-
-**TODO**
-
-Sometimes you may notice that the world updates only slowly to the rubble state. This is an issue which should
-be examined with Gazebo soon. The state comparison test in the tutorial code ensures that the states are in fact
-equal, but there must be a delay in communicating this to gzclient.
