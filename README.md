@@ -6,12 +6,12 @@ Benchmark tests for collision checking and contact
 
 You will reqiure 
 
-* Gazebo and dependencies
+* Gazebo (currently only compiled from source is tested) and dependencies
 * Assimp
 * Boost libraries
 
 Current requirement is also to use the [dart-6](https://bitbucket.org/JenniferBuehler/gazebo/branch/dart-6)
-branch (see [PR #2547](https://bitbucket.org/osrf/gazebo/pull-requests/2547/dart-6/diff)),
+branch for Gazebo (see [PR #2547](https://bitbucket.org/osrf/gazebo/pull-requests/2547/dart-6/diff)),
 and for some functionality with the contact points it needs to be
 the [dart-6-dev](https://bitbucket.org/JenniferBuehler/gazebo/src/6b01e236886123ae0a9d3c585a841a303bb8a3bd/?at=dart-6-dev)
 branch which is merged with the PR for [contact_manager_enforcable_additions](https://bitbucket.org/JenniferBuehler/gazebo/branch/contact_manager_enforcable_additions)
@@ -78,9 +78,10 @@ The test can be used to quickly confirm that different engines have in fact
 been loaded for different worlds.
 
 ```
-multiple_worlds_server_test_simple 1 \
-    test_worlds/empty_ode.world \
-    test_worlds/empty_bullet.world
+cd build
+./multiple_worlds_server_test_simple 1 \
+    ../test_worlds/empty_ode.world \
+    ../test_worlds/empty_bullet.world
 ```
 
 Then just press ``[Enter]`` without loading gzclient to continue the test.
@@ -93,9 +94,10 @@ and update each world once again. At each update it should print "ode" and "bull
 You may also look at the test with gzclient. Use a higher number of iterations for that:
 
 ```
-multiple_worlds_server_test_simple 2000 \
-    test_worlds/cube_ode.world \
-    test_worlds/sphere_bullet.world
+cd build
+./multiple_worlds_server_test_simple 2000 \
+    ../test_worlds/cube_ode.world \
+    ../test_worlds/sphere_bullet.world
 ```
 
 Then load gzclient in another terminal:
@@ -119,7 +121,8 @@ You may start the Multiple worlds server as follows:
 multiple_worlds_server <world file> <list of phyiscs engines>
 ```
 
-The ``<list of physics engines>`` can contain *ode, bullet, simbody* and *dart*.
+The ``<list of physics engines>`` can contain *ode, bullet, simbody* and *dart* (the latter three
+are only supported if your Gazebo version is compiled to support it).
 
 This will prompt you with a keypress so you get the chance to start gzclient before the worlds are started.
 Confirm with ``[Enter]`` immediately if you don't want to wait, otherwise press ``[Enter]`` after gzclient has loaded up.
@@ -133,13 +136,22 @@ gzclient --g libcollision_benchmark_gui.so
 
 Make sure *libcollision_benchmark_gui.so* is in the *GAZEBO_PLUGIN_PATH*.
 
-You can swith between the physics engines with the GUI control panel displayed on the top right.
+You can switch between the physics engines with the GUI control panel displayed on the top left.
 Between the buttons, the name of the currently displayed world is shown, which should contain the physics
 engine in the name.
 
-Please note that you cannot use the gzclient controls like Pause and Step with this project
-yet. Also, the iterations and simulation time etc displayed at the bottom
-may not reflect the actual simulation time.
+The world is started in paused mode. You may press the "play" button in the client, or hit ``[Enter]``
+in the terminal where you started the server, to start the simulation.
+
+You can also pause the simulation and advance it with individual steps only. You may add models to
+the world, or change poses of the existing models, which will reflect apply to all the worlds
+loaded. This way you can compare how the same world behaves in different physics engines, how the
+contact points compare, etc.
+
+Note that not all controls from within the client (or by sending messages to the server)
+is supported yet for the collision_benchmark framework. Always watch the terminal where you
+started the server for hints that some functionality has been blocked, if you get no reaction
+from the client controls.
 
 **Example:**
 
@@ -197,15 +209,14 @@ There are two main classes which put together the above interfaces:
     for the more specific implementations.
     It can be used to get low-level pointers to the actual model types.
 
-The main implementation of the main interface is **GazeboPhysicsWorld**. It derives from *PhysicsEngineWorld* and
-implements the full interface.
+One full implementation of *PhysicsEngineWorld* is **GazeboPhysicsWorld**.
 
-The main idea is that several implementations of the same template instantiation of *PhysicsWorld*,
-which is still quite engine-independent, can be added for different engines.
+The main idea is that several implementations of the same template instantiation of *PhysicsWorld*
+(which is still quite engine-independent) can be exist for different engines.    
 For example, all engines supported in Gazebo are automatically available via *GazeboPhysicsWorld*.
-We may then add a new brute-force implementation of a physics engine which derives from the same *PhysicsWorld*
-instantiation as *GazeboPhysicsWorld* does. We can then directly compare contact points,
-model states, and anything else in the WorldState, between the Gazebo implementation and
+We may then add a new "brute-force" implementation of a physics engine which derives from the same *PhysicsWorld*
+template instantiation as *GazeboPhysicsWorld* does. We can then directly compare contact points,
+model states, and anything else in the WorldState, between the Gazebo implementation(s) and
 the brute-force implementation. This can be very useful for testing and debugging.
 
 ## API tutorials 
