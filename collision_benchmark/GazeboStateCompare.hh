@@ -30,7 +30,8 @@ namespace collision_benchmark
 struct GazeboStateCompare
 {
   // tolerances for all kinds of of comparisons.
-  // Put in one struct in order to reduce number of parameters in the Equal() functions.
+  // Put in one struct in order to reduce number of parameters in
+  // the Equal() functions.
   struct Tolerances
   {
     static Tolerances CreateDefault(float accuracy=1e-03)
@@ -102,7 +103,8 @@ struct GazeboStateCompare
                     const Tolerances& tolerance=Tolerances::Default);
 
   //  \param orientationTolerance orientation is compared with the Euler
-  //         angles instead of with Quaternions, so this is the angular tolerance (radians).
+  //         angles instead of with Quaternions, so this is the angular
+  //         tolerance (radians).
   static bool Equal(const ignition::math::Pose3d& p1,
                     const ignition::math::Pose3d& p2,
                     const double& positionTolerance,

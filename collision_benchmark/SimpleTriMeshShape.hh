@@ -28,7 +28,8 @@ namespace collision_benchmark
 {
 
 /**
- * \brief A simple Shape which is implements the MESH type for triangle meshes, not supporting textures.
+ * \brief A simple Shape which is implements the MESH type for triangle meshes.
+ * Textures are not supported.
  *
  * Uses double as vertex precision and supports only triangle meshes.
  *
@@ -48,19 +49,23 @@ class SimpleTriMeshShape: public Shape
   public: typedef MeshDataT::Vertex Vertex;
   public: typedef MeshDataT::Face Face;
 
-  // The file extension to be used for all mesh data written to file with GetShapeSDF().
-  // May not start with a dot!
+  // The file extension to be used for all mesh data written to file
+  // with GetShapeSDF(). May not start with a dot!
   public: static const std::string MESH_EXT;
-  // Subdirectory to use in addition to parents RESOURCE_SUB_DIR in GetShapeSDF().
+  // Subdirectory to use in addition to parents RESOURCE_SUB_DIR
+  // in GetShapeSDF().
   // This will be a subdirectory in RESOURCE_SUB_DIR.
   public: static const std::string MESH_SUB_DIR;
 
   /**
-   * \param data__ the mesh data
-   * \param name_ a unique name identiying this mesh shape. This only is important for when
-   *      GetShapeSDF() is called, which needs to write the mesh data to a unique file name.
+   * \param data_ the mesh data
+   * \param name_ a unique name identiying this mesh shape.
+   *        This only is important for when
+   *        GetShapeSDF() is called, which needs to write the mesh data
+   *        to a unique file name.
    */
-  public: SimpleTriMeshShape(const MeshDataPtr& data_, const std::string& name_):
+  public: SimpleTriMeshShape(const MeshDataPtr& data_,
+                             const std::string& name_):
             Shape(MESH),
             data(data_),
             name(name_)  {}
@@ -72,7 +77,9 @@ class SimpleTriMeshShape: public Shape
   public: virtual ~SimpleTriMeshShape(){}
 
   // Documentation inherited from parent class
-  public: virtual sdf::ElementPtr GetShapeSDF(bool detailed=true, bool uriOnlyWithSubdir=false) const;
+  public: virtual sdf::ElementPtr
+                  GetShapeSDF(bool detailed=true,
+                              bool uriOnlyWithSubdir=false) const;
 
   private: MeshDataT::Ptr data;
 

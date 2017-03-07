@@ -27,9 +27,11 @@ namespace collision_benchmark
 {
 
 /**
- * \brief A shape which is one of the primitives of the types BOX, SPHERE, CYLINDER, PLANE
+ * \brief A shape which is one of the primitives
+ * of the types BOX, SPHERE, CYLINDER, PLANE
  *
- * This serves also as factory class for creating instances, use the static factory methods
+ * This serves also as factory class for creating instances,
+ * use the static factory methods
  * instead of the constructor.
  *
  * \author Jennifer Buehler
@@ -53,7 +55,9 @@ class PrimitiveShape: public Shape
   public: virtual ~PrimitiveShape(){}
 
   // Creates a box
-  public: static PrimitiveShape * CreateBox(double width, double height, double depth);
+  public: static PrimitiveShape * CreateBox(double width,
+                                            double height,
+                                            double depth);
 
   // Creates a box  by calling the other CreateBox which takes the dimensions as
   // individual arguments
@@ -69,14 +73,18 @@ class PrimitiveShape: public Shape
   // \param normal normal of plane
   // \param dim dimensions (bounds) of plane in x and y direction.
   //    May be set to infinite, though this may have limits with the SDF.
-  public: static PrimitiveShape * CreatePlane(const Vector3& normal, const Vector2& dim);
+  public: static PrimitiveShape * CreatePlane(const Vector3& normal,
+                                              const Vector2& dim);
 
-  // Creates a plane by calling the other CreatePlane() functon which uses the vector parameters
+  // Creates a plane by calling the other CreatePlane() functon which
+  // uses the vector parameters
   public: static PrimitiveShape * CreatePlane(double nx, double ny, double nz,
                                               double dx, double dy);
 
   // Documentation inherited from parent class
-  public: virtual sdf::ElementPtr GetShapeSDF(bool detailed=true, bool uriOnlyWithSubdir=false) const;
+  public: virtual sdf::ElementPtr
+                  GetShapeSDF(bool detailed=true,
+                              bool uriOnlyWithSubdir=false) const;
 
   private: PrimitiveShapeParameters::Ptr params;
 };

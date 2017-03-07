@@ -29,8 +29,8 @@ namespace collision_benchmark
 {
   /**
    * Creates a GUI with "Next" and "Prev" button to swith between worlds to be
-   * displayed. A label displaying the name of the current worls is fitted betwen
-   * the buttons.
+   * displayed. A label displaying the name of the current worls is fitted
+   * between the buttons.
    *
    * Communication with the server works via gazebo::Any messages.
    * An integer of -1 is sent for "Prev", an integer of 1 for "Next",

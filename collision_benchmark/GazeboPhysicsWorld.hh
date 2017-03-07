@@ -41,14 +41,19 @@ struct GazeboPhysicsEngineWorldTypes
 };
 
 /**
- * \brief implementation of a PhysicsEngineWorld for Gazebo. Wraps a gazebo::physics::World object.
+ * \brief implementation of a PhysicsEngineWorld for Gazebo.
+ * Wraps a gazebo::physics::World object.
  *
  * \author Jennifer Buehler
  * \date November 2016
  */
-class GazeboPhysicsWorld: public collision_benchmark::PhysicsEngineWorld<GazeboPhysicsWorldTypes, GazeboPhysicsEngineWorldTypes>
+class GazeboPhysicsWorld:
+  public collision_benchmark::PhysicsEngineWorld<GazeboPhysicsWorldTypes,
+                                                 GazeboPhysicsEngineWorldTypes>
 {
-  protected: typedef PhysicsEngineWorld<GazeboPhysicsWorldTypes, GazeboPhysicsEngineWorldTypes> ParentClass;
+  protected: typedef PhysicsEngineWorld<GazeboPhysicsWorldTypes,
+                                        GazeboPhysicsEngineWorldTypes>
+                                          ParentClass;
 
   public: typedef typename ParentClass::ModelID ModelID;
   public: typedef typename ParentClass::ModelPartID ModelPartID;
@@ -69,38 +74,53 @@ class GazeboPhysicsWorld: public collision_benchmark::PhysicsEngineWorld<GazeboP
   public: typedef typename ParentClass::PhysicsEnginePtr PhysicsEnginePtr;
   public: typedef typename ParentClass::WorldPtr WorldPtr;
 
-  // set to true (default) to wait for the namespace for be loaded in the Load* methods.
-  // Max wait time can be set in \e OnLoadMaxWaitForNamespace and \e OnLoadMaxWaitForNamespaceSleep
+  // set to true (default) to wait for the namespace for be loaded in
+  // the Load* methods. Max wait time can be set in \e OnLoadMaxWaitForNamespace
+  // and \e OnLoadMaxWaitForNamespaceSleep
   public: static constexpr bool OnLoadWaitForNamespace = true;
-  // if \e OnLoadWaitForNamespace, then this is the maximum time (seconds) to wait for
+  // if \e OnLoadWaitForNamespace, then this is the maximum
+  // time (seconds) to wait for
   public: static constexpr float OnLoadMaxWaitForNamespace = 10;
-  // if \e OnLoadWaitForNamespace, sleep time in-between checks to wait for whether the namespace has been loaded
+  // if \e OnLoadWaitForNamespace, sleep time in-between checks to wait for
+  // whether the namespace has been loaded
   public: static constexpr float OnLoadWaitForNamespaceSleep = 1;
 
-  // \param enforceContactComputation by default, contacts in Gazebo are only computed if
-  // there is at least one subscriber to the contacts topic. Use this flag to enforce contacts
-  // computation in any case.
+  // \param enforceContactComputation by default, contacts in Gazebo are only
+  //  computed if there is at least one subscriber to the contacts topic.
+  //  Use this flag to enforce contacts computation in any case.
   public: GazeboPhysicsWorld(bool enforceContactComputation=false);
   public: GazeboPhysicsWorld(const GazeboPhysicsWorld& w){}
   public: virtual ~GazeboPhysicsWorld();
 
   public: virtual bool SupportsSDF() const;
 
-  public: virtual OpResult LoadFromSDF(const sdf::ElementPtr& sdf, const std::string& worldname="");
+  public: virtual OpResult LoadFromSDF(const sdf::ElementPtr& sdf,
+                                       const std::string& worldname="");
 
-  public: virtual OpResult LoadFromFile(const std::string& filename, const std::string& worldname="");
+  public: virtual OpResult LoadFromFile(const std::string& filename,
+                                        const std::string& worldname="");
 
-  public: virtual OpResult LoadFromString(const std::string& str, const std::string& worldname="");
+  public: virtual OpResult LoadFromString(const std::string& str,
+                                          const std::string& worldname="");
 
-  public: virtual ModelLoadResult AddModelFromFile(const std::string& filename, const std::string& modelname="");
+  public: virtual ModelLoadResult
+                    AddModelFromFile(const std::string& filename,
+                                     const std::string& modelname="");
 
-  public: virtual ModelLoadResult AddModelFromString(const std::string& str, const std::string& modelname="");
+  public: virtual ModelLoadResult
+                    AddModelFromString(const std::string& str,
+                                       const std::string& modelname="");
 
-  public: virtual ModelLoadResult AddModelFromSDF(const sdf::ElementPtr& sdf, const std::string& modelname="");
+  public: virtual ModelLoadResult
+                  AddModelFromSDF(const sdf::ElementPtr& sdf,
+                                  const std::string& modelname="");
 
   public: virtual bool SupportsShapes() const;
 
-  public: virtual ModelLoadResult AddModelFromShape(const std::string& modelname, const Shape::Ptr& shape, const Shape::Ptr collShape=Shape::Ptr());
+  public: virtual ModelLoadResult
+                  AddModelFromShape(const std::string& modelname,
+                                    const Shape::Ptr& shape,
+                                    const Shape::Ptr collShape=Shape::Ptr());
 
   public: virtual std::vector<ModelID> GetAllModelIDs() const;
 
@@ -128,17 +148,22 @@ class GazeboPhysicsWorld: public collision_benchmark::PhysicsEngineWorld<GazeboP
 
   public: virtual std::vector<ContactInfoPtr> GetContactInfo() const;
 
-  public: virtual std::vector<ContactInfoPtr> GetContactInfo(const ModelID& m1, const ModelID& m2) const;
+  public: virtual std::vector<ContactInfoPtr>
+                  GetContactInfo(const ModelID& m1, const ModelID& m2) const;
 
-  /// Current warning for Gazebo implementation: Returned shared pointers are flakey, they will be deleted as soon as
-  /// Gazebo ContactManager deletes them. This will be resolved as soon as gazebo::physics::Contact instances are managed
-  /// as shared poitners by Gazebo as well.
+  /// Current warning for Gazebo implementation: Returned shared pointers
+  /// are flakey, they will be deleted as soon as
+  /// Gazebo ContactManager deletes them. This will be resolved as soon as
+  /// gazebo::physics::Contact instances are managed
+  /// as shared pointers by Gazebo as well.
   public: virtual std::vector<NativeContactPtr> GetNativeContacts() const;
 
-  /// Current warning for Gazebo implementation: Returned shared pointers are flakey, they will be deleted as soon as
-  /// Gazebo ContactManager deletes them. This will be resolved as soon as gazebo::physics::Contact instances are managed
-  /// as shared poitners by Gazebo as well.
-  public: virtual std::vector<NativeContactPtr> GetNativeContacts(const ModelID& m1, const ModelID& m2) const;
+  /// Current warning for Gazebo implementation: Returned shared pointers are
+  /// flakey, they will be deleted as soon as Gazebo ContactManager deletes
+  /// them. This will be resolved as soon as gazebo::physics::Contact
+  /// instances are managed as shared poitners by Gazebo as well.
+  public: virtual std::vector<NativeContactPtr>
+                  GetNativeContacts(const ModelID& m1, const ModelID& m2) const;
 
   public: virtual bool IsAdaptor() const;
 
@@ -155,10 +180,12 @@ class GazeboPhysicsWorld: public collision_benchmark::PhysicsEngineWorld<GazeboP
   // See also constructor parameter.
   public: void SetEnforceContactsComputation(bool flag);
 
-  public: virtual bool SetBasicModelState(const ModelID& id, const BasicState& state);
+  public: virtual bool SetBasicModelState(const ModelID& id,
+                                          const BasicState& state);
 
   /// wait for the namespace of this world
-  private: bool WaitForNamespace(const gazebo::physics::WorldPtr& gzworld, float maxWait, float waitSleep);
+  private: bool WaitForNamespace(const gazebo::physics::WorldPtr& gzworld,
+                                 float maxWait, float waitSleep);
 
   // called after a world has been loaded
   private: void PostWorldLoaded();

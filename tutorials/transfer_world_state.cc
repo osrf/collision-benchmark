@@ -63,8 +63,10 @@ int main(int argc, char** argv)
   PhysicsWorldBaseInterface::Ptr world2(gazeboWorld2);
 
   // Load the empty world.
-  // The first world loaded will be the world which is displayed in the gzclient,
-  // so that will be this world.
+  //
+  // *** The first world loaded will be the world which is displayed
+  // *** in the gzclient, so that will be this world.
+  //
   // While we will use the basic interface PhysicsWorldBaseInterface for loading
   // worlds, the actual loading of the world will only work for
   // implementations which support SDF files (which is the rubble world), and for
@@ -93,12 +95,16 @@ int main(int argc, char** argv)
   }
 
 
-  // print a messsage to notify you that you can now start the client to view the world.
-  std::cout<<"You may now start gzclient to view the first world. Press [Enter] to start the simulation after gzclient has started."<<std::endl;
+  // print a messsage to notify you that you can now start the client
+  // to view the world.
+  std::cout<<"You may now start gzclient to view the first world. "
+           <<"Press [Enter] to start the simulation after gzclient "
+           <<"has started."<<std::endl;
   getchar();
 
-  // Now run the worlds until you hit Ctrl+C. In each iteration *after* <switchAfterIter> iterations,
-  // we will set world1 to the state of world2, so world1 should display the rubble world as well after a while.
+  // Now run the worlds until you hit Ctrl+C. Starting from *after*
+  // <switchAfterIter> iterations, we will set world1 to the state of world2,
+  // so world1 should display the rubble world as well after a while.
   unsigned int iter=0;
   while (iter < runForIter)
   {
@@ -118,7 +124,8 @@ int main(int argc, char** argv)
       {
         // First get the new state of the first world:
         gazebo::physics::WorldState newState1 = gzWorld1->GetWorldState();
-        // Now, set the tolerances we want to use for comparing. We will just use the default tolerances.
+        // Now, set the tolerances we want to use for comparing.
+        // We will just use the default tolerances.
         GazeboStateCompare::Tolerances t=GazeboStateCompare::Tolerances::Default;
         // However, in the tolerances we disable the check for the dynamic properties, because we
         // disabled the physics engine in world1. The accelerations of the links will not be correct.

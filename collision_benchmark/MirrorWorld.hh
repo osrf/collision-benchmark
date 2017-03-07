@@ -67,8 +67,8 @@ class MirrorWorld
              // of NotifyOriginalWorldChange calls GetOriginalWorld() and
              // locks the originalWorldMutex WHILE an already incoming
              // message from another thread also calls GetOriginalWorld()
-             // while Node::incomingMutex being locked (from Node::ProcessIncoming),
-             // we have a deadlock.
+             // while Node::incomingMutex being locked
+             // (from Node::ProcessIncoming), we have a deadlock.
              // Therefore, as we don't know what excatly is done in
              // the implementation of NotifyOriginalWorldChange, we can't
              // have a lock in place while calling it, even if it is recursvie.

@@ -22,9 +22,12 @@
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
 
-bool collision_benchmark::WaitForNamespace(std::string worldNamespace, float maxWaitTime, float sleepTime)
+bool collision_benchmark::WaitForNamespace(std::string worldNamespace,
+                                           float maxWaitTime,
+                                           float sleepTime)
 {
-  gazebo::transport::TopicManager * topicManager = gazebo::transport::TopicManager::Instance();
+  gazebo::transport::TopicManager * topicManager =
+    gazebo::transport::TopicManager::Instance();
   if (!topicManager)
   {
     std::cerr << "No topic manager instance" << std::endl;
@@ -34,31 +37,37 @@ bool collision_benchmark::WaitForNamespace(std::string worldNamespace, float max
   gazebo::common::Timer timer;
   timer.Start();
 
-  std::cout << "Waiting for namespace '" << worldNamespace << " 'to be loaded." << std::endl;
+  std::cout << "Waiting for namespace '" << worldNamespace
+            << " 'to be loaded." << std::endl;
 
   bool found = false;
   while (!found && (timer.GetElapsed().Float() < maxWaitTime))
   {
     // found at most 1 second for namespaces to appear.
-    if (gazebo::transport::waitForNamespaces(gazebo::common::Time(sleepTime, 0)))
+    if (gazebo::transport::waitForNamespaces(gazebo::common::Time(sleepTime,
+                                                                  0)))
     {
       std::list<std::string> namespaces;
       topicManager->GetTopicNamespaces(namespaces);
 
       /*std::cout<<"Namespaces:"<<std::endl;
-      for (std::list<std::string>::iterator it=namespaces.begin(); it!=namespaces.end(); ++it)
+      for (std::list<std::string>::iterator it=namespaces.begin();
+           it!=namespaces.end(); ++it)
         std::cout<<*it<<std::endl;*/
 
-      std::list<std::string>::iterator ns = std::find(namespaces.begin(), namespaces.end(), worldNamespace);
+      std::list<std::string>::iterator ns =
+        std::find(namespaces.begin(), namespaces.end(), worldNamespace);
       bool loaded = (ns != namespaces.end()) && (*ns == worldNamespace);
       if (loaded)
       {
-        std::cout << "Namespace '" << worldNamespace << "' received." << std::endl;
+        std::cout << "Namespace '" << worldNamespace
+                  << "' received." << std::endl;
         found = true;
       }
       /*else
       {
-        std::cout << "Namespace '" << worldNamespace << "' not received yet." << std::endl;
+        std::cout << "Namespace '" << worldNamespace
+                  << "' not received yet." << std::endl;
       }*/
     }
     /*else
@@ -67,14 +76,16 @@ bool collision_benchmark::WaitForNamespace(std::string worldNamespace, float max
     }*/
   }
   if (!found)
-    std::cerr<<"Unsuccessful wait for namespace "<<worldNamespace<<"."<<std::endl;
+    std::cerr << "Unsuccessful wait for namespace "
+              << worldNamespace<<"."<<std::endl;
 
   return found;
 }
 
-sdf::ElementPtr collision_benchmark::GetSDFElementFromFile(const std::string& filename,
-                                                           const std::string& elemName,
-                                                           const std::string& name)
+sdf::ElementPtr
+collision_benchmark::GetSDFElementFromFile(const std::string& filename,
+                                           const std::string& elemName,
+                                           const std::string& name)
 {
   sdf::ElementPtr sdfRoot;
 
@@ -94,7 +105,8 @@ sdf::ElementPtr collision_benchmark::GetSDFElementFromFile(const std::string& fi
   }
   catch (gazebo::common::Exception& e)
   {
-    std::cerr << "File "<<filename<<" not found. " << e.GetErrorStr() << std::endl;
+    std::cerr << "File "<<filename<<" not found. "
+              << e.GetErrorStr() << std::endl;
     return sdf::ElementPtr();
   }
 
@@ -126,16 +138,18 @@ sdf::ElementPtr collision_benchmark::GetSDFElementFromFile(const std::string& fi
   if (!name.empty())
   {
     sdf::ParamPtr sdfElemName = sdfRoot->GetAttribute("name");
-    // std::cout << "Replacing SDF name: '" << sdfElemName->GetAsString() << "' with '" << name << "'" << std::endl;
+    // std::cout << "Replacing SDF name: '" << sdfElemName->GetAsString()
+    //           << "' with '" << name << "'" << std::endl;
     sdfElemName->SetFromString(name);
   }
 
   return sdfRoot;
 }
 
-sdf::ElementPtr collision_benchmark::GetSDFElementFromString(const std::string& xmlString,
-                                                             const std::string& elemName,
-                                                             const std::string& name)
+sdf::ElementPtr
+collision_benchmark::GetSDFElementFromString(const std::string& xmlString,
+                                             const std::string& elemName,
+                                             const std::string& name)
 {
   sdf::ElementPtr sdfRoot;
 
@@ -149,7 +163,8 @@ sdf::ElementPtr collision_benchmark::GetSDFElementFromString(const std::string& 
 
   if (!sdf::readString(xmlString, sdf))
   {
-    std::cerr << "Unable to read sdf string: " << std::endl << xmlString << std::endl;
+    std::cerr << "Unable to read sdf string: "
+              << std::endl << xmlString << std::endl;
     return sdfRoot;
   }
 
@@ -158,14 +173,16 @@ sdf::ElementPtr collision_benchmark::GetSDFElementFromString(const std::string& 
   if (!name.empty())
   {
     sdf::ParamPtr sdfElemName = sdfRoot->GetAttribute("name");
-    std::cout << "Replacing world name: '" << sdfElemName->GetAsString() << "' with '" << name << "'" << std::endl;
+    std::cout << "Replacing world name: '" << sdfElemName->GetAsString()
+              << "' with '" << name << "'" << std::endl;
     sdfElemName->SetFromString(name);
   }
 
   return sdfRoot;
 }
 
-sdf::ElementPtr collision_benchmark::GetPhysicsFromSDF(const std::string& filename)
+sdf::ElementPtr
+collision_benchmark::GetPhysicsFromSDF(const std::string& filename)
 {
   sdf::ElementPtr sdfRoot;
 
@@ -207,9 +224,10 @@ sdf::ElementPtr collision_benchmark::GetPhysicsFromSDF(const std::string& filena
   return sdfRoot;
 }
 
-gazebo::physics::WorldPtr collision_benchmark::LoadWorldFromSDF(const sdf::ElementPtr& sdfRoot,
-                                                                const std::string& name,
-                                                                const bool forceSensorsInit)
+gazebo::physics::WorldPtr
+collision_benchmark::LoadWorldFromSDF(const sdf::ElementPtr& sdfRoot,
+                                      const std::string& name,
+                                      const bool forceSensorsInit)
 {
   if (sdfRoot->GetName() != "world")
   {
@@ -233,7 +251,9 @@ gazebo::physics::WorldPtr collision_benchmark::LoadWorldFromSDF(const sdf::Eleme
       sdf::ParamPtr sdfWorldName = sdfRoot->GetAttribute("name");
       if (sdfWorldName->GetAsString() != name)
       {
-        std::cout << "INFO: Need to replace world name in SDF: '" << sdfWorldName->GetAsString() << "' with '" << name << "'" << std::endl;
+        std::cout << "INFO: Need to replace world name in SDF: '"
+                  << sdfWorldName->GetAsString() << "' with '"
+                  << name << "'" << std::endl;
         sdfWorldName->SetFromString(name);
       }
     }
@@ -254,7 +274,8 @@ gazebo::physics::WorldPtr collision_benchmark::LoadWorldFromSDF(const sdf::Eleme
   }
   catch (gazebo::common::Exception& e)
   {
-    std::cerr << " Exception ocurred when loading world. " << e.GetErrorStr() << std::endl;
+    std::cerr << " Exception ocurred when loading world. "
+              << e.GetErrorStr() << std::endl;
     return gazebo::physics::WorldPtr();
   }
   assert(world);
@@ -263,9 +284,10 @@ gazebo::physics::WorldPtr collision_benchmark::LoadWorldFromSDF(const sdf::Eleme
   return world;
 }
 
-gazebo::physics::ModelPtr collision_benchmark::LoadModelFromSDF(const sdf::ElementPtr& sdfRoot,
-                                                                const gazebo::physics::WorldPtr& world,
-                                                                const std::string& name)
+gazebo::physics::ModelPtr
+collision_benchmark::LoadModelFromSDF(const sdf::ElementPtr& sdfRoot,
+                                      const gazebo::physics::WorldPtr& world,
+                                      const std::string& name)
 {
   GZ_ASSERT(world, "Can't load a model without a world");
 
@@ -284,7 +306,9 @@ gazebo::physics::ModelPtr collision_benchmark::LoadModelFromSDF(const sdf::Eleme
   {
     if (modelName != name)
     {
-      std::cout << "INFO: Replacing name in SDF: '" << sdfModelName->GetAsString() << "' with '" << name << "'" << std::endl;
+      std::cout << "INFO: Replacing name in SDF: '"
+                << sdfModelName->GetAsString() << "' with '" << name
+                << "'" << std::endl;
       sdfModelName->SetFromString(name);
       modelName = name;
     }
@@ -294,8 +318,9 @@ gazebo::physics::ModelPtr collision_benchmark::LoadModelFromSDF(const sdf::Eleme
   bool pausedState=world->IsPaused();
   world->SetPaused(true);
 
-  // The current interface of the world only allows addition of models via SetState() in the insertions.
-  gazebo::physics::WorldState wstate(world); // get current state as we need the time values
+  // The current interface of the world only allows addition of models
+  // via SetState() in the insertions.
+  gazebo::physics::WorldState wstate(world);
   gazebo::physics::WorldState tempState;
   tempState.SetSimTime(wstate.GetSimTime());
   tempState.SetRealTime(wstate.GetRealTime());
@@ -303,7 +328,8 @@ gazebo::physics::ModelPtr collision_benchmark::LoadModelFromSDF(const sdf::Eleme
   tempState.SetIterations(wstate.GetIterations());
 
   std::string ins=sdfRoot->ToString("");
-  // the SDF has to be fixed up, otherwise gazebo::physics::World::SetState is not successful
+  // the SDF has to be fixed up, otherwise gazebo::physics::World::SetState
+  // is not successful
   collision_benchmark::wrapSDF(ins);
 
   std::vector<std::string> insertions;
@@ -323,37 +349,45 @@ gazebo::physics::ModelPtr collision_benchmark::LoadModelFromSDF(const sdf::Eleme
   return m;
 }
 
-gazebo::physics::ModelPtr collision_benchmark::LoadModelFromSDFString(const std::string& sdfString,
-                                                                      const gazebo::physics::WorldPtr& world,
-                                                                      const std::string& name)
+gazebo::physics::ModelPtr
+collision_benchmark::LoadModelFromSDFString(const std::string& sdfString,
+                                            const gazebo::physics::WorldPtr& w,
+                                            const std::string& name)
 {
-  GZ_ASSERT(world, "Can't load a model without a world");
+  GZ_ASSERT(w, "Can't load a model without a w");
 
-  sdf::ElementPtr sdfRoot = collision_benchmark::GetSDFElementFromString(sdfString, "model", name);
+  sdf::ElementPtr sdfRoot
+    = collision_benchmark::GetSDFElementFromString(sdfString, "model", name);
   if (!sdfRoot)
   {
     std::cerr<<"SDF has no tag named 'model' in the root"<<std::endl;
   }
-  return LoadModelFromSDF(sdfRoot, world, name);
+  return LoadModelFromSDF(sdfRoot, w, name);
 }
 
-// Helper function which interprets the string \e str as file if \e isFile is true,
-// and as xml string  otherwise
-gazebo::physics::WorldPtr LoadWorld_helper(const std::string &str,
-                                           const bool isFile,
-                                           const std::string& name,
-                                           const sdf::ElementPtr& overridePhysics)
+// Helper function which interprets the string \e str as file if \e isFile
+// is true, and as xml string  otherwise
+gazebo::physics::WorldPtr
+LoadWorld_helper(const std::string &str,
+                 const bool isFile,
+                 const std::string& name,
+                 const sdf::ElementPtr& overridePhysics)
 {
   gazebo::physics::WorldPtr world;
   sdf::ElementPtr sdfRoot;
   try
   {
-    if (isFile) sdfRoot = collision_benchmark::GetSDFElementFromFile(str, "world", name);
-    else sdfRoot = collision_benchmark::GetSDFElementFromString(str, "world", name);
+    if (isFile)
+      sdfRoot =
+        collision_benchmark::GetSDFElementFromFile(str, "world", name);
+    else
+      sdfRoot =
+        collision_benchmark::GetSDFElementFromString(str, "world", name);
   }
   catch (gazebo::common::Exception& e)
   {
-    std::cerr << " Exception ocurred when loading world. " << e.GetErrorStr() << std::endl;
+    std::cerr << " Exception ocurred when loading world. "
+              << e.GetErrorStr() << std::endl;
     return gazebo::physics::WorldPtr();
   }
   if (!sdfRoot)
@@ -366,8 +400,9 @@ gazebo::physics::WorldPtr LoadWorld_helper(const std::string &str,
     if (!sdfRoot->HasElement("physics"))
     {
 #ifdef DEBUG
-      std::cout<<"World in did not have physics, so adding the override physics: "
-        <<std::endl<<overridePhysics->ToString("")<<std::endl;
+      std::cout << "World in did not have physics, so adding the "
+                << "override physics: " << std::endl
+                << overridePhysics->ToString("")<<std::endl;
 #endif
       sdf::ElementPtr physics = overridePhysics->Clone();
       physics->SetParent(sdfRoot);
@@ -376,17 +411,19 @@ gazebo::physics::WorldPtr LoadWorld_helper(const std::string &str,
     else
     {
       sdf::ElementPtr sdfPhysics = sdfRoot->GetElement("physics");
-      // std::cout<<"World in "<<worldfile<<" has physics: "<<std::endl<<
-      //      sdfPhysics->ToString("")<<"overriding with: "<<std::endl<<overridePhysics->ToString("")<<std::endl;
+      // std::cout << "World in "<<worldfile<<" has physics: "<<std::endl
+      //           << sdfPhysics->ToString("")<<"overriding with: "
+      //           << std::endl<<overridePhysics->ToString("")<<std::endl;
       sdfPhysics->Copy(overridePhysics);
     }
   }
   return collision_benchmark::LoadWorldFromSDF(sdfRoot, name);
 }
 
-gazebo::physics::WorldPtr collision_benchmark::LoadWorldFromFile(const std::string &worldfile,
-                                                                 const std::string& name,
-                                                                 const sdf::ElementPtr& overridePhysics)
+gazebo::physics::WorldPtr
+collision_benchmark::LoadWorldFromFile(const std::string &worldfile,
+                                       const std::string& name,
+                                       const sdf::ElementPtr& overridePhysics)
 {
   std::cout << "Loading world from file " << worldfile;
   if (!name.empty()) std::cout << " (to be named '" << name << "')";
@@ -394,22 +431,25 @@ gazebo::physics::WorldPtr collision_benchmark::LoadWorldFromFile(const std::stri
   return LoadWorld_helper(worldfile, true, name, overridePhysics);
 }
 
-gazebo::physics::WorldPtr collision_benchmark::LoadWorldFromSDFString(const std::string &xmlStr,
-                                                                   const std::string& name,
-                                                                   const sdf::ElementPtr& overridePhysics)
+gazebo::physics::WorldPtr
+collision_benchmark::LoadWorldFromSDFString(const std::string &xmlStr,
+                                            const std::string& name,
+                                            const sdf::ElementPtr& overridePhys)
 {
   std::cout << "Loading world XML string. ";
   if (!name.empty()) std::cout << " (to be named '" << name << "')";
   std::cout << std::endl;
-  return LoadWorld_helper(xmlStr, false, name, overridePhysics);
+  return LoadWorld_helper(xmlStr, false, name, overridePhys);
 }
 
 
-gazebo::physics::WorldPtr collision_benchmark::LoadWorld(const std::string& worldfile,
-                                                         const std::string& name,
-                                                         const sdf::ElementPtr& overridePhysics)
+gazebo::physics::WorldPtr
+collision_benchmark::LoadWorld(const std::string& worldfile,
+                               const std::string& name,
+                               const sdf::ElementPtr& overridePhysics)
 {
-  gazebo::physics::WorldPtr world = LoadWorldFromFile(worldfile, name, overridePhysics);
+  gazebo::physics::WorldPtr world
+    = LoadWorldFromFile(worldfile, name, overridePhysics);
   if (!world)
   {
     std::cerr << "Could not load world." << std::endl;
@@ -418,25 +458,29 @@ gazebo::physics::WorldPtr collision_benchmark::LoadWorld(const std::string& worl
 
   std::string worldNamespace = world->Name();
 
-  // wait for namespace to be loaded, to make sure the order of namespaces maintained
-  // in the transport system eventually will correspond to the same order of the worlds
+  // wait for namespace to be loaded, to make sure the order of namespaces
+  // maintained in the transport system eventually will correspond to the
+  // same order of the worlds
   if (!WaitForNamespace(worldNamespace))
   {
-    std::cerr << "Namespace of world '" << worldNamespace << "' was not loaded" << std::endl;
+    std::cerr << "Namespace of world '" << worldNamespace
+              << "' was not loaded" << std::endl;
     return gazebo::physics::WorldPtr();
   }
   return world;
 }
 
 
-std::vector<gazebo::physics::WorldPtr> collision_benchmark::LoadWorlds(const std::vector<Worldfile>& worldfiles)
+std::vector<gazebo::physics::WorldPtr>
+collision_benchmark::LoadWorlds(const std::vector<Worldfile>& worldfiles)
 {
   std::vector<gazebo::physics::WorldPtr> worlds;
   // -- load all worlds --
   for (std::vector<Worldfile>::const_iterator w = worldfiles.begin();
       w != worldfiles.end(); ++w)
   {
-    std::cout << "Loading world " << w->filename << " (named as '" << w->worldname << "')" << std::endl;
+    std::cout << "Loading world " << w->filename << " (named as '"
+              << w->worldname << "')" << std::endl;
     gazebo::physics::WorldPtr world = LoadWorld(w->filename, w->worldname);
     if (!world)
     {

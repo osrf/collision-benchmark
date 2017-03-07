@@ -37,17 +37,22 @@ void ClearModels(gazebo::physics::WorldPtr& world);
 std::set<std::string> GetSupportedPhysicsEngines();
 
 /**
- * Returns a table with the filenames to use for each of the supported physcis engines.
- * Only supported engines are returned. Key of the returned map is the engine name as
- * given in \e engines, value is the path to the SDF file with the physics settings.
+ * Returns a table with the filenames to use for
+ * each of the supported physcis engines.
+ * Only supported engines are returned. Key of the returned map is the engine
+ * name as given in \e engines, value is the path to the SDF file with the
+ * physics settings.
  *
- * Requirement is that the physics_settings directory is in the GAZEBO_RESOURCE_PATH
+ * Requirement is that the physics_settings directory is in the
+ * GAZEBO_RESOURCE_PATH
  * \param engines can contain "ode", "bullet", "dart", "simbody"
  */
-std::map<std::string,std::string> getPhysicsSettingsSdfFor(const std::vector<std::string>& engines);
+std::map<std::string,std::string>
+getPhysicsSettingsSdfFor(const std::vector<std::string>& engines);
 
 /**
- * Calls getPhysicsSettingsSdfFor() with all supported engines as returned from GetSupportedPhysicsEngines().
+ * Calls getPhysicsSettingsSdfFor() with all supported
+ * engines as returned from GetSupportedPhysicsEngines().
  */
 std::map<std::string,std::string> getPhysicsSettingsSdfForAllEngines();
 
@@ -76,11 +81,11 @@ int isProperSDFString(const std::string& str, std::string* version=NULL);
 /**
  * Helper function which fixes the SDF format in the string, aimed at being part
  * of the WorldState's <insertions> or <deletions>.
- * Adds the <sdf version='1.6'>...</sdf> tags around the string. This is required
- * for compatibility with World::SetState().
+ * Adds the <sdf version='1.6'>...</sdf> tags around the string. This is
+ * required for compatibility with World::SetState().
  * Examle where this is required The insertions coming
- * from WorldState::operator- are in a format not compatible and need to be fixed
- * with this fucntion..
+ * from WorldState::operator- are in a format not compatible and need to be
+ * fixed with this function..
  */
 void wrapSDF(std::string& sdf);
 

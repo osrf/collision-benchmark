@@ -30,7 +30,8 @@
 namespace collision_benchmark
 {
 
-std::string SetOrReplaceFileExtension(const std::string& in, const std::string& ext)
+std::string SetOrReplaceFileExtension(const std::string& in,
+                                      const std::string& ext)
 {
   boost::filesystem::path p(in);
   boost::filesystem::path swapped = p.replace_extension(ext);
@@ -57,7 +58,9 @@ aiMaterial * GetDefaultMaterial()
 }
 
 template<typename Float=float>
-aiScene * CreateTrimeshScene(const typename collision_benchmark::MeshData<Float, 3>::ConstPtr& meshData)
+aiScene *
+CreateTrimeshScene(const typename
+                   collision_benchmark::MeshData<Float, 3>::ConstPtr& meshData)
 {
   // Create new aiScene (aiMesh)
   aiScene *assimpScene = new aiScene;
@@ -126,15 +129,18 @@ aiScene * CreateTrimeshScene(const typename collision_benchmark::MeshData<Float,
 }
 
 /**
- * \param filename file to write to. It does not need to have an extension, as \e outformat will
- *      be added as extension. If it has an extension, it will be replace by \e outformat
- * \param outformat format to write it as, must be of the types supported by assimp (e.g. "dae", "stl", "obj")
+ * \param filename file to write to. It does not need to have an extension,
+ *        as \e outformat will be added as extension. If it has an extension,
+ *        it will be replace by \e outformat
+ * \param outformat format to write it as, must be of the types
+ *        supported by assimp (e.g. "dae", "stl", "obj")
  * \param meshData the mesh data to be written
  */
 template<typename Float=float>
 bool WriteTrimesh(const std::string& filename,
                   const std::string& outformat,
-                  const typename collision_benchmark::MeshData<Float, 3>::ConstPtr& meshData)
+                  const typename collision_benchmark::MeshData
+                                 <Float, 3>::ConstPtr& meshData)
 {
   aiScene * scene = CreateTrimeshScene(meshData);
   if (!scene)
@@ -147,7 +153,8 @@ bool WriteTrimesh(const std::string& filename,
   // std::cout<<"Writing to file "<<fname<<std::endl;
 
   Assimp::Exporter exporter;
-  if (exporter.Export(scene, outformat, fname, aiProcess_GenNormals) != AI_SUCCESS)
+  if (exporter.Export(scene, outformat, fname, aiProcess_GenNormals)\
+      != AI_SUCCESS)
   {
     std::cerr<<"Could not write "<<fname<<" in the format "
              <<outformat<<". Error: "<<exporter.GetErrorString()<<std::endl;

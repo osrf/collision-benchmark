@@ -153,16 +153,19 @@ class GazeboTopicForwarder
 
             if (this->verbose)
             {
-              std::cout<<"Forwarding messages (verbose: "
-                       <<(verbose ? "true" : "false")<<") of type "
-                       <<GetTypeName<Msg>()<<" from topic "<<_from<<" to topic ";
+              std::cout << "Forwarding messages (verbose: "
+                        << (verbose ? "true" : "false")<<") of type "
+                        << GetTypeName<Msg>()<<" from topic "
+                        << _from<<" to topic ";
               if (this->pub) std::cout<<this->pub->GetTopic()<<std::endl;
               else std::cout<<"<none>"<<std::endl;
             }
           }
 
-//  public: gazebo::transport::PublisherPtr GetPublisher() const { return this->pub; }
-//  public: gazebo::transport::SubscriberPtr GetSubscriber() const { return this->sub; }
+//  public: gazebo::transport::PublisherPtr GetPublisher() const
+//          { return this->pub; }
+//  public: gazebo::transport::SubscriberPtr GetSubscriber() const
+//          { return this->sub; }
 
   // \brief Initializes the destination topic and publisher.
   // Should always be set before ForwardFrom() is called, so that the first
@@ -181,10 +184,13 @@ class GazeboTopicForwarder
              try
              {
                std::lock_guard<std::mutex> lock(transportMutex);
-               this->pub = _node->Advertise<Msg>(_to, _pubQueueLimit, _pubHzRate);
+               this->pub =
+                 _node->Advertise<Msg>(_to, _pubQueueLimit, _pubHzRate);
              } catch (gazebo::common::Exception &e)
              {
-               THROW_EXCEPTION("Could not create forwarder to "<<_to<<" with message type "<<GetTypeName<Msg>()<<": "<<e);
+               THROW_EXCEPTION("Could not create forwarder to "
+                               << _to <<" with message type "
+                               << GetTypeName<Msg>() << ": " << e);
              }
            }
 
@@ -196,8 +202,8 @@ class GazeboTopicForwarder
       std::cout<<"Debug: Got message of type "<<GetTypeName<Msg>()<<std::endl;
 
     std::lock_guard<std::mutex> lock(transportMutex);
-    if (!this->sub) THROW_EXCEPTION("Inconsistency: Subscriber is NULL, \
-                                    can't be as we are in the callback!");
+    if (!this->sub) THROW_EXCEPTION("Inconsistency: Subscriber is NULL, "
+                                    << "can't be as we are in the callback!");
 
     if (this->verbose)
     {
@@ -247,13 +253,15 @@ class GazeboTopicForwarder
 
 
 /**
- * \brief Forwards requests and responses from one request/response pair to another.
+ * \brief Forwards requests and responses
+ * from one request/response pair to another.
  *
- * This can forward requests and responses from one source service to another destination service:
+ * This can forward requests and responses from one source service to
+ * another destination service:
  *
  * ```
- * ---request---> <SourceService>  ----request forward---->  <DestinationService>
- * <--response--- <SourceService>  <---response forward----  <DestinationService>
+ * --request--> <SourceService>  ---request forward--->  <DestinationService>
+ * <--response-- <SourceService>  <--response forward---  <DestinationService>
  * ```
  * \author Jennifer Buehler
  * \date February 2017
@@ -261,13 +269,16 @@ class GazeboTopicForwarder
 class GazeboServiceForwarder
 {
   private: typedef GazeboServiceForwarder Self;
-  private: typedef GazeboTopicForwarder<gazebo::msgs::Request> RequestForwarder;
-  private: typedef GazeboTopicForwarder<gazebo::msgs::Response> ResponseForwarder;
+  private: typedef GazeboTopicForwarder<gazebo::msgs::Request>
+                     RequestForwarder;
+  private: typedef GazeboTopicForwarder<gazebo::msgs::Response>
+                     ResponseForwarder;
 
   public: typedef typename MessageFilter<gazebo::msgs::Request>::ConstPtr
-              RequestMessageFilterConstPtr;
+                     RequestMessageFilterConstPtr;
 
-  private: typedef boost::shared_ptr<gazebo::msgs::Request const> RequestConstPtr;
+  private: typedef boost::shared_ptr<gazebo::msgs::Request const>
+                     RequestConstPtr;
 
   public: typedef std::shared_ptr<Self> Ptr;
   public: typedef std::shared_ptr<const Self> ConstPtr;
@@ -322,7 +333,7 @@ class GazeboServiceForwarder
   // After enabling this feature, the requests which were buffered in between
   // the call of this function and the subsequent call of Forward() will
   // be forwarded first, before any new incoming requests are forwarded.
-  // \param latching if true, the last arrived request will be considered as well
+  // \param latching if true, the last arrived request will also be considered
   public: void BufferRequests(const std::string &_requestSourceTopic,
                               const gazebo::transport::NodePtr &_node,
                               const bool latching=true)
@@ -397,8 +408,8 @@ class GazeboServiceForwarder
   // Stop the buffer requests reception started with BufferRequests()
   // and send them off to _requestDestTopic
   private: void StopBufferRequests(const std::string &_requestDestTopic,
-                                  const gazebo::transport::NodePtr &_node,
-                                  const RequestMessageFilterConstPtr &_requestFilter)
+                                   const gazebo::transport::NodePtr &_node,
+                                   const RequestMessageFilterConstPtr &_reqFltr)
            {
              gazebo::transport::PublisherPtr pubTmp
                = _node->Advertise<gazebo::msgs::Request>(_requestDestTopic,
@@ -420,8 +431,8 @@ class GazeboServiceForwarder
                }
 
                RequestConstPtr msgToFwd(nullptr);
-               if (!_requestFilter) msgToFwd = msg;
-               else msgToFwd = _requestFilter->Filter(msg);
+               if (!_reqFltr) msgToFwd = msg;
+               else msgToFwd = _reqFltr->Filter(msg);
                if (!msgToFwd)
                {
                  if (this->verbose)
@@ -447,7 +458,8 @@ class GazeboServiceForwarder
   private: void OnRequest(const RequestConstPtr &_request)
            {
              assert(_request);
-             // std::cout<<"Buffering request: "<<_request->DebugString()<<std::endl;
+             // std::cout << "Buffering request: "
+             //           << _request->DebugString()<<std::endl;
              std::lock_guard<std::mutex> lock(bufferedRequestsMutex);
              this->bufferedRequests.push_back(_request);
            }
@@ -496,8 +508,10 @@ class GazeboTopicBlockPrinterInterface
 };
 
 /**
- * \brief received messages of this type on a topic and prints an error that they are not supported.
- * Can also use a MessageFilter to print the blocking message only certain messages.
+ * \brief Receives messages of this type on a topic
+ * and prints an error that they are not supported.
+ * Can also use a MessageFilter to print the blocking message only
+ * certain messages.
  *
  * \author Jennifer Buehler
  * \date February 2017
@@ -540,10 +554,12 @@ class GazeboTopicBlockPrinter:
           {
             if (this->sub)
               this->sub->Unsubscribe();
-            this->sub = _node->Subscribe(_topic, &GazeboTopicBlockPrinter::OnMsg,
-                                         this, _subLatching);
-//            std::cout<<"Catching messages of type "
-//                      <<GetTypeName<Msg>()<<" from topic "<<_topic<<std::endl;
+            this->sub =
+              _node->Subscribe(_topic, &GazeboTopicBlockPrinter::OnMsg,
+                               this, _subLatching);
+//            std::cout << "Catching messages of type "
+//                      << GetTypeName<Msg>()<<" from topic "
+//                      << _topic<<std::endl;
           }
 
   private: void OnMsg(const boost::shared_ptr<Msg const> &_msg)

@@ -19,7 +19,8 @@ class Exception : public std::runtime_error
 {
   public:
     // Constructor.
-    Exception(const std::string &description) : std::runtime_error(description) {}
+    Exception(const std::string &description):
+      std::runtime_error(description) {}
 };
 
 }

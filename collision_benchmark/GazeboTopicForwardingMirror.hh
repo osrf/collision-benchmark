@@ -63,7 +63,8 @@ class GazeboTopicForwardingMirror:
                 gazebo::physics::World> GazeboPhysicsEngineWorld;
 
     /// Constructor.
-    public:  GazeboTopicForwardingMirror(const std::string& worldname="default");
+    public:  GazeboTopicForwardingMirror(const std::string& worldname
+                                          = "default");
     // prohibit copy constructor
     private: GazeboTopicForwardingMirror(const GazeboTopicForwardingMirror& o){}
     public:  ~GazeboTopicForwardingMirror();

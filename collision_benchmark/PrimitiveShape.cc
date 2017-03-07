@@ -18,7 +18,9 @@
 
 using collision_benchmark::PrimitiveShape;
 
-PrimitiveShape * PrimitiveShape::CreateBox(double width, double height, double depth)
+PrimitiveShape * PrimitiveShape::CreateBox(double width,
+                                           double height,
+                                           double depth)
 {
   PrimitiveShapeParameters::Ptr
     param(new Dim3Parameter<ParameterFloat>(width, height, depth));
@@ -45,7 +47,8 @@ PrimitiveShape * PrimitiveShape::CreateCylinder(double radius, double height)
   return new PrimitiveShape(CYLINDER, param);
 }
 
-PrimitiveShape * PrimitiveShape::CreatePlane(const Vector3& normal, const Vector2& dim)
+PrimitiveShape * PrimitiveShape::CreatePlane(const Vector3& normal,
+                                             const Vector2& dim)
 {
   return CreatePlane(normal.X(), normal.Y(), normal.Z(),
                      dim.X(), dim.Y());
@@ -59,7 +62,8 @@ PrimitiveShape * PrimitiveShape::CreatePlane(double nx, double ny, double nz,
   return new PrimitiveShape(PLANE, param);
 }
 
-sdf::ElementPtr PrimitiveShape::GetShapeSDF(bool detailed, bool uriOnlyWithSubdir) const
+sdf::ElementPtr PrimitiveShape::GetShapeSDF(bool detailed,
+                                            bool uriOnlyWithSubdir) const
 {
   sdf::ElementPtr geometry(new sdf::Element());
   geometry->SetName("geometry");
@@ -84,7 +88,9 @@ sdf::ElementPtr PrimitiveShape::GetShapeSDF(bool detailed, bool uriOnlyWithSubdi
     {
       geomChild->SetName("sphere");
       geomElem->SetName("radius");
-      geomElem->AddValue("double", std::to_string(params->Get(PrimitiveShapeParameters::RADIUS)), true, "radius of cylinder");
+      geomElem->AddValue("double",
+                 std::to_string(params->Get(PrimitiveShapeParameters::RADIUS)),
+                 true, "radius of cylinder");
       break;
     }
 
@@ -92,10 +98,14 @@ sdf::ElementPtr PrimitiveShape::GetShapeSDF(bool detailed, bool uriOnlyWithSubdi
     {
       geomChild->SetName("cylinder");
       geomElem->SetName("radius");
-      geomElem->AddValue("double", std::to_string(params->Get(PrimitiveShapeParameters::RADIUS)), true, "radius of cylinder");
+      geomElem->AddValue("double",
+                 std::to_string(params->Get(PrimitiveShapeParameters::RADIUS)),
+                 true, "radius of cylinder");
       sdf::ElementPtr geomElem2(new sdf::Element());
       geomElem2->SetName("length");
-      geomElem2->AddValue("double", std::to_string(params->Get(PrimitiveShapeParameters::LENGTH)), true, "length of cylinder");
+      geomElem2->AddValue("double",
+                std::to_string(params->Get(PrimitiveShapeParameters::LENGTH)),
+                true, "length of cylinder");
       geomChild->InsertElement(geomElem2);
       break;
     }
@@ -118,13 +128,15 @@ sdf::ElementPtr PrimitiveShape::GetShapeSDF(bool detailed, bool uriOnlyWithSubdi
       valsS<<params->Get(PrimitiveShapeParameters::DIMX)<<" "
         <<params->Get(PrimitiveShapeParameters::DIMY);
 //                  <<params->Get(PrimitiveShapeParameters::DIMZ);
-      geomElem2->AddValue("vector2d", valsS.str(), true, "Length of each side of the plane");
+      geomElem2->AddValue("vector2d", valsS.str(), true,
+                          "Length of each side of the plane");
       break;
     }
 
     default:
     {
-      THROW_EXCEPTION("Unsupported primitive type in collision_benchmark::PrimitiveShape");
+      THROW_EXCEPTION("Unsupported primitive type in "
+                      << "collision_benchmark::PrimitiveShape");
     }
   }
   return geometry;

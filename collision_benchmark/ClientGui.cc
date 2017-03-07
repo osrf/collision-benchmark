@@ -24,7 +24,8 @@ using collision_benchmark::ClientGui;
 GZ_REGISTER_GUI_PLUGIN(ClientGui)
 
 
-QSize maxHeightAddWidth(const QSize& s1, const QSize& s2, float wFact=1, float hFact=1.0)
+QSize maxHeightAddWidth(const QSize& s1, const QSize& s2,
+                        float wFact=1, float hFact=1.0)
 {
   return QSize((s1.width() + s2.width())*wFact,
                std::max(s1.height(), s2.height())*hFact);
@@ -36,7 +37,8 @@ ClientGui::ClientGui()
   : GUIPlugin()
 {
   // Set the frame background and foreground colors
-  this->setStyleSheet("QFrame { background-color : rgba(100, 100, 100, 255); color : white; }");
+  this->setStyleSheet
+    ("QFrame { background-color : rgba(100, 100, 100, 255); color : white; }");
 
   // Create the main layout
   QHBoxLayout *mainLayout = new QHBoxLayout;
@@ -60,7 +62,8 @@ ClientGui::ClientGui()
 
   // Create label to sit in-between buttons ad display world name
   labelName = new QLabel("<...>");
-  connect(this, SIGNAL(TriggerNameChange(const std::string&)), this, SLOT(OnNameChange(const std::string&)));
+  connect(this, SIGNAL(TriggerNameChange(const std::string&)),
+          this, SLOT(OnNameChange(const std::string&)));
 
   // Add the buttons to the frame's layout
   switchWorldsLayout->addWidget(buttonPrev);
@@ -90,8 +93,10 @@ ClientGui::ClientGui()
   this->node->Init();
   std::string SET_TOPIC="mirror_world/set_world";
   std::string GET_TOPIC="mirror_world/get_world";
-  this->mirrorWorldPub = this->node->Advertise<gazebo::msgs::Any>(SET_TOPIC);
-  this->mirrorWorldSub = this->node->Subscribe(GET_TOPIC, &ClientGui::receiveWorldMsg, this);
+  this->mirrorWorldPub =
+    this->node->Advertise<gazebo::msgs::Any>(SET_TOPIC);
+  this->mirrorWorldSub =
+    this->node->Subscribe(GET_TOPIC, &ClientGui::receiveWorldMsg, this);
 
   std::cout<<"Waiting for connection to topic "<<SET_TOPIC<<std::endl;
   this->mirrorWorldPub->WaitForConnection();

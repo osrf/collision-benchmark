@@ -59,8 +59,9 @@ struct InstantiationOfImpl<T<Ts...>, T> : std::true_type {};
  *  InstantiationOf<Your-Type, std::shared_ptr>::value.
  *
  * Or Use static_assert to generate errors at compile time:
- *  static_assert(collision_benchmark::InstantiationOf<IntSet, std::shared_ptr>::value,
- *                "Not an instantiation of required template type");
+ * static_assert
+ *    (collision_benchmark::InstantiationOf<IntSet, std::shared_ptr>::value,
+ *     "Not an instantiation of required template type");
  *
  */
 template <typename T,
@@ -87,13 +88,14 @@ template <template <typename...> class C>
 std::false_type IsBaseOfTemplateImpl(...);
 
 /**
- * Implementation of std::is_base_of for template classes, with some limitations.
- * For example, if we have a template<typename X> class A{} and a class B that derives
- * from it (complete type known), we can do something like:
+ * \brief Implementation of std::is_base_of for template classes
+ * with some limitations.
+ * For example, if we have a template<typename X> class A{} and a class B
+ * that derives from it (complete type known), we can do something like:
  * if (IsBaseOfTemplate<A,B<int>>()) { ... B is derived from A }.
- * Limitation: Won't work for multiple inheritance (if B derives from another class X,
- * then IsBaseOfTemplate<X,B<int>> won't work), and will only work for public inheritance
- * (will generate compiler error).
+ * Limitation: Won't work for multiple inheritance (if B derives from
+ * another class X, then IsBaseOfTemplate<X,B<int>> won't work), and will
+ * only work for public inheritance (will generate compiler error).
  */
 template <template <typename...> class C, typename T>
 using IsBaseOfTemplate = decltype(IsBaseOfTemplateImpl<C>(std::declval<T*>()));

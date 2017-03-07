@@ -52,10 +52,13 @@ class Contact
 };
 
 /**
- * \brief Simple summary of basic contact point information compatible with a variety of physics engines.
- * Can be derived by specific physics engine implementations to supplement information.
- * The purpose of this base class is to allow compare contact points between different physics
- * engines, e.g. all of the Gazebo engines vs. a brute-force contact point calculation.
+ * \brief Simple summary of basic contact point information
+ * compatible with a variety of physics engines.
+ * Can be derived by specific physics engine implementations to
+ * supplement information.
+ * The purpose of this base class is to allow compare contact points between
+ * different physics engines, e.g. all of the Gazebo engines vs. another
+ * contact point calculation implementation.
  *
  * Each contact between two bodies may consist of several contact points.
  *
@@ -81,7 +84,8 @@ class ContactInfo
 
   public: ContactInfo(){}
   /// constructor which automatically swaps model1 and model2
-  /// if necessary according to their lexicographicall order (model1 before model2)
+  /// if necessary according to their lexicographicall order
+  /// (model1 before model2)
   public: ContactInfo(const ModelID& model1_,
                       const ModelPartID& modelPart1_,
                       const ModelID& model2_,
@@ -115,7 +119,8 @@ class ContactInfo
 
   public: friend std::ostream& operator<<(std::ostream& o, const Self& c)
           {
-            o<<"Model1: "<<c.model1<<"/"<<c.modelPart1<<". Model2: "<<c.model2<<"/"<<c.modelPart2;
+            o << "Model1: "<<c.model1<<"/"<<c.modelPart1<<". Model2: "
+              << c.model2<<"/"<<c.modelPart2;
             return o;
           }
 

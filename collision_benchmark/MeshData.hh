@@ -29,7 +29,8 @@ namespace collision_benchmark
  * Simple class for mesh data. Includes vertex and face index array.
  *
  * \param VertexPrecision_ precision of the vertices, defaults to float.
- * \param FaceSize size of a face (3 for triangle meshes, which is the default). Must be at least 3.
+ * \param FaceSize size of a face (3 for triangle meshes, which is the default).
+ *        Must be at least 3.
  *
  * \author Jennifer Buehler
  * \date December 2016
@@ -68,7 +69,8 @@ class MeshData
   public: ~MeshData(){}
 
   public: inline std::vector<Vertex>& GetVertices() { return verts; }
-  public: inline const std::vector<Vertex>& GetVertices() const { return verts; }
+  public: inline const std::vector<Vertex>& GetVertices() const
+                  { return verts; }
 
   public: inline std::vector<Face>& GetFaces() { return faces; }
   public: inline const std::vector<Face>& GetFaces() const { return faces; }

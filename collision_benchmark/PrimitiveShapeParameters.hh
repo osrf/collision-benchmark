@@ -26,10 +26,10 @@ namespace collision_benchmark
 
 /**
  * Interface for parameters that describe a primitive, such as radius or length.
- * Primitives can have a subset of parameters as defined in the type \e ParameterType,
- * all parameters are encoded as double values.
- * Subclasses ensure that the correct type of parameter is used with the getter and setter
- * and throw exceptions upon inconsistent use.
+ * Primitives can have a subset of parameters as defined in the type
+ * \e ParameterType, all parameters are encoded as double values.
+ * Subclasses ensure that the correct type of parameter is used with the
+ * getter and setter and throw exceptions upon inconsistent use.
  *
  * \author Jennifer Buehler
  * \date October 2016
@@ -44,9 +44,10 @@ class PrimitiveShapeParameters
 
   // Parameter values for a variety of primitive types.
   // VALX/Y/Z can be used for any primitive-specific type with x/y/z values,
-  // such as a normal. DIMX/Y/Z can be used for any x/y/z values that relate to a
-  // dimension, e.g. the size of a box.
-  public: enum ParameterType { RADIUS, LENGTH, VALX, VALY, VALZ, DIMX, DIMY, DIMZ};
+  // such as a normal. DIMX/Y/Z can be used for any x/y/z values that
+  // relate to a dimension, e.g. the size of a box.
+  public: enum ParameterType { RADIUS, LENGTH, VALX, VALY, VALZ,
+                               DIMX, DIMY, DIMZ};
 
   // Returns the value of the primitive parameter in \e result.
   // Throws a collision_benchmark::Exception if the primitive type does
@@ -76,12 +77,14 @@ class RadiusParameter: public PrimitiveShapeParameters
 
   public: virtual double Get(const Super::ParameterType& type)
   {
-    if (type!=RADIUS) THROW_EXCEPTION("RadiusParameter does hot have the type "<<type);
+    if (type!=RADIUS)
+      THROW_EXCEPTION("RadiusParameter does hot have the type "<<type);
     return radius;
   }
   public: virtual void Set(const Super::ParameterType& type, const double& val)
   {
-    if (type!=RADIUS) THROW_EXCEPTION("RadiusParameter does hot have the type "<<type);
+    if (type!=RADIUS)
+      THROW_EXCEPTION("RadiusParameter does hot have the type "<<type);
     radius=val;
   }
   public: virtual Ptr Clone() const
@@ -93,13 +96,15 @@ class RadiusParameter: public PrimitiveShapeParameters
 
 
 /**
- * All primitives which have a radius and another value such as a value or height
+ * \brief All primitives which have a radius and another value
+ * such as a value or height
  */
 template<typename Float=double>
 class RadiusAndValueParameter: public RadiusParameter<Float>
 {
   private: typedef RadiusParameter<Float> Super;
-  public: explicit RadiusAndValueParameter(const Float& radius, const Float& value):
+  public: explicit RadiusAndValueParameter(const Float& radius,
+                                           const Float& value):
     Super(radius),
     value(value){}
   public: RadiusAndValueParameter(const RadiusAndValueParameter<Float>& o):
@@ -108,19 +113,23 @@ class RadiusAndValueParameter: public RadiusParameter<Float>
 
   public: virtual double Get(const typename Super::ParameterType& type)
   {
-    if (type!=Super::RADIUS && type!=Super::LENGTH) THROW_EXCEPTION("RadiusAndValueParameter does hot have the type "<<type);
+    if (type!=Super::RADIUS && type!=Super::LENGTH)
+      THROW_EXCEPTION("RadiusAndValueParameter does hot have the type "<<type);
     if (type==Super::RADIUS) return Super::Get(type);
     return value;
   }
-  public: virtual void Set(const typename Super::ParameterType& type, const double& val)
+  public: virtual void Set(const typename Super::ParameterType& type,
+                           const double& val)
   {
-    if (type!=Super::RADIUS && type!=Super::LENGTH) THROW_EXCEPTION("RadiusAndValueParameter does hot have the type "<<type);
+    if (type!=Super::RADIUS && type!=Super::LENGTH)
+      THROW_EXCEPTION("RadiusAndValueParameter does hot have the type "<<type);
     if (type==Super::RADIUS) Super::Set(type, val);
     else value=val;
   }
   public: virtual typename Super::Ptr Clone() const
   {
-    return typename Super::Ptr(new RadiusAndValueParameter(Super::radius, value));
+    return typename
+           Super::Ptr(new RadiusAndValueParameter(Super::radius, value));
   }
 
   protected: Float value;
@@ -134,7 +143,9 @@ template<typename Float=double>
 class Dim3Parameter: public PrimitiveShapeParameters
 {
   private: typedef PrimitiveShapeParameters Super;
-  public: explicit Dim3Parameter(const Float& x_, const Float& y_, const Float& z_):
+  public: explicit Dim3Parameter(const Float& x_,
+                                 const Float& y_,
+                                 const Float& z_):
     x(x_),
     y(y_),
     z(z_)
@@ -161,7 +172,8 @@ class Dim3Parameter: public PrimitiveShapeParameters
     }
     THROW_EXCEPTION("Dim3Parameter does hot have the type "<<type);
   }
-  public: virtual void Set(const typename Super::ParameterType& type, const double& val)
+  public: virtual void Set(const typename Super::ParameterType& type,
+                           const double& val)
   {
     if (type==DIMX)
     {
@@ -196,7 +208,9 @@ template<typename Float=double>
 class Val3Parameter: public PrimitiveShapeParameters
 {
   private: typedef PrimitiveShapeParameters Super;
-  public: explicit Val3Parameter(const Float& x_, const Float& y_, const Float& z_):
+  public: explicit Val3Parameter(const Float& x_,
+                                 const Float& y_,
+                                 const Float& z_):
     x(x_),
     y(y_),
     z(z_)
@@ -223,7 +237,8 @@ class Val3Parameter: public PrimitiveShapeParameters
     }
     THROW_EXCEPTION("Val3Parameter does hot have the type "<<type);
   }
-  public: virtual void Set(const typename Super::ParameterType& type, const double& val)
+  public: virtual void Set(const typename Super::ParameterType& type,
+                           const double& val)
   {
     if (type==VALX)
     {
@@ -260,7 +275,9 @@ template<typename Float=double>
 class PlaneParameter: public Val3Parameter<double>
 {
   private: typedef Val3Parameter<double> Super;
-  public: explicit PlaneParameter(const Float& x, const Float& y, const Float& z, const Float& dist):
+  public: explicit PlaneParameter(const Float& x,
+                                  const Float& y,
+                                  const Float& z, const Float& dist):
     Super(x,y,z),
     distance(dist)
   {}
@@ -276,7 +293,8 @@ class PlaneParameter: public Val3Parameter<double>
     return Super::Get(type);
   }
 
-  public: virtual void Set(const typename Super::ParameterType& type, const double& val)
+  public: virtual void Set(const typename Super::ParameterType& type,
+                           const double& val)
   {
     if (type==LENGTH)
       distance=val;
@@ -291,14 +309,17 @@ class PlaneParameter: public Val3Parameter<double>
 
 
 /**
- * Like PlaneParameter, but uses bounds for the plane in each direction via the DIMX and DIMY fields.
+ * \brief Like PlaneParameter, but uses bounds for the plane
+ * in each direction via the DIMX and DIMY fields.
  */
 template<typename Float=double>
 class BoundedPlaneParameter: public PlaneParameter<double>
 {
   private: typedef PlaneParameter<double> Super;
-  public: explicit BoundedPlaneParameter(const Float& xN, const Float& yN, const Float& zN, const Float& dist,
-                                         const Float& xDim_, const Float& yDim_):
+  public: explicit BoundedPlaneParameter(const Float& xN, const Float& yN,
+                                         const Float& zN, const Float& dist,
+                                         const Float& xDim_,
+                                         const Float& yDim_):
     PlaneParameter(xN, yN, zN, dist),
     xDim(xDim_),
     yDim(yDim_)
@@ -321,7 +342,8 @@ class BoundedPlaneParameter: public PlaneParameter<double>
     }
     return Super::Get(type);
   }
-  public: virtual void Set(const typename Super::ParameterType& type, const double& val)
+  public: virtual void Set(const typename Super::ParameterType& type,
+                           const double& val)
   {
     if (type==DIMX)
     {
@@ -339,7 +361,9 @@ class BoundedPlaneParameter: public PlaneParameter<double>
   }
   public: virtual typename Super::Ptr Clone() const
   {
-    return typename Super::Ptr(new BoundedPlaneParameter(Super::x, Super::y, Super::z, Super::distance,
+    return typename Super::Ptr(new BoundedPlaneParameter(Super::x, Super::y,
+                                                         Super::z,
+                                                         Super::distance,
                                                          xDim, yDim));
   }
 

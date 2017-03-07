@@ -122,7 +122,7 @@ class ControlServer
           {
             if (selectWorldCallback)
             {
-              THROW_EXCEPTION("The callback to set the selected world was already set");
+              THROW_EXCEPTION("Callback to select the world was already set");
             }
             selectWorldCallback.reset(new NotifySelectWorldFct(_fct));
           }

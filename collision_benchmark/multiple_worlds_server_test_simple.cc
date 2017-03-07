@@ -29,23 +29,27 @@ using collision_benchmark::GazeboTopicForwardingMirror;
 using collision_benchmark::GazeboPhysicsWorld;
 
 /**
- * Convenience function to call PhysicsWorld::Update(1) on several worlds \e iter times
+ * Convenience function to call PhysicsWorld::Update(1) on several
+ * worlds \e iter times
  * \param iter number of iterations (world updates)
  * \param worlds all worlds that have to be updated
- * \param mirrorWorld optional: if not NULL, the method GazeboMirrorWorld::Sync() is called at each iteration
+ * \param mirrorWorld optional: if not NULL, the method
+ *        GazeboMirrorWorld::Sync() is called at each iteration
  */
-void RunWorlds(int iter, const std::vector<GazeboPhysicsWorld::Ptr>& worlds, const MirrorWorld::Ptr& mirrorWorld=MirrorWorld::Ptr(NULL))
+void RunWorlds(int iter, const std::vector<GazeboPhysicsWorld::Ptr>& worlds,
+               const MirrorWorld::Ptr& mirrorWorld=MirrorWorld::Ptr(NULL))
 {
   for (unsigned int i = 0; i < iter; ++i)
   {
     static const int steps = 1;
     // std::cout << "##### Running world(s), iter=" << i << std::endl;
-    for (std::vector<GazeboPhysicsWorld::Ptr>::const_iterator w = worlds.begin();
-        w != worlds.end(); ++w)
+    for (std::vector<GazeboPhysicsWorld::Ptr>::const_iterator
+         w = worlds.begin(); w != worlds.end(); ++w)
     {
       GazeboPhysicsWorld::Ptr world = *w;
-      // std::cout<<"Running "<<steps<<" steps for world "<<world->GetName()<<", physics engine: "
-      //     <<world->GetWorld()->Physics()->GetType()<<std::endl;
+      // std::cout << "Running "<<steps<<" steps for world "i
+      //           << world->GetName()<<", physics engine: "
+      //           << world->GetWorld()->Physics()->GetType()<<std::endl;
       world->Update(1);
     }
 
@@ -57,12 +61,14 @@ void RunWorlds(int iter, const std::vector<GazeboPhysicsWorld::Ptr>& worlds, con
 }
 
 
-// Main method to play the test, later to be replaced by a dedicated structure (without command line arument params)
+// Main method to play the test, later to be replaced by a dedicated
+// structure (without command line arument params)
 bool PlayTest(int argc, char **argv)
 {
   if (argc < 3)
   {
-    std::cerr<<"Usage: "<<argv[0]<<" <number iterations> <list of world filenames>"<<std::endl;
+    std::cerr << "Usage: " << argv[0] << " <number iterations> "
+              << "<list of world filenames>"<<std::endl;
     return false;
   }
 
@@ -78,12 +84,15 @@ bool PlayTest(int argc, char **argv)
     std::string worldfile = std::string(argv[i]);
     std::stringstream worldname;
     worldname << "world_" << i - 1;
-    worldsToLoad.push_back(collision_benchmark::Worldfile(worldfile,worldname.str()));
+    worldsToLoad.push_back(collision_benchmark::Worldfile(worldfile,
+                                                          worldname.str()));
   }
 
-  // first, load the mirror world (it has to be loaded first for gzclient to connect to it,
-  // see transport::Node::Init(), called from gui::MainWindow constructor with empty string)
-  GazeboTopicForwardingMirror::Ptr mirrorWorld(new GazeboTopicForwardingMirror("mirror_world"));
+  // first, load the mirror world (it has to be loaded first for gzclient
+  // to connect to it, see transport::Node::Init(), called from
+  // gui::MainWindow constructor with empty string)
+  GazeboTopicForwardingMirror::Ptr
+    mirrorWorld(new GazeboTopicForwardingMirror("mirror_world"));
 
   if(!mirrorWorld)
   {
@@ -92,7 +101,8 @@ bool PlayTest(int argc, char **argv)
   }
 
   std::cout << "Loading worlds..." << std::endl;
-  std::vector<gazebo::physics::WorldPtr> gzworlds = collision_benchmark::LoadWorlds(worldsToLoad);
+  std::vector<gazebo::physics::WorldPtr> gzworlds
+    = collision_benchmark::LoadWorlds(worldsToLoad);
   if (gzworlds.size()!=worldsToLoad.size())
   {
     std::cerr << "Could not load worlds." << std::endl;
@@ -100,13 +110,15 @@ bool PlayTest(int argc, char **argv)
   }
 
   // the worlds wrapped in the PhysicsWorld interface. Same size as gzworlds.
-  // XXX TODO Eventually gzworlds is going to become obsolete and exchanged by objects of PhysicsWorld,
+  // XXX TODO Eventually gzworlds is going to become obsolete and exchanged
+  // by objects of PhysicsWorld,
   // it is only used still in this test program.
   std::vector<GazeboPhysicsWorld::Ptr> worlds;
   for (int i = 0; i < gzworlds.size(); ++i)
   {
     GazeboPhysicsWorld::Ptr gzPhysicsWorld(new GazeboPhysicsWorld(false));
-    gzPhysicsWorld->SetWorld(collision_benchmark::to_std_ptr<gazebo::physics::World>(gzworlds[i]));
+    gzPhysicsWorld->SetWorld
+      (collision_benchmark::to_std_ptr<gazebo::physics::World>(gzworlds[i]));
     worlds.push_back(gzPhysicsWorld);
   }
   assert(worlds.size() == gzworlds.size());
@@ -119,7 +131,8 @@ bool PlayTest(int argc, char **argv)
     collision_benchmark::PrintWorldStates(gzworlds);
   }
 
-  std::cout << "Now start gzclient if you would like to view the test. Press [Enter] to continue."<<std::endl;
+  std::cout << "Now start gzclient if you would like to view the test. "
+            << "Press [Enter] to continue."<<std::endl;
   getchar();
 
   // Go through all worlds, mirroring each for the given number of iterations.

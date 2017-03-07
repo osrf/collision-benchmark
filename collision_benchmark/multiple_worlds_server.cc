@@ -42,7 +42,8 @@ using collision_benchmark::GazeboTopicForwardingMirror;
 using collision_benchmark::WorldManager;
 using collision_benchmark::GazeboControlServer;
 
-typedef WorldManager<gazebo::physics::WorldState, std::string, std::string> GzWorldManager;
+typedef WorldManager<gazebo::physics::WorldState, std::string, std::string>
+          GzWorldManager;
 typedef GazeboPhysicsWorld::PhysicsWorldTypes GazeboPhysicsWorldTypes;
 typedef PhysicsWorld<GazeboPhysicsWorldTypes> GzPhysicsWorld;
 
@@ -70,13 +71,14 @@ void WaitForUnpause()
   delete t;
 }
 
-// loads the mirror world. This should be loaded before all other Gazebo worlds, so that
-// gzclient connects to this one.
+// loads the mirror world. This should be loaded before all other Gazebo worlds,
+// so that gzclient connects to this one.
 /*GazeboMirrorWorld::Ptr setupMirrorWorld()
 {
     std::cout << "Setting up mirror world..." << std::endl;
     std::string mirrorName = "mirror_world";
-    gazebo::physics::WorldPtr _mirrorWorld = collision_benchmark::LoadWorld("worlds/empty.world", mirrorName);
+    gazebo::physics::WorldPtr _mirrorWorld =
+      collision_benchmark::LoadWorld("worlds/empty.world", mirrorName);
     if (!_mirrorWorld)
     {
         std::cerr<<"Could not load mirror world"<<mirrorName<<std::endl;
@@ -96,21 +98,28 @@ void pauseCallback(bool pause)
 
 #define USE_NEW_MIRRORWORLD
 
-// Main method to play the test, later to be replaced by a dedicated structure (without command line arument params)
+// Main method to play the test, later to be replaced by a dedicated
+// structure (without command line arument params)
 bool Run(int argc, char **argv)
 {
   if (argc < 3)
   {
-    std::cerr<<"Usage: "<<argv[0]<<" <world file> <list of physics engines>"<<std::endl;
-    std::cerr<<"<list of physics engines> can contain the following: [ode, bullet, dart, simbody] "<<std::endl;
+    std::cerr << "Usage: "<<argv[0]
+              << " <world file> <list of physics engines>"<<std::endl;
+    std::cerr << "<list of physics engines> can contain the following: "
+              << "[ode, bullet, dart, simbody] "<<std::endl;
     return false;
   }
 
-  // first, load the mirror world (it has to be loaded first for gzclient to connect to it,
-  // see transport::Node::Init(), called from gui::MainWindow constructor with empty string)
-  GazeboTopicForwardingMirror::Ptr mirrorWorld(new GazeboTopicForwardingMirror("mirror_world"));
-  GazeboControlServer::Ptr controlServer(new GazeboControlServer("mirror_world"));
-  controlServer->RegisterPauseCallback(std::bind(pauseCallback, std::placeholders::_1));
+  // first, load the mirror world (it has to be loaded first for
+  // gzclient to connect to it, see transport::Node::Init(), called
+  // from gui::MainWindow constructor with empty string)
+  GazeboTopicForwardingMirror::Ptr
+    mirrorWorld(new GazeboTopicForwardingMirror("mirror_world"));
+  GazeboControlServer::Ptr
+    controlServer(new GazeboControlServer("mirror_world"));
+  controlServer->RegisterPauseCallback(std::bind(pauseCallback,
+                                                 std::placeholders::_1));
   /*GazeboMirrorWorld::Ptr mirrorWorld = setupMirrorWorld();
   if(!mirrorWorld)
   {
@@ -118,20 +127,24 @@ bool Run(int argc, char **argv)
     return false;
   }*/
 
-  // now, load the worlds as given in command line arguments with the different engines given
+  // now, load the worlds as given in command line arguments
+  // with the different engines given
   std::string worldfile = argv[1];
 
   std::vector<std::string> selectedEngines;
   for (int i = 2; i < argc; ++i)
     selectedEngines.push_back(argv[i]);
 
-  std::map<std::string,std::string> physicsEngines = collision_benchmark::getPhysicsSettingsSdfFor(selectedEngines);
+  std::map<std::string,std::string> physicsEngines =
+    collision_benchmark::getPhysicsSettingsSdfFor(selectedEngines);
 
-  std::cout << "Loading world " << worldfile << " with "<<physicsEngines.size()<<" engines."<<std::endl;
+  std::cout << "Loading world " << worldfile << " with "
+            << physicsEngines.size()<<" engines."<<std::endl;
 
   GzWorldManager worldManager(mirrorWorld, controlServer);
   int i=1;
-  for (std::map<std::string,std::string>::iterator it = physicsEngines.begin(); it!=physicsEngines.end(); ++it, ++i)
+  for (std::map<std::string,std::string>::iterator
+       it = physicsEngines.begin(); it!=physicsEngines.end(); ++it, ++i)
   {
     std::string engine = it->first;
     std::string physicsSDF = it->second;
@@ -140,19 +153,23 @@ bool Run(int argc, char **argv)
     _worldname << "world_" << i << "_" << engine;
     std::string worldname=_worldname.str();
 
-    std::cout << "Loading with physics engine " << engine << " (named as '" << worldname << "')" << std::endl;
+    std::cout << "Loading with physics engine " << engine
+              << " (named as '" << worldname << "')" << std::endl;
 
     std::cout<<"Loading physics from "<<physicsSDF<<std::endl;
-    sdf::ElementPtr physics = collision_benchmark::GetPhysicsFromSDF(physicsSDF);
+    sdf::ElementPtr physics =
+      collision_benchmark::GetPhysicsFromSDF(physicsSDF);
     if (!physics.get())
     {
-      std::cerr << "Could not get phyiscs engine from " << physicsSDF << std::endl;
+      std::cerr << "Could not get phyiscs engine from "
+                << physicsSDF << std::endl;
       continue;
     }
 
     // std::cout<<"Physics: "<<physics->ToString("")<<std::endl;
     std::cout<<"Loading world from "<<worldfile<<std::endl;
-    gazebo::physics::WorldPtr gzworld = collision_benchmark::LoadWorldFromFile(worldfile, worldname, physics);
+    gazebo::physics::WorldPtr gzworld =
+      collision_benchmark::LoadWorldFromFile(worldfile, worldname, physics);
     if (!gzworld)
     {
       std::cout<<"Error loading world "<<worldfile<<std::endl;
@@ -162,8 +179,10 @@ bool Run(int argc, char **argv)
     std::cout<<"Creating GazeboPhysicsWorld. "<<std::endl;
     // Create the GazeboPhysicsWorld object
     bool enforceContactCalc=true;
-    GazeboPhysicsWorld::Ptr gzPhysicsWorld(new GazeboPhysicsWorld(enforceContactCalc));
-    gzPhysicsWorld->SetWorld(collision_benchmark::to_std_ptr<gazebo::physics::World>(gzworld));
+    GazeboPhysicsWorld::Ptr
+      gzPhysicsWorld(new GazeboPhysicsWorld(enforceContactCalc));
+    gzPhysicsWorld->SetWorld
+      (collision_benchmark::to_std_ptr<gazebo::physics::World>(gzworld));
     worldManager.AddPhysicsWorld(gzPhysicsWorld);
   }
 
@@ -171,8 +190,10 @@ bool Run(int argc, char **argv)
 
   worldManager.SetPaused(true);
 
-  std::cout <<"Now start gzclient if you would like to view the test."<<std::endl;
-  std::cout<<"  Press [Enter] to continue without gzclient or hit the play button in gzclient."<<std::endl;
+  std::cout << "Now start gzclient if you would like "
+            << "to view the test. "<<std::endl;
+  std::cout << "Press [Enter] to continue without gzclient or hit "
+            << "the play button in gzclient."<<std::endl;
   WaitForUnpause();
 
   worldManager.SetPaused(false);
@@ -186,10 +207,13 @@ bool Run(int argc, char **argv)
     worldManager.Update(numSteps);
 
     // while (true) gazebo::common::Time::MSleep(1000);
-  /*  PhysicsWorldBaseInterface::Ptr mirroredWorld = worldManager.GetMirroredWorld();
-    GzPhysicsWorld::Ptr mirroredWorldCast = std::dynamic_pointer_cast<GzPhysicsWorld>(mirroredWorld);
+  /*  PhysicsWorldBaseInterface::Ptr mirroredWorld
+        = worldManager.GetMirroredWorld();
+    GzPhysicsWorld::Ptr mirroredWorldCast =
+        std::dynamic_pointer_cast<GzPhysicsWorld>(mirroredWorld);
     assert(mirroredWorldCast);
-    std::vector<GzPhysicsWorld::ContactInfoPtr> contacts = mirroredWorldCast->GetContactInfo();
+    std::vector<GzPhysicsWorld::ContactInfoPtr> contacts =
+        mirroredWorldCast->GetContactInfo();
     std::cout<<"Number of contacts: "<<contacts.size()<<std::endl;
     getchar();*/
 

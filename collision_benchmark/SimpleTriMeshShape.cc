@@ -24,12 +24,15 @@ using collision_benchmark::SimpleTriMeshShape;
 const std::string SimpleTriMeshShape::MESH_SUB_DIR="meshes";
 const std::string SimpleTriMeshShape::MESH_EXT="stl";
 
-// checks if \e path is a directory, or a potential path to a non-existing directory
+// checks if \e path is a directory, or a potential path to a
+// non-existing directory
 bool isDirectory(const std::string& path)
 {
   boost::filesystem::path dir(path);
-  return boost::filesystem::is_directory(dir) // is an existing directory...
-         || (!path.empty() && dir.extension().empty()); // or a non-existing directory
+  // is an existing directory
+  // or a non-existing directory
+  return boost::filesystem::is_directory(dir)
+         || (!path.empty() && dir.extension().empty());
 }
 
 /**
@@ -39,7 +42,8 @@ bool makeDirectoryIfNeeded(const std::string& dPath)
 {
   if (!isDirectory(dPath))
   {
-    std::cerr<<"Trying to access a directory which has the format of a file name"<<std::endl;
+    std::cerr<<"Trying to access a directory which has the format "
+             <<"of a file name"<<std::endl;
     return false;
   }
 
@@ -48,7 +52,8 @@ bool makeDirectoryIfNeeded(const std::string& dPath)
     boost::filesystem::path dir(dPath);
     boost::filesystem::path buildPath;
 
-    for (boost::filesystem::path::iterator it(dir.begin()), it_end(dir.end()); it != it_end; ++it)
+    for (boost::filesystem::path::iterator
+         it(dir.begin()), it_end(dir.end()); it != it_end; ++it)
     {
       buildPath /= *it;
 
@@ -69,7 +74,8 @@ bool makeDirectoryIfNeeded(const std::string& dPath)
 }
 
 
-sdf::ElementPtr SimpleTriMeshShape::GetShapeSDF(bool detailed, bool uriOnlyWithSubdir) const
+sdf::ElementPtr SimpleTriMeshShape::GetShapeSDF(bool detailed,
+                                                bool uriOnlyWithSubdir) const
 {
   // full path of subdirectories
   std::string subdir =  (boost::filesystem::path(RESOURCE_SUB_DIR) /
@@ -82,7 +88,7 @@ sdf::ElementPtr SimpleTriMeshShape::GetShapeSDF(bool detailed, bool uriOnlyWithS
   // filename only with the subdirectory structure
   std::string subname = (boost::filesystem::path(subdir) /
                          boost::filesystem::path(name +
-                         (detailed ? "" : "_lowres") + "." + MESH_EXT)).native();
+                        (detailed ? "" : "_lowres") + "." + MESH_EXT)).native();
 
   // filename with the full directory structure
   std::string fullname = (boost::filesystem::path(RESOURCE_OUT_DIR) /

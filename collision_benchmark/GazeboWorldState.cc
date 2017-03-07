@@ -56,7 +56,8 @@ void GetNewEntities(const gazebo::physics::WorldState& _state1,
   }
 }
 
-/*void collision_benchmark::AddDiffWorldState(gazebo::physics::WorldPtr& world, const gazebo::physics::WorldState& diffState)
+/*void collision_benchmark::AddDiffWorldState(gazebo::physics::WorldPtr& world,
+                                  const gazebo::physics::WorldState& diffState)
 {
   bool pauseState = world->IsPaused();
   world->SetPaused(true);
@@ -72,7 +73,8 @@ void GetNewEntities(const gazebo::physics::WorldState& _state1,
 // XXX TODO REMOVE: Flags for testing
 #define FORCE_TARGET_TIME_VALUES
 // #define DEBUGWORLDSTATE
-void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr& world, const gazebo::physics::WorldState& targetState)
+void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr& world,
+                               const gazebo::physics::WorldState& targetState)
 {
   bool pauseState = world->IsPaused();
   world->SetPaused(true);
@@ -129,10 +131,10 @@ void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr& world, const 
   // the insertions still have one drawback: They don't contain
   // the current model pose. So subsequently, the current pose
   // is only published as message in the *next* world update *only if*
-  // the pose has changed (from within Model::OnPoseChange by call of World::SetWorldPose).
-  // But if the pose within the target state world has not changed,
-  // no message is published. So we need to force publishing the poses
-  // of the newly inserted models.
+  // the pose has changed (from within Model::OnPoseChange by call of
+  // World::SetWorldPose). But if the pose within the target state world
+  // has not changed, no message is published. So we need to force publishing
+  // the poses of the newly inserted models.
   std::vector<gazebo::physics::ModelState> models;
   std::vector<gazebo::physics::LightState> lights;
   GetNewEntities(targetState, currentState, models, lights);
@@ -168,7 +170,8 @@ void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr& world, const 
 
 #ifdef DEBUGWORLDSTATE
   currentState = gazebo::physics::WorldState(world);
-  std::cout << "New state after insertions " << std::endl << currentState << std::endl;
+  std::cout << "New state after insertions " << std::endl
+            << currentState << std::endl;
 #endif
 
   //// Step 2: Set the target state
@@ -212,21 +215,27 @@ void collision_benchmark::PrintWorldState(const gazebo::physics::WorldPtr world)
   std::cout << _state << std::endl;
 }
 
-void collision_benchmark::PrintWorldStates(const std::vector<gazebo::physics::WorldPtr>& worlds)
+void collision_benchmark::PrintWorldStates
+        (const std::vector<gazebo::physics::WorldPtr>& worlds)
 {
   std::cout << "## World states ###" << std::endl;
-  for (std::vector<gazebo::physics::WorldPtr>::const_iterator w = worlds.begin();
-      w != worlds.end(); ++w)
+  for (std::vector<gazebo::physics::WorldPtr>::const_iterator
+       w = worlds.begin(); w != worlds.end(); ++w)
   {
     PrintWorldState(*w);
   }
   std::cout << "#####" << std::endl;
 }
 
-void collision_benchmark::PrintWorldStates(const std::vector<PhysicsWorldStateInterface<gazebo::physics::WorldState>::Ptr>& worlds)
+void collision_benchmark::PrintWorldStates
+      (const std::vector<PhysicsWorldStateInterface
+                           <gazebo::physics::WorldState>::Ptr>& worlds)
 {
+  typedef PhysicsWorldStateInterface<gazebo::physics::WorldState> WorldStateT;
+  typedef WorldStateT::Ptr WorldStatePtr;
+
   std::cout << "## World states ###" << std::endl;
-  for (std::vector<PhysicsWorldStateInterface<gazebo::physics::WorldState>::Ptr>::const_iterator w = worlds.begin();
+  for (std::vector<WorldStatePtr>::const_iterator w = worlds.begin();
       w != worlds.end(); ++w)
   {
     gazebo::physics::WorldState s=(*w)->GetWorldState();

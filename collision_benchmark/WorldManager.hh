@@ -39,17 +39,19 @@ namespace collision_benchmark
 {
 
 /**
- * Simple convenience class which maintains a number of worlds along with an optional
- * MirrorWorld and accepts messages to control switching the mirror world.
+ * \brief Simple convenience class which maintains a number of worlds
+ * along with an optional MirrorWorld and accepts messages to control
+ * switching the mirror world.
  *
  * Communication with the client works via gazebo::Any messages.
  * An INT32 of -1 is received for "Prev", an integer of 1 for "Next",
- * a 0 for no change and simply triggering the sending of the name of the currently
- * mirrored world.
- * Each time a message is received, the current world name is sent back in a gazebo::Any message
- * with type STRING.
+ * a 0 for no change and simply triggering the sending of the name of
+ * the currently mirrored world.
+ * Each time a message is received, the current world name is sent back in
+ * a gazebo::Any message with type STRING.
  *
- * \param _WorldState describes the state of a world. XXX Note: will probably be removed?
+ * \param _WorldState describes the state of a world.
+ *         XXX Note: will probably be removed?
  * \param _ModelID the identifier for a specific model
  * \param _ModelPartID the identifier for a part of a model
  *
@@ -84,8 +86,9 @@ class WorldManager
   ///     AddPhysicsWorld().
   /// \param _controlServer server which receives control commands
   ///     for the world(s). If NULL, worlds cannot be controlled.
-  public:  WorldManager(const MirrorWorldPtr &_mirrorWorld=MirrorWorldPtr(),
-                        const ControlServerPtr &_controlServer=ControlServerPtr()):
+  public:  WorldManager(const MirrorWorldPtr &_mirrorWorld = MirrorWorldPtr(),
+                        const ControlServerPtr &_controlServer
+                            = ControlServerPtr()):
              mirroredWorldIdx(-1),
              controlServer(_controlServer)
            {
@@ -107,7 +110,8 @@ class WorldManager
                             std::placeholders::_3));
 
                this->controlServer->RegisterSelectWorldService
-                 (std::bind(&Self::ChangeMirrorWorld, this, std::placeholders::_1));
+                 (std::bind(&Self::ChangeMirrorWorld,
+                            this, std::placeholders::_1));
              }
            }
 
@@ -115,9 +119,10 @@ class WorldManager
 
 
   /// Sets the mirror world
-  /// \param _mirrorWorld the main mirror world (the one which will reflect the original). Does not
-  ///    need to be set to any world yet, will automatically be set to mirror the first world added with
-  ///    AddPhysicsWorld.
+  /// \param _mirrorWorld the main mirror world (the one which will reflect
+  ///       the original). Does not need to be set to any world yet, will
+  ///       automatically be set to mirror the first world added with
+  ///       AddPhysicsWorld.
   public: void SetMirrorWorld(const MirrorWorldPtr& _mirrorWorld)
           {
             if (!_mirrorWorld)
@@ -150,7 +155,8 @@ class WorldManager
            }
 
   /// Adds this world and returns the index this world can be accessed at
-  /// \return positive int or zero on success (index this world can be accessed at)
+  /// \return positive int or zero on success (index this world
+  ///         can be accessed at)
   public:  void AddPhysicsWorld(const PhysicsWorldBaseInterface::Ptr& _world)
            {
              std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
@@ -184,10 +190,12 @@ class WorldManager
 
 
   /// Returns the original world which is mirrored by this class
-  public:  PhysicsWorldBaseInterface::Ptr GetPhysicsWorld(unsigned int _index) const
+  public:  PhysicsWorldBaseInterface::Ptr
+           GetPhysicsWorld(unsigned int _index) const
            {
              std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
-             GZ_ASSERT(_index >=0 && _index < this->worlds.size(), "Index out of range");
+             GZ_ASSERT(_index >=0 && _index < this->worlds.size(),
+                       "Index out of range");
              if (_index >= this->worlds.size())
              {
                return PhysicsWorldBaseInterface::Ptr();
@@ -201,19 +209,25 @@ class WorldManager
             return this->worlds;
           }*/
 
-  // Convenience method which casts the world \e w to a PhysicsWorldStateInterface with the given state
+  // Convenience method which casts the world \e w to a
+  // PhysicsWorldStateInterface with the given state
   public: template<class WorldState_>
           static typename PhysicsWorldStateInterface<WorldState_>::Ptr
             ToWorldWithState(const PhysicsWorldBaseInterface::Ptr& w)
           {
-            return std::dynamic_pointer_cast<PhysicsWorldStateInterface<WorldState_>>(w);
+            return std::dynamic_pointer_cast
+                   <PhysicsWorldStateInterface<WorldState_>>(w);
           }
-  // Convenience method which casts the world \e w to a PhysicsWorldStateInterface with the given state
+
+  // Convenience method which casts the world \e w to a
+  // PhysicsWorldStateInterface with the given state
   public: template<class ModelID_, class ModelPartID_>
-          static typename PhysicsWorldModelInterface<ModelID_, ModelPartID_>::Ptr
+          static typename
+            PhysicsWorldModelInterface<ModelID_, ModelPartID_>::Ptr
             ToWorldWithModel(const PhysicsWorldBaseInterface::Ptr& w)
           {
-            return std::dynamic_pointer_cast<PhysicsWorldModelInterface<ModelID_, ModelPartID_>>(w);
+            return std::dynamic_pointer_cast
+                   <PhysicsWorldModelInterface<ModelID_, ModelPartID_>>(w);
           }
 
 
@@ -229,8 +243,10 @@ class WorldManager
             }
           }
 
-  /// Set the dynamics engine to enabled or disabled. If disabled, the objects won't react to physics
-  /// laws, but objects can be maintained in the world and collision states / contact points between them checked.
+  /// \brief Set the dynamics engine to enabled or disabled.
+  /// If disabled, the objects won't react to physics
+  /// laws, but objects can be maintained in the world and
+  /// collision states / contact points between them checked.
   public: virtual void SetDynamicsEnabled(const bool flag)
           {
             std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
@@ -250,10 +266,10 @@ class WorldManager
             // we cannot just lock the worldMutex with a lock here, because
             // calling Update() may trigger the call of callbacks in this
             // class, called by the ControlServer. ControlServer implementations
-            // may trigger the call of the callbacks from a different thread, therefore
-            // there will be a deadlock for accessing the worlds in the
-            // callback functions of this class. Only block the worlds vector
-            // while absolutey necessary.
+            // may trigger the call of the callbacks from a different thread,
+            // therefore there will be a deadlock for accessing the worlds in
+            // the callback functions of this class. Only block the worlds
+            // vector while absolutey necessary.
             // std::cout<<"__________UPDATE__________"<<std::endl;
             this->worldsMutex.lock();
             int numWorlds=this->worlds.size();
@@ -301,13 +317,14 @@ class WorldManager
                    it = this->worlds.begin();
                    it != this->worlds.end(); ++it)
               {
-                typename PhysicsWorldModelInterface<ModelID, ModelPartID>::Ptr w =
-                  ToWorldWithModel<ModelID, ModelPartID>(*it);
+                typename PhysicsWorldModelInterface<ModelID, ModelPartID>::Ptr
+                  w = ToWorldWithModel<ModelID, ModelPartID>(*it);
                 if (!w)
                 {
-                  THROW_EXCEPTION("Only support worlds which have the interface "
-                                  <<"PhysicsWorldModelInterface<"<<GetTypeName<ModelID>()
-                                  <<", "<<GetTypeName<ModelPartID>()<<">");
+                  THROW_EXCEPTION("Only support worlds which have the "
+                                  << "interface PhysicsWorldModelInterface<"
+                                  << GetTypeName<ModelID>()
+                                  << ", "<<GetTypeName<ModelPartID>()<<">");
                 }
                 if (!w->SetBasicModelState(_id,_state))
                 {
@@ -327,13 +344,14 @@ class WorldManager
                    it = this->worlds.begin();
                    it != this->worlds.end(); ++it)
               {
-                typename PhysicsWorldModelInterface<ModelID, ModelPartID>::Ptr w =
-                  ToWorldWithModel<ModelID, ModelPartID>(*it);
+                typename PhysicsWorldModelInterface<ModelID, ModelPartID>::Ptr
+                  w =ToWorldWithModel<ModelID, ModelPartID>(*it);
                 if (!w)
                 {
-                  THROW_EXCEPTION("Only support worlds which have the interface "
-                                  <<"PhysicsWorldModelInterface<"<<GetTypeName<ModelID>()
-                                  <<", "<<GetTypeName<ModelPartID>()<<">");
+                  THROW_EXCEPTION("Only support worlds which have the "
+                                  << "interface PhysicsWorldModelInterface<"
+                                  << GetTypeName<ModelID>()
+                                  << ", "<<GetTypeName<ModelPartID>()<<">");
                 }
 
                 if (_isString)
@@ -354,7 +372,7 @@ class WorldManager
               if (ctrl < 0)
               {
                 // Switch to previous world
-                std::cout<<"WorldManager: Switching to previous world"<<std::endl;
+                std::cout<<"WorldManager: Switching to prev world"<<std::endl;
                 if (mirroredWorldIdx > 0) --mirroredWorldIdx;
                 else mirroredWorldIdx=worlds.size()-1; // go back to last world
               }
@@ -372,7 +390,9 @@ class WorldManager
               // update mirrored world
               this->SetMirroredWorld(mirroredWorldIdx);
 
-              std::cout<<"WorldManager: New world is "<<mirrorWorld->GetOriginalWorld()->GetName()<<std::endl;
+              std::cout << "WorldManager: New world is "
+                        << mirrorWorld->GetOriginalWorld()->GetName()
+                        << std::endl;
 
               // return the name of the new world
               return mirrorWorld->GetOriginalWorld()->GetName();
