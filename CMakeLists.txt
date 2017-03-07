@@ -99,6 +99,13 @@ target_link_libraries(world_interface_test
 add_test(WorldInterfaceTest world_interface_test)
 add_dependencies(tests world_interface_test)
 
+add_executable(static_test EXCLUDE_FROM_ALL test/Static_TEST.cc)
+target_link_libraries(static_test
+  collision_benchmark ${GTEST_BOTH_LIBRARIES})
+add_test(StaticTest static_test)
+add_dependencies(tests static_test)
+
+
 # tutorials
 add_custom_target(tutorials)
 

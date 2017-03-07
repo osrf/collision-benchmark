@@ -17,11 +17,47 @@
 #ifndef COLLISIONBENCHMARK_WORLDLOADER_
 #define COLLISIONBENCHMARK_WORLDLOADER_
 
+#include <collision_benchmark/WorldLoader.hh>
+
 #include <gazebo/gazebo.hh>
 #include <vector>
 
 namespace collision_benchmark
 {
+
+/**
+ * \brief Implementation of WorldLoader for all the physics engines in Gazebo.
+ * \author Jennifer Buehler
+ * \date March 2017
+ */
+class GazeboWorldLoader: public WorldLoader
+{
+  // throws an exception if the engine is not supported because
+  // the physics-preset file could not be loaded
+  // \param _engine the name of the physics engine
+  // \param _alwaysCalcContacts constructor parameter for
+  //        GazeboPhysicsWorld
+  public: GazeboWorldLoader(const std::string& _engine,
+                            const bool _alwaysCalcContacts = true);
+
+  public: virtual PhysicsWorldBaseInterface::Ptr
+          LoadFromSDF(const sdf::ElementPtr& sdf,
+                      const std::string& worldname="") const;
+
+  public: virtual PhysicsWorldBaseInterface::Ptr
+          LoadFromFile(const std::string& filename,
+                       const std::string& worldname="") const;
+
+  public: virtual PhysicsWorldBaseInterface::Ptr
+          LoadFromString(const std::string& str,
+                         const std::string& worldname="") const;
+
+  // physics setting in SDF format
+  private: sdf::ElementPtr physics;
+  private: bool alwaysCalcContacts;
+
+};
+
 
 /// returns the SDF root of the element with name \e elemName,
 /// reading it from a file,
@@ -150,6 +186,16 @@ LoadWorlds(const std::vector<Worldfile>& worldfiles);
 /// \param maxWaitTime waits for this maximum time (seconds)
 bool WaitForNamespace(std::string worldNamespace, float maxWaitTime = 10,
                       float sleepTime = 1);
+
+
+/// return the first namespace loaded on the gazebo server,
+/// or the empty string if currently none are loaded yet.
+/// This can be useful to check wheter a gazebo world has already been
+/// loaded, and if so then which one. The world first loaded
+/// is the one gzclient connects to. To see why, refer to
+/// transport::Node::Init(), called
+//  from gui::MainWindow constructor with the empty string)
+const std::string GetFirstNamespace();
 
 }  // namespace collision_benchmark
 

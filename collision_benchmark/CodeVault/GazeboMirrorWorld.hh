@@ -27,6 +27,27 @@
 #include <string>
 #include <iostream>
 
+// loads the mirror world. This should be loaded before all other Gazebo worlds,
+// so that gzclient connects to this one.
+/*GazeboMirrorWorld::Ptr setupMirrorWorld()
+{
+    std::cout << "Setting up mirror world..." << std::endl;
+    std::string mirrorName = "mirror_world";
+    gazebo::physics::WorldPtr _mirrorWorld =
+      collision_benchmark::LoadWorld("worlds/empty.world", mirrorName);
+    if (!_mirrorWorld)
+    {
+        std::cerr<<"Could not load mirror world"<<mirrorName<<std::endl;
+        return GazeboMirrorWorld::Ptr();
+    }
+
+    std::cout<<"Creating mirror world object."<<std::endl;
+    GazeboMirrorWorld::Ptr mirrorWorld(new GazeboMirrorWorld(_mirrorWorld));
+    return mirrorWorld;
+}*/
+
+
+
 namespace collision_benchmark
 {
 

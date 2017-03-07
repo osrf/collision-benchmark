@@ -132,7 +132,9 @@ class WorldManager
   public:  ~WorldManager() {}
 
 
-  /// Sets the mirror world
+  /// Sets the mirror world. This world can be set to mirror any of the worlds,
+  /// for example for visualization of the currently selected world.
+  ///
   /// \param _mirrorWorld the main mirror world (the one which will reflect
   ///       the original). Does not need to be set to any world yet, will
   ///       automatically be set to mirror the first world added with
@@ -144,8 +146,6 @@ class WorldManager
               if (this->mirrorWorld)
               {
                 this->mirrorWorld.reset();
-//                this->ctrlClientSubscriber.reset();
-//                this->ctrlClientPublisher.reset();
               }
               this->mirroredWorldIdx=-1;
               return;
@@ -310,6 +310,11 @@ class WorldManager
               this->mirrorWorld->Sync();
             }
             // std::cout<<"__________UPDATE END__________"<<std::endl;
+          }
+
+  public: ControlServerPtr GetControlServer()
+          {
+            return controlServer;
           }
 
   private: void NotifyPause(const bool _flag)

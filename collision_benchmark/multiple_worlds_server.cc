@@ -18,13 +18,15 @@
 #include <collision_benchmark/GazeboWorldLoader.hh>
 #include <collision_benchmark/PhysicsWorld.hh>
 #include <collision_benchmark/GazeboWorldState.hh>
-//#include <collision_benchmark/GazeboMirrorWorld.hh>
 #include <collision_benchmark/GazeboTopicForwardingMirror.hh>
 #include <collision_benchmark/GazeboPhysicsWorld.hh>
 #include <collision_benchmark/boost_std_conversion.hh>
 #include <collision_benchmark/GazeboHelpers.hh>
 #include <collision_benchmark/WorldManager.hh>
 #include <collision_benchmark/GazeboControlServer.hh>
+
+#include <collision_benchmark/GazeboMultipleWorldsServer.hh>
+#include <collision_benchmark/WorldLoader.hh>
 
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
@@ -37,10 +39,18 @@ using collision_benchmark::PhysicsWorldStateInterface;
 using collision_benchmark::PhysicsWorld;
 using collision_benchmark::GazeboPhysicsWorld;
 using collision_benchmark::MirrorWorld;
-//using collision_benchmark::GazeboMirrorWorld;
 using collision_benchmark::GazeboTopicForwardingMirror;
 using collision_benchmark::WorldManager;
 using collision_benchmark::GazeboControlServer;
+
+using collision_benchmark::WorldLoader;
+using collision_benchmark::GazeboWorldLoader;
+using collision_benchmark::MultipleWorldsServer;
+using collision_benchmark::GazeboMultipleWorldsServer;
+
+
+typedef MultipleWorldsServer<gazebo::physics::WorldState,
+                            std::string, std::string> GzMultipleWorldsServer;
 
 typedef WorldManager<gazebo::physics::WorldState, std::string, std::string>
           GzWorldManager;
@@ -50,6 +60,7 @@ typedef PhysicsWorld<GazeboPhysicsWorldTypes> GzPhysicsWorld;
 // test is paused or not
 std::atomic<bool> g_unpaused(false);
 std::atomic<bool> g_keypressed(false);
+
 
 // waits until enter has been pressed and sets g_keypressed to true
 void WaitForEnter()
@@ -71,32 +82,13 @@ void WaitForUnpause()
   delete t;
 }
 
-// loads the mirror world. This should be loaded before all other Gazebo worlds,
-// so that gzclient connects to this one.
-/*GazeboMirrorWorld::Ptr setupMirrorWorld()
-{
-    std::cout << "Setting up mirror world..." << std::endl;
-    std::string mirrorName = "mirror_world";
-    gazebo::physics::WorldPtr _mirrorWorld =
-      collision_benchmark::LoadWorld("worlds/empty.world", mirrorName);
-    if (!_mirrorWorld)
-    {
-        std::cerr<<"Could not load mirror world"<<mirrorName<<std::endl;
-        return GazeboMirrorWorld::Ptr();
-    }
-
-    std::cout<<"Creating mirror world object."<<std::endl;
-    GazeboMirrorWorld::Ptr mirrorWorld(new GazeboMirrorWorld(_mirrorWorld));
-    return mirrorWorld;
-}*/
-
 void pauseCallback(bool pause)
 {
   //std::cout<<"############ Pause callback: "<<pause<<std::endl;
   g_unpaused = !pause;
 }
 
-#define USE_NEW_MIRRORWORLD
+#if 0
 
 // Main method to play the test, later to be replaced by a dedicated
 // structure (without command line arument params)
@@ -112,20 +104,15 @@ bool Run(int argc, char **argv)
   }
 
   // first, load the mirror world (it has to be loaded first for
-  // gzclient to connect to it, see transport::Node::Init(), called
-  // from gui::MainWindow constructor with empty string)
+  // gzclient to connect to this one instead of the others.
+  // To see why, refer to transport::Node::Init(), called
+  // from gui::MainWindow constructor with the empty string)
   GazeboTopicForwardingMirror::Ptr
     mirrorWorld(new GazeboTopicForwardingMirror("mirror_world"));
   GazeboControlServer::Ptr
     controlServer(new GazeboControlServer("mirror_world"));
   controlServer->RegisterPauseCallback(std::bind(pauseCallback,
                                                  std::placeholders::_1));
-  /*GazeboMirrorWorld::Ptr mirrorWorld = setupMirrorWorld();
-  if(!mirrorWorld)
-  {
-    std::cerr<<"Could not load mirror world."<<std::endl;
-    return false;
-  }*/
 
   // now, load the worlds as given in command line arguments
   // with the different engines given
@@ -187,7 +174,6 @@ bool Run(int argc, char **argv)
   }
 
 //  worldManager.SetDynamicsEnabled(false);
-
   worldManager.SetPaused(true);
 
   std::cout << "Now start gzclient if you would like "
@@ -263,3 +249,127 @@ int main(int argc, char **argv)
   std::cout << "Multi-world server ended." << std::endl;
   return 0;
 }
+
+#else
+
+bool Run(const std::string& worldfile,
+         const std::vector<std::string>& selectedEngines,
+         const bool loadMirror,
+         const bool allowControlViaMirror)
+{
+  bool enforceContactCalc=true;
+  GzMultipleWorldsServer::WorldLoader_M loaders;
+  for (std::vector<std::string>::const_iterator
+       it = selectedEngines.begin(); it != selectedEngines.end(); ++it)
+  {
+    std::string engine = *it;
+    try
+    {
+      loaders[engine] =
+        WorldLoader::ConstPtr(new GazeboWorldLoader(engine,
+                                                    enforceContactCalc));
+    }
+    catch (collision_benchmark::Exception& e)
+    {
+      std::cerr << "Could not add support for engine "
+                <<engine << ": " << e.what() << std::endl;
+      continue;
+    }
+  }
+
+  GzMultipleWorldsServer::Ptr
+    server(new GazeboMultipleWorldsServer(loaders));
+
+  int argc = 1;
+  char * argv = "MultipleWorldsServer";
+  server->Start(argc, &argv);
+
+  std::string mirrorName = "mirror";
+  bool allowMirrorControl = true;
+  int numWorlds = server->Load(worldfile, selectedEngines,
+                               mirrorName, allowMirrorControl);
+
+  GzWorldManager::Ptr worldManager = server->GetWorldManager();
+  assert(worldManager);
+
+  GzWorldManager::ControlServerPtr controlServer =
+    worldManager->GetControlServer();
+
+  if (controlServer)
+  {
+    controlServer->RegisterPauseCallback(std::bind(pauseCallback,
+                                                   std::placeholders::_1));
+  }
+
+//  worldManager.SetDynamicsEnabled(false);
+  worldManager->SetPaused(true);
+
+  std::cout << "Now start gzclient if you would like "
+            << "to view the test. "<<std::endl;
+  std::cout << "Press [Enter] to continue without gzclient or hit "
+            << "the play button in gzclient."<<std::endl;
+  WaitForUnpause();
+
+  worldManager->SetPaused(false);
+
+  std::cout << "Now starting to update worlds."<<std::endl;
+  //const int printCnt=100;
+  //int print=printCnt;
+  while(true)
+  {
+    int numSteps=1;
+    worldManager->Update(numSteps);
+
+    // while (true) gazebo::common::Time::MSleep(1000);
+  /*  PhysicsWorldBaseInterface::Ptr mirroredWorld
+        = worldManager.GetMirroredWorld();
+    GzPhysicsWorld::Ptr mirroredWorldCast =
+        std::dynamic_pointer_cast<GzPhysicsWorld>(mirroredWorld);
+    assert(mirroredWorldCast);
+    std::vector<GzPhysicsWorld::ContactInfoPtr> contacts =
+        mirroredWorldCast->GetContactInfo();
+    std::cout<<"Number of contacts: "<<contacts.size()<<std::endl;
+    getchar();*/
+
+    // temporary fix: wen paused, idle a little,
+    // to not make this print too often
+    /*if (!g_unpaused)
+      gazebo::common::Time::MSleep(100);
+    if (print <= 0)
+    {
+      std::cout<<"Updating world still going."<<std::endl;
+      print=printCnt;
+    }
+    --print;*/
+  }
+  server->Stop();
+  return true;
+}
+
+/////////////////////////////////////////////////
+int main(int argc, char **argv)
+{
+  if (argc < 3)
+  {
+    std::cerr << "Usage: "<<argv[0]
+              << " <world file> <list of physics engines>"<<std::endl;
+    std::cerr << "<list of physics engines> can contain the following: "
+              << "[ode, bullet, dart, simbody] "<<std::endl;
+    return false;
+  }
+
+  // now, load the worlds as given in command line arguments
+  // with the different engines given
+  std::string worldfile = argv[1];
+
+  std::vector<std::string> selectedEngines;
+  for (int i = 2; i < argc; ++i)
+    selectedEngines.push_back(argv[i]);
+
+  bool loadMirror = true;
+  bool allowControlViaMirror = true;
+  Run(worldfile, selectedEngines, loadMirror, allowControlViaMirror);
+}
+
+
+#endif

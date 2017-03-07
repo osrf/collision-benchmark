@@ -38,17 +38,28 @@ std::set<std::string> GetSupportedPhysicsEngines();
 
 /**
  * Returns a table with the filenames to use for
- * each of the supported physcis engines.
+ * each of the supported physics engines.
  * Only supported engines are returned. Key of the returned map is the engine
  * name as given in \e engines, value is the path to the SDF file with the
  * physics settings.
  *
- * Requirement is that the physics_settings directory is in the
+ * Requirement is that the ``physics_settings`` directory is in the
  * GAZEBO_RESOURCE_PATH
  * \param engines can contain "ode", "bullet", "dart", "simbody"
  */
 std::map<std::string,std::string>
 getPhysicsSettingsSdfFor(const std::vector<std::string>& engines);
+
+/**
+ * Returns the filenames to use for the physics engine \e engine.
+ * Requirement is that the ``physics_settings`` directory is in the
+ * GAZEBO_RESOURCE_PATH.
+ *
+ * \param engines can contain "ode", "bullet", "dart", "simbody"
+ * \return the path to the SDF file with the physics settings,
+ *         or empty string if engine not supported.
+ */
+std::string getPhysicsSettingsSdfFor(const std::string& engine);
 
 /**
  * Calls getPhysicsSettingsSdfFor() with all supported

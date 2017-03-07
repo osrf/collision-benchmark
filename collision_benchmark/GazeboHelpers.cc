@@ -57,6 +57,23 @@ std::set<std::string> collision_benchmark::GetSupportedPhysicsEngines()
 }
 
 /////////////////////////////////////////////////
+std::string collision_benchmark::getPhysicsSettingsSdfFor(const std::string& e)
+{
+  if (e=="bullet")
+    return "physics_settings/bullet_default.sdf";
+  else if (e=="dart")
+    return "physics_settings/dart_default.sdf";
+  else if (e=="ode")
+    return "physics_settings/ode_default.sdf";
+// SDF file does not exist yet for simbody
+//  else if (e=="simbody")
+//    return "physics_settings/simbody_default.world";
+  return "";
+}
+
+
+
+/////////////////////////////////////////////////
 std::map<std::string,std::string>
 collision_benchmark::getPhysicsSettingsSdfFor
   (const std::vector<std::string>& engines)
@@ -69,17 +86,15 @@ collision_benchmark::getPhysicsSettingsSdfFor
        eit=engines.begin(); eit!=engines.end(); ++eit)
   {
     std::string e=*eit;
-    if (!supported_engines.count(*eit)) continue;
-
-    if (e=="bullet")
-      physics_filenames["bullet"] = "physics_settings/bullet_default.sdf";
-    else if (e=="dart")
-      physics_filenames["dart"] = "physics_settings/dart_default.sdf";
-    else if (e=="ode")
-      physics_filenames["ode"] = "physics_settings/ode_default.sdf";
-    else if (e=="simbody")
-      // XXX TODO add the empty_simbody.world file
-      physics_filenames["simbody"] = "physics_settings/simbody_default.world";
+    if (!supported_engines.count(e)) continue;
+    std::string sdf = getPhysicsSettingsSdfFor(e);
+    if (sdf.empty())
+    {
+      std::cout << "WARNING in collision_benchmark::getPhysicsSettingsSdfFor: "
+                << "Physics engine " << e << " not supported. " << std::endl;
+      continue;
+    }
+    physics_filenames[e] = sdf;
   }
   return physics_filenames;
 }

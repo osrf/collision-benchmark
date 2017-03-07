@@ -81,7 +81,7 @@ TEST_F(MultipleWorldsTest, UsesDifferentEnginesOverride)
   if (engines.count("ode"))
     physics_filenames.push_back("../physics_settings/ode_default.sdf");
   if (engines.count("simbody"))
-    // XXX TODO add the empty_simbody.world file
+    // XXX TODO add the simbody file
     physics_filenames.push_back("../physics_settings/simbody_default.world");
 
   std::vector<gazebo::physics::WorldPtr> worlds;
