@@ -88,6 +88,8 @@ void pauseCallback(bool pause)
   g_unpaused = !pause;
 }
 
+
+// old implementation
 #if 0
 
 // Main method to play the test, later to be replaced by a dedicated
@@ -281,7 +283,7 @@ bool Run(const std::string& worldfile,
     server(new GazeboMultipleWorldsServer(loaders));
 
   int argc = 1;
-  char * argv = "MultipleWorldsServer";
+  const char * argv = "MultipleWorldsServer";
   server->Start(argc, &argv);
 
   std::string mirrorName = "mirror";

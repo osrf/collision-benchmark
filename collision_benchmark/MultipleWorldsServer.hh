@@ -21,6 +21,7 @@
 
 #include <collision_benchmark/PhysicsWorld.hh>
 #include <collision_benchmark/WorldManager.hh>
+#include <collision_benchmark/WorldLoader.hh>
 #include <collision_benchmark/ControlServer.hh>
 
 #include <memory>
@@ -62,7 +63,7 @@ class MultipleWorldsServer
   // Start the server. Starting of the server may accept
   // command line parameters depending on the implementation.
   // \return success of starting the server
-  public: virtual bool Start(int argc=0, char** argv=NULL) = 0;
+  public: virtual bool Start(int argc=0, const char** argv=NULL) = 0;
   public: virtual void Stop() = 0;
 
 

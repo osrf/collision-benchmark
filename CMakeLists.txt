@@ -44,6 +44,7 @@ add_library(collision_benchmark SHARED
   collision_benchmark/PrimitiveShape.cc
   collision_benchmark/SimpleTriMeshShape.cc
   collision_benchmark/GazeboControlServer.cc
+  collision_benchmark/GazeboMultipleWorldsServer.cc
   collision_benchmark/TypeHelper.cc
 )
  
