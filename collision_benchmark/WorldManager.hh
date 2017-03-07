@@ -97,17 +97,31 @@ class WorldManager
              {
                this->controlServer->RegisterPauseCallback
                  (std::bind(&Self::NotifyPause, this, std::placeholders::_1));
+
                this->controlServer->RegisterUpdateCallback
                  (std::bind(&Self::NotifyUpdate, this, std::placeholders::_1));
+
                this->controlServer->RegisterSetModelStateCallback
                  (std::bind(&Self::NotifyModelStateChange, this,
                             std::placeholders::_1,
                             std::placeholders::_2));
+
                this->controlServer->RegisterSdfModelLoadCallback
                  (std::bind(&Self::NotifySdfModelLoad, this,
                             std::placeholders::_1,
                             std::placeholders::_2,
                             std::placeholders::_3));
+
+               this->controlServer->RegisterDynamicsEnableCallback
+                 (std::bind(&Self::SetDynamicsEnabled, this,
+                            std::placeholders::_1));
+
+               // not supported yet but
+               /* this->controlServer->RegisterGravityCallback
+                 (std::bind(&Self::NotifyGravity, this,
+                            std::placeholders::_1,
+                            std::placeholders::_2,
+                            std::placeholders::_3));*/
 
                this->controlServer->RegisterSelectWorldService
                  (std::bind(&Self::ChangeMirrorWorld,
@@ -249,6 +263,8 @@ class WorldManager
   /// collision states / contact points between them checked.
   public: virtual void SetDynamicsEnabled(const bool flag)
           {
+            std::cout << "WorldManager received request to set dynamics "
+                      << "enable to " << flag << std::endl;
             std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
             for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator
                  it = this->worlds.begin();
@@ -364,6 +380,20 @@ class WorldManager
                 }
               }
            }
+
+  // changing gravity is not supported yet, but if it is,
+  // it can be implemented here at some point
+  /*public: void SetGravity(const float x, const float y, const float z)
+            {
+              std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
+              for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator
+                   it = this->worlds.begin();
+                   it != this->worlds.end(); ++it)
+              {
+                  PhysicsWorldBaseInterface::Ptr w=*it;
+                  ...
+              }
+            }*/
 
   private: std::string ChangeMirrorWorld(const int ctrl)
            {

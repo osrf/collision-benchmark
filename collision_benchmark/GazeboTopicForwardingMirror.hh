@@ -121,6 +121,13 @@ class GazeboTopicForwardingMirror:
     /// \brief topic forwarder for poseAnim messages.
     private: GazeboTopicForwarder<gazebo::msgs::PoseAnimation>::Ptr poseAnimFwd;
 
+  /*
+    // XXX TODO Get rid of this unless needed again. This has to be
+    // forwarded to ALL worlds.
+    /// \brief topic forwarder for physics messages.
+    private: GazeboTopicForwarder<gazebo::msgs::Physics>::Ptr physicsFwd;
+  */
+
     /// \brief Publisher for request messages to use for clients subscribed
     /// the the mirror world (e.g. visualization/gzclient).
     private: gazebo::transport::PublisherPtr requestPub;

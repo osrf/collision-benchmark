@@ -155,6 +155,9 @@ void GazeboControlServer::Init(const std::string &_worldName)
   this->factorySub = this->node->Subscribe<gazebo::msgs::Factory>(
       "~/factory", &GazeboControlServer::OnFactory, this);
 
+  this->physicsSub = this->node->Subscribe<gazebo::msgs::Physics>(
+      "~/physics", &GazeboControlServer::OnPhysics, this);
+
   if (!this->generalCtrlNode)
   {
     this->generalCtrlNode.reset(new gazebo::transport::Node());
@@ -275,6 +278,30 @@ void GazeboControlServer::OnUserCmd
   }
 }
 
+void GazeboControlServer::OnPhysics
+  (const boost::shared_ptr<gazebo::msgs::Physics const> &_msg)
+{
+  GZ_ASSERT(_msg, "Message must not be NULL");
+//  std::cout << "GazeboControlServer received physics msg "
+//            << _msg->DebugString() << std::endl;
+
+  // all fields will be dropped, except enable_physics
+  // and gravity
+  if (!_msg->has_enable_physics() &&
+      !_msg->has_gravity())
+  {
+    std::cout << "Only 'enable_physics' and 'gravity' fields "
+              << "of msgs::Physics messages can be forwarded, "
+              << "but none of those fields are set." <<std::endl;
+    return;
+  }
+  if (_msg->has_enable_physics())
+    NotifyDynamicsEnable(_msg->enable_physics());
+  if (_msg->has_gravity())
+      NotifyGravity(_msg->gravity().x(),
+                    _msg->gravity().y(),
+                    _msg->gravity().z());
+}
 
 void GazeboControlServer::OnFactory
   (const boost::shared_ptr<gazebo::msgs::Factory const> &_msg)

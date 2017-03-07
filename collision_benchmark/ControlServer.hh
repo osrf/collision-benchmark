@@ -57,7 +57,7 @@ class ControlServer
   // number of steps/iterations
   public: typedef std::function<void(const int)> NotifyUpdateFct;
 
-  // funciton to select one of several worlds (identified by
+  // function to select one of several worlds (identified by
   // and index) as the currently selected world.
   public: typedef std::function<std::string(const int)>
             NotifySelectWorldFct;
@@ -73,12 +73,26 @@ class ControlServer
                                      const BasicState&)>
             NotifySdfModelLoadFct;
 
+  // function to set the physics status to enabled or disabled
+  public: typedef std::function<void(const bool)>
+            NotifyDynamicsEnableFct;
+
+  // function to set the gravity
+  public: typedef std::function<void(const float, const float, const float)>
+            NotifyGravityFct;
+
+
   /// Constructor.
   public:  ControlServer() {}
   public: ControlServer(const ControlServer& o):
           pauseCallbacks(o.pauseCallbacks),
           updateCallbacks(o.updateCallbacks),
-          modelStateCallbacks(o.modelStateCallbacks) {}
+          modelStateCallbacks(o.modelStateCallbacks),
+          modelLoadCallbacks(o.modelLoadCallback),
+          dynamicsEnableCallbacks(o.dynamicsEnableCallbacks),
+          gravityCallbacks(o.gravityCallbacks),
+          selectWorldCallback(o.selectWorldCallback) {}
+
   public:  virtual ~ControlServer() {}
 
   // register a pause callback which will be called
@@ -108,6 +122,15 @@ class ControlServer
   public: void RegisterSdfModelLoadCallback(const NotifySdfModelLoadFct &_fct)
           {
             modelLoadCallbacks.push_back(_fct);
+          }
+
+  public: void RegisterDynamicsEnableCallback(const NotifyDynamicsEnableFct &_fct)
+          {
+            dynamicsEnableCallbacks.push_back(_fct);
+          }
+  public: void RegisterGravityCallback(const NotifyGravityFct &_fct)
+          {
+            gravityCallbacks.push_back(_fct);
           }
 
 
@@ -154,6 +177,32 @@ class ControlServer
                 }
              }
 
+  // must be called by subclasses when the physics
+  // engine status is changed (enabled or disabled)
+  protected: void NotifyDynamicsEnable(const bool enable)
+             {
+                std::vector<NotifyDynamicsEnableFct>::iterator it;
+                for (it=dynamicsEnableCallbacks.begin();
+                     it!=dynamicsEnableCallbacks.end(); ++it)
+                {
+                  (*it)(enable);
+                }
+             }
+
+  // must be called by subclasses when the gravity
+  // has changed
+  protected: void NotifyGravity(const float gravity_x,
+                                const float gravity_y,
+                                const float gravity_z)
+             {
+                std::vector<NotifyGravityFct>::iterator it;
+                for (it=gravityCallbacks.begin();
+                     it!=gravityCallbacks.end(); ++it)
+                {
+                  (*it)(gravity_x, gravity_y, gravity_z);
+                }
+             }
+
   // must be called by subclasses when the model is to be changed
   protected: void NotifySetModelState(const ModelID& _id,
                                       const BasicState &_state)
@@ -179,8 +228,6 @@ class ControlServer
                 }
              }
 
-
-
   // must be called by subclasses when the world with this
   // index is to be chosen as the selected world.\
   // Will call the callback function registered with
@@ -199,6 +246,8 @@ class ControlServer
   private: std::vector<NotifyUpdateFct> updateCallbacks;
   private: std::vector<NotifySetModelStateFct> modelStateCallbacks;
   private: std::vector<NotifySdfModelLoadFct> modelLoadCallbacks;
+  private: std::vector<NotifyDynamicsEnableFct> dynamicsEnableCallbacks;
+  private: std::vector<NotifyGravityFct> gravityCallbacks;
   private: std::shared_ptr<NotifySelectWorldFct> selectWorldCallback;
 
 
