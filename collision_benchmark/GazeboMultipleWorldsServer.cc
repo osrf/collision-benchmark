@@ -88,9 +88,9 @@ GazeboMultipleWorldsServer::createWorldManager
     }
 
     mirror.reset(new GazeboTopicForwardingMirror(mirror_name));
-    if (allowMirrorControl)
-      controlServer.reset(new GazeboControlServer(mirror_name));
+    controlServer.reset(new GazeboControlServer(mirror_name));
   }
-  WorldManagerPtr worldManager(new WorldManagerT(mirror, controlServer));
+  WorldManagerPtr worldManager(new WorldManagerT(mirror, controlServer,
+                                                 allowMirrorControl));
   return worldManager;
 }

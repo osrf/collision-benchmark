@@ -176,7 +176,7 @@ void GazeboControlServer::Init(const std::string &_worldName)
 void GazeboControlServer::OnWorldControl
       (const boost::shared_ptr<gazebo::msgs::WorldControl const> &_msg)
 {
-  std::cout<<"GazeboControlServer: Received world control"<<std::endl;
+  // std::cout<<"GazeboControlServer: Received world control"<<std::endl;
   this->HandleWorldControl(*_msg);
 }
 
@@ -195,7 +195,7 @@ void GazeboControlServer::HandleWorldControl
 void GazeboControlServer::OnModelModify
       (const boost::shared_ptr<gazebo::msgs::Model const> &_msg)
 {
-  std::cout<<"GazeboControlServer: Received model modify"<<std::endl;
+  // std::cout<<"GazeboControlServer: Received model modify"<<std::endl;
   BasicState mState = GetModelChangeState(*_msg);
   // std::cout<<"Constructed model state: "<<mState<<std::endl;
   this->NotifySetModelState(_msg->name(), mState);
@@ -204,14 +204,14 @@ void GazeboControlServer::OnModelModify
 void GazeboControlServer::OnPoseModify
       (const boost::shared_ptr<gazebo::msgs::Pose const> &_msg)
 {
-  std::cout<<"GazeboControlServer: Received pose modify"<<std::endl;
+  // std::cout<<"GazeboControlServer: Received pose modify"<<std::endl;
 }
 
 
 void GazeboControlServer::OnUserCmd
   (const boost::shared_ptr<gazebo::msgs::UserCmd const> &_msg)
 {
-  std::cout<<"GazeboControlServer: Received user cmd"<<std::endl;
+  // std::cout<<"GazeboControlServer: Received user cmd"<<std::endl;
 
   // Forward message after we've saved the current state
   switch (_msg->type())

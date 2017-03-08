@@ -104,6 +104,7 @@ class GazeboControlServer:
 
   // General node, initialized without namespace
   private: gazebo::transport::NodePtr generalCtrlNode;
+
 };
 
 }  // namespace collision_benchmark

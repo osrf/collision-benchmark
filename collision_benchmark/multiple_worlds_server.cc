@@ -54,8 +54,9 @@ typedef MultipleWorldsServer<gazebo::physics::WorldState,
 
 typedef WorldManager<gazebo::physics::WorldState, std::string, std::string>
           GzWorldManager;
-typedef GazeboPhysicsWorld::PhysicsWorldTypes GazeboPhysicsWorldTypes;
-typedef PhysicsWorld<GazeboPhysicsWorldTypes> GzPhysicsWorld;
+
+// typedef GazeboPhysicsWorld::PhysicsWorldTypes GazeboPhysicsWorldTypes;
+// typedef PhysicsWorld<GazeboPhysicsWorldTypes> GzPhysicsWorld;
 
 // test is paused or not
 std::atomic<bool> g_unpaused(false);
@@ -257,9 +258,9 @@ int main(int argc, char **argv)
 bool Run(const std::string& worldfile,
          const std::vector<std::string>& selectedEngines,
          const bool loadMirror,
-         const bool allowControlViaMirror)
+         const bool allowControlViaMirror,
+         const bool enforceContactCalc)
 {
-  bool enforceContactCalc=true;
   GzMultipleWorldsServer::WorldLoader_M loaders;
   for (std::vector<std::string>::const_iterator
        it = selectedEngines.begin(); it != selectedEngines.end(); ++it)
@@ -279,6 +280,13 @@ bool Run(const std::string& worldfile,
     }
   }
 
+  if (loaders.empty())
+  {
+    std::cerr << "Could not get support for any engine." << std::endl;
+    return false;
+  }
+
+
   GzMultipleWorldsServer::Ptr
     server(new GazeboMultipleWorldsServer(loaders));
 
@@ -286,10 +294,10 @@ bool Run(const std::string& worldfile,
   const char * argv = "MultipleWorldsServer";
   server->Start(argc, &argv);
 
-  std::string mirrorName = "mirror";
-  bool allowMirrorControl = true;
+  std::string mirrorName = "";
+  if (loadMirror) mirrorName = "mirror";
   int numWorlds = server->Load(worldfile, selectedEngines,
-                               mirrorName, allowMirrorControl);
+                               mirrorName, allowControlViaMirror);
 
   GzWorldManager::Ptr worldManager = server->GetWorldManager();
   assert(worldManager);
@@ -369,8 +377,10 @@ int main(int argc, char **argv)
     selectedEngines.push_back(argv[i]);
 
   bool loadMirror = true;
+  bool enforceContactCalc=false;
   bool allowControlViaMirror = true;
-  Run(worldfile, selectedEngines, loadMirror, allowControlViaMirror);
+  Run(worldfile, selectedEngines, loadMirror, allowControlViaMirror,
+      enforceContactCalc);
 }
 
 

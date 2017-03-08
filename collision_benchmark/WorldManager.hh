@@ -86,43 +86,52 @@ class WorldManager
   ///     AddPhysicsWorld().
   /// \param _controlServer server which receives control commands
   ///     for the world(s). If NULL, worlds cannot be controlled.
+  /// \param _activeControl if true, the control server \e _controlServer will
+  ///        allow all functions incl. the onew which manipulate the world,
+  ///        itself, such as adding models, changing model poses, changing
+  ///        gravity etc. If false, only basic controls for passively viewing
+  ///        the world are allowed.
   public:  WorldManager(const MirrorWorldPtr &_mirrorWorld = MirrorWorldPtr(),
                         const ControlServerPtr &_controlServer
-                            = ControlServerPtr()):
+                            = ControlServerPtr(),
+                        const bool _activeControl = true):
              mirroredWorldIdx(-1),
              controlServer(_controlServer)
            {
              this->SetMirrorWorld(_mirrorWorld);
              if (this->controlServer)
              {
-               this->controlServer->RegisterPauseCallback
-                 (std::bind(&Self::NotifyPause, this, std::placeholders::_1));
+               if (_activeControl)
+               {
+                 this->controlServer->RegisterPauseCallback
+                   (std::bind(&Self::NotifyPause, this, std::placeholders::_1));
 
-               this->controlServer->RegisterUpdateCallback
-                 (std::bind(&Self::NotifyUpdate, this, std::placeholders::_1));
+                 this->controlServer->RegisterUpdateCallback
+                   (std::bind(&Self::NotifyUpdate, this,
+                              std::placeholders::_1));
 
-               this->controlServer->RegisterSetModelStateCallback
-                 (std::bind(&Self::NotifyModelStateChange, this,
-                            std::placeholders::_1,
-                            std::placeholders::_2));
+                 this->controlServer->RegisterSetModelStateCallback
+                   (std::bind(&Self::NotifyModelStateChange, this,
+                              std::placeholders::_1,
+                              std::placeholders::_2));
 
-               this->controlServer->RegisterSdfModelLoadCallback
-                 (std::bind(&Self::NotifySdfModelLoad, this,
-                            std::placeholders::_1,
-                            std::placeholders::_2,
-                            std::placeholders::_3));
+                 this->controlServer->RegisterSdfModelLoadCallback
+                   (std::bind(&Self::NotifySdfModelLoad, this,
+                              std::placeholders::_1,
+                              std::placeholders::_2,
+                              std::placeholders::_3));
 
-               this->controlServer->RegisterDynamicsEnableCallback
-                 (std::bind(&Self::SetDynamicsEnabled, this,
-                            std::placeholders::_1));
+                 this->controlServer->RegisterDynamicsEnableCallback
+                   (std::bind(&Self::SetDynamicsEnabled, this,
+                              std::placeholders::_1));
 
-               // not supported yet but
-               /* this->controlServer->RegisterGravityCallback
-                 (std::bind(&Self::NotifyGravity, this,
-                            std::placeholders::_1,
-                            std::placeholders::_2,
-                            std::placeholders::_3));*/
-
+                 // not supported yet but
+                 /* this->controlServer->RegisterGravityCallback
+                   (std::bind(&Self::NotifyGravity, this,
+                              std::placeholders::_1,
+                              std::placeholders::_2,
+                              std::placeholders::_3));*/
+               }
                this->controlServer->RegisterSelectWorldService
                  (std::bind(&Self::ChangeMirrorWorld,
                             this, std::placeholders::_1));
@@ -319,20 +328,23 @@ class WorldManager
 
   private: void NotifyPause(const bool _flag)
            {
-             // std::cout<<"PAUSE FLAG "<<_flag<<std::endl;
+             std::cout << "WorldManager Received PAUSE command: "
+                       << _flag << std::endl;
              SetPaused(_flag);
            }
 
   private: void NotifyUpdate(const int _numSteps)
            {
-             // std::cout<<"UPDATE "<<_numSteps<<std::endl;
+             std::cout << "WorldManager Received UPDATE command with "
+                       << _numSteps << " steps. " << std::endl;
              Update(_numSteps, true);
            }
 
   private: void NotifyModelStateChange(const ModelID  &_id,
                                     const BasicState &_state)
            {
-              // std::cout<<"STATE CHANGE "<<_id<<": "<<_state<<std::endl;
+              std::cout << "WorldManager received STATE CHANGE command "
+                        << "for model " << _id << ": " << _state << std::endl;
               std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
               for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator
                    it = this->worlds.begin();
@@ -360,6 +372,8 @@ class WorldManager
                                    const bool _isString,
                                    const BasicState &_state)
            {
+              std::cout << "WorldManager received SDF MODEL command"
+                        << std::endl;
               std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
               for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator
                    it = this->worlds.begin();

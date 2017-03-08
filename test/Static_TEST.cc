@@ -1,42 +1,14 @@
-#include <collision_benchmark/GazeboWorldLoader.hh>
 #include <collision_benchmark/WorldManager.hh>
-#include <collision_benchmark/PhysicsWorld.hh>
-#include <collision_benchmark/GazeboPhysicsWorld.hh>
-#include <collision_benchmark/GazeboHelpers.hh>
-#include <collision_benchmark/boost_std_conversion.hh>
-
 #include <gazebo/gazebo.hh>
-#include <gazebo/physics/physics.hh>
 
-#include "BasicTestFramework.hh"
+#include "MultipleWorldsTestFramework.hh"
 
-using collision_benchmark::PhysicsWorld;
-using collision_benchmark::GazeboPhysicsWorld;
 using collision_benchmark::WorldManager;
 
-// Gets the preset files required for the engines in \e engines.
-// \param engines the engines to use [bullet, dart, ode, simbody].
-// \return engine filenames are inserted alphanumerically so that
-//    the returned vector has the same order as \e engines.
-std::vector<std::string>
-GetPhysicsPresetFiles(const std::set<std::string>& engines)
-{
-  std::vector<std::string> physics_filenames;
-  // insert engines alphanumerically into filenames so that filenames has same
-  // order as engines
-  if (engines.count("bullet"))
-    physics_filenames.push_back("../physics_settings/bullet_default.sdf");
-  if (engines.count("dart"))
-    physics_filenames.push_back("../physics_settings/dart_default.sdf");
-  if (engines.count("ode"))
-    physics_filenames.push_back("../physics_settings/ode_default.sdf");
-  if (engines.count("simbody"))
-    // XXX TODO add the empty_simbody.world file
-    physics_filenames.push_back("../physics_settings/simbody_default.world");
-  return physics_filenames;
-}
+class StaticTest : public MultipleWorldsTestFramework {};
 
-class StaticTest : public BasicTestFramework {};
+typedef WorldManager<gazebo::physics::WorldState, std::string, std::string>
+          GzWorldManager;
 
 // Loads a world with different physics engines (only the ones implemented
 // in Gazebo) and does the static test in which two models are generated at
@@ -44,44 +16,58 @@ class StaticTest : public BasicTestFramework {};
 // collision state (boolean collision).
 TEST_F(StaticTest, TwoSpheres)
 {
-  std::set<std::string> engines =
+  std::vector<std::string> selectedEngines;
+  selectedEngines.push_back("bullet");
+  selectedEngines.push_back("ode");
+
+  /*std::set<std::string> engines =
     collision_benchmark::GetSupportedPhysicsEngines();
-  std::vector<std::string> physics_filenames = GetPhysicsPresetFiles(engines);
+  // run test on all engines
+  selectedEngines.insert(selectedEngines.end(), engines.begin(), engines.end());*/
 
   // test world
-  std::string worldfile = "worlds/empty.world";
+  std::string worldfile = "worlds/rubble.world";
 
-  std::vector<gazebo::physics::WorldPtr> worlds;
-  for (std::vector<std::string>::const_iterator
-       it=physics_filenames.begin(); it!=physics_filenames.end(); ++it)
+  GzMultipleWorldsServer::Ptr mServer = GetServer();
+  ASSERT_NE(mServer.get(), nullptr) << "Could not create and start server";
+
+  bool loadMirror = true;
+  std::string mirrorName = "";
+  if (loadMirror) mirrorName = "mirror";
+  // with the tests, the mirror can be used to watch the test,
+  // but not to manipulate the worlds.
+  bool allowControlViaMirror = false;
+  int numWorlds = mServer->Load(worldfile, selectedEngines,
+                               mirrorName, allowControlViaMirror);
+
+  GzWorldManager::Ptr worldManager = mServer->GetWorldManager();
+  assert(worldManager);
+
+/*  GzWorldManager::ControlServerPtr controlServer =
+    worldManager->GetControlServer();
+
+  if (controlServer)
   {
-    std::string physicsfile = *it;
-    std::cout<<"Loading physics from "<<physicsfile<<std::endl;
-    sdf::ElementPtr physics =
-      collision_benchmark::GetPhysicsFromSDF(physicsfile);
-    ASSERT_NE(physics.get(), nullptr) << "Could not get phyiscs engine from "
-                                      << physicsfile;
-    // std::cout<<"Physics: "<<physics->ToString("")<<std::endl;
-    std::cout<<"Loading world from "<<worldfile<<std::endl;
-    gazebo::physics::WorldPtr gzworld =
-      collision_benchmark::LoadWorldFromFile(worldfile, "", physics);
-    ASSERT_NE(gzworld.get(), nullptr) <<"Could not load world "<<worldfile;
-    worlds.push_back(gzworld);
-  }
+    controlServer->RegisterPauseCallback(std::bind(pauseCallback,
+                                                   std::placeholders::_1));
+  }*/
 
-  ASSERT_EQ(worlds.size(), physics_filenames.size())
-            << physics_filenames.size() << "  Worlds must have been loaded";
+  worldManager->SetDynamicsEnabled(true);
+  worldManager->SetPaused(true);
 
-  std::set<std::string>::iterator eit=engines.begin();
-  for (std::vector<gazebo::physics::WorldPtr>::iterator
-       it=worlds.begin(); it!=worlds.end(); ++it, ++eit)
+  std::cout << "Now start gzclient if you would like "
+            << "to view the test. "<<std::endl;
+  std::cout << "Press [Enter] to continue without gzclient or hit "
+            << "the play button in gzclient."<<std::endl;
+  getchar();
+
+  worldManager->SetPaused(false);
+
+  std::cout << "Now starting to update worlds."<<std::endl;
+  while(true)
   {
-    std::cout<<"Engine used: "<<(*it)->Physics()->GetType()<<std::endl;
-    ASSERT_NE(it->get(),nullptr) << " World NULL pointer returned";
-    ASSERT_NE((*it)->Physics().get(), nullptr)
-      << " World PhysicsEngine cannot be NULL";
-    ASSERT_EQ((*it)->Physics()->GetType(), *eit) << "Engine must be '"<<*eit
-      <<"', is "<<(*it)->Physics()->GetType();
+    int numSteps=1;
+    worldManager->Update(numSteps);
   }
 }
 
