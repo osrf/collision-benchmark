@@ -75,9 +75,16 @@ class WorldManager
 
   // the world interface supporting the WorldState
   public: typedef PhysicsWorldStateInterface<WorldState>
-             PhysicsWorldStateInterfaceT;
+            PhysicsWorldStateInterfaceT;
   public: typedef typename PhysicsWorldStateInterfaceT::Ptr
-             PhysicsWorldStateInterfacePtr;
+            PhysicsWorldStateInterfacePtr;
+
+  public: typedef PhysicsWorldModelInterface<ModelID, ModelPartID,
+            Vector3> PhysicsWorldModelInterfaceT;
+  public: typedef typename PhysicsWorldModelInterfaceT::ModelLoadResult
+            ModelLoadResult;
+  public: typedef typename PhysicsWorldModelInterfaceT::Ptr
+            PhysicsWorldModelInterfacePtr;
 
   //public: typedef typename MirrorWorld<WorldState>::Ptr MirrorWorldPtr;
   public: typedef typename MirrorWorld::Ptr MirrorWorldPtr;
@@ -236,6 +243,85 @@ class WorldManager
            return this->worlds;
          }*/
 
+
+
+  /// Calls PhysicsWorldModelInterface::AddModelFromFile
+  /// on all worlds.
+  /// \return the return value for each world. Typically,
+  ///   the model name will be the same in all
+  ///   worlds, as it is defined in the file or given in \e modelname.
+  public: std::vector<ModelLoadResult>
+                  AddModelFromFile(const std::string& filename,
+                                   const std::string& modelname="")
+  {
+    return CallOnAllWorldsWithModel
+      <ModelLoadResult, const std::string&, const std::string&>
+        (&Self::AddModelFromFileCB, filename, modelname);
+  }
+
+
+  /// Calls PhysicsWorldModelInterface::AddModelFromString
+  /// on all worlds.
+  /// \return the return value for each world. Typically,
+  ///   the model name will be the same in all
+  ///   worlds, as it is defined in \e str or given in \e modelname.
+  public: std::vector<ModelLoadResult>
+                  AddModelFromString(const std::string& str,
+                                     const std::string& modelname="")
+  {
+    return CallOnAllWorldsWithModel
+      <ModelLoadResult, const std::string&, const std::string&>
+        (&Self::AddModelFromStringCB, str, modelname);
+  }
+
+
+  /// Calls PhysicsWorldModelInterface::AddModelFromSDF
+  /// on all worlds.
+  /// \return the return value for each world. Typically,
+  ///   the model name will be the same in all
+  ///   worlds, as it is defined in \e sdf or given in \e modelname.
+  public: std::vector<ModelLoadResult>
+                  AddModelFromSDF(const sdf::ElementPtr& sdf,
+                                  const std::string& modelname="")
+  {
+    return CallOnAllWorldsWithModel
+      <ModelLoadResult, const sdf::ElementPtr&, const std::string&>
+        (&Self::AddModelFromSdfCB, sdf, modelname);
+  }
+
+
+  /// Calls PhysicsWorldModelInterface::AddModelFromShape
+  /// on all worlds which return true for SupportShapes().
+  /// \return the return value for each world. Typically,
+  ///   the model name will be the same in all
+  ///   worlds, as it is defined in \e modelname.
+  public: std::vector<ModelLoadResult>
+          AddModelFromShape(const std::string& modelname,
+                            const Shape::Ptr& shape,
+                            const Shape::Ptr& collShape = Shape::Ptr())
+  {
+    return CallOnAllWorldsWithModel
+      <ModelLoadResult, const std::string&, const Shape::Ptr&, const Shape::Ptr&>
+        (&Self::AddModelFromShapeCB, modelname, shape, collShape);
+  }
+
+  /// Calls PhysicsWorldModelInterface::SetBasicModelState on
+  /// all worlds. Assumes that all worlds use the same model name.
+  /// \return number of worlds in which the state was successfully set.
+  public: int SetBasicModelState(const ModelID& id,
+                                 const BasicState& state)
+  {
+    std::vector<bool> ret = CallOnAllWorldsWithModel
+      <bool, const ModelID&, const BasicState&>
+        (&Self::SetBasicModelStateCB, id, state);
+    int cnt = 0;
+    for (std::vector<bool>::iterator it = ret.begin(); it != ret.end(); ++it)
+    {
+      if (*it) ++cnt;
+    }
+    return cnt;
+  }
+
   // Convenience method which casts the world \e w to a
   // PhysicsWorldStateInterface with the given state
   public: template<class WorldState_>
@@ -274,7 +360,7 @@ class WorldManager
   /// If disabled, the objects won't react to physics
   /// laws, but objects can be maintained in the world and
   /// collision states / contact points between them checked.
-  public: virtual void SetDynamicsEnabled(const bool flag)
+  public: void SetDynamicsEnabled(const bool flag)
   {
    std::cout << "WorldManager received request to set dynamics "
              << "enable to " << flag << std::endl;
@@ -349,12 +435,15 @@ class WorldManager
   {
      std::cout << "WorldManager received STATE CHANGE command "
                << "for model " << _id << ": " << _state << std::endl;
-     std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
+     // std::vector<bool> retVals =
+       CallOnAllWorldsWithModel <bool, const ModelID&, const BasicState&>
+        (&Self::SetBasicModelStateCB, _id, _state);
+     /*std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
      for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator
           it = this->worlds.begin();
           it != this->worlds.end(); ++it)
      {
-       typename PhysicsWorldModelInterface<ModelID, ModelPartID, Vector3>::Ptr
+       PhysicsWorldModelInterfacePtr
          w = ToWorldWithModel<ModelID, ModelPartID, Vector3>(*it);
        if (!w)
        {
@@ -368,7 +457,7 @@ class WorldManager
          std::cerr<<"Could not set basic model state because model "<<
            _id<<" does not exist."<<std::endl;
        }
-     }
+     }*/
   }
 
 
@@ -383,7 +472,7 @@ class WorldManager
           it = this->worlds.begin();
           it != this->worlds.end(); ++it)
      {
-       typename PhysicsWorldModelInterface<ModelID, ModelPartID, Vector3>::Ptr
+       PhysicsWorldModelInterfacePtr
          w =ToWorldWithModel<ModelID, ModelPartID, Vector3>(*it);
        if (!w)
        {
@@ -451,6 +540,85 @@ class WorldManager
      return mirrorWorld->GetOriginalWorld()->GetName();
    }
 
+
+  // Helper callback to call AddModelFromFile on the world
+  private: static ModelLoadResult
+                  AddModelFromFileCB(PhysicsWorldModelInterfaceT& w,
+                                     const std::string& filename,
+                                     const std::string& modelname="")
+  {
+    return w.AddModelFromFile(filename, modelname);
+  }
+
+
+  // Helper callback to call AddModelFromString on the world
+  private: static ModelLoadResult
+                  AddModelFromStringCB(PhysicsWorldModelInterfaceT& w,
+                                       const std::string& str,
+                                       const std::string& modelname="")
+  {
+    return w.AddModelFromString(str, modelname);
+  }
+
+
+  // Helper callback to call AddModelFromSDF on the world
+  private: static ModelLoadResult
+                  AddModelFromSdfCB(PhysicsWorldModelInterfaceT& w,
+                                    const sdf::ElementPtr& sdf,
+                                    const std::string& modelname="")
+  {
+    return w.AddModelFromSDF(sdf, modelname);
+  }
+
+
+
+  // Helper callback to call AddModelFromShape on the world
+  private: static ModelLoadResult
+                  AddModelFromShapeCB(PhysicsWorldModelInterfaceT& w,
+                                      const std::string& modelname,
+                                      const Shape::Ptr& shape,
+                                      const Shape::Ptr& collShape)
+  {
+    return w.AddModelFromShape(modelname, shape, collShape);
+  }
+
+  // Helper callback to call SetBasicModelState on the world
+  private: static bool SetBasicModelStateCB
+              (PhysicsWorldModelInterfaceT& w,
+               const ModelID&id,
+               const BasicState& state)
+  {
+    return w.SetBasicModelState(id, state);
+  }
+
+  // Helper function which calls a callback function on each of the worlds
+  // after casting it to PhysicsWorldModelInterfaceT. Accumulates all return
+  // values in a vector and returns it.
+  private: template<typename RetVal, typename ... Params>
+  std::vector<RetVal> CallOnAllWorldsWithModel
+      (RetVal(*callback)(PhysicsWorldModelInterfaceT&, Params...),
+       Params... params)
+  {
+     std::vector<RetVal> ret;
+     std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
+     for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator
+          it = this->worlds.begin();
+          it != this->worlds.end(); ++it)
+     {
+       PhysicsWorldModelInterfacePtr w =
+          ToWorldWithModel<ModelID, ModelPartID, Vector3>(*it);
+       if (!w)
+       {
+         THROW_EXCEPTION("Only support worlds which have the "
+                         << "interface PhysicsWorldModelInterface<"
+                         << GetTypeName<ModelID>()
+                         << ", "<<GetTypeName<ModelPartID>()<<">");
+       }
+       RetVal r = callback(*w, std::forward<Params>(params)...);
+       ret.push_back(r);
+     }
+     return ret;
+  }
 
   // all the worlds
   private: std::vector<PhysicsWorldBaseInterface::Ptr> worlds;

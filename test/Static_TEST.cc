@@ -1,8 +1,13 @@
 #include <collision_benchmark/WorldManager.hh>
+#include <collision_benchmark/PrimitiveShape.hh>
+#include <collision_benchmark/SimpleTriMeshShape.hh>
 #include <gazebo/gazebo.hh>
 
 #include "MultipleWorldsTestFramework.hh"
 
+using collision_benchmark::Shape;
+using collision_benchmark::PrimitiveShape;
+using collision_benchmark::SimpleTriMeshShape;
 
 class StaticTest : public MultipleWorldsTestFramework {};
 
@@ -15,14 +20,15 @@ TEST_F(StaticTest, TwoSpheres)
   std::vector<std::string> selectedEngines;
   selectedEngines.push_back("bullet");
   selectedEngines.push_back("ode");
+  selectedEngines.push_back("dart");
 
   /*std::set<std::string> engines =
     collision_benchmark::GetSupportedPhysicsEngines();
   // run test on all engines
   selectedEngines.insert(selectedEngines.end(), engines.begin(), engines.end());*/
 
-  // test world
-  std::string worldfile = "worlds/rubble.world";
+  // world to load
+  std::string worldfile = "worlds/empty.world";
 
   GzMultipleWorldsServer::Ptr mServer = GetServer();
   ASSERT_NE(mServer.get(), nullptr) << "Could not create and start server";
@@ -39,6 +45,9 @@ TEST_F(StaticTest, TwoSpheres)
   GzWorldManager::Ptr worldManager = mServer->GetWorldManager();
   assert(worldManager);
 
+  ASSERT_EQ(numWorlds, worldManager->GetNumWorlds())
+    << "Inconsistency: Server returned different number of worlds";
+
 /*  GzWorldManager::ControlServerPtr controlServer =
     worldManager->GetControlServer();
 
@@ -48,7 +57,58 @@ TEST_F(StaticTest, TwoSpheres)
                                                    std::placeholders::_1));
   }*/
 
-  worldManager->SetDynamicsEnabled(true);
+  // Add models via the Shape load function
+  std::string modelName1 = "model1";
+  Shape::Ptr shape1(PrimitiveShape::CreateBox(2,2,2));
+  std::string modelName2 = "model2";
+  Shape::Ptr shape2(PrimitiveShape::CreateCylinder(1,3));
+  //Shape::Ptr shape(PrimitiveShape::CreateSphere(2));
+
+  // create simple mesh for testing
+/*  SimpleTriMeshShape::MeshDataPtr meshData(new SimpleTriMeshShape::MeshDataT());
+  typedef SimpleTriMeshShape::Vertex Vertex;
+  typedef SimpleTriMeshShape::Face Face;
+  std::vector<Vertex>& vertices=meshData->GetVertices();
+  std::vector<Face>& triangles=meshData->GetFaces();
+  vertices.push_back(Vertex(-1,0,0));
+  vertices.push_back(Vertex(0,0,-1));
+  vertices.push_back(Vertex(1,0,0));
+  vertices.push_back(Vertex(0,1,0));
+  triangles.push_back(Face(0,1,2));
+  triangles.push_back(Face(0,2,3));
+  Shape::Ptr shape(new SimpleTriMeshShape(meshData, "test_mesh"));*/
+
+  // shape->SetPose(Shape::Pose3(2,2,2,0,0,0));
+
+  typedef GzWorldManager::ModelLoadResult ModelLoadResult;
+  std::vector<ModelLoadResult> res1
+    = worldManager->AddModelFromShape(modelName1, shape1, shape1);
+  ASSERT_EQ(res1.size(), numWorlds)
+    << "Model must have been loaded in all worlds";
+  for (std::vector<ModelLoadResult>::iterator it = res1.begin();
+       it != res1.end(); ++it)
+  {
+    const ModelLoadResult& mlRes=*it;
+    ASSERT_EQ(mlRes.opResult, collision_benchmark::SUCCESS)
+      << "Could not load model";
+    ASSERT_EQ(mlRes.modelID, modelName1)
+      << "Model names should be equal";
+  }
+  std::vector<ModelLoadResult> res2
+    = worldManager->AddModelFromShape(modelName2, shape2, shape2);
+  ASSERT_EQ(res2.size(), numWorlds)
+    << "Model must have been loaded in all worlds";
+  for (std::vector<ModelLoadResult>::iterator it = res2.begin();
+       it != res2.end(); ++it)
+  {
+    const ModelLoadResult& mlRes=*it;
+    ASSERT_EQ(mlRes.opResult, collision_benchmark::SUCCESS)
+      << "Could not load model";
+    ASSERT_EQ(mlRes.modelID, modelName2)
+      << "Model names should be equal";
+  }
+
+  worldManager->SetDynamicsEnabled(false);
   worldManager->SetPaused(true);
 
   std::cout << "Now start gzclient if you would like "
