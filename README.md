@@ -11,13 +11,21 @@ You will reqiure
 * Boost libraries
 
 Current requirement is also to use the [dart-6](https://bitbucket.org/JenniferBuehler/gazebo/branch/dart-6)
-branch for Gazebo (see [PR #2547](https://bitbucket.org/osrf/gazebo/pull-requests/2547/dart-6/diff)),
-and for some functionality with the contact points it needs to be
+branch for Gazebo (see [PR #2547](https://bitbucket.org/osrf/gazebo/pull-requests/2547/dart-6/diff)).
+Moreover, for some functionality with the contact points it needs to be
 the [dart-6-dev](https://bitbucket.org/JenniferBuehler/gazebo/src/6b01e236886123ae0a9d3c585a841a303bb8a3bd/?at=dart-6-dev)
-branch which is merged with the PR for [contact_manager_enforcable](https://bitbucket.org/JenniferBuehler/gazebo/branch/contact_manager_enforcable)
-(see [PR #2629](https://bitbucket.org/osrf/gazebo/pull-requests/2629/possibility-to-enforce-contact-addition-in/diff)).
+branch which is also merged with
 
-If you are using the dart-6 branch, for full functionality it would also be advisable to merge with [user_cmd_mangager_using_world_name](https://bitbucket.org/JenniferBuehler/gazebo/src/a6a05d9575229ca1d73dcc8f7e40ef1da7a1307e?at=user_cmd_mangager_using_world_name) (see also [issue 2186](https://bitbucket.org/osrf/gazebo/issues/2186/usercmdmanager-does-not-use-world-name-to)), which hopefully will be merged with default soon. If you are using dart-6-dev instead, this is already included.
+- the PR for [contact_manager_enforcable](https://bitbucket.org/JenniferBuehler/gazebo/branch/contact_manager_enforcable)
+(see [PR #2629](https://bitbucket.org/osrf/gazebo/pull-requests/2629/possibility-to-enforce-contact-addition-in/diff)).
+- the PR for branch [bullet_update_collisions_when_disabled](https://bitbucket.org/JenniferBuehler/gazebo/src/acc334fc2bff406fc217e918ae3aba1cf8782c57/?at=bullet_update_collisions_when_disabled)
+(see [PR #2654](https://bitbucket.org/osrf/gazebo/pull-requests/2654/bullet-should-update-contact-information/diff))
+
+If you are using the dart-6 branch,
+for full functionality it would also be advisable to merge with
+[user_cmd_mangager_using_world_name](https://bitbucket.org/JenniferBuehler/gazebo/src/a6a05d9575229ca1d73dcc8f7e40ef1da7a1307e?at=user_cmd_mangager_using_world_name) (see also [issue 2186](https://bitbucket.org/osrf/gazebo/issues/2186/usercmdmanager-does-not-use-world-name-to)), which hopefully will be merged with default soon. If you are using dart-6-dev instead, this is already included.
+
+
 
 ## Setup
 
