@@ -9,10 +9,22 @@
 using collision_benchmark::MultipleWorldsServer;
 using collision_benchmark::GazeboMultipleWorldsServer;
 using collision_benchmark::WorldLoader;
+using collision_benchmark::WorldManager;
 using collision_benchmark::GazeboWorldLoader;
+using collision_benchmark::GazeboPhysicsWorldTypes;
 
-typedef MultipleWorldsServer<gazebo::physics::WorldState,
-                            std::string, std::string> GzMultipleWorldsServer;
+typedef MultipleWorldsServer<GazeboPhysicsWorldTypes::WorldState,
+                             GazeboPhysicsWorldTypes::ModelID,
+                             GazeboPhysicsWorldTypes::ModelPartID,
+                             GazeboPhysicsWorldTypes::Vector3>
+                                GzMultipleWorldsServer;
+
+typedef WorldManager<GazeboPhysicsWorldTypes::WorldState,
+                     GazeboPhysicsWorldTypes::ModelID,
+                     GazeboPhysicsWorldTypes::ModelPartID,
+                     GazeboPhysicsWorldTypes::Vector3>
+          GzWorldManager;
+
 
 class MultipleWorldsTestFramework : public ::testing::Test {
   protected:

@@ -619,6 +619,17 @@ GazeboPhysicsWorld::GetModel(const ModelID& model) const
   return collision_benchmark::to_std_ptr<gazebo::physics::Model>(m);
 }
 
+
+void GazeboPhysicsWorld::GetAABB(const ModelID& id,
+                                 Vector3& min, Vector3& max) const
+{
+  gazebo::physics::ModelPtr m=world->ModelByName(id);
+  if (!m) return;
+  ignition::math::Box box = m->BoundingBox();
+  min = Vector3(box.Min().X(), box.Min().Y(), box.Min().Z());
+  max = Vector3(box.Max().X(), box.Max().Y(), box.Max().Z());
+}
+
 GazeboPhysicsWorld::PhysicsEnginePtr
 GazeboPhysicsWorld::GetPhysicsEngine() const
 {

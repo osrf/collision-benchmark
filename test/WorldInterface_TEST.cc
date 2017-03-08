@@ -42,7 +42,8 @@ TEST_F(WorldInterfaceTest, TransferWorldState)
   GzPhysicsWorldStateInterface::Ptr world2(gzWorld2);
 
   int numIters=3000;
-  std::cout<<"Doing "<<numIters<<" iterations on the rubble world and set the second world to the same state"<<std::endl;
+  std::cout << "Doing "<<numIters<<" iterations on the rubble world and "
+            << "set the second world to the same state"<<std::endl;
   for (int i=0; i<numIters; ++i)
   {
     gazebo::physics::WorldState target=world2->GetWorldState(); // get the rubble world
@@ -70,7 +71,8 @@ TEST_F(WorldInterfaceTest, WorldManager)
   std::cout << "Loading world " << worldfile << " with "<<physicsEngines.size()<<" engines."<<std::endl;
 
   typedef gazebo::physics::WorldState GzWorldState;
-  typedef WorldManager<GzWorldState, std::string, std::string> GzWorldManager;
+  typedef WorldManager<GzWorldState, std::string, std::string,
+                       ignition::math::Vector3d> GzWorldManager;
   typedef PhysicsWorldStateInterface<GzWorldState> GzPhysicsWorldStateInterface;
 
   // create one world per physics engine and load it with the cube world, and add it to the world manager

@@ -17,6 +17,7 @@
 
 #include <collision_benchmark/GazeboWorldLoader.hh>
 #include <collision_benchmark/PhysicsWorld.hh>
+#include <collision_benchmark/GazeboPhysicsWorld.hh>
 #include <collision_benchmark/GazeboWorldState.hh>
 #include <collision_benchmark/GazeboTopicForwardingMirror.hh>
 #include <collision_benchmark/GazeboPhysicsWorld.hh>
@@ -38,6 +39,7 @@ using collision_benchmark::PhysicsWorldBaseInterface;
 using collision_benchmark::PhysicsWorldStateInterface;
 using collision_benchmark::PhysicsWorld;
 using collision_benchmark::GazeboPhysicsWorld;
+using collision_benchmark::GazeboPhysicsWorldTypes;
 using collision_benchmark::MirrorWorld;
 using collision_benchmark::GazeboTopicForwardingMirror;
 using collision_benchmark::WorldManager;
@@ -49,10 +51,16 @@ using collision_benchmark::MultipleWorldsServer;
 using collision_benchmark::GazeboMultipleWorldsServer;
 
 
-typedef MultipleWorldsServer<gazebo::physics::WorldState,
-                            std::string, std::string> GzMultipleWorldsServer;
+typedef MultipleWorldsServer<GazeboPhysicsWorldTypes::WorldState,
+                             GazeboPhysicsWorldTypes::ModelID,
+                             GazeboPhysicsWorldTypes::ModelPartID,
+                             GazeboPhysicsWorldTypes::Vector3>
+                                GzMultipleWorldsServer;
 
-typedef WorldManager<gazebo::physics::WorldState, std::string, std::string>
+typedef WorldManager<GazeboPhysicsWorldTypes::WorldState,
+                     GazeboPhysicsWorldTypes::ModelID,
+                     GazeboPhysicsWorldTypes::ModelPartID,
+                     GazeboPhysicsWorldTypes::Vector3>
           GzWorldManager;
 
 // typedef GazeboPhysicsWorld::PhysicsWorldTypes GazeboPhysicsWorldTypes;

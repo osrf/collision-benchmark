@@ -18,8 +18,10 @@
 #define COLLISION_BENCHMARK_GAZEBOMULTIPLEWORLDSSERVER_H
 
 #include <collision_benchmark/MultipleWorldsServer.hh>
+#include <collision_benchmark/GazeboPhysicsWorld.hh>
 
 #include <gazebo/physics/WorldState.hh>
+#include <ignition/math/Vector3.hh>
 
 namespace collision_benchmark
 {
@@ -31,11 +33,16 @@ namespace collision_benchmark
  * \date March 2017
  */
 class GazeboMultipleWorldsServer:
-  public MultipleWorldsServer<gazebo::physics::WorldState,
-                             std::string, std::string>
+  public MultipleWorldsServer<GazeboPhysicsWorldTypes::WorldState,
+                              GazeboPhysicsWorldTypes::ModelID,
+                              GazeboPhysicsWorldTypes::ModelPartID,
+                              GazeboPhysicsWorldTypes::Vector3>
 {
-  private: typedef MultipleWorldsServer<gazebo::physics::WorldState,
-                                       std::string, std::string> Super;
+  private: typedef MultipleWorldsServer<GazeboPhysicsWorldTypes::WorldState,
+                              GazeboPhysicsWorldTypes::ModelID,
+                              GazeboPhysicsWorldTypes::ModelPartID,
+                              GazeboPhysicsWorldTypes::Vector3> Super;
+
   public: GazeboMultipleWorldsServer(const WorldLoader_M& _worldLoaders):
           Super(_worldLoaders) {}
   public: virtual ~GazeboMultipleWorldsServer() { Stop(); }

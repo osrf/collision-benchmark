@@ -201,16 +201,20 @@ class PhysicsWorldStateInterface
  *
  * \param ModelID_ ID type used to identify models in the world
  * \param ModelPartID_ ID type to identify individual parts of a model
+ * \param Vector3_ Math 3D vector implementation
  *
  * \author Jennifer Buehler
  * \date October 2016
  */
-template<class ModelID_, class ModelPartID_>
+template<class ModelID_, class ModelPartID_, class Vector3_>
 class PhysicsWorldModelInterface
 {
   public: typedef ModelID_ ModelID;
   public: typedef ModelPartID_ ModelPartID;
-  private: typedef PhysicsWorldModelInterface<ModelID, ModelPartID> Self;
+  public: typedef Vector3_ Vector3;
+
+  private: typedef PhysicsWorldModelInterface<ModelID, ModelPartID,
+                                              Vector3> Self;
   public: typedef std::shared_ptr<Self> Ptr;
   public: typedef std::shared_ptr<const Self> ConstPtr;
   public: typedef collision_benchmark::Shape Shape;
@@ -295,6 +299,10 @@ class PhysicsWorldModelInterface
   /// \retval false the model was not in the world
   public: virtual bool SetBasicModelState(const ModelID& id,
                                           const BasicState& state) = 0;
+
+  /// get axis aligned bounding box of the model
+  public: virtual void GetAABB(const ModelID& id,
+                               Vector3& min, Vector3& max) const = 0;
 };
 
 /**
@@ -477,7 +485,8 @@ class PhysicsWorld:
   public PhysicsWorldStateInterface<typename PhysicsWorldTypes_::WorldState>,
   public PhysicsWorldModelInterface<
       typename PhysicsWorldTypes_::ModelID,
-      typename PhysicsWorldTypes_::ModelPartID>,
+      typename PhysicsWorldTypes_::ModelPartID,
+      typename PhysicsWorldTypes_::Vector3>,
   public PhysicsWorldContactInterface<
       typename PhysicsWorldTypes_::ModelID,
       typename PhysicsWorldTypes_::ModelPartID,
@@ -494,7 +503,8 @@ class PhysicsWorld:
               typename PhysicsWorldTypes::WorldState> PhysicsWorldStateParent;
   private: typedef PhysicsWorldModelInterface<
               typename PhysicsWorldTypes_::ModelID,
-              typename PhysicsWorldTypes_::ModelPartID> PhysicsWorldModelParent;
+              typename PhysicsWorldTypes_::ModelPartID,
+              typename PhysicsWorldTypes::Vector3> PhysicsWorldModelParent;
   private: typedef PhysicsWorldContactInterface<
               typename PhysicsWorldTypes_::ModelID,
               typename PhysicsWorldTypes_::ModelPartID,

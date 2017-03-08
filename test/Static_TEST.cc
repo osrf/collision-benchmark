@@ -3,12 +3,8 @@
 
 #include "MultipleWorldsTestFramework.hh"
 
-using collision_benchmark::WorldManager;
 
 class StaticTest : public MultipleWorldsTestFramework {};
-
-typedef WorldManager<gazebo::physics::WorldState, std::string, std::string>
-          GzWorldManager;
 
 // Loads a world with different physics engines (only the ones implemented
 // in Gazebo) and does the static test in which two models are generated at

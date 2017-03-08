@@ -126,6 +126,9 @@ class GazeboPhysicsWorld:
 
   public: virtual bool RemoveModel(const ModelID& id);
 
+  public: virtual void GetAABB(const ModelID& id,
+                               Vector3& min, Vector3& max) const;
+
   public: virtual void Clear();
 
   public: virtual WorldState GetWorldState() const;
