@@ -87,22 +87,30 @@ enable_testing()
 find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
 
+set(TEST_LIB_SRCS
+    test/StaticTestFramework.cc)
+
+add_library(collision_benchmark_test EXCLUDE_FROM_ALL ${TEST_LIB_SRCS})
+target_link_libraries(collision_benchmark_test
+  collision_benchmark collision_benchmark_test ${GTEST_BOTH_LIBRARIES})
+add_test(MultipleWorldsTest collision_benchmark_test)
+add_dependencies(tests collision_benchmark_test)
+
 add_executable(multiple_worlds_test EXCLUDE_FROM_ALL test/MultipleWorlds_TEST.cc)
 target_link_libraries(multiple_worlds_test
-  collision_benchmark ${GTEST_BOTH_LIBRARIES})
+  collision_benchmark collision_benchmark_test ${GTEST_BOTH_LIBRARIES})
 add_test(MultipleWorldsTest multiple_worlds_test)
 add_dependencies(tests multiple_worlds_test)
 
-
 add_executable(world_interface_test EXCLUDE_FROM_ALL test/WorldInterface_TEST.cc)
 target_link_libraries(world_interface_test
-  collision_benchmark ${GTEST_BOTH_LIBRARIES})
+  collision_benchmark collision_benchmark_test ${GTEST_BOTH_LIBRARIES})
 add_test(WorldInterfaceTest world_interface_test)
 add_dependencies(tests world_interface_test)
 
 add_executable(static_test EXCLUDE_FROM_ALL test/Static_TEST.cc)
 target_link_libraries(static_test
-  collision_benchmark ${GTEST_BOTH_LIBRARIES})
+  collision_benchmark collision_benchmark_test ${GTEST_BOTH_LIBRARIES})
 add_test(StaticTest static_test)
 add_dependencies(tests static_test)
 

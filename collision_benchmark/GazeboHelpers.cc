@@ -27,7 +27,6 @@ void collision_benchmark::ClearModels(gazebo::physics::WorldPtr& world)
 std::set<std::string> collision_benchmark::GetSupportedPhysicsEngines()
 {
   std::set<std::string> engines;
-
   // XXX TODO: Should use same names as used
   // in Gazebo/SDF to select physics engines. Use this as soon
   // as there a constant/macro for it.
@@ -65,13 +64,10 @@ std::string collision_benchmark::getPhysicsSettingsSdfFor(const std::string& e)
     return "physics_settings/dart_default.sdf";
   else if (e=="ode")
     return "physics_settings/ode_default.sdf";
-// SDF file does not exist yet for simbody
-//  else if (e=="simbody")
-//    return "physics_settings/simbody_default.world";
+  else if (e=="simbody")
+    return "physics_settings/simbody_default.sdf";
   return "";
 }
-
-
 
 /////////////////////////////////////////////////
 std::map<std::string,std::string>
