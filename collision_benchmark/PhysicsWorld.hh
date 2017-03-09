@@ -356,7 +356,7 @@ class PhysicsWorldContactInterface
   /// The returned vector will be empty if no models collide.
   ///
   /// Throws an exception if the underlying implementation does not
-  /// support calculation of contact points (SupportContacts() returns false).
+  /// support calculation of contact points (SupportsContacts() returns false).
   public: virtual std::vector<ContactInfoPtr> GetContactInfo() const = 0;
 
   /// Works as GetContactInfo() but only returns the contact points between
@@ -450,7 +450,7 @@ class PhysicsEngineWorldInterface
   /// need to copy information over to the ContactInfo struct.
   ///
   /// Throws an exception if the underlying implementation does not support
-  /// calculation of contact points (SupportContacts() returns false).
+  /// calculation of contact points (SupportsContacts() returns false).
   public: virtual std::vector<NativeContactPtr> GetNativeContacts() const = 0;
 
   /// Works as GetNativeContact() but only returns the contact points

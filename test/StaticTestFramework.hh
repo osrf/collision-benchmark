@@ -20,13 +20,26 @@
 #include <collision_benchmark/Shape.hh>
 #include "MultipleWorldsTestFramework.hh"
 
+#include <string>
+#include <vector>
+
 class StaticTestFramework : public MultipleWorldsTestFramework {
 protected:
   struct AABB
   {
     typedef ignition::math::Vector3d Vec3;
+    Vec3 size()
+    {
+      return Vec3(max.X() - min.X(),
+                  max.Y() - min.Y(),
+                  max.Z() - min.Z());
+    }
     Vec3 min, max;
   };
+
+  typedef GzWorldManager::PhysicsWorldContactInterfaceT::ContactInfo
+            ContactInfo;
+  typedef ContactInfo::Ptr ContactInfoPtr;
 
   StaticTestFramework():
     MultipleWorldsTestFramework()
@@ -53,14 +66,33 @@ protected:
 
 
   // Does the static test in which the two models (must already have
-  // been loaded) are moved to various poses, and all engines have to
+  // been loaded) are moved relative to each other, and all engines have to
   // agree on the collision state (boolean collision).
   // You need to use a loading function such as LoadShapes() before.
   //
+  // Model 1 will remain stationary, while model 2 will
+  // be moved along the 3D grid which is formed by the AABB of model 1,
+  // expanded by half the dimensions of the AABB of model 2.
+  //
   // Throws gtest assertions so needs to be called from top-level
   // test function (nested function calls will not work correctly)
+  //
+  // \param cellSizeFactor the proportion of the 3D grid
+  //    that will be used to determine the cell size.
   void TwoModels(const std::string& modelName1,
-                 const std::string& modelName2);
+                 const std::string& modelName2,
+                 const float cellSizeFactor = 0.1);
+
+  // tests if the worlds agree about the collision states
+  // between the two models. The names of engines detecting a collision are
+  // returned in \e colliding and the others in \e notColliding
+  // \return false if there was an inconsistency or error in querying
+  //    the collision states in any world
+  bool CollisionState(const std::string& modelName1,
+                      const std::string& modelName2,
+                      std::vector<std::string>& colliding,
+                      std::vector<std::string>& notColliding);
+
 private:
 
   // checks that AABB of model 1 and 2 are the same in all worlds and
@@ -70,6 +102,10 @@ private:
                 const std::string& modelName2,
                 AABB& m1, AABB& m2);
 
+  // returns contact info between model 1 and 2 in this world.
+  std::vector<ContactInfoPtr> GetContactInfo(const std::string& modelName1,
+                                             const std::string& modelName2,
+                                             const std::string& worldName);
 };
 
 #endif  // COLLISION_BENCHMARK_TEST_STATICTESTFRAMEWORK_H

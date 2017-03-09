@@ -9,17 +9,52 @@
 
 #include "MultipleWorldsTestFramework.hh"
 
+#include <sstream>
+
 using collision_benchmark::Shape;
 using collision_benchmark::BasicState;
 using collision_benchmark::Vector3;
 using collision_benchmark::Quaternion;
+using collision_benchmark::PhysicsWorldBaseInterface;
+
+////////////////////////////////////////////////////////////////
+template<typename T>
+std::string VectorToString(const std::vector<T>& v)
+{
+  std::stringstream str;
+  str << "[";
+  for (typename std::vector<T>::const_iterator it = v.begin();
+       it != v.end(); ++it)
+  {
+    if (it != v.begin()) str << ", ";
+    str<<*it;
+  }
+  str << "]";
+  return str.str();
+}
+
+template<typename T>
+std::string VectorPtrToString(const std::vector<T>& v)
+{
+  std::stringstream str;
+  str << "[";
+  for (typename std::vector<T>::const_iterator it = v.begin();
+       it != v.end(); ++it)
+  {
+    if (it != v.begin()) str << ", ";
+    str<<**it;
+  }
+  str << "]";
+  return str.str();
+}
+
 
 
 ////////////////////////////////////////////////////////////////
 void StaticTestFramework::PrepareWorld(const std::vector<std::string>& engines)
 {
   // world to load
-  std::string worldfile = "worlds/empty.world";
+  std::string worldfile = "test_worlds/void.world";
 
   GzMultipleWorldsServer::Ptr mServer = GetServer();
   ASSERT_NE(mServer.get(), nullptr) << "Could not create and start server";
@@ -108,7 +143,8 @@ bool StaticTestFramework::GetAABBs(const std::string& modelName1,
   std::vector<GzWorldManager::PhysicsWorldModelInterfacePtr>
     worlds = worldManager->GetModelPhysicsWorlds();
 
-  // AABB's from all worlds: need to be equal or assertion will fail
+  // AABB's from all worlds: need to be equal or this function
+  // must return false.
   std::vector<AABB> aabbs1, aabbs2;
 
   std::vector<GzWorldManager::PhysicsWorldModelInterfacePtr>::iterator it;
@@ -152,7 +188,8 @@ bool StaticTestFramework::GetAABBs(const std::string& modelName1,
     const AABB& aabb = *itAABB;
     if (itAABB != aabbs1.begin())
     {
-      if (!aabb.min.Equal(lastAABB.min, eps))
+      if (!aabb.min.Equal(lastAABB.min, eps) ||
+          !aabb.max.Equal(lastAABB.max, eps))
       {
         std::cerr << "Bounding boxes should be of the same size: "
                   <<  aabb.min << ", " << aabb.max << " --- "
@@ -168,7 +205,8 @@ bool StaticTestFramework::GetAABBs(const std::string& modelName1,
     const AABB& aabb = *itAABB;
     if (itAABB != aabbs2.begin())
     {
-      if (!aabb.min.Equal(lastAABB.min, eps))
+      if (!aabb.min.Equal(lastAABB.min, eps) ||
+          !aabb.max.Equal(lastAABB.max, eps))
       {
         std::cerr << "Bounding boxes should be of the same size: "
                   <<  aabb.min << ", " << aabb.max << " --- "
@@ -184,9 +222,68 @@ bool StaticTestFramework::GetAABBs(const std::string& modelName1,
   return true;
 }
 
+
+////////////////////////////////////////////////////////////////
+std::vector<StaticTestFramework::ContactInfoPtr>
+StaticTestFramework::GetContactInfo(const std::string& modelName1,
+                                    const std::string& modelName2,
+                                    const std::string& worldName)
+{
+  std::vector<ContactInfoPtr> ret;
+  GzMultipleWorldsServer::Ptr mServer = GetServer();
+  assert(mServer);
+  GzWorldManager::Ptr worldManager = mServer->GetWorldManager();
+  assert(worldManager);
+
+  PhysicsWorldBaseInterface::Ptr w = worldManager->GetWorld(worldName);
+  assert(w);
+
+  GzWorldManager::PhysicsWorldPtr pWorld = worldManager->ToPhysicsWorld(w);
+  assert(pWorld);
+
+  return pWorld->GetContactInfo(modelName1, modelName2);
+}
+
+
+////////////////////////////////////////////////////////////////
+bool StaticTestFramework::CollisionState(const std::string& modelName1,
+                                         const std::string& modelName2,
+                                         std::vector<std::string>& colliding,
+                                         std::vector<std::string>& notColliding)
+{
+  colliding.clear();
+  notColliding.clear();
+  GzMultipleWorldsServer::Ptr mServer = GetServer();
+  if (!mServer) return false;
+  GzWorldManager::Ptr worldManager = mServer->GetWorldManager();
+  if (!worldManager) return false;
+
+  std::vector<GzWorldManager::PhysicsWorldPtr>
+    worlds = worldManager->GetPhysicsWorlds();
+
+  std::vector<GzWorldManager::PhysicsWorldPtr>::iterator it;
+  for (it = worlds.begin(); it != worlds.end(); ++it)
+  {
+    GzWorldManager::PhysicsWorldPtr w = *it;
+    if (!w->SupportsContacts())
+    {
+      std::cout<<"A world does not support contact calculation"<<std::endl;
+      return false;
+    }
+
+    std::vector<ContactInfoPtr> contacts =
+      w->GetContactInfo(modelName1, modelName2);
+    if (!contacts.empty()) colliding.push_back(w->GetName());
+    else notColliding.push_back(w->GetName());
+  }
+  return true;
+}
+
+
 ////////////////////////////////////////////////////////////////
 void StaticTestFramework::TwoModels(const std::string& modelName1,
-                                    const std::string& modelName2)
+                                    const std::string& modelName2,
+                                    float cellSizeFactor)
 {
   GzMultipleWorldsServer::Ptr mServer = GetServer();
   ASSERT_NE(mServer.get(), nullptr) << "Could not create and start server";
@@ -205,38 +302,108 @@ void StaticTestFramework::TwoModels(const std::string& modelName1,
   AABB aabb1, aabb2;
   ASSERT_TRUE(GetAABBs(modelName1, modelName2, aabb1, aabb2));
 
-  std::cout<<"Got AABB 1: " <<  aabb1.min << ", " << aabb2.max << std::endl;
-  std::cout<<"Got AABB 2: " <<  aabb2.min << ", " << aabb2.max << std::endl;
+  // std::cout<<"Got AABB 1: " <<  aabb1.min << ", " << aabb1.max << std::endl;
+  // std::cout<<"Got AABB 2: " <<  aabb2.min << ", " << aabb2.max << std::endl;
 
-  BasicState bstate1, bstate2;
-  bstate1.SetPosition(Vector3(1,0,0));
-  bstate2.SetPosition(Vector3(-1,0,0));
-  int cnt1 = worldManager->SetBasicModelState(modelName1, bstate1);
-  int cnt2 = worldManager->SetBasicModelState(modelName2, bstate2);
-  ASSERT_EQ(cnt1, numWorlds) << "All worlds should have been updated";
-  ASSERT_EQ(cnt2, numWorlds) << "All worlds should have been updated";
+  AABB grid = aabb1;
+  grid.min -= aabb2.size() / 2;
+  grid.max += aabb2.size() / 2;
+
+  // place model 2 at start position
+  BasicState bstate2;
+  bstate2.SetPosition(Vector3(grid.min.X(), grid.min.Y(), grid.min.Z()));
+  int cnt = worldManager->SetBasicModelState(modelName2, bstate2);
+  ASSERT_EQ(cnt, numWorlds) << "All worlds should have been updated";
+
+
+  float cellSizeX = grid.size().X() * cellSizeFactor;
+  float cellSizeY = grid.size().Y() * cellSizeFactor;
+  float cellSizeZ = grid.size().Z() * cellSizeFactor;
+  /*std::cout << "GRID : " <<  grid.min << ", " << grid.max << std::endl;
+  std::cout << "cell size : " <<  cellSizeX << ", " <<cellSizeY << ", "
+            << cellSizeZ << std::endl;*/
 
   std::cout << "Now start gzclient if you would like "
             << "to view the test. "<<std::endl;
-  std::cout << "Press [Enter] to continue without gzclient or hit "
-            << "the play button in gzclient."<<std::endl;
+  std::cout << "Press [Enter] to continue."<<std::endl;
   getchar();
 
   // start the update loop
   std::cout << "Now starting to update worlds."<<std::endl;
-  int msSleep = 1000;  // delay for running the test
-  while(true)
+
+  int msSleep = 0;  // delay for running the test
+  const static bool interactive = true;
+  double eps = 1e-07;
+  for (double x = grid.min.X(); x < grid.max.X()+eps; x += cellSizeX)
+  for (double y = grid.min.Y(); y < grid.max.Y()+eps; y += cellSizeY)
+  for (double z = grid.min.Z(); z < grid.max.Z()+eps; z += cellSizeZ)
   {
-    std::cout<<"UPDATE"<<std::endl;
+    // std::cout<<"Placing model 2 at "<<x<<", "<<y<<", "<<z<<std::endl;
+    bstate2.position.x = x;
+    bstate2.position.y = y;
+    bstate2.position.z = z;
+    cnt = worldManager->SetBasicModelState(modelName2, bstate2);
+    ASSERT_EQ(cnt, numWorlds) << "All worlds should have been updated";
+
     int numSteps=1;
     worldManager->Update(numSteps);
     if (msSleep > 0) gazebo::common::Time::MSleep(msSleep);
 
-    bstate1.position.x-=0.1;
-    bstate2.position.x+=0.1;
-    cnt1 = worldManager->SetBasicModelState(modelName1, bstate1);
-    cnt2 = worldManager->SetBasicModelState(modelName2, bstate2);
-    ASSERT_EQ(cnt1, numWorlds) << "All worlds should have been updated";
-    ASSERT_EQ(cnt2, numWorlds) << "All worlds should have been updated";
+    std::vector<std::string> colliding, notColliding;
+    ASSERT_TRUE(CollisionState(modelName1, modelName2,
+                               colliding, notColliding));
+
+    size_t total = colliding.size() + notColliding.size();
+
+    ASSERT_EQ(numWorlds, total) << "All worlds must have voted";
+    ASSERT_GT(total, 0 ) << "This should have been caught before";
+
+    double negative = notColliding.size() / (double) total;
+    double positive= colliding.size() / (double) total;
+
+    std::cout<<"Agreement: "<<positive<<", "<<negative<<std::endl;
+
+    const static double minAgree = 1.0;
+    if (((positive > negative) && (positive < minAgree)) ||
+        ((positive <= negative) && (negative < minAgree)))
+    {
+      std::stringstream str;
+      str << "Minimum agreement not reached. ";
+
+      // str << "Collision: "<< VectorToString(colliding) << ", no collision: "
+      //     << VectorToString(notColliding) << ".";
+
+      str << std::endl << "Colliding: " << std::endl << " ------ " << std::endl;
+      for (std::vector<std::string>::iterator it = colliding.begin();
+           it != colliding.end(); ++it)
+      {
+        if (it != colliding.begin()) str << std::endl;
+        std::vector<ContactInfoPtr> contacts =
+          GetContactInfo(modelName1, modelName2, *it);
+        str << *it << ": " << VectorPtrToString(contacts);
+      }
+      str << std::endl << "Not colliding: " << std::endl
+          << " ------ " << std::endl;
+      for (std::vector<std::string>::iterator it = notColliding.begin();
+           it != notColliding.end(); ++it)
+      {
+        if (it != notColliding.begin()) str << std::endl;
+        std::vector<ContactInfoPtr> contacts =
+          GetContactInfo(modelName1, modelName2, *it);
+        str << *it << ": " << VectorPtrToString(contacts);
+      }
+      str << std::endl;
+
+      if (interactive)
+      {
+        std::cout << str.str() << std::endl
+                  << "Press [Enter] to continue."<<std::endl;
+        getchar();
+      }
+      else
+      {
+        ASSERT_TRUE(false) << str.str();
+      }
+    }
   }
 }

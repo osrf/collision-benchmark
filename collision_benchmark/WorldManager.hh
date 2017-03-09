@@ -237,8 +237,7 @@ class WorldManager
 
 
   /// Returns the original world which is mirrored by this class
-  public: PhysicsWorldBaseInterface::Ptr
-          GetWorld(unsigned int _index) const
+  public: PhysicsWorldBaseInterface::Ptr GetWorld(unsigned int _index) const
   {
     std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
     GZ_ASSERT(_index >=0 && _index < this->worlds.size(),
@@ -248,6 +247,20 @@ class WorldManager
       return PhysicsWorldBaseInterface::Ptr();
     }
     return this->worlds.at(_index);
+  }
+
+  public: PhysicsWorldBaseInterface::Ptr GetWorld(const std::string& name) const
+  {
+     std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
+     for (std::vector<PhysicsWorldBaseInterface::Ptr>::const_iterator
+          it = this->worlds.begin();
+          it != this->worlds.end(); ++it)
+     {
+       PhysicsWorldBaseInterface::Ptr w = *it;
+       assert(w);
+       if (w->GetName() == name) return w;
+     }
+     return PhysicsWorldBaseInterface::Ptr();
   }
 
   /// Returns all worlds.
@@ -334,8 +347,7 @@ class WorldManager
           it = this->worlds.begin();
           it != this->worlds.end(); ++it, ++i)
      {
-       PhysicsWorldPtr w =
-         ToPhysicsWorld<WorldState, ModelID, ModelPartID, Vector3, Wrench>(*it);
+       PhysicsWorldPtr w = ToPhysicsWorld(*it);
        if (!w)
        {
          std::cerr<<"Cannot cast world " << i << " to "
@@ -465,8 +477,14 @@ class WorldManager
                                         Vector3_, Wrench_>>(w);
   }
 
-  // Convenience method which casts the world \e w to a PhysicsWorld
-  public: template<class WorldState_, class ModelID_, class ModelPartID_,
+   // Convenience method which casts the world \e w to a PhysicsWorld
+  public: static PhysicsWorldPtr
+          ToPhysicsWorld(const PhysicsWorldBaseInterface::Ptr& w)
+  {
+   return std::dynamic_pointer_cast<PhysicsWorldT>(w);
+  }
+
+  /*  public: template<class WorldState_, class ModelID_, class ModelPartID_,
                    class Vector3_, class Wrench_>
           static typename PhysicsWorld<WorldState, ModelID_, ModelPartID_,
                                        Vector3_, Wrench_>::Ptr
@@ -475,7 +493,7 @@ class WorldManager
    return std::dynamic_pointer_cast
           <PhysicsWorld<WorldState_, ModelID_, ModelPartID_,
                          Vector3_, Wrench_>>(w);
-  }
+  }*/
 
   public: void SetPaused(bool flag)
   {
