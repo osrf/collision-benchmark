@@ -37,12 +37,13 @@ namespace collision_benchmark
  * \author Jennifer Buehler
  * \date March 2017
  */
-template<class _WorldState, class _ModelID, class _ModelPartID, class _Vector3>
+template<class _WorldState, class _ModelID,
+        class _ModelPartID, class _Vector3, class _Wrench>
 class MultipleWorldsServer
 {
   public: typedef
           MultipleWorldsServer<_WorldState, _ModelID,
-                               _ModelPartID, _Vector3> Self;
+                               _ModelPartID, _Vector3, _Wrench> Self;
   public: typedef std::shared_ptr<Self> Ptr;
   public: typedef std::shared_ptr<const Self> ConstPtr;
 
@@ -50,9 +51,10 @@ class MultipleWorldsServer
   public: typedef _ModelID ModelID;
   public: typedef _ModelPartID ModelPartID;
   public: typedef _Vector3 Vector3;
+  public: typedef _Wrench Wrench;
 
   public: typedef WorldManager<WorldState, ModelID,
-                               ModelPartID, Vector3> WorldManagerT;
+                               ModelPartID, Vector3, Wrench> WorldManagerT;
   public: typedef typename WorldManagerT::Ptr WorldManagerPtr;
 
   // for each physics engine identified by name,

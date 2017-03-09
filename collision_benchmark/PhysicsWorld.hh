@@ -134,8 +134,7 @@ class PhysicsWorldBaseInterface
  * offering functionality relating to a world state.
  *
  * Adding and removing of models, lights, or anything part of a world
- * *has to be* supported via the general SetWorldState(), as well as via the
- * Add* functions and RemoveModel().
+ * *has to be* supported via the general SetWorldState().
  *
  * \param WorldStateImpl The WorldState can be used to retrieve all sorts
  *        of information about the world, including the
@@ -291,14 +290,19 @@ class PhysicsWorldModelInterface
 
   public: virtual std::vector<ModelID> GetAllModelIDs() const = 0;
 
-  /// removes a model from the world
+  /// Removes a model from the world
   /// \retval false the model was not in the world
   public: virtual bool RemoveModel(const ModelID& id) = 0;
 
-  /// sets the pose and scale of a model.
+  /// Sets the pose and scale of a model.
   /// \retval false the model was not in the world
   public: virtual bool SetBasicModelState(const ModelID& id,
                                           const BasicState& state) = 0;
+
+  /// Gets the pose and scale of a model.
+  /// \retval false the model was not in the world
+  public: virtual bool GetBasicModelState(const ModelID& id,
+                                          BasicState& state) = 0;
 
   /// get axis aligned bounding box of the model
   public: virtual void GetAABB(const ModelID& id,
@@ -466,56 +470,46 @@ class PhysicsEngineWorldInterface
  * This pure virtual interface only guarantees a minimal common subset of
  * functionality between implementations.
  *
- * \param PhysicsWorldTypes any struct which defines the following typedefs.
- *        There is no specification on what these types may be, in this
- *        interface they are just needed to define the API.
+ * There is no specification on what the template types may be, in this
+ * interface they are just needed to define the API.
  *
- *        - WorldState: Describing the state of the world
- *        - ModelID: ID type used to identify models in the world
- *        - ModelPartID: ID type to identify individual parts of a model
- *        - Vector3: Math 3D vector implementation
- *        - Wrench: Math wrench implementation
+ * \param _WorldState describes the state of a world.
+ * \param _ModelID the identifier for a specific model
+ * \param _ModelPartID the identifier for a part of a model
+ * \param _Vector3 Math 3D vector implementation
+ * \param _Wrench Math wrench implementation
  *
  * \author Jennifer Buehler
  * \date October 2016
  */
-template<class PhysicsWorldTypes_>
+template<class _WorldState, class _ModelID,
+         class _ModelPartID, class _Vector3, class _Wrench>
 class PhysicsWorld:
   public PhysicsWorldBaseInterface,
-  public PhysicsWorldStateInterface<typename PhysicsWorldTypes_::WorldState>,
-  public PhysicsWorldModelInterface<
-      typename PhysicsWorldTypes_::ModelID,
-      typename PhysicsWorldTypes_::ModelPartID,
-      typename PhysicsWorldTypes_::Vector3>,
-  public PhysicsWorldContactInterface<
-      typename PhysicsWorldTypes_::ModelID,
-      typename PhysicsWorldTypes_::ModelPartID,
-      typename PhysicsWorldTypes_::Vector3,
-      typename PhysicsWorldTypes_::Wrench>
+  public PhysicsWorldStateInterface<_WorldState>,
+  public PhysicsWorldModelInterface<_ModelID, _ModelPartID, _Vector3>,
+  public PhysicsWorldContactInterface<_ModelID, _ModelPartID,
+                                      _Vector3, _Wrench>
 {
-  public: typedef PhysicsWorldTypes_ PhysicsWorldTypes;
-  private: typedef PhysicsWorld<PhysicsWorldTypes> Self;
+  public: typedef _WorldState WorldState;
+  public: typedef _ModelID ModelID;
+  public: typedef _ModelPartID ModelPartID;
+  public: typedef _Vector3 Vector3;
+  public: typedef _Wrench Wrench;
+
+  private: typedef PhysicsWorld<WorldState, ModelID, ModelPartID,
+                                Vector3, Wrench> Self;
+
   public: typedef std::shared_ptr<Self> Ptr;
   public: typedef std::shared_ptr<const Self> ConstPtr;
 
   private: typedef PhysicsWorldBaseInterface PhysicsWorldBaseParent;
-  private: typedef PhysicsWorldStateInterface<
-              typename PhysicsWorldTypes::WorldState> PhysicsWorldStateParent;
-  private: typedef PhysicsWorldModelInterface<
-              typename PhysicsWorldTypes_::ModelID,
-              typename PhysicsWorldTypes_::ModelPartID,
-              typename PhysicsWorldTypes::Vector3> PhysicsWorldModelParent;
-  private: typedef PhysicsWorldContactInterface<
-              typename PhysicsWorldTypes_::ModelID,
-              typename PhysicsWorldTypes_::ModelPartID,
-              typename PhysicsWorldTypes_::Vector3,
-              typename PhysicsWorldTypes_::Wrench> PhysicsWorldContactParent;
-
-  public: typedef typename PhysicsWorldTypes::WorldState WorldState;
-  public: typedef typename PhysicsWorldTypes::ModelID ModelID;
-  public: typedef typename PhysicsWorldTypes::ModelPartID ModelPartID;
-  public: typedef typename PhysicsWorldTypes::Vector3 Vector3;
-  public: typedef typename PhysicsWorldTypes::Wrench Wrench;
+  private: typedef PhysicsWorldStateInterface<WorldState>
+                PhysicsWorldStateParent;
+  private: typedef PhysicsWorldModelInterface<ModelID, ModelPartID,
+              Vector3> PhysicsWorldModelParent;
+  private: typedef PhysicsWorldContactInterface<ModelID, ModelPartID,
+              Vector3, Wrench> PhysicsWorldContactParent;
 
   public: typedef typename PhysicsWorldModelParent::Shape Shape;
 
@@ -535,10 +529,15 @@ class PhysicsWorld:
  * while the base class(es) only guarantees a minimal common subset of
  * functionality between implementations.
  *
- * \param PhysicsWorldTypes_ parameter for PhysicsWorld
+ * \param PhysicsWorldTypes_ has to be a struct with the
+ *        following typedefs:
+ *        - WorldState describes the state of a world.
+ *        - ModelID the identifier for a specific model
+ *        - ModelPartID the identifier for a part of a model
+ *        - Vector3 Math 3D vector implementation
+ *        - Wrench Math wrench implementation
  * \param PhysicsEngineWorldTypes_ has to be a struct with the
  *        following typedefs:
- *
  *        - Model: The model class type
  *        - Contact: Class for engine-specific implementation of a contact point
  *        - PhysicsEngine: Class for the physics engine, if there is any
@@ -551,7 +550,11 @@ class PhysicsWorld:
  */
 template<class PhysicsWorldTypes_, class PhysicsEngineWorldTypes_>
 class PhysicsEngineWorld:
-  public PhysicsWorld<PhysicsWorldTypes_>,
+  public PhysicsWorld<typename PhysicsWorldTypes_::WorldState,
+                      typename PhysicsWorldTypes_::ModelID,
+                      typename PhysicsWorldTypes_::ModelPartID,
+                      typename PhysicsWorldTypes_::Vector3,
+                      typename PhysicsWorldTypes_::Wrench>,
   public PhysicsEngineWorldInterface<
               typename PhysicsWorldTypes_::ModelID,
               typename PhysicsEngineWorldTypes_::Model,
@@ -562,7 +565,12 @@ class PhysicsEngineWorld:
   public: typedef PhysicsWorldTypes_ PhysicsWorldTypes;
   public: typedef PhysicsEngineWorldTypes_ PhysicsEngineWorldTypes;
 
-  private: typedef PhysicsWorld<PhysicsWorldTypes> PhysicsWorldParent;
+  private: typedef PhysicsWorld<typename PhysicsWorldTypes_::WorldState,
+                      typename PhysicsWorldTypes_::ModelID,
+                      typename PhysicsWorldTypes_::ModelPartID,
+                      typename PhysicsWorldTypes_::Vector3,
+                      typename PhysicsWorldTypes_::Wrench> PhysicsWorldParent;
+
   private: typedef PhysicsEngineWorldInterface<
              typename PhysicsWorldTypes_::ModelID,
              typename PhysicsEngineWorldTypes_::Model,

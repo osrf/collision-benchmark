@@ -36,12 +36,14 @@ class GazeboMultipleWorldsServer:
   public MultipleWorldsServer<GazeboPhysicsWorldTypes::WorldState,
                               GazeboPhysicsWorldTypes::ModelID,
                               GazeboPhysicsWorldTypes::ModelPartID,
-                              GazeboPhysicsWorldTypes::Vector3>
+                              GazeboPhysicsWorldTypes::Vector3,
+                              GazeboPhysicsWorldTypes::Wrench>
 {
   private: typedef MultipleWorldsServer<GazeboPhysicsWorldTypes::WorldState,
                               GazeboPhysicsWorldTypes::ModelID,
                               GazeboPhysicsWorldTypes::ModelPartID,
-                              GazeboPhysicsWorldTypes::Vector3> Super;
+                              GazeboPhysicsWorldTypes::Vector3,
+                              GazeboPhysicsWorldTypes::Wrench> Super;
 
   public: GazeboMultipleWorldsServer(const WorldLoader_M& _worldLoaders):
           Super(_worldLoaders) {}

@@ -51,24 +51,26 @@ namespace collision_benchmark
  * a gazebo::Any message with type STRING.
  *
  * \param _WorldState describes the state of a world.
- *         XXX Note: will probably be removed?
  * \param _ModelID the identifier for a specific model
  * \param _ModelPartID the identifier for a part of a model
  * \param _Vector3 Math 3D vector implementation
+ * \param _Wrench Math wrench implementation
  *
  * \author Jennifer Buehler
  * \date December 2016
  */
 template<class _WorldState, class _ModelID,
-         class _ModelPartID, class _Vector3>
+         class _ModelPartID, class _Vector3, class _Wrench>
 class WorldManager
 {
   public: typedef _WorldState WorldState;
   public: typedef _ModelID ModelID;
   public: typedef _ModelPartID ModelPartID;
   public: typedef _Vector3 Vector3;
+  public: typedef _Wrench Wrench;
 
-  private: typedef WorldManager<WorldState, ModelID, ModelPartID, Vector3> Self;
+  private: typedef WorldManager<WorldState, ModelID,
+                                ModelPartID, Vector3, Wrench> Self;
 
   public: typedef std::shared_ptr<WorldManager> Ptr;
   public: typedef std::shared_ptr<const WorldManager> ConstPtr;
@@ -85,6 +87,17 @@ class WorldManager
             ModelLoadResult;
   public: typedef typename PhysicsWorldModelInterfaceT::Ptr
             PhysicsWorldModelInterfacePtr;
+
+  public: typedef PhysicsWorldContactInterface<ModelID, ModelPartID,
+            Vector3, Wrench> PhysicsWorldContactInterfaceT;
+  public: typedef typename PhysicsWorldContactInterfaceT::Ptr
+            PhysicsWorldContactInterfacePtr;
+
+  public: typedef PhysicsWorld<WorldState, ModelID, ModelPartID,
+            Vector3, Wrench> PhysicsWorldT;
+  public: typedef typename PhysicsWorldT::Ptr
+            PhysicsWorldPtr;
+
 
   //public: typedef typename MirrorWorld<WorldState>::Ptr MirrorWorldPtr;
   public: typedef typename MirrorWorld::Ptr MirrorWorldPtr;
@@ -205,7 +218,7 @@ class WorldManager
   public: void SetMirroredWorld(const int _index)
   {
     std::cout<<"Getting world at idx "<<_index<<std::endl;
-    PhysicsWorldBaseInterface::Ptr world=GetPhysicsWorld(_index);
+    PhysicsWorldBaseInterface::Ptr world=GetWorld(_index);
     if (!world)
     {
       gzerr<<"Cannot get world in WorldManager::SetMirroredWorld()\n";
@@ -225,7 +238,7 @@ class WorldManager
 
   /// Returns the original world which is mirrored by this class
   public: PhysicsWorldBaseInterface::Ptr
-          GetPhysicsWorld(unsigned int _index) const
+          GetWorld(unsigned int _index) const
   {
     std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
     GZ_ASSERT(_index >=0 && _index < this->worlds.size(),
@@ -237,13 +250,101 @@ class WorldManager
     return this->worlds.at(_index);
   }
 
-/*  public: std::vector<PhysicsWorldBaseInterface::Ptr> GetPhysicsWorlds() const
-         {
-           std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
-           return this->worlds;
-         }*/
+  /// Returns all worlds.
+  /// Note that accessing the returned worlds asynchronously may lead to
+  /// thread safety issues. It is recommended to access the returned
+  /// worlds only in-between calls of Update().
+  public: std::vector<PhysicsWorldBaseInterface::Ptr> GetWorlds() const
+  {
+    std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
+    std::vector<PhysicsWorldBaseInterface::Ptr> ret(this->worlds.begin(),
+                                                    this->worlds.end());
+    return ret;
+  }
 
+  /// Returns all worlds which could be casted to PhysicsWorldModelInterfaceT.
+  /// Note that accessing the returned worlds asynchronously may lead to
+  /// thread safety issues. It is recommended to access the returned
+  /// worlds only in-between calls of Update().
+  public: std::vector<PhysicsWorldModelInterfacePtr>
+          GetModelPhysicsWorlds() const
+  {
+     std::vector<PhysicsWorldModelInterfacePtr> ret;
+     std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
+     int i = 0;
+     for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator
+          it = this->worlds.begin();
+          it != this->worlds.end(); ++it, ++i)
+     {
+       PhysicsWorldModelInterfacePtr
+         w = ToWorldWithModel<ModelID, ModelPartID, Vector3>(*it);
+       if (!w)
+       {
+         std::cerr<<"Cannot cast world " << i << " to "
+                  << "interface PhysicsWorldModelInterface<"
+                  << GetTypeName<ModelID>()
+                  << ", "<<GetTypeName<ModelPartID>()<<">" << std::endl;
+       }
+       ret.push_back(w);
+     }
+     return ret;
+  }
 
+  /// Returns all worlds which could be casted to PhysicsWorldContactInterfaceT.
+  /// Note that accessing the returned worlds asynchronously may lead to
+  /// thread safety issues. It is recommended to access the returned
+  /// worlds only in-between calls of Update().
+/*  public: std::vector<PhysicsWorldContactInterfacePtr>
+          GetContactPhysicsWorlds() const
+  {
+     std::vector<PhysicsWorldContactInterfacePtr> ret;
+     std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
+     int i = 0;
+     for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator
+          it = this->worlds.begin();
+          it != this->worlds.end(); ++it, ++i)
+     {
+       PhysicsWorldContactInterfacePtr
+         w = ToWorldWithContact<ContactID, ContactPartID, Vector3>(*it);
+       if (!w)
+       {
+         std::cerr<<"Cannot cast world " << i << " to "
+                  << "interface PhysicsWorldContactInterface<"
+                  << GetTypeName<ContactID>()
+                  << ", "<<GetTypeName<ContactPartID>()<<">" << std::endl;
+       }
+       ret.push_back(w);
+     }
+     return ret;
+  }*/
+
+  /// Returns all worlds which could be casted to PhysicsWorldT.
+  /// Note that accessing the returned worlds asynchronously may lead to
+  /// thread safety issues. It is recommended to access the returned
+  /// worlds only in-between calls of Update().
+/*  public: std::vector<PhysicsWorldPtr>
+          GetPhysicsWorlds() const
+  {
+     std::vector<PhysicsWorldPtr> ret;
+     std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
+     int i = 0;
+     for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator
+          it = this->worlds.begin();
+          it != this->worlds.end(); ++it, ++i)
+     {
+       PhysicsWorldPtr
+         w = ToWorldWith<ID, PartID, Vector3>(*it);
+       if (!w)
+       {
+         std::cerr<<"Cannot cast world " << i << " to "
+                  << "interface PhysicsWorld<"
+                  << GetTypeName<ID>()
+                  << ", "<<GetTypeName<PartID>()<<">" << std::endl;
+       }
+       ret.push_back(w);
+     }
+     return ret;
+  }*/
 
   /// Calls PhysicsWorldModelInterface::AddModelFromFile
   /// on all worlds.
@@ -321,6 +422,7 @@ class WorldManager
     }
     return cnt;
   }
+
 
   // Convenience method which casts the world \e w to a
   // PhysicsWorldStateInterface with the given state
@@ -438,26 +540,6 @@ class WorldManager
      // std::vector<bool> retVals =
        CallOnAllWorldsWithModel <bool, const ModelID&, const BasicState&>
         (&Self::SetBasicModelStateCB, _id, _state);
-     /*std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
-     for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator
-          it = this->worlds.begin();
-          it != this->worlds.end(); ++it)
-     {
-       PhysicsWorldModelInterfacePtr
-         w = ToWorldWithModel<ModelID, ModelPartID, Vector3>(*it);
-       if (!w)
-       {
-         THROW_EXCEPTION("Only support worlds which have the "
-                         << "interface PhysicsWorldModelInterface<"
-                         << GetTypeName<ModelID>()
-                         << ", "<<GetTypeName<ModelPartID>()<<">");
-       }
-       if (!w->SetBasicModelState(_id,_state))
-       {
-         std::cerr<<"Could not set basic model state because model "<<
-           _id<<" does not exist."<<std::endl;
-       }
-     }*/
   }
 
 

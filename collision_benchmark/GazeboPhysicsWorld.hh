@@ -186,6 +186,9 @@ class GazeboPhysicsWorld:
   public: virtual bool SetBasicModelState(const ModelID& id,
                                           const BasicState& state);
 
+  public: virtual bool GetBasicModelState(const ModelID& id,
+                                          BasicState& state);
+
   /// wait for the namespace of this world
   private: bool WaitForNamespace(const gazebo::physics::WorldPtr& gzworld,
                                  float maxWait, float waitSleep);

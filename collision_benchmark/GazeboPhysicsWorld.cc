@@ -314,7 +314,11 @@ bool GazeboPhysicsWorld::SetBasicModelState(const ModelID  &_id,
                                             const BasicState &_state)
 {
   gazebo::physics::ModelPtr m=world->ModelByName(_id);
-  if (!m) return false;
+  if (!m)
+  {
+    std::cerr<<"Model " << _id << " could not be found" << std::endl;
+    return false;
+  }
   ignition::math::Pose3d pose = m->WorldPose();
   if (_state.PosEnabled()) pose.Pos().Set(_state.position.x,
                                           _state.position.y,
@@ -323,6 +327,9 @@ bool GazeboPhysicsWorld::SetBasicModelState(const ModelID  &_id,
                                           _state.rotation.x,
                                           _state.rotation.y,
                                           _state.rotation.z);
+
+  // std::cout<<"Setting world state "<<_state<<std::endl;
+
   m->SetWorldPose(pose);
 
   if (_state.ScaleEnabled())
@@ -332,6 +339,24 @@ bool GazeboPhysicsWorld::SetBasicModelState(const ModelID  &_id,
                                _state.scale.z);
     m->SetScale(s);
   }
+  return true;
+}
+
+bool GazeboPhysicsWorld::GetBasicModelState(const ModelID  &_id,
+                                            BasicState &_state)
+{
+  gazebo::physics::ModelPtr m=world->ModelByName(_id);
+  if (!m)
+  {
+    std::cerr<<"Model " << _id << " could not be found" << std::endl;
+    return false;
+  }
+  ignition::math::Pose3d pose = m->WorldPose();
+  _state.SetPosition(pose.Pos().X(), pose.Pos().Y(), pose.Pos().Z());
+  _state.SetRotation(pose.Rot().X(), pose.Rot().Y(),
+                     pose.Rot().Z(), pose.Rot().W());
+  ignition::math::Vector3d scale = m->Scale();
+  _state.SetScale(scale.X(), scale.Y(), scale.Z());
   return true;
 }
 

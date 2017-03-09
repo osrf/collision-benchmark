@@ -15,10 +15,10 @@
  *
  */
 
+#include <collision_benchmark/GazeboPhysicsWorld.hh>
 #include <collision_benchmark/GazeboWorldLoader.hh>
 #include <collision_benchmark/GazeboWorldState.hh>
 #include <collision_benchmark/GazeboHelpers.hh>
-#include <collision_benchmark/GazeboPhysicsWorld.hh>
 #include <collision_benchmark/Exception.hh>
 #include <collision_benchmark/boost_std_conversion.hh>
 

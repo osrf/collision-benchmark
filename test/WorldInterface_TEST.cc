@@ -17,6 +17,7 @@ using collision_benchmark::PhysicsWorldBaseInterface;
 using collision_benchmark::PhysicsWorldStateInterface;
 using collision_benchmark::PhysicsWorld;
 using collision_benchmark::GazeboPhysicsWorld;
+using collision_benchmark::GazeboPhysicsWorldTypes;
 using collision_benchmark::GazeboStateCompare;
 using collision_benchmark::WorldManager;
 using collision_benchmark::Shape;
@@ -24,13 +25,32 @@ using collision_benchmark::PrimitiveShape;
 using collision_benchmark::MeshData;
 using collision_benchmark::SimpleTriMeshShape;
 
+typedef gazebo::physics::WorldState GzWorldState;
+typedef WorldManager<GazeboPhysicsWorldTypes::WorldState,
+                     GazeboPhysicsWorldTypes::ModelID,
+                     GazeboPhysicsWorldTypes::ModelPartID,
+                     GazeboPhysicsWorldTypes::Vector3,
+                     GazeboPhysicsWorldTypes::Wrench> GzWorldManager;
 
+typedef PhysicsWorldStateInterface<GzWorldState> GzPhysicsWorldStateInterface;
+
+typedef collision_benchmark::PhysicsWorldStateInterface
+      <gazebo::physics::WorldState> GzPhysicsWorldStateInterface;
+
+typedef PhysicsWorld<GazeboPhysicsWorldTypes::WorldState,
+                     GazeboPhysicsWorldTypes::ModelID,
+                     GazeboPhysicsWorldTypes::ModelPartID,
+                     GazeboPhysicsWorldTypes::Vector3,
+                     GazeboPhysicsWorldTypes::Wrench> GzPhysicsWorld;
+
+
+//////////////////////////////////////////////////////
 class WorldInterfaceTest : public BasicTestFramework {};
 
+
+//////////////////////////////////////////////////////
 TEST_F(WorldInterfaceTest, TransferWorldState)
 {
-  typedef collision_benchmark::PhysicsWorldStateInterface<gazebo::physics::WorldState> GzPhysicsWorldStateInterface;
-
   GazeboPhysicsWorld::Ptr gzWorld1(new GazeboPhysicsWorld(false));
   ASSERT_EQ(gzWorld1->LoadFromFile("worlds/empty.world"),collision_benchmark::SUCCESS) << " Could not load empty world";
   gzWorld1->SetDynamicsEnabled(false);
@@ -70,10 +90,6 @@ TEST_F(WorldInterfaceTest, WorldManager)
 
   std::cout << "Loading world " << worldfile << " with "<<physicsEngines.size()<<" engines."<<std::endl;
 
-  typedef gazebo::physics::WorldState GzWorldState;
-  typedef WorldManager<GzWorldState, std::string, std::string,
-                       ignition::math::Vector3d> GzWorldManager;
-  typedef PhysicsWorldStateInterface<GzWorldState> GzPhysicsWorldStateInterface;
 
   // create one world per physics engine and load it with the cube world, and add it to the world manager
   GzWorldManager worldManager;
@@ -110,7 +126,7 @@ TEST_F(WorldInterfaceTest, WorldManager)
   // All worlds should have a cube named "box", and only two models (ground and cube).
   for (int i=0; i<worldManager.GetNumWorlds(); ++i)
   {
-    PhysicsWorldBaseInterface::Ptr world=worldManager.GetPhysicsWorld(i);
+    PhysicsWorldBaseInterface::Ptr world=worldManager.GetWorld(i);
     GzPhysicsWorldStateInterface::Ptr sWorld=worldManager.ToWorldWithState<GzWorldState>(world);
     ASSERT_NE(sWorld, nullptr) <<"World should have been of Gazebo type";
     GzWorldState state = sWorld->GetWorldState();
@@ -129,8 +145,6 @@ TEST_F(WorldInterfaceTest, GazeboModelLoading)
 
   std::cout << "Loading world " << worldfile << std::endl;
 
-  typedef gazebo::physics::WorldState GzWorldState;
-  typedef PhysicsWorld<collision_benchmark::GazeboPhysicsWorldTypes> GzPhysicsWorld;
 
   // create a world with a cube
   GzPhysicsWorld::Ptr world (new GazeboPhysicsWorld(false));
@@ -226,9 +240,6 @@ TEST_F(WorldInterfaceTest, GazeboContacts)
   std::string worldfile = "worlds/empty.world";
 
   std::cout << "Loading world " << worldfile << std::endl;
-
-  typedef gazebo::physics::WorldState GzWorldState;
-  typedef PhysicsWorld<collision_benchmark::GazeboPhysicsWorldTypes> GzPhysicsWorld;
 
   // create one world per physics engine and load it with the cube world, and add it to the world manager
   bool enforceContactComp=true;

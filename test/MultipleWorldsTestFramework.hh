@@ -16,13 +16,15 @@ using collision_benchmark::GazeboPhysicsWorldTypes;
 typedef MultipleWorldsServer<GazeboPhysicsWorldTypes::WorldState,
                              GazeboPhysicsWorldTypes::ModelID,
                              GazeboPhysicsWorldTypes::ModelPartID,
-                             GazeboPhysicsWorldTypes::Vector3>
+                             GazeboPhysicsWorldTypes::Vector3,
+                             GazeboPhysicsWorldTypes::Wrench>
                                 GzMultipleWorldsServer;
 
 typedef WorldManager<GazeboPhysicsWorldTypes::WorldState,
                      GazeboPhysicsWorldTypes::ModelID,
                      GazeboPhysicsWorldTypes::ModelPartID,
-                     GazeboPhysicsWorldTypes::Vector3>
+                     GazeboPhysicsWorldTypes::Vector3,
+                     GazeboPhysicsWorldTypes::Wrench>
           GzWorldManager;
 
 
