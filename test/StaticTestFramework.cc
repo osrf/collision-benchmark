@@ -2,23 +2,21 @@
 #include <collision_benchmark/PrimitiveShape.hh>
 #include <collision_benchmark/SimpleTriMeshShape.hh>
 #include <collision_benchmark/BasicTypes.hh>
+
+#include <ignition/math/Vector3.hh>
+
 #include <gazebo/gazebo.hh>
 
 #include "MultipleWorldsTestFramework.hh"
 
 using collision_benchmark::Shape;
-using collision_benchmark::PrimitiveShape;
-using collision_benchmark::SimpleTriMeshShape;
 using collision_benchmark::BasicState;
 using collision_benchmark::Vector3;
 using collision_benchmark::Quaternion;
 
 
-void StaticTestFramework::TwoShapes(const Shape::Ptr& shape1,
-                                    const std::string& modelName1,
-                                    const Shape::Ptr& shape2,
-                                    const std::string& modelName2,
-                                    const std::vector<std::string>& engines)
+////////////////////////////////////////////////////////////////
+void StaticTestFramework::PrepareWorld(const std::vector<std::string>& engines)
 {
   // world to load
   std::string worldfile = "worlds/empty.world";
@@ -33,13 +31,12 @@ void StaticTestFramework::TwoShapes(const Shape::Ptr& shape1,
   // but not to manipulate the worlds.
   bool allowControlViaMirror = false;
   int numWorlds = mServer->Load(worldfile, engines,
-                               mirrorName, allowControlViaMirror);
+                                mirrorName, allowControlViaMirror);
 
   GzWorldManager::Ptr worldManager = mServer->GetWorldManager();
-  assert(worldManager);
+  ASSERT_NE(worldManager.get(), nullptr) << "No valid world manager created";
 
-  ASSERT_EQ(numWorlds, worldManager->GetNumWorlds())
-    << "Inconsistency: Server returned different number of worlds";
+  ASSERT_EQ(numWorlds, engines.size()) << "Could not prepare all engines";
 
 /*  GzWorldManager::ControlServerPtr controlServer =
     worldManager->GetControlServer();
@@ -49,6 +46,20 @@ void StaticTestFramework::TwoShapes(const Shape::Ptr& shape1,
     controlServer->RegisterPauseCallback(std::bind(pauseCallback,
                                                    std::placeholders::_1));
   }*/
+}
+
+////////////////////////////////////////////////////////////////
+void StaticTestFramework::LoadShapes(const Shape::Ptr& shape1,
+                                    const std::string& modelName1,
+                                    const Shape::Ptr& shape2,
+                                    const std::string& modelName2)
+{
+  GzMultipleWorldsServer::Ptr mServer = GetServer();
+  ASSERT_NE(mServer.get(), nullptr) << "Could not create and start server";
+  GzWorldManager::Ptr worldManager = mServer->GetWorldManager();
+  ASSERT_NE(worldManager.get(), nullptr) << "No valid world manager created";
+
+  int numWorlds = worldManager->GetNumWorlds();
 
   // Load model 1
   typedef GzWorldManager::ModelLoadResult ModelLoadResult;
@@ -81,18 +92,122 @@ void StaticTestFramework::TwoShapes(const Shape::Ptr& shape1,
       << "Model names should be equal";
   }
 
+  // TwoModels(modelName1, modelName2);
+}
+
+////////////////////////////////////////////////////////////////
+bool StaticTestFramework::GetAABBs(const std::string& modelName1,
+                                   const std::string& modelName2,
+                                   AABB& m1, AABB& m2)
+{
+  GzMultipleWorldsServer::Ptr mServer = GetServer();
+  if (!mServer) return false;
+  GzWorldManager::Ptr worldManager = mServer->GetWorldManager();
+  if (!worldManager) return false;
+
+  std::vector<GzWorldManager::PhysicsWorldModelInterfacePtr>
+    worlds = worldManager->GetModelPhysicsWorlds();
+
+  // AABB's from all worlds: need to be equal or assertion will fail
+  std::vector<AABB> aabbs1, aabbs2;
+
+  std::vector<GzWorldManager::PhysicsWorldModelInterfacePtr>::iterator it;
+  for (it = worlds.begin(); it != worlds.end(); ++it)
+  {
+    GzWorldManager::PhysicsWorldModelInterfacePtr w = *it;
+    AABB aabb1, aabb2;
+    bool ret1 = w->GetAABB(modelName1, aabb1.min, aabb1.max);
+    bool ret2 = w->GetAABB(modelName2, aabb2.min, aabb2.max);
+    if (!ret1 || !ret2)
+    {
+      std::cerr<<"Model 1 or model 2 not found"<<std::endl;
+      return false;
+    }
+    aabbs1.push_back(aabb1);
+    aabbs2.push_back(aabb2);
+  }
+
+  if (aabbs1.size() != aabbs2.size())
+  {
+    std::cerr << "AABB numbers for both worlds "
+              << "should be the same" << std::endl;
+    return false;
+  }
+
+  if (aabbs1.empty())
+  {
+    std::cerr << "At least one bounding box should "
+              << "have been returned" << std::endl;
+    return false;
+  }
+
+  // epsilon for vector comparison
+  const static float eps = 1e-03;
+
+  // Check that all AABBs in aabb1 are the same
+  std::vector<AABB>::iterator itAABB;
+  AABB lastAABB;
+  for (itAABB = aabbs1.begin();  itAABB != aabbs1.end(); ++itAABB)
+  {
+    const AABB& aabb = *itAABB;
+    if (itAABB != aabbs1.begin())
+    {
+      if (!aabb.min.Equal(lastAABB.min, eps))
+      {
+        std::cerr << "Bounding boxes should be of the same size: "
+                  <<  aabb.min << ", " << aabb.max << " --- "
+                  <<  lastAABB.min << ", " << lastAABB.max;
+        return false;
+      }
+    }
+    lastAABB = aabb;
+  }
+  // Check that all AABBs in aabb2 are the same
+  for (itAABB = aabbs2.begin();  itAABB != aabbs2.end(); ++itAABB)
+  {
+    const AABB& aabb = *itAABB;
+    if (itAABB != aabbs2.begin())
+    {
+      if (!aabb.min.Equal(lastAABB.min, eps))
+      {
+        std::cerr << "Bounding boxes should be of the same size: "
+                  <<  aabb.min << ", " << aabb.max << " --- "
+                  <<  lastAABB.min << ", " << lastAABB.max;
+        return false;
+      }
+    }
+    lastAABB = aabb;
+  }
+
+  m1 = aabbs1.front();
+  m2 = aabbs2.front();
+  return true;
+}
+
+////////////////////////////////////////////////////////////////
+void StaticTestFramework::TwoModels(const std::string& modelName1,
+                                    const std::string& modelName2)
+{
+  GzMultipleWorldsServer::Ptr mServer = GetServer();
+  ASSERT_NE(mServer.get(), nullptr) << "Could not create and start server";
+  GzWorldManager::Ptr worldManager = mServer->GetWorldManager();
+  ASSERT_NE(worldManager.get(), nullptr) << "No valid world manager created";
+
   worldManager->SetDynamicsEnabled(false);
   worldManager->SetPaused(true);
 
-  std::cout << "Now start gzclient if you would like "
-            << "to view the test. "<<std::endl;
-  std::cout << "Press [Enter] to continue without gzclient or hit "
-            << "the play button in gzclient."<<std::endl;
-  getchar();
+  int numWorlds = worldManager->GetNumWorlds();
 
   worldManager->SetPaused(false);
 
   // set models to their initial pose
+
+  AABB aabb1, aabb2;
+  ASSERT_TRUE(GetAABBs(modelName1, modelName2, aabb1, aabb2));
+
+  std::cout<<"Got AABB 1: " <<  aabb1.min << ", " << aabb2.max << std::endl;
+  std::cout<<"Got AABB 2: " <<  aabb2.min << ", " << aabb2.max << std::endl;
+
   BasicState bstate1, bstate2;
   bstate1.SetPosition(Vector3(1,0,0));
   bstate2.SetPosition(Vector3(-1,0,0));
@@ -100,6 +215,12 @@ void StaticTestFramework::TwoShapes(const Shape::Ptr& shape1,
   int cnt2 = worldManager->SetBasicModelState(modelName2, bstate2);
   ASSERT_EQ(cnt1, numWorlds) << "All worlds should have been updated";
   ASSERT_EQ(cnt2, numWorlds) << "All worlds should have been updated";
+
+  std::cout << "Now start gzclient if you would like "
+            << "to view the test. "<<std::endl;
+  std::cout << "Press [Enter] to continue without gzclient or hit "
+            << "the play button in gzclient."<<std::endl;
+  getchar();
 
   // start the update loop
   std::cout << "Now starting to update worlds."<<std::endl;

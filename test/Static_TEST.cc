@@ -9,29 +9,21 @@
 using collision_benchmark::Shape;
 using collision_benchmark::PrimitiveShape;
 using collision_benchmark::SimpleTriMeshShape;
-using collision_benchmark::BasicState;
-using collision_benchmark::Vector3;
-using collision_benchmark::Quaternion;
 
 class StaticTest : public StaticTestFramework {};
 
-// Loads a world with different physics engines (only the ones implemented
-// in Gazebo) and does the static test in which two models are generated at
-// various poses and all engines have to agree on the
-// collision state (boolean collision).
-TEST_F(StaticTest, TwoSpheres)
+TEST_F(StaticTest, TwoShapesTest1)
 {
   std::vector<std::string> selectedEngines;
   selectedEngines.push_back("bullet");
   selectedEngines.push_back("ode");
   selectedEngines.push_back("dart");
-  selectedEngines.push_back("simbody");
+  // selectedEngines.push_back("simbody");
 
   /*std::set<std::string> engines =
     collision_benchmark::GetSupportedPhysicsEngines();
   // run test on all engines
   selectedEngines.insert(selectedEngines.end(), engines.begin(), engines.end());*/
-
 
   // create simple mesh for testing
 /*  SimpleTriMeshShape::MeshDataPtr meshData(new SimpleTriMeshShape::MeshDataT());
@@ -56,7 +48,9 @@ TEST_F(StaticTest, TwoSpheres)
   std::string modelName2 = "model2";
   Shape::Ptr shape2(PrimitiveShape::CreateCylinder(1,3));
 
-  TwoShapes(shape1, modelName1, shape2, modelName2, selectedEngines);
+  PrepareWorld(selectedEngines);
+  LoadShapes(shape1, modelName1, shape2, modelName2);
+  TwoModels(modelName1, modelName2);
 }
 
 int main(int argc, char**argv)

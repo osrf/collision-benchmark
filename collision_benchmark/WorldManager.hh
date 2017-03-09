@@ -272,7 +272,7 @@ class WorldManager
      std::vector<PhysicsWorldModelInterfacePtr> ret;
      std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
      int i = 0;
-     for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator
+     for (std::vector<PhysicsWorldBaseInterface::Ptr>::const_iterator
           it = this->worlds.begin();
           it != this->worlds.end(); ++it, ++i)
      {
@@ -301,7 +301,7 @@ class WorldManager
      std::vector<PhysicsWorldContactInterfacePtr> ret;
      std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
      int i = 0;
-     for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator
+     for (std::vector<PhysicsWorldBaseInterface::Ptr>::const_iterator
           it = this->worlds.begin();
           it != this->worlds.end(); ++it, ++i)
      {
@@ -330,7 +330,7 @@ class WorldManager
      std::vector<PhysicsWorldPtr> ret;
      std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
      int i = 0;
-     for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator
+     for (std::vector<PhysicsWorldBaseInterface::Ptr>::const_iterator
           it = this->worlds.begin();
           it != this->worlds.end(); ++it, ++i)
      {
@@ -407,7 +407,8 @@ class WorldManager
                             const Shape::Ptr& collShape = Shape::Ptr())
   {
     return CallOnAllWorldsWithModel
-      <ModelLoadResult, const std::string&, const Shape::Ptr&, const Shape::Ptr&>
+      <ModelLoadResult, const std::string&,
+       const Shape::Ptr&, const Shape::Ptr&>
         (&Self::AddModelFromShapeCB, modelname, shape, collShape);
   }
 

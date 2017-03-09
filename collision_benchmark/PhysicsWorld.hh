@@ -305,7 +305,8 @@ class PhysicsWorldModelInterface
                                           BasicState& state) = 0;
 
   /// get axis aligned bounding box of the model
-  public: virtual void GetAABB(const ModelID& id,
+  /// \retval false the model was not in the world
+  public: virtual bool GetAABB(const ModelID& id,
                                Vector3& min, Vector3& max) const = 0;
 };
 
