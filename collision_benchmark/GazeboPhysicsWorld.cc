@@ -463,38 +463,44 @@ GetContactInfoHelper(const gazebo::physics::WorldPtr& world,
   for (std::vector<gazebo::physics::Contact*>::const_iterator
        it =contacts.begin(); it!=contacts.end(); ++it)
   {
-      const gazebo::physics::Contact * c=*it;
-      GZ_ASSERT(c->collision1->GetModel(), "Model of collision1 must be set");
-      GZ_ASSERT(c->collision1->GetLink(), "Link of collision1 must be set");
-      GZ_ASSERT(c->collision2->GetModel(), "Model of collision2 must be set");
-      GZ_ASSERT(c->collision2->GetLink(), "Link of collision2 must be set");
+    const gazebo::physics::Contact * c = *it;
+    GZ_ASSERT(c->collision1->GetModel(), "Model of collision1 must be set");
+    GZ_ASSERT(c->collision1->GetLink(), "Link of collision1 must be set");
+    GZ_ASSERT(c->collision2->GetModel(), "Model of collision2 must be set");
+    GZ_ASSERT(c->collision2->GetLink(), "Link of collision2 must be set");
 
-      std::string m1Name=c->collision1->GetModel()->GetName();
-      std::string m2Name=c->collision2->GetModel()->GetName();
+    std::string m1Name=c->collision1->GetModel()->GetName();
+    std::string m2Name=c->collision2->GetModel()->GetName();
 
-      if (m1)
-      {
-        if (m2)
-        { // m1Name and m2Name do not correspond to m1 and m2
-          if ((*m1!=m1Name || *m2!=m2Name) &&
-              (*m1!=m2Name || *m2!=m1Name)) continue;
-        }
-        else
-        { // m1 has to be m1Name or m2Name to continue
-          if (*m1!=m1Name && *m1!=m2Name) continue;
-        }
+    if (m1)
+    {
+      if (m2)
+      { // m1Name and m2Name do not correspond to m1 and m2
+        if ((*m1!=m1Name || *m2!=m2Name) &&
+            (*m1!=m2Name || *m2!=m1Name)) continue;
       }
-
-      GazeboPhysicsWorld::ContactInfoPtr
-        cInfo(new GazeboPhysicsWorld::ContactInfo
-              (m1Name, c->collision1->GetLink()->GetName(),
-               m2Name, c->collision2->GetLink()->GetName()));
-      for (int i=0; i < c->count; ++i)
-      {
-        cInfo->contacts.push_back
-          (GazeboPhysicsWorld::Contact(c->positions[i], c->normals[i],
-                                       c->wrench[i], c->depths[i]));
+      else
+      { // m1 has to be m1Name or m2Name to continue
+        if (*m1!=m1Name && *m1!=m2Name) continue;
       }
+    }
+
+    GazeboPhysicsWorld::ContactInfoPtr
+      cInfo(new GazeboPhysicsWorld::ContactInfo
+            (m1Name, c->collision1->GetLink()->GetName(),
+             m2Name, c->collision2->GetLink()->GetName()));
+    for (int i=0; i < c->count; ++i)
+    {
+      cInfo->contacts.push_back
+        (GazeboPhysicsWorld::Contact(c->positions[i], c->normals[i],
+                                     c->wrench[i], c->depths[i]));
+    }
+
+    if (cInfo->contacts.empty())
+      std::cerr << "CONSISTENCY GazeboPhysicsWorld: If there are no contacts, "
+                << "there should be no collision!! World: " << world->Name()
+                << " Models: " << m1Name << ", " << m2Name << std::endl;
+    else
       ret.push_back(cInfo);
   }
   return ret;

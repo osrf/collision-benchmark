@@ -41,10 +41,10 @@ class Contact
   public: virtual ~Contact() {}
 
   public: friend std::ostream& operator<<(std::ostream& o, const Self& c)
-          {
-            o<<"Position: "<<c.position<<", depth: "<<c.depth;
-            return o;
-          }
+  {
+    o << "{Position: " << c.position << ", depth: " << c.depth << "}";
+    return o;
+  }
   public: Vector3 position;
   public: Vector3 normal;
   public: Wrench wrench;
@@ -90,22 +90,22 @@ class ContactInfo
                       const ModelPartID& modelPart1_,
                       const ModelID& model2_,
                       const ModelPartID& modelPart2_)
-          {
-            if (model1_ < model2_)
-            {
-              model1 =  model1_;
-              modelPart1 =  modelPart1_;
-              model2 =  model2_;
-              modelPart2 =  modelPart2_;
-            }
-            else
-            {
-              model1 =  model2_;
-              modelPart1 =  modelPart2_;
-              model2 =  model1_;
-              modelPart2 =  modelPart1_;
-            }
-          }
+  {
+    if (model1_ < model2_)
+    {
+      model1 =  model1_;
+      modelPart1 =  modelPart1_;
+      model2 =  model2_;
+      modelPart2 =  modelPart2_;
+    }
+    else
+    {
+      model1 =  model2_;
+      modelPart1 =  modelPart2_;
+      model2 =  model1_;
+      modelPart2 =  modelPart1_;
+    }
+  }
   public: ContactInfo(const ContactInfo& c):
         contacts(c.contacts),
         model1(c.model1),
@@ -118,11 +118,19 @@ class ContactInfo
   public: bool isValid() const { return model1 < model2; }
 
   public: friend std::ostream& operator<<(std::ostream& o, const Self& c)
-          {
-            o << "Model1: "<<c.model1<<"/"<<c.modelPart1<<". Model2: "
-              << c.model2<<"/"<<c.modelPart2;
-            return o;
-          }
+  {
+    o << "(Model1: "<<c.model1<<"/"<<c.modelPart1<<". Model2: "
+      << c.model2<<"/"<<c.modelPart2;
+    o << "; Contacts: ";
+    for (typename std::vector<Contact>::const_iterator it = c.contacts.begin();
+         it != c.contacts.end(); ++it)
+    {
+      if (it != c.contacts.begin()) o << ", ";
+      o << *it;
+    }
+    o << ")";
+    return o;
+  }
 
   // all contacts which happen between the models.
   public: std::vector<Contact> contacts;
