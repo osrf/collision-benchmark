@@ -460,10 +460,14 @@ GetContactInfoHelper(const gazebo::physics::WorldPtr& world,
   const std::vector<gazebo::physics::Contact*>& contacts =
     contactManager->GetContacts();
   // std::cout<<"World has "<<contacts.size()<<"contacts."<<std::endl;
-  for (std::vector<gazebo::physics::Contact*>::const_iterator
-       it =contacts.begin(); it!=contacts.end(); ++it)
+  for (int cIdx = 0; cIdx < contactManager->GetContactCount(); ++cIdx)
   {
-    const gazebo::physics::Contact * c = *it;
+    if (cIdx >= contacts.size())
+    {
+      THROW_EXCEPTION("Contact count not consistent with vector size, idx="
+                      << cIdx << ", size = " << contacts.size());
+    }
+    const gazebo::physics::Contact * c = contacts[cIdx];
     GZ_ASSERT(c->collision1->GetModel(), "Model of collision1 must be set");
     GZ_ASSERT(c->collision1->GetLink(), "Link of collision1 must be set");
     GZ_ASSERT(c->collision2->GetModel(), "Model of collision2 must be set");
@@ -485,6 +489,22 @@ GetContactInfoHelper(const gazebo::physics::WorldPtr& world,
       }
     }
 
+    if (c->count == 0)
+    {
+      // for BULLET, it can happen quite frequently that a contact is given
+      // while there is no actual contact information.
+      // See also this issue:
+      // https://bitbucket.org/osrf/gazebo/issues/2222/bullet-contact-points-with-positive
+      // For now, don't print this warning for bullet.
+      if (world->Physics()->GetType() != "bullet")
+      {
+        std::cerr << "CONSISTENCY GazeboPhysicsWorld: With no contacts, "
+                  << "there should be no collision!! World: " << world->Name()
+                  << " Models: " << m1Name << ", " << m2Name << std::endl;
+      }
+      continue;
+    }
+
     GazeboPhysicsWorld::ContactInfoPtr
       cInfo(new GazeboPhysicsWorld::ContactInfo
             (m1Name, c->collision1->GetLink()->GetName(),
@@ -496,12 +516,8 @@ GetContactInfoHelper(const gazebo::physics::WorldPtr& world,
                                      c->wrench[i], c->depths[i]));
     }
 
-    if (cInfo->contacts.empty())
-      std::cerr << "CONSISTENCY GazeboPhysicsWorld: If there are no contacts, "
-                << "there should be no collision!! World: " << world->Name()
-                << " Models: " << m1Name << ", " << m2Name << std::endl;
-    else
-      ret.push_back(cInfo);
+    GZ_ASSERT(!cInfo->contacts.empty(), "Should have at least one contact");
+    ret.push_back(cInfo);
   }
   return ret;
 }

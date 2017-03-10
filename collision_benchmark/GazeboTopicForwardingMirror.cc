@@ -39,8 +39,6 @@
 using collision_benchmark::GazeboTopicForwarder;
 using collision_benchmark::GazeboTopicForwardingMirror;
 
-
-
 /**
  * \brief Strategy pattern to filter request messages
  * \author Jennifer Buehler
@@ -126,60 +124,6 @@ class WorldStatMsgFilter:
           }
   private: MirrorWeakPtr mirror;
 };
-
-#if 0
-// XXX TODO Get rid of this unless needed again. This has to be
-// forwarded to ALL worlds.
-/**
- * \brief Strategy pattern to filter which msgs::Physics messages are allowed
- * to forward.
- *
- * \author Jennifer Buehler
- * \date February 2017
- */
-class PhysicsMsgFilter:
-  public collision_benchmark::MessageFilter<gazebo::msgs::Physics>
-{
-  private: typedef  PhysicsMsgFilter Self;
-  public: typedef std::shared_ptr<Self> Ptr;
-  public: typedef std::shared_ptr<const Self> ConstPtr;
-
-  public: typedef std::shared_ptr<GazeboTopicForwardingMirror> MirrorPtr;
-  public: typedef std::weak_ptr<GazeboTopicForwardingMirror> MirrorWeakPtr;
-
-  public: typedef gazebo::msgs::Physics
-                    Physics;
-  public: typedef boost::shared_ptr<Physics>
-                    PhysicsPtr;
-  public: typedef boost::shared_ptr<Physics const>
-                    PhysicsConstPtr;
-
-  public: PhysicsMsgFilter(){}
-
-  public: virtual PhysicsConstPtr Filter(const PhysicsConstPtr &_msg) const
-          {
-            GZ_ASSERT(_msg, "Message must not be NULL");
-            std::cout << "Received physics msg " << _msg->DebugString()
-                      << std::endl;
-            // all fields will be dropped, except enable_physics
-            // and gravity
-            if (!_msg->has_enable_physics() &&
-                !_msg->has_gravity())
-            {
-              std::cout << "Only 'enable_physics' and 'gravity' fields "
-                        << "of msgs::Physics messages can be forwarded, "
-                        << "but none of those fields are set." <<std::endl;
-              return nullptr;
-            }
-            PhysicsPtr simpleMsg(new Physics);
-            if (_msg->has_enable_physics())
-                simpleMsg->set_enable_physics(_msg->enable_physics());
-            if (_msg->has_gravity())
-                simpleMsg->mutable_gravity()->CopyFrom(_msg->gravity());
-            return simpleMsg;
-          }
-};
-#endif
 
 GazeboTopicForwardingMirror::GazeboTopicForwardingMirror
     (const std::string& worldname):
@@ -368,17 +312,6 @@ void GazeboTopicForwardingMirror::Init()
                     if there is already a shared pointer for it");
   }
 
-/*
-  bool latch=false;
-  // XXX TODO Get rid of this unless needed again. This has to be
-  // forwarded to ALL worlds.
-  // the physics message is received from the mirror world and forwarded
-  // onto the original worlds, like a request.
-  this->physicsFwd.reset(new GazeboTopicForwarder<gazebo::msgs::Physics>
-                      (PhysicsMsgFilter::Ptr(new PhysicsMsgFilter()),
-                       verboseLevel>=0));
-  this->physicsFwd->ForwardFrom("~/physics", this->node, latch);*/
-
   this->modelFwd.reset(new GazeboTopicForwarder<gazebo::msgs::Model>
                       ("~/model/info", this->node, 1000, 0,
                        nullptr, verboseLevel>0));
@@ -434,16 +367,6 @@ void GazeboTopicForwardingMirror::ConnectOriginalWorld
                                 "/gazebo/"+origWorldName+"/response",
                                 RequestMessageFilter::Instance(),
                                 this->node);
-/*
-  // XXX TODO Get rid of this unless needed again. This has to be
-  // forwarded to ALL worlds.
-  // the physics message will be forwarded from mirror to original world,
-  // like a request
-  assert(this->physicsFwd);
-  this->physicsFwd->ForwardTo("/gazebo/" +origWorldName +
-                              "/physics", this->node, 1000, 0);
-*/
-
   // connect topic forwarders
   bool latch=false;
   assert(this->statFwd);
@@ -515,12 +438,6 @@ void GazeboTopicForwardingMirror::DisconnectFromOriginal()
 
   assert(this->poseAnimFwd);
   this->poseAnimFwd->DisconnectSubscriber();
-
-  /*
-  // XXX TODO Get rid of this unless needed again. This has to be
-  // forwarded to ALL worlds.
-  assert(this->physicsFwd);
-  this->physicsFwd->DisconnectSubscriber();*/
 }
 
 

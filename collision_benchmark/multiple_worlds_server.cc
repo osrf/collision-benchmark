@@ -84,6 +84,7 @@ void WaitForEnter()
 // true or until enter key was pressed.
 void WaitForUnpause()
 {
+  g_keypressed = false;
   std::thread * t = new std::thread(WaitForEnter);
   t->detach();  // detach so it can be terminated
   while (!g_unpaused && !g_keypressed)

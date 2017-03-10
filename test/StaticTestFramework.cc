@@ -10,12 +10,40 @@
 #include "MultipleWorldsTestFramework.hh"
 
 #include <sstream>
+#include <thread>
+#include <atomic>
 
 using collision_benchmark::Shape;
 using collision_benchmark::BasicState;
 using collision_benchmark::Vector3;
 using collision_benchmark::Quaternion;
 using collision_benchmark::PhysicsWorldBaseInterface;
+
+std::atomic<bool> g_keypressed(false);
+
+// waits until Enter has been pressed and sets g_keypressed to true
+void WaitForEnterImpl()
+{
+  int key = getchar();
+  g_keypressed=true;
+}
+
+// waits until Enter key was pressed and
+// meanwhile updates the worlds in the world manager
+void WaitForEnter(StaticTestFramework::GzWorldManager::Ptr& worlds)
+{
+  g_keypressed = false;
+  std::thread * t = new std::thread(WaitForEnterImpl);
+  t->detach();  // detach so it can be terminated
+  while (!g_keypressed)
+  {
+    worlds->Update(1);
+  }
+  delete t;
+}
+
+
+
 
 ////////////////////////////////////////////////////////////////
 template<typename T>
@@ -33,6 +61,7 @@ std::string VectorToString(const std::vector<T>& v)
   return str.str();
 }
 
+////////////////////////////////////////////////////////////////
 template<typename T>
 std::string VectorPtrToString(const std::vector<T>& v)
 {
@@ -334,11 +363,14 @@ void StaticTestFramework::TwoModels(const std::string& modelName1,
   int msSleep = 0;  // delay for running the test
   const static bool interactive = true;
   double eps = 1e-07;
+  unsigned int itCnt = 0;
   for (double x = grid.min.X(); x < grid.max.X()+eps; x += cellSizeX)
   for (double y = grid.min.Y(); y < grid.max.Y()+eps; y += cellSizeY)
   for (double z = grid.min.Z(); z < grid.max.Z()+eps; z += cellSizeZ)
   {
-    // std::cout<<"Placing model 2 at "<<x<<", "<<y<<", "<<z<<std::endl;
+    std::cout<<"Pose change " << itCnt << std::endl;
+    ++itCnt;
+    std::cout<<"Placing model 2 at "<<x<<", "<<y<<", "<<z<<std::endl;
     bstate2.position.x = x;
     bstate2.position.y = y;
     bstate2.position.z = z;
@@ -361,16 +393,15 @@ void StaticTestFramework::TwoModels(const std::string& modelName1,
     double negative = notColliding.size() / (double) total;
     double positive= colliding.size() / (double) total;
 
-    std::cout<<"Agreement: "<<positive<<", "<<negative<<std::endl;
-
     const static double minAgree = 1.0;
     if (((positive > negative) && (positive < minAgree)) ||
         ((positive <= negative) && (negative < minAgree)))
     {
       std::stringstream str;
-      str << "Minimum agreement not reached. ";
+      std::cout<<"Agreement: "<<positive<<", "<<negative<<std::endl;
+      str << "Minimum agreement not reached.";
 
-      // str << "Collision: "<< VectorToString(colliding) << ", no collision: "
+      // str << " Collision: "<< VectorToString(colliding) << ", no collision: "
       //     << VectorToString(notColliding) << ".";
 
       str << std::endl << "Colliding: " << std::endl << " ------ " << std::endl;
@@ -398,11 +429,11 @@ void StaticTestFramework::TwoModels(const std::string& modelName1,
       {
         std::cout << str.str() << std::endl
                   << "Press [Enter] to continue."<<std::endl;
-        getchar();
+        WaitForEnter(worldManager);
       }
       else
       {
-        ASSERT_TRUE(false) << str.str();
+        EXPECT_TRUE(false) << str.str();
       }
     }
   }

@@ -9,7 +9,7 @@
 { \
     std::stringstream str; \
     str<<stream<< ": "<<__FILE__<<", "<<__LINE__; \
-    throw Exception(str.str()); \
+    throw collision_benchmark::Exception(str.str()); \
 }
 
 namespace collision_benchmark
