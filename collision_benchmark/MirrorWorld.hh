@@ -86,7 +86,12 @@ class MirrorWorld
            }
 
   /// Synchronizes the world with the original
-  public:  virtual void Sync()=0;
+  public:  virtual void Sync() =0 ;
+
+  /// \return the name of the mirror world (not the original world).
+  ///     Can be used by subclasses in case the mirror worlds are
+  ///     named - otherwise returns the default name 'MirrorWorld'.
+  public: virtual std::string GetName() const { return "MirrorWorld"; }
 
   // Will be called when the original world is about to be changed in
   // SetOriginalWorld. Can be used by subclasses.

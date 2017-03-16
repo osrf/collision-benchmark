@@ -77,21 +77,33 @@ protected:
   // Throws gtest assertions so needs to be called from top-level
   // test function (nested function calls will not work correctly)
   //
-  // \param cellSizeFactor the proportion of the 3D grid
-  //    that will be used to determine the cell size.
+  // \param[in] cellSizeFactor the proportion of the 3D grid
+  //    that will be used to determine the cell size, which is the size
+  //    of cells that the models will be moved through.
+  // \param[in] interactive if true, the test will be run interactively,
+  //    which means the user gets the chance to start gzclient, and each
+  //    test failure the test will be paused so they can look at the result.
   void TwoModels(const std::string& modelName1,
                  const std::string& modelName2,
-                 const float cellSizeFactor = 0.1);
+                 const float cellSizeFactor = 0.1,
+                 const bool interactive = false);
 
-  // tests if the worlds agree about the collision states
+  // Tests if the worlds agree about the collision states
   // between the two models. The names of engines detecting a collision are
   // returned in \e colliding and the others in \e notColliding
+  // \param[in] modelName1 name of model 1
+  // \param[in] modelName2 name of model 2
+  // \param[out] colliding names of all engines which determine collision
+  // \param[out] notColliding names of all engines which determine no collision
+  // \param[out] maxNegDepth largest negative depth recorded amongst
+  //    all \colliding
   // \return false if there was an inconsistency or error in querying
   //    the collision states in any world
   bool CollisionState(const std::string& modelName1,
                       const std::string& modelName2,
                       std::vector<std::string>& colliding,
-                      std::vector<std::string>& notColliding);
+                      std::vector<std::string>& notColliding,
+                      double& maxNegDepth);
 
 private:
 
@@ -106,6 +118,25 @@ private:
   std::vector<ContactInfoPtr> GetContactInfo(const std::string& modelName1,
                                              const std::string& modelName2,
                                              const std::string& worldName);
+
+  // Forces an update of the gazebo client which may be used to view the world
+  // during testing. This is to help alleviate the following issue:
+  // The poses of the models are not always updated in the client, some
+  // pose messages will be skipped for the GazeboPhysicsWorld worlds,
+  // because in physics::World::posePub is throttled. Instead of allowing to
+  // remove the throttling rate altoegther (which would be useful but the
+  // throttling rate has a purpose after all), this function can be used
+  // to make the Gazebo clients(s) completely refresh the scene, which causes
+  // them to re-request all information about all models.
+  // \param[in] timoutSecs maximum timeout wait in seconds to wait for a
+  //  client connection. Use negative value to wait forever.
+  // \return false if there was an error preventing the refreshing.
+  bool RefreshClient(const double timeoutSecs=-1);
+
+  // node needed in RefreshClient()
+  gazebo::transport::NodePtr node;
+  // publisher needed in RefreshClient()
+  gazebo::transport::PublisherPtr pub;
 };
 
 #endif  // COLLISION_BENCHMARK_TEST_STATICTESTFRAMEWORK_H

@@ -169,7 +169,6 @@ void GazeboTopicForwardingMirror::RegisterNamespace
            <<wldName<<" as topic"<<std::endl;
   gazebo::transport::TopicManager::Instance()->RegisterTopicNamespace(wldName);
 
-
   // Wait for namespaces to make sure the mirror world name has arrived.
   gazebo::common::Time waitTime(1, 0);
   int waitCount = 0;

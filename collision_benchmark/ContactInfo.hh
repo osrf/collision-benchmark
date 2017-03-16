@@ -117,6 +117,20 @@ class ContactInfo
   // checks for validity of the contact configuration
   public: bool isValid() const { return model1 < model2; }
 
+  // returns minimum depth amongst all contacts or positive
+  // value if contacts are empty (the deepest penetration)
+  public: double minDepth() const
+  {
+    double min=1;
+    for (typename std::vector<Contact>::const_iterator
+         cit = contacts.begin(); cit != contacts.end(); ++cit)
+    {
+      const Contact& c = *cit;
+      if (c.depth < min) min = c.depth;
+    }
+    return min;
+  }
+
   public: friend std::ostream& operator<<(std::ostream& o, const Self& c)
   {
     o << "(Model1: "<<c.model1<<"/"<<c.modelPart1<<". Model2: "

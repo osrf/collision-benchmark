@@ -92,7 +92,7 @@ set(TEST_LIB_SRCS
 
 add_library(collision_benchmark_test EXCLUDE_FROM_ALL ${TEST_LIB_SRCS})
 target_link_libraries(collision_benchmark_test
-  collision_benchmark collision_benchmark_test ${GTEST_BOTH_LIBRARIES})
+  collision_benchmark ${GTEST_BOTH_LIBRARIES})
 add_test(MultipleWorldsTest collision_benchmark_test)
 add_dependencies(tests collision_benchmark_test)
 
@@ -113,6 +113,11 @@ target_link_libraries(static_test
   collision_benchmark collision_benchmark_test ${GTEST_BOTH_LIBRARIES})
 add_test(StaticTest static_test)
 add_dependencies(tests static_test)
+
+add_executable(tmp_test EXCLUDE_FROM_ALL test/Temp_TEST.cc)
+target_link_libraries(tmp_test
+  collision_benchmark collision_benchmark_test ${GTEST_BOTH_LIBRARIES})
+add_dependencies(tests tmp_test)
 
 
 # tutorials

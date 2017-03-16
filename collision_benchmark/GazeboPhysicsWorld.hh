@@ -123,6 +123,7 @@ class GazeboPhysicsWorld:
                                     const Shape::Ptr collShape=Shape::Ptr());
 
   public: virtual std::vector<ModelID> GetAllModelIDs() const;
+  public: virtual int GetIntegerModelID(const ModelID& id) const;
 
   public: virtual bool RemoveModel(const ModelID& id);
 

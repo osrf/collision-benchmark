@@ -25,6 +25,7 @@ branch which is also merged with
 - fixes for DART in branch [dart-6-fix-like-PR-2654](https://bitbucket.org/JenniferBuehler/gazebo/src/952623bc3c907c85237b29757790698386fdff0c/gazebo/physics/dart/DARTPhysics.cc?at=dart-6-fix-like-PR-2654&fileviewer=file-view-default#DARTPhysics.cc-195)
   which is what PR 2654 (listed above) does for for bullet.
   This will become a PR once dart-6 is merged with default.
+- Merge with [PR 2657](https://bitbucket.org/osrf/gazebo/pull-requests/2657)
 
 If you are using dart-6-dev instead, the listed changed are merged in it already.
 

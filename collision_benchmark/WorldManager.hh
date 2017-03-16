@@ -99,8 +99,8 @@ class WorldManager
             PhysicsWorldPtr;
 
 
-  //public: typedef typename MirrorWorld<WorldState>::Ptr MirrorWorldPtr;
   public: typedef typename MirrorWorld::Ptr MirrorWorldPtr;
+  public: typedef typename MirrorWorld::ConstPtr MirrorWorldConstPtr;
   public: typedef typename ControlServer<ModelID>::Ptr ControlServerPtr;
 
   /// Constructor.
@@ -193,6 +193,9 @@ class WorldManager
      }
    }
   }
+
+  // MirrorWorldPtr GetMirrorWorld() { return this->mirrorWorld; }
+  MirrorWorldConstPtr GetMirrorWorld() const { return this->mirrorWorld; }
 
   // returns the original world which is currently mirrored by the mirror world
   public: PhysicsWorldBaseInterface::Ptr GetMirroredWorld()

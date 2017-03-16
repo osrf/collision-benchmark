@@ -7,7 +7,6 @@
 #include <gazebo/physics/LinkState.hh>
 #include <gazebo/physics/JointState.hh>
 #include <gazebo/physics/CollisionState.hh>
-#include <gazebo/math/Pose.hh>
 #include <ignition/math/Vector3.hh>
 
 using gazebo::physics::WorldState;

@@ -263,6 +263,13 @@ GazeboPhysicsWorld::GetAllModelIDs() const
   return names;
 }
 
+int GazeboPhysicsWorld::GetIntegerModelID(const ModelID& id) const
+{
+  gazebo::physics::ModelPtr m=world->ModelByName(id);
+  if (!m) return -1;
+  return m->GetId();
+}
+
 bool GazeboPhysicsWorld::RemoveModel(const ModelID& id)
 {
   gazebo::physics::ModelPtr m=world->ModelByName(id);

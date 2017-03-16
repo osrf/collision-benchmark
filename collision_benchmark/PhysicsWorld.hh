@@ -290,6 +290,13 @@ class PhysicsWorldModelInterface
 
   public: virtual std::vector<ModelID> GetAllModelIDs() const = 0;
 
+  // If the underlying implementation offers integer IDs for models
+  // in addition to the ModelID type, this function will return the
+  // integer ID. Usually, negative numbers mean that the implementation
+  // does not use integer IDs, or it would mean that the model
+  // with this \e id was not found.
+  public: virtual int GetIntegerModelID(const ModelID& id) const = 0;
+
   /// Removes a model from the world
   /// \retval false the model was not in the world
   public: virtual bool RemoveModel(const ModelID& id) = 0;
