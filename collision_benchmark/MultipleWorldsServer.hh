@@ -61,9 +61,15 @@ class MultipleWorldsServer
   // the world loader assigned to it.
   public: typedef std::map<std::string, WorldLoader::ConstPtr> WorldLoader_M;
 
-  // \param _worldLoaders world loaders for all physics engines.
-  public: MultipleWorldsServer(const WorldLoader_M& _worldLoaders):
-          worldLoaders(_worldLoaders) {}
+  // \param _worldLoaders world loaders for all the physics engines.
+  // \param _universalLoader a loader which will automatically choose the
+  //    engine to load from the world file given upon loading. nullptr if
+  //    no such loader specified.
+  public: MultipleWorldsServer(const WorldLoader_M& _worldLoaders,
+                               const WorldLoader::ConstPtr _universalLoader =
+                                     WorldLoader::ConstPtr()):
+          worldLoaders(_worldLoaders),
+          universalLoader(_universalLoader) {}
   public: virtual ~MultipleWorldsServer() {}
 
   // Start the server. Starting of the server may accept
@@ -72,22 +78,29 @@ class MultipleWorldsServer
   public: virtual bool Start(int argc=0, const char** argv=NULL) = 0;
   public: virtual void Stop() = 0;
 
-
-  // Loads the world file with the different engines.
-  // \param worldfile the filename the filename
-  // \param engines the physics engines (identified by name) to use.
+  // Initializes the server. Should be called before any Load()
+  // functions and will create the world manager.
   // \param mirror_name the name of the mirror world, or empty to disable
   //        creating a mirror world.
   // \param allowMirrorControl if true, the mirror world will be allowed to
-  //        serve as control world to control all underlying worlds, while`
+  //        serve as control world to control all underlying worlds, while
   //        it is mirroring one at a time.
-  // \return number of engines which were successfully loaded
-  public: int Load(const std::string& worldfile,
-                   const std::vector<std::string>& engines,
-                   const std::string& mirror_name = "mirror",
+  public: void Init(const std::string& mirror_name = "mirror",
                    const bool allowMirrorControl = false)
   {
     worldManager = createWorldManager(mirror_name, allowMirrorControl);
+    assert(worldManager);
+  }
+
+  // \brief Loads the world file with the different engines.
+  // This will create several worlds (one for each engine) which are
+  // added to the WorldManager.
+  // \param worldfile the filename the filename
+  // \param engines the physics engines (identified by name) to use.
+  // \return number of engines which were successfully loaded
+  public: int Load(const std::string& worldfile,
+                   const std::vector<std::string>& engines)
+  {
     assert(worldManager);
 
     int i = 1;
@@ -95,30 +108,77 @@ class MultipleWorldsServer
          it = engines.begin(); it != engines.end(); ++it, ++i)
     {
       std::string engine = *it;
-
-      WorldLoader_M::iterator wlIt = worldLoaders.find(engine);
-      if (wlIt == worldLoaders.end())
+      std::stringstream _worldname;
+      _worldname << "world_" << i << "_" << engine;
+      std::string worldname=_worldname.str();
+      if (!Load(worldfile, engine, worldname))
       {
         std::cerr << "No world loader provided for engine " << engine
                   << ", skipping it." << std::endl;
         continue;
       }
-      WorldLoader::ConstPtr loader = wlIt->second;
-      assert(loader);
-
-      std::stringstream _worldname;
-      _worldname << "world_" << i << "_" << engine;
-      std::string worldname=_worldname.str();
-
-      std::cout << "Loading with physics engine " << engine
-                << " (named as '" << worldname << "')" << std::endl;
-
-      PhysicsWorldBaseInterface::Ptr world =
-        loader->LoadFromFile(worldfile, worldname);
-
-      worldManager->AddPhysicsWorld(world);
     }
     return worldManager->GetNumWorlds();
+  }
+
+  // \brief Loads the world file with the given engine.
+  // This will create one new worlds using this engine which will be
+  // added to the WorldManager.
+  // \param worldfile the filename the filename
+  // \param engine the physics engine (identified by name) to use.
+  // \param worldname name to use for the world. If empty, will use the
+  //    name specified in the file.
+  // \return false if worlds with this engine name cannot be loaded
+  public: bool Load(const std::string& worldfile,
+                   const std::string& engine,
+                   const std::string& worldname = "")
+  {
+    assert(worldManager);
+    WorldLoader_M::iterator wlIt = worldLoaders.find(engine);
+    if (wlIt == worldLoaders.end())
+    {
+      return false;
+    }
+    WorldLoader::ConstPtr loader = wlIt->second;
+    assert(loader);
+
+    std::cout << "Loading with physics engine " << engine
+              << " (named as '" << worldname << "')" << std::endl;
+
+    PhysicsWorldBaseInterface::Ptr world =
+      loader->LoadFromFile(worldfile, worldname);
+
+    if (!world) return false;
+
+    worldManager->AddPhysicsWorld(world);
+    return true;
+  }
+
+  // \brief Loads the world file and determines the engine to use from the file.
+  // This will create one new worlds using the engine determined
+  // from the file. The world will be added to the WorldManager.
+  // \param worldfile the filename the filename
+  // \param worldname name to use for the world. If empty, will use the
+  //    name specified in the file.
+  // \retval 0 success
+  // \retval -1 f there is no world loader which can determine the
+  //    engine from the file
+  // \retval -2 if the loader failed to the world
+  public: int AutoLoad(const std::string& worldfile,
+                   const std::string& worldname = "")
+  {
+    assert(worldManager);
+    if (!universalLoader) return -1;
+    std::cout << "Auto-loading world (named as '"
+              << worldname << "')" << std::endl;
+
+    PhysicsWorldBaseInterface::Ptr world =
+      universalLoader->LoadFromFile(worldfile, worldname);
+
+    if (!world) return -2;
+
+    worldManager->AddPhysicsWorld(world);
+    return 0;
   }
 
   WorldManagerPtr GetWorldManager() { return worldManager; }
@@ -133,8 +193,12 @@ class MultipleWorldsServer
              createWorldManager(const std::string& mirror_name = "",
                                 const bool allowMirrorControl = false) = 0;
 
-  // world loaders for all physics engines.
+  // world loaders for all the physics engines.
   protected: WorldLoader_M worldLoaders;
+
+  // A loader which will automatically choose the
+  // engine to load from the world file given upon loading.
+  protected: WorldLoader::ConstPtr universalLoader;
 
   protected: WorldManagerPtr worldManager;
 };  // class MultpleWorldsServer

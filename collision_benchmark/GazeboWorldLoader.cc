@@ -63,6 +63,12 @@ GazeboWorldLoader::GazeboWorldLoader(const std::string& _engine,
   // std::cout<<"Physics: "<<physics->ToString("")<<std::endl;
 }
 
+GazeboWorldLoader::GazeboWorldLoader(const bool _alwaysCalcContacts):
+          WorldLoader(""),
+          alwaysCalcContacts(_alwaysCalcContacts)
+{
+}
+
 PhysicsWorldBaseInterface::Ptr
 GazeboWorldLoader::LoadFromSDF(const sdf::ElementPtr& sdf,
                                const std::string& worldname) const

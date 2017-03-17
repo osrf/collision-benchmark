@@ -27,7 +27,7 @@ branch which is also merged with
   This will become a PR once dart-6 is merged with default.
 - Merge with [PR 2657](https://bitbucket.org/osrf/gazebo/pull-requests/2657)
 
-If you are using dart-6-dev instead, the listed changed are merged in it already.
+If you are using dart-6-dev instead, the listed changes are merged in it already.
 
 
 ## Setup

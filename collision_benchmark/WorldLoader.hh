@@ -33,7 +33,9 @@ class WorldLoader
   public: typedef std::shared_ptr<WorldLoader> Ptr;
   public: typedef std::shared_ptr<const WorldLoader> ConstPtr;
 
-  // \param _engine name of the engine which will be used for the created worlds
+  // \param _engine name of the engine which will be used for the created
+  //    worlds. If empty, this loader is to be considered universal and will
+  //    load worlds with the physics engine specified in the file/SDF.
   public: WorldLoader(const std::string& _engine):
           engine(_engine) {}
 

@@ -40,6 +40,12 @@ class GazeboWorldLoader: public WorldLoader
   public: GazeboWorldLoader(const std::string& _engine,
                             const bool _alwaysCalcContacts = true);
 
+  // Creates a universal loader that loads up the world specified in
+  // the SDF of the world.
+  // \param _alwaysCalcContacts constructor parameter for
+  //        GazeboPhysicsWorld
+  public: GazeboWorldLoader(const bool _alwaysCalcContacts = true);
+
   public: virtual PhysicsWorldBaseInterface::Ptr
           LoadFromSDF(const sdf::ElementPtr& sdf,
                       const std::string& worldname="") const;

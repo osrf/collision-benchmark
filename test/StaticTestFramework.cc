@@ -97,8 +97,8 @@ void StaticTestFramework::PrepareWorld(const std::vector<std::string>& engines)
   // with the tests, the mirror can be used to watch the test,
   // but not to manipulate the worlds.
   bool allowControlViaMirror = false;
-  int numWorlds = mServer->Load(worldfile, engines,
-                                mirrorName, allowControlViaMirror);
+  mServer->Init(mirrorName, allowControlViaMirror);
+  int numWorlds = mServer->Load(worldfile, engines);
 
   GzWorldManager::Ptr worldManager = mServer->GetWorldManager();
   ASSERT_NE(worldManager.get(), nullptr) << "No valid world manager created";
