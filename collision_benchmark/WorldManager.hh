@@ -582,6 +582,37 @@ class WorldManager
    return controlServer;
   }
 
+  // Saves all worlds to files. The filenames will be written
+  // into the \e directory and the filename will be composed as
+  // follows: \e prefix + PhysicsWorldBaseInterface::GetName() + "." + \e ext.
+  // \param[in] directory the directory to write in. If empty, the local
+  //    directory is used.
+  // \return number of failures
+  public: int SaveAllWorlds(const std::string& directory = "",
+                             const std::string& prefix = "",
+                             const std::string& ext = "world")
+  {
+    int fail = 0;
+    std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
+    for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator
+         it = this->worlds.begin();
+         it != this->worlds.end(); ++it)
+    {
+      PhysicsWorldBaseInterface::Ptr w=*it;
+      std::string filename;
+      if (!directory.empty()) filename += directory + "/";
+      filename += prefix + w->GetName() + "." + ext;
+      std::cout << "Writing to file " << filename << std::endl;
+      if (!w->SaveToFile(filename))
+      {
+        std::cerr << "ERROR: Could not save world " << w->GetName() <<
+                     " to file " << filename << std::endl;
+        ++fail;
+      }
+    }
+    return fail;
+  }
+
   private: void NotifyPause(const bool _flag)
   {
     std::cout << "WorldManager Received PAUSE command: "

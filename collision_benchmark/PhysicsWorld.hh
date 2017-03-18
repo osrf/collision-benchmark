@@ -123,6 +123,11 @@ class PhysicsWorldBaseInterface
   public: virtual OpResult LoadFromString(const std::string& str,
                                           const std::string& worldname="") = 0;
 
+  /// Saves the world to the file.
+  /// \param[in] filename the filename
+  /// \return success or not
+  public: virtual bool SaveToFile(const std::string& filename) = 0;
+
   /// Set the dynamics engine to enabledl or disabled. If disabled, the objects
   /// won't react to physics laws, but objects can be maintained in the world
   /// and collision states / contact points between them checked.

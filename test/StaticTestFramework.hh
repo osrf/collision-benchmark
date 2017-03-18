@@ -83,10 +83,14 @@ protected:
   // \param[in] interactive if true, the test will be run interactively,
   //    which means the user gets the chance to start gzclient, and each
   //    test failure the test will be paused so they can look at the result.
+  // \param[in] outputPath if not empty, this should be a writable path to
+  //    a directory into which the failure results will be written. If emtpy,
+  //    no failure results will be written to file.
   void TwoModels(const std::string& modelName1,
                  const std::string& modelName2,
                  const float cellSizeFactor = 0.1,
-                 const bool interactive = false);
+                 const bool interactive = false,
+                 const std::string& outputPath = "");
 
   // Tests if the worlds agree about the collision states
   // between the two models. The names of engines detecting a collision are

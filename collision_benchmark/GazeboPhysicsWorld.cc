@@ -125,6 +125,19 @@ GazeboPhysicsWorld::LoadFromString(const std::string& str,
 
 }
 
+bool GazeboPhysicsWorld::SaveToFile(const std::string& filename)
+{
+  if (!world) return false;
+
+  std::ofstream ofs(filename);
+  // file cannot be read for writing
+  if(!ofs.is_open()) return false;
+  ofs.close();
+
+  world->Save(filename);
+  return true;
+}
+
 GazeboPhysicsWorld::ModelLoadResult
 GazeboPhysicsWorld::AddModelFromFile(const std::string& filename,
                                      const std::string& modelname)

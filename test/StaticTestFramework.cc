@@ -45,9 +45,6 @@ void WaitForEnter(StaticTestFramework::GzWorldManager::Ptr& worlds)
   delete t;
 }
 
-
-
-
 ////////////////////////////////////////////////////////////////
 template<typename T>
 std::string VectorToString(const std::vector<T>& v)
@@ -79,8 +76,6 @@ std::string VectorPtrToString(const std::vector<T>& v)
   str << "]";
   return str.str();
 }
-
-
 
 ////////////////////////////////////////////////////////////////
 void StaticTestFramework::PrepareWorld(const std::vector<std::string>& engines)
@@ -158,8 +153,6 @@ void StaticTestFramework::LoadShapes(const Shape::Ptr& shape1,
     ASSERT_EQ(mlRes.modelID, modelName2)
       << "Model names should be equal";
   }
-
-  // TwoModels(modelName1, modelName2);
 }
 
 ////////////////////////////////////////////////////////////////
@@ -488,7 +481,8 @@ bool StaticTestFramework::RefreshClient(const double timeoutSecs)
 void StaticTestFramework::TwoModels(const std::string& modelName1,
                                     const std::string& modelName2,
                                     const float cellSizeFactor,
-                                    const bool interactive)
+                                    const bool interactive,
+                                    const std::string& outputPath)
 {
   ASSERT_GT(cellSizeFactor, 1e-07) << "Cell size factor too small";
 
@@ -544,6 +538,7 @@ void StaticTestFramework::TwoModels(const std::string& modelName1,
   int msSleep = 0;  // delay for running the test
   double eps = 1e-07;
   unsigned int itCnt = 0;
+  unsigned int failCnt = 0;
   for (double x = grid.min.X(); x < grid.max.X()+eps; x += cellSizeX)
   for (double y = grid.min.Y(); y < grid.max.Y()+eps; y += cellSizeY)
   for (double z = grid.min.Z(); z < grid.max.Z()+eps; z += cellSizeZ)
@@ -583,7 +578,7 @@ void StaticTestFramework::TwoModels(const std::string& modelName1,
     double negative = notColliding.size() / (double) total;
     double positive= colliding.size() / (double) total;
 
-    const static double minAgree = 1.0;
+    const static double minAgree = 1.1; //0.999;
     if (((positive > negative) && (positive < minAgree)) ||
         ((positive <= negative) && (negative < minAgree)))
     {
@@ -615,6 +610,15 @@ void StaticTestFramework::TwoModels(const std::string& modelName1,
       }
       str << std::endl;
 
+      if (!outputPath.empty())
+      {
+        std::stringstream namePrefix;
+        namePrefix << "Static_fail_" << failCnt << "_";
+        int nFails = worldManager->SaveAllWorlds(outputPath, namePrefix.str());
+        std::cout << "Worlds written to " << outputPath
+                  << " (failed: "<< nFails < ")" <<std::endl;
+      }
+
       if (interactive)
       {
         std::cout << str.str() << std::endl
@@ -627,6 +631,7 @@ void StaticTestFramework::TwoModels(const std::string& modelName1,
         // trigger a test failure
         EXPECT_TRUE(false) << str.str();
       }
+      ++failCnt;
     }
   }
   std::cout<<"TwoModels test finished. "<<std::endl;

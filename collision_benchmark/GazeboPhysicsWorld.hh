@@ -103,6 +103,8 @@ class GazeboPhysicsWorld:
   public: virtual OpResult LoadFromString(const std::string& str,
                                           const std::string& worldname="");
 
+  public: virtual bool SaveToFile(const std::string& filename);
+
   public: virtual ModelLoadResult
                     AddModelFromFile(const std::string& filename,
                                      const std::string& modelname="");
