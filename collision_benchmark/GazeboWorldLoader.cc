@@ -375,9 +375,27 @@ collision_benchmark::LoadWorldFromSDF(const sdf::ElementPtr& sdfRoot,
     return gazebo::physics::WorldPtr();
   }
 
-  if (gazebo::physics::has_world(name))
+  std::string useName = name;
+  sdf::ParamPtr sdfWorldName = sdfRoot->GetAttribute("name");
+  if (!useName.empty())
   {
-    std::cerr<<"World with name "<<name<<" already exists."<<std::endl;
+    if (sdfWorldName->GetAsString() != name)
+    {
+      std::cout << "INFO: Need to replace world name in SDF: '"
+                << sdfWorldName->GetAsString() << "' with '"
+                << name << "'" << std::endl;
+      sdfWorldName->SetFromString(name);
+    }
+  }
+  else
+  {
+    useName = sdfWorldName->GetAsString();
+  }
+
+
+  if (gazebo::physics::has_world(useName))
+  {
+    std::cerr<<"World with name "<<useName<<" already exists."<<std::endl;
     return nullptr;
   }
 
@@ -389,19 +407,8 @@ collision_benchmark::LoadWorldFromSDF(const sdf::ElementPtr& sdfRoot,
     // is created yet - this is done in World::Load (line 257), called
     // from load_world: The physics engine specified **in the SDF** is
     // loaded.
-    world = gazebo::physics::create_world(name);
+    world = gazebo::physics::create_world(useName);
 
-    if (!name.empty())
-    {
-      sdf::ParamPtr sdfWorldName = sdfRoot->GetAttribute("name");
-      if (sdfWorldName->GetAsString() != name)
-      {
-        std::cout << "INFO: Need to replace world name in SDF: '"
-                  << sdfWorldName->GetAsString() << "' with '"
-                  << name << "'" << std::endl;
-        sdfWorldName->SetFromString(name);
-      }
-    }
     std::cout<<"Loading world..."<<std::endl;
     if (world) gazebo::physics::load_world(world, sdfRoot);
 

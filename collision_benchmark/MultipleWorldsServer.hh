@@ -98,12 +98,16 @@ class MultipleWorldsServer
   // added to the WorldManager.
   // \param worldfile the filename the filename
   // \param engines the physics engines (identified by name) to use.
+  // \param namePrefix The name of the world will be generated
+  //  using this prefix to the name. This is required because multiple
+  //  worlds loaded from the same world file cannot have the same name.
   // \return number of engines which were successfully loaded
   public: int Load(const std::string& worldfile,
                    const std::vector<std::string>& engines,
                    const std::string& namePrefix = "world")
   {
     assert(worldManager);
+    assert(!namePrefix.empty());
 
     int i = 1;
     for (std::vector<std::string>::const_iterator

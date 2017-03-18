@@ -239,10 +239,12 @@ int main(int argc, char **argv)
   // Declare the supported options.
   po::options_description desc("Allowed options");
   desc.add_options()
-    ("help,h", "produce help message")
+    ("help,h", "Produce help message")
     ("engines,e",
       po::value<std::vector<std::string>>(&selectedEngines)->multitoken(),
       descEngines.str().c_str())
+    ("keep-name,k", "keep the names of the worlds as specified in the files. \
+Only works when no engines are specified with -e.")
     ;
   po::options_description desc_hidden("Positional options");
   desc_hidden.add_options()
@@ -309,17 +311,23 @@ int main(int argc, char **argv)
     std::string worldfile = *it;
     std::cout<<"Loading world " << worldfile <<std::endl;
 
-    std::stringstream worldPrefix;
-    worldPrefix << "world" << "_" << i;
+    std::string worldPrefix;
+
+    if (!selectedEngines.empty() || !vm.count("keep-name"))
+    {
+      std::stringstream _worldPrefix;
+      _worldPrefix << "world" << "_" << i;
+      worldPrefix = _worldPrefix.str();
+    }
 
     if (selectedEngines.empty())
     {
-      if (g_server->AutoLoad(worldfile, worldPrefix.str()) != 0)
+      if (g_server->AutoLoad(worldfile, worldPrefix) != 0)
         std::cerr << "Could not auto-load world " << worldfile << std::endl;
     }
     else
     {
-      g_server->Load(worldfile, selectedEngines, worldPrefix.str());
+      g_server->Load(worldfile, selectedEngines, worldPrefix);
     }
   }
 

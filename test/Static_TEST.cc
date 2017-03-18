@@ -91,9 +91,9 @@ TEST_F(StaticTest, TwoShapesTest2)
 
   PrepareWorld(selectedEngines);
   LoadShapes(shape1, modelName1, shape2, modelName2);
-  const static bool interactive = true;
+  const static bool interactive = false;
   const static float cellSizeFactor = 0.1;
-  const std::string outputPath="/home/jenny/testResults";
+  const std::string outputPath; // ="/home/jenny/testResults";
   TwoModels(modelName1, modelName2, cellSizeFactor, interactive, outputPath);
 }
 

@@ -578,7 +578,7 @@ void StaticTestFramework::TwoModels(const std::string& modelName1,
     double negative = notColliding.size() / (double) total;
     double positive= colliding.size() / (double) total;
 
-    const static double minAgree = 1.1; //0.999;
+    const static double minAgree = 0.999;
     if (((positive > negative) && (positive < minAgree)) ||
         ((positive <= negative) && (negative < minAgree)))
     {
@@ -616,7 +616,7 @@ void StaticTestFramework::TwoModels(const std::string& modelName1,
         namePrefix << "Static_fail_" << failCnt << "_";
         int nFails = worldManager->SaveAllWorlds(outputPath, namePrefix.str());
         std::cout << "Worlds written to " << outputPath
-                  << " (failed: "<< nFails < ")" <<std::endl;
+                  << " (failed: "<< nFails << ")" <<std::endl;
       }
 
       if (interactive)
