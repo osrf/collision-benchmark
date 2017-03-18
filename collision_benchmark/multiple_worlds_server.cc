@@ -33,6 +33,7 @@
 #include <gazebo/physics/physics.hh>
 #include <gazebo/sensors/SensorsIface.hh>
 
+#include <boost/program_options.hpp>
 #include <atomic>
 
 using collision_benchmark::PhysicsWorldBaseInterface;
@@ -50,6 +51,7 @@ using collision_benchmark::GazeboWorldLoader;
 using collision_benchmark::MultipleWorldsServer;
 using collision_benchmark::GazeboMultipleWorldsServer;
 
+namespace po = boost::program_options;
 
 typedef MultipleWorldsServer<GazeboPhysicsWorldTypes::WorldState,
                              GazeboPhysicsWorldTypes::ModelID,
@@ -222,31 +224,72 @@ bool Run()
 /////////////////////////////////////////////////
 int main(int argc, char **argv)
 {
-  if (argc < 3)
-  {
-    std::cerr << "Usage: "<<argv[0]
-              << " <world file> <list of physics engines>"<<std::endl;
-    std::cerr << "<list of physics engines> can contain the following: "
-              << "[ode, bullet, dart, simbody] "<<std::endl;
-    return false;
+  std::vector<std::string> selectedEngines;
+  std::vector<std::string> worldFiles;
+
+  // Declare the supported options.
+  po::options_description desc("Allowed options");
+  desc.add_options()
+    ("help,h", "produce help message")
+    ("engines,e",
+      po::value<std::vector<std::string>>(&selectedEngines)->multitoken(),
+      "specify one or several physics engines, can contain [ode, bullet, dart, simbody]")
+    ("worlds,w", po::value<std::vector<std::string>>(&worldFiles)->multitoken(),
+      "World files")
+    ;
+
+  po::variables_map vm;
+
+  po::positional_options_description p;
+  // positional arguments default to "worlds" argument
+  p.add("worlds", -1);
+  po::store(po::command_line_parser(argc, argv).
+                      options(desc).positional(p).run(), vm);
+
+  po::notify(vm);
+
+  if (vm.count("help")) {
+    std::cout << desc << std::endl;
+    return 1;
   }
 
+  if (vm.count("engines"))
+  {
+    std::cout << "Engines to load: " << std::endl;
+    for (std::vector<std::string>::iterator it = selectedEngines.begin();
+         it != selectedEngines.end(); ++it)
+    {
+      std::cout<<*it<<std::endl;
+    }
+  }
+  else
+  {
+    std::cout << "No engines were given, so using physics information "
+              << "specified in world files" << std::endl;
+  }
 
-  // now, load the worlds as given in command line arguments
-  // with the different engines given
-  std::string worldfile = argv[1];
+  if (!vm.count("worlds"))
+  {
+    std::cout << "You need to specify at least one world." << std::endl;
+    return 0;
+  }
 
-  std::vector<std::string> selectedEngines;
-  for (int i = 2; i < argc; ++i)
-    selectedEngines.push_back(argv[i]);
-
+  // Initialize server
   bool loadMirror = true;
   bool enforceContactCalc=false;
   bool allowControlViaMirror = true;
   Init(loadMirror, allowControlViaMirror, enforceContactCalc);
-
   assert(g_server);
-  g_server->Load(worldfile, selectedEngines);
+
+  // load the worlds as given in command line arguments
+  // with the engine names given
+  for (std::vector<std::string>::iterator it = worldFiles.begin();
+       it != worldFiles.end(); ++it)
+  {
+    std::string worldfile = *it;
+    std::cout<<"Loading world " << worldfile <<std::endl;
+    g_server->Load(worldfile, selectedEngines);
+  }
 
   Run();
 }
