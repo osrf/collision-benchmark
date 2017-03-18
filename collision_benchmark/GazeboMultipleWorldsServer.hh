@@ -45,8 +45,10 @@ class GazeboMultipleWorldsServer:
                               GazeboPhysicsWorldTypes::Vector3,
                               GazeboPhysicsWorldTypes::Wrench> Super;
 
-  public: GazeboMultipleWorldsServer(const WorldLoader_M& _worldLoaders):
-          Super(_worldLoaders) {}
+  public: GazeboMultipleWorldsServer(const WorldLoader_M& _worldLoaders,
+                               const WorldLoader::ConstPtr& _universalLoader =
+                                  nullptr):
+          Super(_worldLoaders, _universalLoader) {}
   public: virtual ~GazeboMultipleWorldsServer() { Stop(); }
   public: virtual bool Start(int argc, const char** argv);
   public: virtual void Stop();

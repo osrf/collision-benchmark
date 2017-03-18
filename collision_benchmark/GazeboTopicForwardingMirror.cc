@@ -199,9 +199,6 @@ void GazeboTopicForwardingMirror::RegisterNamespace
     str<<"is not going to connect with mirror world!"<<std::endl;
     gzwarn<<str.str();
   }
-  for (auto name: topicNames)
-    std::cout<<"Name: "<<name<<std::endl;
-
 }
 
 GazeboTopicForwardingMirror::~GazeboTopicForwardingMirror()

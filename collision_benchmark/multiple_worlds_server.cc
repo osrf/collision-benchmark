@@ -163,7 +163,9 @@ bool Init(const bool loadMirror,
     return false;
   }
 
-  g_server.reset(new GazeboMultipleWorldsServer(loaders));
+  WorldLoader::Ptr universalLoader(new GazeboWorldLoader(enforceContactCalc));
+
+  g_server.reset(new GazeboMultipleWorldsServer(loaders, universalLoader));
 
   int argc = 1;
   const char * argv = "MultipleWorldsServer";
@@ -305,10 +307,20 @@ int main(int argc, char **argv)
        it != worldFiles.end(); ++it, ++i)
   {
     std::string worldfile = *it;
-    std::stringstream _worldprefix;
-    _worldprefix << "world" << "_" << i;
     std::cout<<"Loading world " << worldfile <<std::endl;
-    g_server->Load(worldfile, selectedEngines, _worldprefix.str());
+
+    std::stringstream worldPrefix;
+    worldPrefix << "world" << "_" << i;
+
+    if (selectedEngines.empty())
+    {
+      if (g_server->AutoLoad(worldfile, worldPrefix.str()) != 0)
+        std::cerr << "Could not auto-load world " << worldfile << std::endl;
+    }
+    else
+    {
+      g_server->Load(worldfile, selectedEngines, worldPrefix.str());
+    }
   }
 
   Run();

@@ -211,7 +211,8 @@ GazeboPhysicsWorld::AddModelFromShape(const std::string& modelname,
 
   if (modelname.empty())
   {
-    std::cerr<<"Must specify model name"<<std::endl;
+    std::cerr << "World " << GetName() << ": Must specify model name"
+              << std::endl;
     return ret;
   }
 
@@ -323,7 +324,8 @@ bool GazeboPhysicsWorld::SetBasicModelState(const ModelID  &_id,
   gazebo::physics::ModelPtr m=world->ModelByName(_id);
   if (!m)
   {
-    std::cerr<<"Model " << _id << " could not be found" << std::endl;
+    std::cerr << "World "<<GetName()<<": Model " << _id
+              << " could not be found" << std::endl;
     return false;
   }
   ignition::math::Pose3d pose = m->WorldPose();
@@ -355,7 +357,8 @@ bool GazeboPhysicsWorld::GetBasicModelState(const ModelID  &_id,
   gazebo::physics::ModelPtr m=world->ModelByName(_id);
   if (!m)
   {
-    std::cerr<<"Model " << _id << " could not be found" << std::endl;
+    std::cerr << "World " << GetName() << ": Model " << _id
+              << " could not be found" << std::endl;
     return false;
   }
   ignition::math::Pose3d pose = m->WorldPose();

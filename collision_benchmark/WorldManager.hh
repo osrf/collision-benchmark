@@ -225,17 +225,22 @@ class WorldManager
     return this->worlds.size()-1;
   }
 
-  public: void SetMirroredWorld(const int _index)
+  public: bool SetMirroredWorld(const int _index)
   {
-    std::cout<<"Getting world at idx "<<_index<<std::endl;
+
+    if (_index < 0 ||  _index >= this->worlds.size())
+      return false;
+
+    // std::cout<<"Getting world at idx "<<_index<<std::endl;
     PhysicsWorldBaseInterface::Ptr world=GetWorld(_index);
     if (!world)
     {
       gzerr<<"Cannot get world in WorldManager::SetMirroredWorld()\n";
-      return;
+      return false;
     }
     this->mirrorWorld->SetOriginalWorld(world);
     this->mirroredWorldIdx=_index;
+    return true;
   }
 
   /// Returns the original world which is mirrored by this class
@@ -648,9 +653,22 @@ class WorldManager
      }
    }*/
 
+  /**
+   * Changes the mirror world to either the previous one or the last one.
+   * Returns the name of the world currently set.
+   * If no world is being mirrored by the mirror world, or there are
+   * no worlds at all, the empty
+   * string is returned and an error printed.
+   */
   private: std::string ChangeMirrorWorld(const int ctrl)
   {
      std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
+       if (worlds.empty())
+       {
+         std::cerr<<"There are no worlds to be mirrored." << std::endl;
+         return "";
+       }
+
      int oldMirrorIdx = mirroredWorldIdx;
      if (ctrl < 0)
      {
@@ -668,14 +686,30 @@ class WorldManager
      }
 
      if (mirroredWorldIdx == oldMirrorIdx)
-         return mirrorWorld->GetOriginalWorld()->GetName();
+     {
+       if (!mirrorWorld->GetOriginalWorld())
+       {
+         std::cerr<<"Mirror world has no original world set, "
+                  <<"cannot return name." << std::endl;
+         return "";
+       }
+       return mirrorWorld->GetOriginalWorld()->GetName();
+     }
 
      // update mirrored world
-     this->SetMirroredWorld(mirroredWorldIdx);
+     if (this->SetMirroredWorld(mirroredWorldIdx))
+     {
+       std::cout << "WorldManager: New world is "
+                 << mirrorWorld->GetOriginalWorld()->GetName()
+                 << std::endl;
+     }
 
-     std::cout << "WorldManager: New world is "
-               << mirrorWorld->GetOriginalWorld()->GetName()
-               << std::endl;
+     if (!mirrorWorld->GetOriginalWorld())
+     {
+       std::cerr<<"Mirror world has no original world set, "
+                <<"cannot return name." << std::endl;
+       return "";
+     }
 
      // return the name of the new world
      return mirrorWorld->GetOriginalWorld()->GetName();

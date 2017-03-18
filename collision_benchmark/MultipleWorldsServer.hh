@@ -66,8 +66,8 @@ class MultipleWorldsServer
   //    engine to load from the world file given upon loading. nullptr if
   //    no such loader specified.
   public: MultipleWorldsServer(const WorldLoader_M& _worldLoaders,
-                               const WorldLoader::ConstPtr _universalLoader =
-                                     WorldLoader::ConstPtr()):
+                               const WorldLoader::ConstPtr& _universalLoader =
+                                     nullptr):
           worldLoaders(_worldLoaders),
           universalLoader(_universalLoader) {}
   public: virtual ~MultipleWorldsServer() {}

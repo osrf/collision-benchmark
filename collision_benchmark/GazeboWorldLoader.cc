@@ -74,8 +74,8 @@ GazeboWorldLoader::LoadFromSDF(const sdf::ElementPtr& sdf,
                                const std::string& worldname) const
 {
   THROW_EXCEPTION("TODO: Implement GazeboWorldLoader::LoadFromSDF");
-/*  std::cout << "Loading world from SDF with physics engine "
-            << EngineName() << " (named as '"
+/*  std::cout << "Loading world from SDF with physics engine '"
+            << EngineName() << "' (named as '"
             << worldname << "')." << std::endl;
   // std::cout<<"Loading world from "<<worldfile<<std::endl;
   // XXX TODO this function yet has to be written, using an SDF instead
@@ -101,8 +101,8 @@ PhysicsWorldBaseInterface::Ptr
 GazeboWorldLoader::LoadFromFile(const std::string& worldfile,
                                 const std::string& worldname) const
 {
-  std::cout << "Loading world " << worldfile << " with physics engine "
-            << EngineName() << " (named as '"
+  std::cout << "Loading world " << worldfile << " with physics engine '"
+            << EngineName() << "' (named as '"
             << worldname << "')." << std::endl;
   // std::cout<<"Loading world from "<<worldfile<<std::endl;
   gazebo::physics::WorldPtr gzworld =
@@ -126,8 +126,8 @@ PhysicsWorldBaseInterface::Ptr
 GazeboWorldLoader::LoadFromString(const std::string& str,
                                   const std::string& worldname) const
 {
-  std::cout << "Loading world form string, with physics engine "
-            << EngineName() << " (named as '"
+  std::cout << "Loading world form string, with physics engine '"
+            << EngineName() << "' (named as '"
             << worldname << "')." << std::endl;
   // std::cout<<"Loading world from "<<worldfile<<std::endl;
   gazebo::physics::WorldPtr gzworld =
