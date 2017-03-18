@@ -375,10 +375,16 @@ collision_benchmark::LoadWorldFromSDF(const sdf::ElementPtr& sdfRoot,
     return gazebo::physics::WorldPtr();
   }
 
+  if (gazebo::physics::has_world(name))
+  {
+    std::cerr<<"World with name "<<name<<" already exists."<<std::endl;
+    return nullptr;
+  }
+
   gazebo::physics::WorldPtr world;
   try
   {
-    // XXX this just creates a new world object, all worls objects are
+    // XXX this just creates a new world object, all worlds objects are
     // kept in a static list and can be retrieved. No Physics engine
     // is created yet - this is done in World::Load (line 257), called
     // from load_world: The physics engine specified **in the SDF** is

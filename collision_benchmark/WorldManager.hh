@@ -206,16 +206,23 @@ class WorldManager
 
   /// Adds this world and returns the index this world can be accessed at
   /// \return positive int or zero on success (index this world
-  ///         can be accessed at)
-  public: void AddPhysicsWorld(const PhysicsWorldBaseInterface::Ptr& _world)
+  ///         can be accessed at). Negative if a world with this name
+  ///         already exists.
+  public: int AddPhysicsWorld(const PhysicsWorldBaseInterface::Ptr& _world)
   {
     std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
+    if (GetWorld(_world->GetName()))
+    {
+      std::cerr << "World with this name already exists! " << std::endl;
+      return -1;
+    }
     if (this->worlds.empty() && this->mirrorWorld)
     {
       this->mirrorWorld->SetOriginalWorld(_world);
       this->mirroredWorldIdx=0;
     }
     this->worlds.push_back(_world);
+    return this->worlds.size()-1;
   }
 
   public: void SetMirroredWorld(const int _index)

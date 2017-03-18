@@ -26,6 +26,7 @@ branch which is also merged with
   which is what PR 2654 (listed above) does for for bullet.
   This will become a PR once dart-6 is merged with default.
 - Merge with [PR 2657](https://bitbucket.org/osrf/gazebo/pull-requests/2657)
+- Merge with [PR 2660](https://bitbucket.org/osrf/gazebo/pull-requests/2660/)
 
 If you are using dart-6-dev instead, the listed changes are merged in it already.
 
@@ -64,10 +65,16 @@ and then you can switch between the worlds, just like with the previous simple t
 difference is that you have to specify only one world file. It is also possible to control all worlds (e.g. pausing)
 using gzclient.
 
+Print the help of ``multiple_worlds_server`` to learn more about the options:
+
+```
+multiple_worlds_server --help
+```
+
 You may start the multiple worlds server as follows:
 
 ```
-multiple_worlds_server <world file> <list of phyiscs engines>
+multiple_worlds_server <world file> -e <list of phyiscs engines>
 ```
 
 The ``<list of physics engines>`` can contain *ode, bullet, simbody* and *dart* (the latter three
@@ -105,7 +112,7 @@ from the client controls.
 
 **Example:**
 
-``multiple_worlds_server worlds/rubble.world bullet ode``
+``multiple_worlds_server worlds/rubble.world -e bullet ode``
 
 This will load up the rubble world with the bullet and ODE engines. Use the GUI control panel to switch
 between the bullet and ode worlds.

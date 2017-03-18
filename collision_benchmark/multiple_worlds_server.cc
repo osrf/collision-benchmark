@@ -227,15 +227,25 @@ int main(int argc, char **argv)
   std::vector<std::string> selectedEngines;
   std::vector<std::string> worldFiles;
 
+  // description for engine options as stream so line doesn't go over 80 chars.
+  std::stringstream descEngines;
+  descEngines <<  "Specify one or several physics engines. " <<
+      "Can contain [ode, bullet, dart, simbody]. When not specified, worlds " <<
+      "are loaded with the engine specified in the file. If specified, all " <<
+      "worlds are loaded with each of the engines specified.";
+
   // Declare the supported options.
   po::options_description desc("Allowed options");
   desc.add_options()
     ("help,h", "produce help message")
     ("engines,e",
       po::value<std::vector<std::string>>(&selectedEngines)->multitoken(),
-      "specify one or several physics engines, can contain [ode, bullet, dart, simbody]")
+      descEngines.str().c_str())
+    ;
+  po::options_description desc_hidden("Positional options");
+  desc_hidden.add_options()
     ("worlds,w", po::value<std::vector<std::string>>(&worldFiles)->multitoken(),
-      "World files")
+      "World file(s).")
     ;
 
   po::variables_map vm;
@@ -243,12 +253,19 @@ int main(int argc, char **argv)
   po::positional_options_description p;
   // positional arguments default to "worlds" argument
   p.add("worlds", -1);
-  po::store(po::command_line_parser(argc, argv).
-                      options(desc).positional(p).run(), vm);
 
+  po::options_description desc_composite;
+  desc_composite.add(desc).add(desc_hidden);
+
+  po::command_line_parser parser{argc, argv};
+  parser.options(desc_composite).positional(p); // .allow_unregistered();
+  po::parsed_options parsedOpt = parser.run();
+  po::store(parsedOpt, vm);
   po::notify(vm);
 
-  if (vm.count("help")) {
+  if (vm.count("help"))
+  {
+    std::cout << argv[0] <<" <list of world files> " << std::endl;
     std::cout << desc << std::endl;
     return 1;
   }
@@ -283,12 +300,15 @@ int main(int argc, char **argv)
 
   // load the worlds as given in command line arguments
   // with the engine names given
+  int i = 0;
   for (std::vector<std::string>::iterator it = worldFiles.begin();
-       it != worldFiles.end(); ++it)
+       it != worldFiles.end(); ++it, ++i)
   {
     std::string worldfile = *it;
+    std::stringstream _worldprefix;
+    _worldprefix << "world" << "_" << i;
     std::cout<<"Loading world " << worldfile <<std::endl;
-    g_server->Load(worldfile, selectedEngines);
+    g_server->Load(worldfile, selectedEngines, _worldprefix.str());
   }
 
   Run();

@@ -93,13 +93,15 @@ class MultipleWorldsServer
   }
 
   // \brief Loads the world file with the different engines.
+  // Generates a world name based on the prefix \e namePrefix.
   // This will create several worlds (one for each engine) which are
   // added to the WorldManager.
   // \param worldfile the filename the filename
   // \param engines the physics engines (identified by name) to use.
   // \return number of engines which were successfully loaded
   public: int Load(const std::string& worldfile,
-                   const std::vector<std::string>& engines)
+                   const std::vector<std::string>& engines,
+                   const std::string& namePrefix = "world")
   {
     assert(worldManager);
 
@@ -109,12 +111,12 @@ class MultipleWorldsServer
     {
       std::string engine = *it;
       std::stringstream _worldname;
-      _worldname << "world_" << i << "_" << engine;
+      _worldname << namePrefix << "_engine_" << i << "_" << engine;
       std::string worldname=_worldname.str();
       if (!Load(worldfile, engine, worldname))
       {
-        std::cerr << "No world loader provided for engine " << engine
-                  << ", skipping it." << std::endl;
+        std::cerr << "Could not load world " << worldfile << " with engine "
+                  << engine << ", skipping it." << std::endl;
         continue;
       }
     }
