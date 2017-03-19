@@ -2,6 +2,10 @@
 #include <collision_benchmark/PrimitiveShape.hh>
 #include <collision_benchmark/SimpleTriMeshShape.hh>
 #include <collision_benchmark/BasicTypes.hh>
+
+// XXX will be taken out, just for initial test
+#include <collision_benchmark/MeshShapeGenerationVtk.hh>
+
 #include <gazebo/gazebo.hh>
 
 
@@ -95,6 +99,11 @@ TEST_F(StaticTest, TwoShapesTest2)
   const static float cellSizeFactor = 0.1;
   const std::string outputPath; // ="/home/jenny/testResults";
   TwoModels(modelName1, modelName2, cellSizeFactor, interactive, outputPath);
+}
+
+TEST_F(StaticTest, MeshGenTest)
+{
+  collision_benchmark::test();
 }
 
 int main(int argc, char**argv)

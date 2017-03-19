@@ -15,36 +15,81 @@
 #include <vtkTriangleFilter.h>
 #include <vtkAlgorithmOutput.h>
 
-void test(vtkPolyData* polydata)
+#include <iostream>
+
+vtkSmartPointer<vtkPolyData>
+collision_benchmark::triangulate (const vtkSmartPointer<vtkPolyData>& polydata)
 {
-  std::cout << "There are " << polydata->GetNumberOfPoints()
+  vtkSmartPointer<vtkTriangleFilter> triangleFilter =
+        vtkSmartPointer<vtkTriangleFilter>::New();
+  triangleFilter->SetInputData(polydata);
+  triangleFilter->Update();
+  return triangleFilter->GetOutput();
+}
+
+void collision_benchmark::getTriangleSoup
+    (const vtkSmartPointer<vtkPolyData>& polydata,
+     std::vector<vPoint>& points,
+     std::vector<vTriIdx>& faces)
+{
+  points.clear();
+  faces.clear();
+
+  vtkSmartPointer<vtkPolyData> tridata = triangulate(polydata);
+
+  std::cout << "There are " << tridata->GetNumberOfPoints()
             << " points." << std::endl;
-  std::cout << "There are " << polydata->GetNumberOfPolys()
+  std::cout << "There are " << tridata->GetNumberOfPolys()
             << " triangles." << std::endl;
 
-  for(vtkIdType i = 0; i < polydata->GetNumberOfPoints(); i++)
+  for(vtkIdType i = 0; i < tridata->GetNumberOfPoints(); i++)
   {
     // This is identical to:
-    // polydata->GetPoints()->GetPoint(i,p);
+    // tridata->GetPoints()->GetPoint(i,p);
     double p[3];
-    polydata->GetPoint(i,p);
-    std::cout << "Point " << i << " : (" << p[0] << " " << p[1] << " " << p[2] << ")" << std::endl;
+    tridata->GetPoint(i,p);
+    vPoint point;
+    point.x = p[0];
+    point.y = p[1];
+    point.z = p[2];
+    points.push_back(point);
   }
 
   // Write all of the coordinates of the points in the vtkPolyData to the console.
-  polydata->GetPolys()->InitTraversal();
+  tridata->GetPolys()->InitTraversal();
   vtkSmartPointer<vtkIdList> idList = vtkSmartPointer<vtkIdList>::New();
-  while(polydata->GetPolys()->GetNextCell(idList))
-  // for(vtkIdType i = 0; i < polydata->GetNumberOfPolys(); i++)
+  while(tridata->GetPolys()->GetNextCell(idList))
   {
-    // std::cout << "Size: "<< polydata->GetPolys()->GetSize() << std::endl;
-    std::cout << "Poly has " << idList->GetNumberOfIds() << " points." << std::endl;
-
-    for(vtkIdType pointId = 0; pointId < idList->GetNumberOfIds(); pointId++)
+    if (idList->GetNumberOfIds() != 3)
     {
-      std::cout << idList->GetId(pointId) << " ";
+      std::cerr << "INCONSISTENCY: Triangle should have 3 vertex indices! "
+                << std::endl;
+      continue;
     }
-    std::cout << std::endl;
+    vTriIdx face;
+    face.v1 = idList->GetId(0);
+    face.v2 = idList->GetId(1);
+    face.v3 = idList->GetId(2);
+    faces.push_back(face);
+  }
+}
+
+void printTriangleSoup
+    (const std::vector<collision_benchmark::vPoint>& points,
+     const std::vector<collision_benchmark::vTriIdx>& faces)
+{
+  for (std::vector<collision_benchmark::vPoint>::const_iterator
+       it = points.begin(); it != points.end(); ++it)
+  {
+    const collision_benchmark::vPoint& p = *it;
+    std::cout << "Point " << p.x << ", " << p.y << ", " << p.z << std::endl;
+  }
+
+  for (std::vector<collision_benchmark::vTriIdx>::const_iterator
+       it = faces.begin(); it != faces.end(); ++it)
+  {
+    const collision_benchmark::vTriIdx& f = *it;
+    std::cout << "Face " << f.v1 << ", " << f.v2 << ", " << f.v3 << std::endl;
   }
 }
 
@@ -260,13 +305,21 @@ collision_benchmark::makeTorusVtk(const double ringRadius,
 }
 
 
-int main()
+void collision_benchmark::test()
 {
+
+  vtkSmartPointer<vtkPolyData> polySphere = collision_benchmark::makeSphereVtk(4,4,true);
+  std::vector<collision_benchmark::vPoint> points;
+  std::vector<collision_benchmark::vTriIdx> faces;
+
+  collision_benchmark::getTriangleSoup(polySphere, points, faces);
+  printTriangleSoup(points, faces);
+
   ////////////////// Primitives         /////////////////////////////////
   ///////////////////////////////////////////////////////////////////////
   // http://www.vtk.org/Wiki/VTK/Examples/Cxx/GeometricObjects/GeometricObjectsDemo
 
-  std::cout << " +++++++++++++ SPHERE +++++++++++++++ " << std::endl;
+  /*std::cout << " +++++++++++++ SPHERE +++++++++++++++ " << std::endl;
   vtkSmartPointer<vtkPolyData> polySphere = collision_benchmark::makeSphereVtk(4,4,true);
   test(polySphere);
 
@@ -300,7 +353,5 @@ int main()
   std::cout << " +++++++++++++ TORUS +++++++++++++++ " << std::endl;
   vtkSmartPointer<vtkPolyData> polyTorus = collision_benchmark::makeTorusVtk(1, 0.1, 10, 10);
   test(polyTorus);
-
-  return EXIT_SUCCESS;
+*/
 }
-

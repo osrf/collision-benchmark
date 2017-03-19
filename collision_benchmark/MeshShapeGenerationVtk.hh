@@ -3,6 +3,7 @@
 
 #include <vtkSmartPointer.h>
 #include <vtkPolyData.h>
+#include <vector>
 
 namespace collision_benchmark
 {
@@ -108,5 +109,36 @@ vtkSmartPointer<vtkPolyData> makeTorusVtk(const double ringRadius,
                                        const double crossRadius,
                                        const unsigned int uRes,
                                        const unsigned int vRes);
+// Simple helper for a point
+struct vPoint
+{
+  double x,y,z;
+};
+
+// Simple helper for a triangle index set
+struct vTriIdx
+{
+  unsigned int v1, v2, v3;
+};
+
+
+/**
+ * Gets the triangle soup out of the polygon data
+ * \param[in] polydata the polygon data
+ * \param[out] vertices the vertices
+ * \param[out] triangles the triangles
+ */
+void getTriangleSoup(const vtkSmartPointer<vtkPolyData>& polydata,
+                     std::vector<vPoint>& vertices,
+                     std::vector<vTriIdx>& triangles);
+
+
+/**
+ * Triangulates the data and returns the triangulated data
+ */
+vtkSmartPointer<vtkPolyData>
+  triangulate(const vtkSmartPointer<vtkPolyData>& polydata);
+
+void test();
 }  // namespace
 #endif  // COLLISION_BENCHMARK_MESHSHAPEGENERATIONVTK_H
