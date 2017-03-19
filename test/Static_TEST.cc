@@ -3,8 +3,7 @@
 #include <collision_benchmark/SimpleTriMeshShape.hh>
 #include <collision_benchmark/BasicTypes.hh>
 
-// XXX will be taken out, just for initial test
-#include <collision_benchmark/MeshShapeGenerationVtk.hh>
+#include <collision_benchmark/MeshShapeGeneratorVtk.hh>
 
 #include <gazebo/gazebo.hh>
 
@@ -29,22 +28,6 @@ TEST_F(StaticTest, TwoShapesTest1)
     collision_benchmark::GetSupportedPhysicsEngines();
   // run test on all engines
   selectedEngines.insert(selectedEngines.end(), engines.begin(), engines.end());*/
-
-  // create simple mesh for testing
-/*  SimpleTriMeshShape::MeshDataPtr meshData(new SimpleTriMeshShape::MeshDataT());
-  typedef SimpleTriMeshShape::Vertex Vertex;
-  typedef SimpleTriMeshShape::Face Face;
-  std::vector<Vertex>& vertices=meshData->GetVertices();
-  std::vector<Face>& triangles=meshData->GetFaces();
-  vertices.push_back(Vertex(-1,0,0));
-  vertices.push_back(Vertex(0,0,-1));
-  vertices.push_back(Vertex(1,0,0));
-  vertices.push_back(Vertex(0,1,0));
-  triangles.push_back(Face(0,1,2));
-  triangles.push_back(Face(0,2,3));
-  Shape::Ptr shape(new SimpleTriMeshShape(meshData, "test_mesh"));*/
-
-  // shape->SetPose(Shape::Pose3(2,2,2,0,0,0));
 
   // Model 1
   std::string modelName1 = "model1";
@@ -103,7 +86,38 @@ TEST_F(StaticTest, TwoShapesTest2)
 
 TEST_F(StaticTest, MeshGenTest)
 {
-//  collision_benchmark::testMeshShapeGenerationVtk();
+  std::vector<std::string> selectedEngines;
+  selectedEngines.push_back("bullet");
+  selectedEngines.push_back("ode");
+  selectedEngines.push_back("dart");
+  // selectedEngines.push_back("simbody");
+
+  /*std::set<std::string> engines =
+    collision_benchmark::GetSupportedPhysicsEngines();
+  // run test on all engines
+  selectedEngines.insert(selectedEngines.end(), engines.begin(), engines.end());*/
+
+  typedef SimpleTriMeshShape::MeshDataT::VertexPrecision Precision;
+  collision_benchmark::MeshShapeGenerator<Precision>::Ptr generator
+      (new collision_benchmark::MeshShapeGeneratorVtk<Precision>());
+
+  double radius = 2;
+  // sphere as mesh
+  std::string meshName = "SphereMesh";
+  SimpleTriMeshShape::MeshDataT::Ptr sphereMeshData =
+    generator->MakeSphere(radius, 10, 10);
+  Shape::Ptr sphereMesh(new SimpleTriMeshShape(sphereMeshData, meshName));
+
+  // sphere as a primitive
+  std::string primName = "SpherePrimitive";
+  Shape::Ptr spherePrimitive(PrimitiveShape::CreateSphere(radius));
+
+  PrepareWorld(selectedEngines);
+  LoadShapes(sphereMesh, meshName, spherePrimitive, primName);
+  const static bool interactive = true;
+  const static float cellSizeFactor = 0.1;
+  const std::string outputPath; // ="/home/jenny/testResults";
+  TwoModels(meshName, primName, cellSizeFactor, interactive, outputPath);
 }
 
 int main(int argc, char**argv)

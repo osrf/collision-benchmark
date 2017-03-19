@@ -95,13 +95,15 @@ void printTriangleSoup
 
 ///////////////////////////////////////////////////////////////////////////////
 vtkSmartPointer<vtkPolyData>
-collision_benchmark::makeSphereVtk(const unsigned int theta,
+collision_benchmark::makeSphereVtk(const double radius,
+                                   const unsigned int theta,
                                    const unsigned int phi,
                                    const bool latLongTessel)
 {
   vtkSmartPointer<vtkSphereSource> sphereSource =
     vtkSmartPointer<vtkSphereSource>::New();
-
+  sphereSource->SetCenter(0.0, 0.0, 0.0);
+  sphereSource->SetRadius(radius);
   sphereSource->SetThetaResolution(theta);
   sphereSource->SetPhiResolution(phi);
   sphereSource->SetOutputPointsPrecision(vtkAlgorithm::DOUBLE_PRECISION);

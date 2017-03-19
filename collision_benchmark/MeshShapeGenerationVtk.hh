@@ -9,6 +9,7 @@ namespace collision_benchmark
 {
 
 /**
+ * \param[in] radius radius of sphere
  * \param[in] theta number of points in the longitude direction
  * \param[in] phi number of points in the latitude direction
  * \param[in] latLongTessel Cause the sphere to be tessellated with edges along
@@ -18,9 +19,10 @@ namespace collision_benchmark
  *    wireframe sphere with natural latitude and longitude lines.
  * \return the polygon data
  */
-vtkSmartPointer<vtkPolyData> makeSphereVtk(const unsigned int theta,
-                                        const unsigned int phi,
-                                        const bool latLongTessel);
+vtkSmartPointer<vtkPolyData> makeSphereVtk(const double radius,
+                                           const unsigned int theta,
+                                           const unsigned int phi,
+                                           const bool latLongTessel);
 /**
  * \param[in] radius radius of cylinder
  * \param[in] height height of cylinder
@@ -29,9 +31,9 @@ vtkSmartPointer<vtkPolyData> makeSphereVtk(const unsigned int theta,
  * \return the polygon data
  */
 vtkSmartPointer<vtkPolyData> makeCylinderVtk(const double radius,
-                                          const double height,
-                                          const unsigned int resolution,
-                                          const bool capping);
+                                             const double height,
+                                             const unsigned int resolution,
+                                             const bool capping);
 /**
  * \param[in] x x dimension
  * \param[in] y y dimension
@@ -39,15 +41,15 @@ vtkSmartPointer<vtkPolyData> makeCylinderVtk(const double radius,
  * \return the polygon data
  */
 vtkSmartPointer<vtkPolyData> makeBoxVtk(const double x,
-                                     const double y,
-                                     const double z);
+                                        const double y,
+                                        const double z);
 /**
  * \brief Create a box using AABB cornder coordinates
  * \return the polygon data
  */
 vtkSmartPointer<vtkPolyData> makeBoxVtk(const double xMin, const double xMax,
-                                     const double yMin, const double yMax,
-                                     const double zMin, const double zMax);
+                                        const double yMin, const double yMax,
+                                        const double zMin, const double zMax);
 /**
  * \brief Creates a cone
  * \param[in] radius base radius of the cone.
@@ -92,10 +94,10 @@ vtkSmartPointer<vtkPolyData> makeDiskVtk(const double innerRadius,
  * \return the polygon data
  */
 vtkSmartPointer<vtkPolyData> makeEllipsoidVtk(const double xRad,
-                                           const double yRad,
-                                           const double zRad,
-                                           const unsigned int uRes,
-                                           const unsigned int vRes);
+                                              const double yRad,
+                                              const double zRad,
+                                              const unsigned int uRes,
+                                              const unsigned int vRes);
 /**
  * \param[in] ringRadius radius from the center to the middle of the
  *    ring of the torus.
@@ -106,9 +108,9 @@ vtkSmartPointer<vtkPolyData> makeEllipsoidVtk(const double xRad,
  * \return the polygon data
  */
 vtkSmartPointer<vtkPolyData> makeTorusVtk(const double ringRadius,
-                                       const double crossRadius,
-                                       const unsigned int uRes,
-                                       const unsigned int vRes);
+                                          const double crossRadius,
+                                          const unsigned int uRes,
+                                          const unsigned int vRes);
 // Simple helper for a point
 struct vPoint
 {

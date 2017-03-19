@@ -9,6 +9,7 @@ You will reqiure
 * Gazebo (currently only compiled from source is tested) and dependencies
 * Assimp
 * Boost libraries
+* libvtk
 
 Current requirement is also to use the [dart-6](https://bitbucket.org/JenniferBuehler/gazebo/branch/dart-6)
 branch for Gazebo (see [PR #2547](https://bitbucket.org/osrf/gazebo/pull-requests/2547/dart-6/diff)).
