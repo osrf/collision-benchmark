@@ -121,9 +121,9 @@ struct vTriIdx
   unsigned int v1, v2, v3;
 };
 
-
 /**
- * Gets the triangle soup out of the polygon data
+ * \brief Gets the triangle soup out of the polygon data.
+ * Will triangulate \e polydata first.
  * \param[in] polydata the polygon data
  * \param[out] vertices the vertices
  * \param[out] triangles the triangles
@@ -139,6 +139,8 @@ void getTriangleSoup(const vtkSmartPointer<vtkPolyData>& polydata,
 vtkSmartPointer<vtkPolyData>
   triangulate(const vtkSmartPointer<vtkPolyData>& polydata);
 
-void test();
+// test method
+// void testMeshShapeGenerationVtk();
+
 }  // namespace
 #endif  // COLLISION_BENCHMARK_MESHSHAPEGENERATIONVTK_H

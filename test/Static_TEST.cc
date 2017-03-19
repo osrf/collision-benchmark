@@ -103,7 +103,7 @@ TEST_F(StaticTest, TwoShapesTest2)
 
 TEST_F(StaticTest, MeshGenTest)
 {
-  collision_benchmark::test();
+//  collision_benchmark::testMeshShapeGenerationVtk();
 }
 
 int main(int argc, char**argv)

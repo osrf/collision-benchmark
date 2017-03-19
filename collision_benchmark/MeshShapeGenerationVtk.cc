@@ -18,7 +18,7 @@
 #include <iostream>
 
 vtkSmartPointer<vtkPolyData>
-collision_benchmark::triangulate (const vtkSmartPointer<vtkPolyData>& polydata)
+collision_benchmark::triangulate(const vtkSmartPointer<vtkPolyData>& polydata)
 {
   vtkSmartPointer<vtkTriangleFilter> triangleFilter =
         vtkSmartPointer<vtkTriangleFilter>::New();
@@ -93,15 +93,6 @@ void printTriangleSoup
   }
 }
 
-vtkSmartPointer<vtkPolyData> triangulate(vtkAlgorithmOutput* data)
-{
-  vtkSmartPointer<vtkTriangleFilter> triangleFilter =
-        vtkSmartPointer<vtkTriangleFilter>::New();
-  triangleFilter->SetInputConnection(data);
-  triangleFilter->Update();
-  return triangleFilter->GetOutput();
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 vtkSmartPointer<vtkPolyData>
 collision_benchmark::makeSphereVtk(const unsigned int theta,
@@ -119,9 +110,7 @@ collision_benchmark::makeSphereVtk(const unsigned int theta,
   // does the generation after re-setting the parameters
   sphereSource->Update();
 
-  vtkSmartPointer<vtkPolyData> polySphere =
-    triangulate(sphereSource->GetOutputPort());
-  return polySphere;
+  return sphereSource->GetOutput();
 }
 
 
@@ -144,9 +133,7 @@ collision_benchmark::makeCylinderVtk(const double radius, const double height,
   // does the generation after re-setting the parameters
   cylinderSource->Update();
 
-  vtkSmartPointer<vtkPolyData> polyCylinder =
-    triangulate(cylinderSource->GetOutputPort());
-  return polyCylinder;
+  return cylinderSource->GetOutput();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -165,9 +152,7 @@ collision_benchmark::makeBoxVtk(const double x, const double y, const double z)
   // does the generation after re-setting the parameters
   boxSource->Update();
 
-  vtkSmartPointer<vtkPolyData> polyBox =
-    triangulate(boxSource->GetOutputPort());
-  return polyBox;
+  return boxSource->GetOutput();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -185,9 +170,7 @@ collision_benchmark::makeBoxVtk(const double xMin, const double xMax,
   // does the generation after re-setting the parameters
   boxSource->Update();
 
-  vtkSmartPointer<vtkPolyData> polyBox =
-    triangulate(boxSource->GetOutputPort());
-  return polyBox;
+  return boxSource->GetOutput();
 }
 
 
@@ -212,9 +195,7 @@ collision_benchmark::makeConeVtk(const double radius, const double height,
   // does the generation after re-setting the parameters
   coneSource->Update();
 
-  vtkSmartPointer<vtkPolyData> polyCone =
-    triangulate(coneSource->GetOutputPort());
-  return polyCone;
+  return coneSource->GetOutput();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -236,9 +217,7 @@ collision_benchmark::makeDiskVtk(const double innerRadius,
   // does the generation after re-setting the parameters
   diskSource->Update();
 
-  vtkSmartPointer<vtkPolyData> polyDisk =
-    triangulate(diskSource->GetOutputPort());
-  return polyDisk;
+  return diskSource->GetOutput();
 }
 
 
@@ -269,9 +248,7 @@ collision_benchmark::makeEllipsoidVtk(const double xRad,
   // does the generation after re-setting the parameters
   ellipsoidSource->Update();
 
-  vtkSmartPointer<vtkPolyData> polyEllipsoid =
-    triangulate(ellipsoidSource->GetOutputPort());
-  return polyEllipsoid;
+  return ellipsoidSource->GetOutput();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -299,46 +276,44 @@ collision_benchmark::makeTorusVtk(const double ringRadius,
   // does the generation after re-setting the parameters
   torusSource->Update();
 
-  vtkSmartPointer<vtkPolyData> polyTorus =
-    triangulate(torusSource->GetOutputPort());
-  return polyTorus;
+  return torusSource->GetOutput();
 }
 
 
-void collision_benchmark::test()
+/*
+void collision_benchmark::testMeshShapeGenerationVtk()
 {
-
-  vtkSmartPointer<vtkPolyData> polySphere = collision_benchmark::makeSphereVtk(4,4,true);
   std::vector<collision_benchmark::vPoint> points;
   std::vector<collision_benchmark::vTriIdx> faces;
-
-  collision_benchmark::getTriangleSoup(polySphere, points, faces);
-  printTriangleSoup(points, faces);
 
   ////////////////// Primitives         /////////////////////////////////
   ///////////////////////////////////////////////////////////////////////
   // http://www.vtk.org/Wiki/VTK/Examples/Cxx/GeometricObjects/GeometricObjectsDemo
 
-  /*std::cout << " +++++++++++++ SPHERE +++++++++++++++ " << std::endl;
+  std::cout << " +++++++++++++ SPHERE +++++++++++++++ " << std::endl;
   vtkSmartPointer<vtkPolyData> polySphere = collision_benchmark::makeSphereVtk(4,4,true);
-  test(polySphere);
+  collision_benchmark::getTriangleSoup(polySphere, points, faces);
+  printTriangleSoup(points, faces);
 
   std::cout << " +++++++++++++ CYLINDER+++++++++++++++ " << std::endl;
   vtkSmartPointer<vtkPolyData> polyCylinder = collision_benchmark::makeCylinderVtk(1.0, 2.0, 5, true);
-  test(polyCylinder);
+  collision_benchmark::getTriangleSoup(polyCylinder, points, faces);
+  printTriangleSoup(points, faces);
 
   std::cout << " +++++++++++++ BOX +++++++++++++++ " << std::endl;
   vtkSmartPointer<vtkPolyData> polyBox = collision_benchmark::makeBoxVtk(1.0,2.0,3.0);
-  test(polyBox);
+  collision_benchmark::getTriangleSoup(polyBox, points, faces);
+  printTriangleSoup(points, faces);
 
   std::cout << " +++++++++++++ CONE +++++++++++++++ " << std::endl;
   vtkSmartPointer<vtkPolyData> polyCone = collision_benchmark::makeConeVtk(2.0, 3.0, 5, 45, true);
-  test(polyCone);
+  collision_benchmark::getTriangleSoup(polyCone, points, faces);
+  printTriangleSoup(points, faces);
 
   std::cout << " +++++++++++++ DISK +++++++++++++++ " << std::endl;
   vtkSmartPointer<vtkPolyData> polyDisk = collision_benchmark::makeDiskVtk(1.0, 5.0, 1, 5);
-  test(polyDisk);
-
+  collision_benchmark::getTriangleSoup(polyDisk, points, faces);
+  printTriangleSoup(points, faces);
 
   ////////////////// Parametric objects /////////////////////////////////
   ///////////////////////////////////////////////////////////////////////
@@ -348,10 +323,12 @@ void collision_benchmark::test()
   std::cout << " +++++++++++++ ELLIPSOID +++++++++++++++ " << std::endl;
   vtkSmartPointer<vtkPolyData> polyEllipsoid = collision_benchmark::makeEllipsoidVtk(1.0, 2.0, 3.0,
                                                              10, 10);
-  test(polyEllipsoid);
+  collision_benchmark::getTriangleSoup(polyEllipsoid, points, faces);
+  printTriangleSoup(points, faces);
 
   std::cout << " +++++++++++++ TORUS +++++++++++++++ " << std::endl;
   vtkSmartPointer<vtkPolyData> polyTorus = collision_benchmark::makeTorusVtk(1, 0.1, 10, 10);
-  test(polyTorus);
-*/
+  collision_benchmark::getTriangleSoup(polyTorus, points, faces);
+  printTriangleSoup(points, faces);
 }
+*/
