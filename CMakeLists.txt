@@ -46,6 +46,7 @@ add_library(collision_benchmark SHARED
   collision_benchmark/GazeboControlServer.cc
   collision_benchmark/GazeboMultipleWorldsServer.cc
   collision_benchmark/TypeHelper.cc
+  collision_benchmark/MeshShapeGenerationVtk.cc
 )
  
 # when using a different folder for the header file, must to

@@ -1,3 +1,4 @@
+#include <collision_benchmark/MeshShapeGenerationVtk.hh>
 #include <vtkSphereSource.h>
 #include <vtkCylinderSource.h>
 #include <vtkCubeSource.h>
@@ -13,16 +14,6 @@
 #include <vtkCellArray.h>
 #include <vtkTriangleFilter.h>
 #include <vtkAlgorithmOutput.h>
-
-// for visualization
-#include <vtkPolyDataMapper.h>
-#include <vtkActor.h>
-#include <vtkRenderer.h>
-#include <vtkRenderWindow.h>
-#include <vtkRenderWindowInteractor.h>
-#include <vtkProperty.h>
-#include <vtkCamera.h>
-
 
 void test(vtkPolyData* polydata)
 {
@@ -59,7 +50,6 @@ void test(vtkPolyData* polydata)
 
 vtkSmartPointer<vtkPolyData> triangulate(vtkAlgorithmOutput* data)
 {
-  // cylinders are no triangles. Apply the filter.
   vtkSmartPointer<vtkTriangleFilter> triangleFilter =
         vtkSmartPointer<vtkTriangleFilter>::New();
   triangleFilter->SetInputConnection(data);
@@ -67,20 +57,11 @@ vtkSmartPointer<vtkPolyData> triangulate(vtkAlgorithmOutput* data)
   return triangleFilter->GetOutput();
 }
 
-
-/**
- * \param[in] theta number of points in the longitude direction
- * \param[in] phi number of points in the latitude direction
- * \param[in] latLongTessel Cause the sphere to be tessellated with edges along
- *    the latitude and longitude lines. If off, triangles are generated at
- *    non-polar regions, which results in edges that are not parallel to
- *    latitude and longitude lines. This can be useful for generating a
- *    wireframe sphere with natural latitude and longitude lines.
- * \return the polygon data
- */
-vtkSmartPointer<vtkPolyData> makeSphere(const unsigned int theta,
-                                        const unsigned int phi,
-                                        const bool latLongTessel)
+///////////////////////////////////////////////////////////////////////////////
+vtkSmartPointer<vtkPolyData>
+collision_benchmark::makeSphereVtk(const unsigned int theta,
+                                   const unsigned int phi,
+                                   const bool latLongTessel)
 {
   vtkSmartPointer<vtkSphereSource> sphereSource =
     vtkSmartPointer<vtkSphereSource>::New();
@@ -99,17 +80,11 @@ vtkSmartPointer<vtkPolyData> makeSphere(const unsigned int theta,
 }
 
 
-/**
- * \param[in] radius radius of cylinder
- * \param[in] height height of cylinder
- * \param[in] resolution number of facets used to define cylinder.
- * \param[in] Turn on/off whether to cap cylinder with polygons.
- * \return the polygon data
- */
-vtkSmartPointer<vtkPolyData> makeCylinder(const double radius,
-                                          const double height,
-                                          const unsigned int resolution,
-                                          const bool capping)
+///////////////////////////////////////////////////////////////////////////////
+vtkSmartPointer<vtkPolyData>
+collision_benchmark::makeCylinderVtk(const double radius, const double height,
+                                     const unsigned int resolution,
+                                     const bool capping)
 {
 
   vtkSmartPointer<vtkCylinderSource> cylinderSource =
@@ -129,15 +104,9 @@ vtkSmartPointer<vtkPolyData> makeCylinder(const double radius,
   return polyCylinder;
 }
 
-/**
- * \param[in] x x dimension
- * \param[in] y y dimension
- * \param[in] z z dimension
- * \return the polygon data
- */
-vtkSmartPointer<vtkPolyData> makeBox(const double x,
-                                     const double y,
-                                     const double z)
+///////////////////////////////////////////////////////////////////////////////
+vtkSmartPointer<vtkPolyData>
+collision_benchmark::makeBoxVtk(const double x, const double y, const double z)
 {
   vtkSmartPointer<vtkCubeSource> boxSource =
       vtkSmartPointer<vtkCubeSource>::New();
@@ -156,13 +125,11 @@ vtkSmartPointer<vtkPolyData> makeBox(const double x,
   return polyBox;
 }
 
-/**
- * \brief Create a box using AABB cornder coordinates
- * \return the polygon data
- */
-vtkSmartPointer<vtkPolyData> makeBox(const double xMin, const double xMax,
-                                     const double yMin, const double yMax,
-                                     const double zMin, const double zMax)
+///////////////////////////////////////////////////////////////////////////////
+vtkSmartPointer<vtkPolyData>
+collision_benchmark::makeBoxVtk(const double xMin, const double xMax,
+                                const double yMin, const double yMax,
+                                const double zMin, const double zMax)
 {
   vtkSmartPointer<vtkCubeSource> boxSource =
       vtkSmartPointer<vtkCubeSource>::New();
@@ -179,30 +146,12 @@ vtkSmartPointer<vtkPolyData> makeBox(const double xMin, const double xMax,
 }
 
 
-/**
- * \brief Creates a cone
- * \param[in] radius base radius of the cone.
- * \param[in] height height of cone in its specified direction.
- * \param[in] resolution number of facets used to represent the cone.
- * \param[in] dir_x along with \e dir_y and \e dir_z: the orientation vector
- *    of the cone. The vector does not have to be normalized.
- *    The direction goes from the center of the base toward the apex.
- * \param[in] angle_deg angle of the cone. This is the angle between the axis of
- *    the cone and a generatrix. Warning: this is not the aperture!
- *    The aperture is twice this angle.
- *    As a side effect, the angle plus height sets the base radius of the cone.
- *    Angle is expressed in degrees.
- * \param[in] capping whether to cap the base of the cone with a polygon.
- * \return the polygon data
- */
-vtkSmartPointer<vtkPolyData> makeCone(const double radius,
-                                      const double height,
-                                      const unsigned int resolution,
-                                      const double angle_deg,
-                                      const bool capping,
-                                      const double dir_x=0,
-                                      const double dir_y=0,
-                                      const double dir_z=1)
+///////////////////////////////////////////////////////////////////////////////
+vtkSmartPointer<vtkPolyData>
+collision_benchmark::makeConeVtk(const double radius, const double height,
+            const unsigned int resolution, const double angle_deg,
+            const bool capping, const double dir_x,
+            const double dir_y, const double dir_z)
 {
   vtkSmartPointer<vtkConeSource> coneSource =
       vtkSmartPointer<vtkConeSource>::New();
@@ -223,19 +172,12 @@ vtkSmartPointer<vtkPolyData> makeCone(const double radius,
   return polyCone;
 }
 
-
-
-/**
- * \param[in] innerRadius the inner radius
- * \param[in] outerRadius the outer radius
- * \param[in] radialResolution number of points in radius direction.
- * \param[in] circumResolution number of points in circumferential direction.
- * \return the polygon data
- */
-vtkSmartPointer<vtkPolyData> makeDisk(const double innerRadius,
-                                      const double outerRadius,
-                                      const unsigned int radialResolution,
-                                      const unsigned int circumResolution)
+///////////////////////////////////////////////////////////////////////////////
+vtkSmartPointer<vtkPolyData>
+collision_benchmark::makeDiskVtk(const double innerRadius,
+                                 const double outerRadius,
+                                 const unsigned int radialResolution,
+                                 const unsigned int circumResolution)
 {
   vtkSmartPointer<vtkDiskSource> diskSource =
       vtkSmartPointer<vtkDiskSource>::New();
@@ -255,20 +197,13 @@ vtkSmartPointer<vtkPolyData> makeDisk(const double innerRadius,
 }
 
 
-
-/**
- * \param[in] xRad radius in x-direction
- * \param[in] yRad radius in y-direction
- * \param[in] zRad radius in z-direction
- * \param[in] uRes resolution in u-direction
- * \param[in] vRes resolution in v-direction
- * \return the polygon data
- */
-vtkSmartPointer<vtkPolyData> makeEllipsoid(const double xRad,
-                                           const double yRad,
-                                           const double zRad,
-                                           const unsigned int uRes,
-                                           const unsigned int vRes)
+///////////////////////////////////////////////////////////////////////////////
+vtkSmartPointer<vtkPolyData>
+collision_benchmark::makeEllipsoidVtk(const double xRad,
+                                      const double yRad,
+                                      const double zRad,
+                                      const unsigned int uRes,
+                                      const unsigned int vRes)
 {
   vtkSmartPointer<vtkParametricEllipsoid> ellipsoid =
       vtkSmartPointer<vtkParametricEllipsoid>::New();
@@ -294,20 +229,12 @@ vtkSmartPointer<vtkPolyData> makeEllipsoid(const double xRad,
   return polyEllipsoid;
 }
 
-
-/**
- * \param[in] ringRadius radius from the center to the middle of the
- *    ring of the torus.
- * \param[in] crossRadius radius of the cross section of ring of the torus.
- * \param[in] uRes resolution in u-direction. Will create uRes-1 "circle
- *    sections", e.g. with uRes=4 it will be a triangle-shaped torus.
- * \param[in] vRes resolution in v-direction
- * \return the polygon data
- */
-vtkSmartPointer<vtkPolyData> makeTorus(const double ringRadius,
-                                       const double crossRadius,
-                                       const unsigned int uRes,
-                                       const unsigned int vRes)
+///////////////////////////////////////////////////////////////////////////////
+vtkSmartPointer<vtkPolyData>
+collision_benchmark::makeTorusVtk(const double ringRadius,
+                                  const double crossRadius,
+                                  const unsigned int uRes,
+                                  const unsigned int vRes)
 {
   vtkSmartPointer<vtkParametricTorus> torus =
       vtkSmartPointer<vtkParametricTorus>::New();
@@ -332,83 +259,31 @@ vtkSmartPointer<vtkPolyData> makeTorus(const double ringRadius,
   return polyTorus;
 }
 
-/**
- * \param[in]
- * \return the polygon data
- */
-// vtkSmartPointer<vtkPolyData> makeXXX(const ...)
 
-
-void visualize(const vtkSmartPointer<vtkPolyData>& polyData)
-{
-  // The mapper is responsible for pushing the geometry into the graphics library.
-  // It may also do color mapping, if scalars or other attributes are defined.
-  vtkSmartPointer<vtkPolyDataMapper> polyMapper =
-    vtkSmartPointer<vtkPolyDataMapper>::New();
-  polyMapper->SetInputData(polyData);
-
-  // The actor is a grouping mechanism: besides the geometry (mapper), it
-  // also has a property, transformation matrix, and/or texture map.
-  vtkSmartPointer<vtkActor> polyActor =
-    vtkSmartPointer<vtkActor>::New();
-  polyActor->SetMapper(polyMapper);
-  polyActor->GetProperty()->SetColor(1.0000, 0.3882, 0.2784);
-  polyActor->RotateX(30.0);
-  polyActor->RotateY(-45.0);
-  polyActor->GetProperty()->SetRepresentationToWireframe();
-
-  // The renderer generates the image
-  // which is then displayed on the render window.
-  // It can be thought of as a scene to which the actor is added
-  vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
-  renderer->AddActor(polyActor);
-  renderer->SetBackground(0.1, 0.2, 0.4);
-  // Zoom in a little by accessing the camera and invoking its "Zoom" method.
-  renderer->ResetCamera();
-  renderer->GetActiveCamera()->Zoom(1.5);
-
-  // The render window is the actual GUI window
-  // that appears on the computer screen
-  vtkSmartPointer<vtkRenderWindow> renderWindow =
-    vtkSmartPointer<vtkRenderWindow>::New();
-  renderWindow->SetSize(200, 200);
-  renderWindow->AddRenderer(renderer);
-
-  // The render window interactor captures mouse events
-  // and will perform appropriate camera or actor manipulation
-  // depending on the nature of the events.
-  vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor =
-    vtkSmartPointer<vtkRenderWindowInteractor>::New();
-  renderWindowInteractor->SetRenderWindow(renderWindow);
-
-  // This starts the event loop and as a side effect causes an initial render.
-  renderWindowInteractor->Start();
-}
-
-int main(int, char*[])
+int main()
 {
   ////////////////// Primitives         /////////////////////////////////
   ///////////////////////////////////////////////////////////////////////
   // http://www.vtk.org/Wiki/VTK/Examples/Cxx/GeometricObjects/GeometricObjectsDemo
 
   std::cout << " +++++++++++++ SPHERE +++++++++++++++ " << std::endl;
-  vtkSmartPointer<vtkPolyData> polySphere = makeSphere(4,4,true);
+  vtkSmartPointer<vtkPolyData> polySphere = collision_benchmark::makeSphereVtk(4,4,true);
   test(polySphere);
 
   std::cout << " +++++++++++++ CYLINDER+++++++++++++++ " << std::endl;
-  vtkSmartPointer<vtkPolyData> polyCylinder = makeCylinder(1.0, 2.0, 5, true);
+  vtkSmartPointer<vtkPolyData> polyCylinder = collision_benchmark::makeCylinderVtk(1.0, 2.0, 5, true);
   test(polyCylinder);
 
   std::cout << " +++++++++++++ BOX +++++++++++++++ " << std::endl;
-  vtkSmartPointer<vtkPolyData> polyBox = makeBox(1.0,2.0,3.0);
+  vtkSmartPointer<vtkPolyData> polyBox = collision_benchmark::makeBoxVtk(1.0,2.0,3.0);
   test(polyBox);
 
   std::cout << " +++++++++++++ CONE +++++++++++++++ " << std::endl;
-  vtkSmartPointer<vtkPolyData> polyCone = makeCone(2.0, 3.0, 5, 45, true);
+  vtkSmartPointer<vtkPolyData> polyCone = collision_benchmark::makeConeVtk(2.0, 3.0, 5, 45, true);
   test(polyCone);
 
   std::cout << " +++++++++++++ DISK +++++++++++++++ " << std::endl;
-  vtkSmartPointer<vtkPolyData> polyDisk = makeDisk(1.0, 5.0, 1, 5);
+  vtkSmartPointer<vtkPolyData> polyDisk = collision_benchmark::makeDiskVtk(1.0, 5.0, 1, 5);
   test(polyDisk);
 
 
@@ -418,23 +293,14 @@ int main(int, char*[])
   ///////////////////////////////////////////////////////////////////////
 
   std::cout << " +++++++++++++ ELLIPSOID +++++++++++++++ " << std::endl;
-  vtkSmartPointer<vtkPolyData> polyEllipsoid = makeEllipsoid(1.0, 2.0, 3.0,
+  vtkSmartPointer<vtkPolyData> polyEllipsoid = collision_benchmark::makeEllipsoidVtk(1.0, 2.0, 3.0,
                                                              10, 10);
   test(polyEllipsoid);
 
   std::cout << " +++++++++++++ TORUS +++++++++++++++ " << std::endl;
-  vtkSmartPointer<vtkPolyData> polyTorus = makeTorus(1, 0.1, 10, 10);
+  vtkSmartPointer<vtkPolyData> polyTorus = collision_benchmark::makeTorusVtk(1, 0.1, 10, 10);
   test(polyTorus);
 
-
-  ////////////////// Test visualization /////////////////////////////////
-  // visualize(polySphere);
-  // visualize(polyCylinder);
-  // visualize(polyBox);
-  // visualize(polyCone);
-  // visualize(polyDisk);
-  visualize(polyEllipsoid);
-  // visualize(polyTorus);
   return EXIT_SUCCESS;
 }
 
