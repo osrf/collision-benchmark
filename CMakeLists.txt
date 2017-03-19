@@ -89,6 +89,8 @@ find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
 
 set(TEST_LIB_SRCS
+    test/TestUtils.cc
+    test/MultipleWorldsTestFramework.cc
     test/StaticTestFramework.cc)
 
 add_library(collision_benchmark_test EXCLUDE_FROM_ALL ${TEST_LIB_SRCS})

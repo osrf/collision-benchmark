@@ -37,10 +37,11 @@ TEST_F(StaticTest, TwoShapesTest1)
   Shape::Ptr shape2(PrimitiveShape::CreateCylinder(1,3));
 
   PrepareWorld(selectedEngines);
-  LoadShapes(shape1, modelName1, shape2, modelName2);
+  LoadShape(shape1, modelName1);
+  LoadShape(shape2, modelName2);
   const static bool interactive = false;
   const static float cellSizeFactor = 0.1;
-  TwoModels(modelName1, modelName2, cellSizeFactor, interactive);
+  AaBbTest(modelName1, modelName2, cellSizeFactor, interactive);
 }
 
 TEST_F(StaticTest, TwoShapesTest2)
@@ -77,11 +78,12 @@ TEST_F(StaticTest, TwoShapesTest2)
   Shape::Ptr shape2(PrimitiveShape::CreateCylinder(1,3));
 
   PrepareWorld(selectedEngines);
-  LoadShapes(shape1, modelName1, shape2, modelName2);
+  LoadShape(shape1, modelName1);
+  LoadShape(shape2, modelName2);
   const static bool interactive = false;
   const static float cellSizeFactor = 0.1;
   const std::string outputPath; // ="/home/jenny/testResults";
-  TwoModels(modelName1, modelName2, cellSizeFactor, interactive, outputPath);
+  AaBbTest(modelName1, modelName2, cellSizeFactor, interactive, outputPath);
 }
 
 TEST_F(StaticTest, MeshGenTest)
@@ -102,6 +104,7 @@ TEST_F(StaticTest, MeshGenTest)
       (new collision_benchmark::MeshShapeGeneratorVtk<Precision>());
 
   double radius = 2;
+
   // sphere as mesh
   std::string meshName = "SphereMesh";
   SimpleTriMeshShape::MeshDataT::Ptr sphereMeshData =
@@ -113,11 +116,12 @@ TEST_F(StaticTest, MeshGenTest)
   Shape::Ptr spherePrimitive(PrimitiveShape::CreateSphere(radius));
 
   PrepareWorld(selectedEngines);
-  LoadShapes(sphereMesh, meshName, spherePrimitive, primName);
+  LoadShape(sphereMesh, meshName);
+  LoadShape(spherePrimitive, primName);
   const static bool interactive = true;
   const static float cellSizeFactor = 0.1;
   const std::string outputPath; // ="/home/jenny/testResults";
-  TwoModels(meshName, primName, cellSizeFactor, interactive, outputPath);
+  AaBbTest(meshName, primName, cellSizeFactor, interactive, outputPath);
 }
 
 int main(int argc, char**argv)

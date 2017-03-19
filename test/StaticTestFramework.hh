@@ -17,29 +17,18 @@
 #ifndef COLLISION_BENCHMARK_TEST_STATICTESTFRAMEWORK_H
 #define COLLISION_BENCHMARK_TEST_STATICTESTFRAMEWORK_H
 
+#include <test/MultipleWorldsTestFramework.hh>
+#include <test/TestUtils.hh>
 #include <collision_benchmark/Shape.hh>
-#include "MultipleWorldsTestFramework.hh"
 
 #include <string>
 #include <vector>
 
 class StaticTestFramework : public MultipleWorldsTestFramework {
 protected:
-  struct AABB
-  {
-    typedef ignition::math::Vector3d Vec3;
-    Vec3 size()
-    {
-      return Vec3(max.X() - min.X(),
-                  max.Y() - min.Y(),
-                  max.Z() - min.Z());
-    }
-    Vec3 min, max;
-  };
-
   typedef GzWorldManager::PhysicsWorldContactInterfaceT::ContactInfo
-            ContactInfo;
-  typedef ContactInfo::Ptr ContactInfoPtr;
+            GzContactInfo;
+  typedef GzContactInfo::Ptr GzContactInfoPtr;
 
   StaticTestFramework():
     MultipleWorldsTestFramework()
@@ -47,14 +36,12 @@ protected:
   virtual ~StaticTestFramework()
   {}
 
-  // Loads the two shapes. Call PrepareWorld() before.
+  // Loads a shape. You must call PrepareWorld() before you can use this.
   //
   // Throws gtest assertions so needs to be called from top-level
   // test function (nested function calls will not work correctly)
-  void LoadShapes(const collision_benchmark::Shape::Ptr& shape1,
-                 const std::string& modelName1,
-                 const collision_benchmark::Shape::Ptr& shape2,
-                 const std::string& modelName2);
+  void LoadShape(const collision_benchmark::Shape::Ptr& shape,
+                 const std::string& modelName);
 
   // loads the empty world with all the given engines and creates
   // the world manager.
@@ -65,9 +52,9 @@ protected:
 
 
 
-  // Does the static test in which the two models (must already have
-  // been loaded) are moved relative to each other, and all engines have to
-  // agree on the collision state (boolean collision).
+  // Two models, which must already have been loaded, are moved relative to
+  // each other by iterating through states in which their AABBs intersect.
+  // Alll engines have to agree on the collision state (boolean collision).
   // You need to use a loading function such as LoadShapes() before.
   //
   // Model 1 will remain stationary, while model 2 will
@@ -86,28 +73,11 @@ protected:
   // \param[in] outputPath if not empty, this should be a writable path to
   //    a directory into which the failure results will be written. If emtpy,
   //    no failure results will be written to file.
-  void TwoModels(const std::string& modelName1,
-                 const std::string& modelName2,
-                 const float cellSizeFactor = 0.1,
-                 const bool interactive = false,
-                 const std::string& outputPath = "");
-
-  // Tests if the worlds agree about the collision states
-  // between the two models. The names of engines detecting a collision are
-  // returned in \e colliding and the others in \e notColliding
-  // \param[in] modelName1 name of model 1
-  // \param[in] modelName2 name of model 2
-  // \param[out] colliding names of all engines which determine collision
-  // \param[out] notColliding names of all engines which determine no collision
-  // \param[out] maxNegDepth largest negative depth recorded amongst
-  //    all \colliding
-  // \return false if there was an inconsistency or error in querying
-  //    the collision states in any world
-  bool CollisionState(const std::string& modelName1,
-                      const std::string& modelName2,
-                      std::vector<std::string>& colliding,
-                      std::vector<std::string>& notColliding,
-                      double& maxNegDepth);
+  void AaBbTest(const std::string& modelName1,
+                const std::string& modelName2,
+                const float cellSizeFactor = 0.1,
+                const bool interactive = false,
+                const std::string& outputPath = "");
 
 private:
 
@@ -116,31 +86,9 @@ private:
   // \return true if worlds are consistent, falsle otherwise
   bool GetAABBs(const std::string& modelName1,
                 const std::string& modelName2,
-                AABB& m1, AABB& m2);
+                collision_benchmark::GzAABB& m1,
+                collision_benchmark::GzAABB& m2);
 
-  // returns contact info between model 1 and 2 in this world.
-  std::vector<ContactInfoPtr> GetContactInfo(const std::string& modelName1,
-                                             const std::string& modelName2,
-                                             const std::string& worldName);
-
-  // Forces an update of the gazebo client which may be used to view the world
-  // during testing. This is to help alleviate the following issue:
-  // The poses of the models are not always updated in the client, some
-  // pose messages will be skipped for the GazeboPhysicsWorld worlds,
-  // because in physics::World::posePub is throttled. Instead of allowing to
-  // remove the throttling rate altoegther (which would be useful but the
-  // throttling rate has a purpose after all), this function can be used
-  // to make the Gazebo clients(s) completely refresh the scene, which causes
-  // them to re-request all information about all models.
-  // \param[in] timoutSecs maximum timeout wait in seconds to wait for a
-  //  client connection. Use negative value to wait forever.
-  // \return false if there was an error preventing the refreshing.
-  bool RefreshClient(const double timeoutSecs=-1);
-
-  // node needed in RefreshClient()
-  gazebo::transport::NodePtr node;
-  // publisher needed in RefreshClient()
-  gazebo::transport::PublisherPtr pub;
 };
 
 #endif  // COLLISION_BENCHMARK_TEST_STATICTESTFRAMEWORK_H

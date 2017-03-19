@@ -25,17 +25,12 @@
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
 
-/*using collision_benchmark::MultipleWorldsServer;
-using collision_benchmark::GazeboMultipleWorldsServer;
-using collision_benchmark::WorldLoader;
-using collision_benchmark::WorldManager;
-using collision_benchmark::GazeboWorldLoader;*/
 using collision_benchmark::GazeboPhysicsWorldTypes;
-
 
 class MultipleWorldsTestFramework : public ::testing::Test
 {
   public:
+
   typedef collision_benchmark::MultipleWorldsServer<
                                GazeboPhysicsWorldTypes::WorldState,
                                GazeboPhysicsWorldTypes::ModelID,
@@ -51,6 +46,7 @@ class MultipleWorldsTestFramework : public ::testing::Test
                        GazeboPhysicsWorldTypes::Wrench>
             GzWorldManager;
 
+  GzMultipleWorldsServer::Ptr GetServer() { return server; }
 
   protected:
 
@@ -102,11 +98,31 @@ class MultipleWorldsTestFramework : public ::testing::Test
     if (server) server->Stop();
   }
 
-  public: GzMultipleWorldsServer::Ptr GetServer() { return server; }
+
+  // Forces an update of the gazebo client which may be used to view the world
+  // during testing. This is to help alleviate the following issue:
+  // The poses of the models are not always updated in the client - some
+  // pose messages will be skipped for the GazeboPhysicsWorld worlds,
+  // because physics::World::posePub is throttled. Instead of allowing to
+  // remove the throttling rate altoegther (which would be useful, but the
+  // throttling rate has a purpose after all), this function can be used
+  // to make the Gazebo clients(s) completely refresh the scene, which causes
+  // them to re-request all information about all models.
+  // \param[in] timoutSecs maximum timeout wait in seconds to wait for a
+  //  client connection. Use negative value to wait forever.
+  // \return false if there was an error preventing the refreshing.
+  bool RefreshClient(const double timeoutSecs=-1);
 
   private:
+
   const char * fakeProgramName;
   GzMultipleWorldsServer::Ptr server;
+
+  // node needed in RefreshClient()
+  gazebo::transport::NodePtr node;
+  // publisher needed in RefreshClient()
+  gazebo::transport::PublisherPtr pub;
+
 };
 
 
