@@ -40,3 +40,18 @@
     - Known bug on gzclient side, probably a message being dropped
         - https://bitbucket.org/osrf/gazebo/issues/821/apparent-transport-race-condition-on
         - Or: https://bitbucket.org/osrf/gazebo/issues/681
+
+
+
+
+
+
+
+
+For reference: Libraries to maybe look into again for primitive/mesh generation
+
+- [Ogre procedural](https://bitbucket.org/transporter/ogre-procedural) seems a bit outdated / not maintained, links broken
+- [Libmesh](http://libmesh.github.io/doxygen/index.html)
+- [GeometronLib](https://github.com/LukasBanana/GeometronLib)
+- [generator](https://github.com/ilmola/generator)
+- [geometrictools](www.geometrictools.com) always nice for algorithm references
