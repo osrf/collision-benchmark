@@ -9,6 +9,8 @@
 #include <vtkParametricEllipsoid.h>
 #include <vtkParametricTorus.h>
 
+#include <vtkCleanPolyData.h>
+
 #include <vtkSmartPointer.h>
 #include <vtkPolyData.h>
 #include <vtkCellArray.h>
@@ -35,12 +37,19 @@ void collision_benchmark::getTriangleSoup
   points.clear();
   faces.clear();
 
-  vtkSmartPointer<vtkPolyData> tridata = triangulate(polydata);
+  vtkSmartPointer<vtkPolyData> tridataRaw = triangulate(polydata);
 
 /*  std::cout << "There are " << tridata->GetNumberOfPoints()
             << " points." << std::endl;
   std::cout << "There are " << tridata->GetNumberOfPolys()
             << " triangles." << std::endl;*/
+
+  // also remove duplicate vertices
+  vtkSmartPointer<vtkCleanPolyData> tridataClean =
+           vtkSmartPointer<vtkCleanPolyData>::New();
+  tridataClean->SetInputData(tridataRaw);
+  tridataClean->Update();
+  vtkSmartPointer<vtkPolyData> tridata = tridataClean->GetOutput();
 
   for(vtkIdType i = 0; i < tridata->GetNumberOfPoints(); i++)
   {

@@ -127,6 +127,9 @@ TEST_F(StaticTest, SpherePrimMesh)
   std::string meshName = "SphereMesh";
   SimpleTriMeshShape::MeshDataT::Ptr sphereMeshData =
     generator->MakeSphere(radius, 10, 10);
+    //generator->MakeCylinder(radius, 4, 50, true);
+  //sphereMeshData->Perturb(-0.2, 0.2, SimpleTriMeshShape::MeshDataT::Vertex(0,0,0),
+  //                        SimpleTriMeshShape::MeshDataT::Vertex(0,1,0));
   Shape::Ptr sphereMesh(new SimpleTriMeshShape(sphereMeshData, meshName));
 
   // sphere as a primitive

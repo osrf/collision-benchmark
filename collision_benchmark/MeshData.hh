@@ -75,10 +75,18 @@ class MeshData
   public: inline std::vector<Face>& GetFaces() { return faces; }
   public: inline const std::vector<Face>& GetFaces() const { return faces; }
 
-  // perturbs each vertex by a random value between \e min and \e max along
+  // Perturbs each vertex by a random value between \e min and \e max along
   // the line from the vertex to \e center.
   public: void Perturb(const double min, const double max,
                        const Vertex& center = Vertex(0,0,0));
+
+  // Perturbs each vertex by a random value between \e min and \e max *away
+  // from the line* through \e center with direction \e dir.
+  // This will move the vertex along the line orthogonal to the given line.
+  // Vertices on the line will not be perturbed.
+  public: void Perturb(const double min, const double max,
+                       const Vertex& center, const Vertex& dir);
+
 
   private: std::vector<Vertex> verts;
   private:std::vector<Face> faces;
