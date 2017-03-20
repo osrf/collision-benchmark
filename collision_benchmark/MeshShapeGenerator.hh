@@ -9,7 +9,11 @@ namespace collision_benchmark
 {
 
 /**
- * \brief Interface to generate triangle mesh representations out of shapes
+ * \brief Interface to generate triangle mesh representations out of shapes.
+ *
+ * All shapes are always at origin position (0,0,0) and at default orientation
+ * (identity quaternion).
+ *
  * \author Jennifer Buehler
  * \date March 2017
  */
@@ -25,6 +29,7 @@ class MeshShapeGenerator
   public: typedef typename TriMeshData::Ptr TriMeshDataPtr;
 
   /**
+   * \brief Makes a sphere.
    * \param[in] radius radius of sphere
    * \param[in] theta number of points in the longitude direction
    * \param[in] phi number of points in the latitude direction
@@ -40,6 +45,7 @@ class MeshShapeGenerator
                                     const unsigned int phi,
                                     const bool latLongTessel = true) const = 0;
   /**
+   * \brief Makes a cylinder along the y axis.
    * \param[in] radius radius of cylinder
    * \param[in] height height of cylinder
    * \param[in] resolution number of facets used to define cylinder.
@@ -51,6 +57,7 @@ class MeshShapeGenerator
                                               const unsigned int resolution,
                                               const bool capping) const = 0;
   /**
+   * \brief Makes a box.
    * \param[in] x x dimension
    * \param[in] y y dimension
    * \param[in] z z dimension
@@ -60,6 +67,7 @@ class MeshShapeGenerator
                                          const double y,
                                          const double z) const = 0;
   /**
+   * \brief Makes a box.
    * \brief Create a box using AABB cornder coordinates
    * \return the triangle mesh data
    */
@@ -68,7 +76,7 @@ class MeshShapeGenerator
                                          const double zMin,
                                          const double zMax) const = 0;
   /**
-   * \brief Creates a cone
+   * \brief Creates a cone with tip at the origin, extending along the x axis.
    * \param[in] radius base radius of the cone.
    * \param[in] height height of cone in its specified direction.
    * \param[in] resolution number of facets used to represent the cone.
@@ -92,6 +100,7 @@ class MeshShapeGenerator
                                            const double dir_y=0,
                                            const double dir_z=1) const = 0;
   /**
+   * \brief Makes a disk.
    * \param[in] innerRadius the inner radius
    * \param[in] outerRadius the outer radius
    * \param[in] radialRes number of points in radius direction.
@@ -103,6 +112,7 @@ class MeshShapeGenerator
                                        const unsigned int radialRes,
                                        const unsigned int circumRes) const = 0;
   /**
+   * \brief Makes an ellipsoid.
    * \param[in] xRad radius in x-direction
    * \param[in] yRad radius in y-direction
    * \param[in] zRad radius in z-direction
@@ -116,6 +126,7 @@ class MeshShapeGenerator
                                             const unsigned int uRes,
                                             const unsigned int vRes) const = 0;
   /**
+   * \brief Makes a torus.
    * \param[in] ringRadius radius from the center to the middle of the
    *    ring of the torus.
    * \param[in] crossRadius radius of the cross section of ring of the torus.

@@ -75,10 +75,18 @@ class MeshData
   public: inline std::vector<Face>& GetFaces() { return faces; }
   public: inline const std::vector<Face>& GetFaces() const { return faces; }
 
+  // perturbs each vertex by a random value between \e min and \e max along
+  // the line from the vertex to \e center.
+  public: void Perturb(const double min, const double max,
+                       const Vertex& center = Vertex(0,0,0));
+
   private: std::vector<Vertex> verts;
   private:std::vector<Face> faces;
 
 };
 
 }
+
+#include "MeshData-inl.hh"
+
 #endif   //  COLLISION_BENCHMARK_MESHDATA
