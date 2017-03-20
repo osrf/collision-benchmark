@@ -103,6 +103,8 @@ bool StaticTestFramework::GetAABBs(const std::string& modelName1,
 void StaticTestFramework::AaBbTest(const std::string& modelName1,
                                    const std::string& modelName2,
                                    const float cellSizeFactor,
+                                   const double minAgree,
+                                   const double zeroDepthTol,
                                    const bool interactive,
                                    const std::string& outputPath)
 {
@@ -176,20 +178,36 @@ void StaticTestFramework::AaBbTest(const std::string& modelName1,
     worldManager->Update(numSteps);
     if (msSleep > 0) gazebo::common::Time::MSleep(msSleep);
 
+
+
     std::vector<std::string> colliding, notColliding;
-    double maxNegDepth;
+    double maxContactDepth;
     ASSERT_TRUE(collision_benchmark::CollisionState(modelName1, modelName2,
                                                     worldManager, colliding,
-                                                    notColliding, maxNegDepth));
-    if (!colliding.empty())
+                                                    notColliding,
+                                                    maxContactDepth));
+# if 0
+    // For TESTING: stop at every colliding state
+    int stopX = 5;
+    if (!colliding.empty()&& ((itCnt % stopX) == 0))
     {
-      std::cout<<"Colliding max depth = " << maxNegDepth << std::endl;
+      std::stringstream str;
+      str << std::endl << "Colliding: " << std::endl << " ------ " << std::endl;
+      for (std::vector<std::string>::iterator it = colliding.begin();
+           it != colliding.end(); ++it)
+      {
+        if (it != colliding.begin()) str << std::endl;
+        std::vector<GzContactInfoPtr> contacts =
+          collision_benchmark::GetContactInfo(modelName1, modelName2,
+                                              *it, worldManager);
+        str << *it << ": " << VectorPtrToString(contacts);
+      }
       RefreshClient(5);
       collision_benchmark::UpdateUntilEnter(worldManager);
     }
+#endif
 
-    static const double zeroDepthTol = 1e-02;
-    if (!colliding.empty() && (maxNegDepth >= -zeroDepthTol))
+    if (!colliding.empty() && (fabs(maxContactDepth) < zeroDepthTol))
     {
       // if contacts were found but they are just surface contacts,
       // skip this because engines are actually allowed to disagree.
@@ -206,8 +224,6 @@ void StaticTestFramework::AaBbTest(const std::string& modelName1,
     double negative = notColliding.size() / (double) total;
     double positive= colliding.size() / (double) total;
 
-
-    const static double minAgree = 0.999;
     if (((positive > negative) && (positive < minAgree)) ||
         ((positive <= negative) && (negative < minAgree)))
     {

@@ -67,6 +67,12 @@ protected:
   // \param[in] cellSizeFactor the proportion of the 3D grid
   //    that will be used to determine the cell size, which is the size
   //    of cells that the models will be moved through.
+  // \param[in] zeroDepthTol tolerance to accept contacts as zero depth
+  //    contacts - all contacts as close to this tolerance to zero will be
+  //    considered "just touching" contacts, and no disagreement of the
+  //    engines will be considered.
+  // \param[in] minAgree minimum agreement of engines that has to be reached,
+  //    value in range [0..1].
   // \param[in] interactive if true, the test will be run interactively,
   //    which means the user gets the chance to start gzclient, and each
   //    test failure the test will be paused so they can look at the result.
@@ -76,6 +82,8 @@ protected:
   void AaBbTest(const std::string& modelName1,
                 const std::string& modelName2,
                 const float cellSizeFactor = 0.1,
+                const double minAgree = 0.999,
+                const double zeroDepthTol = 5e-02,
                 const bool interactive = false,
                 const std::string& outputPath = "");
 

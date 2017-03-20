@@ -60,7 +60,7 @@ namespace collision_benchmark
   // \param[in] worldManager the world manager which has all the worlds
   // \param[out] colliding names of all engines which determine collision
   // \param[out] notColliding names of all engines which determine no collision
-  // \param[out] maxNegDepth largest negative depth recorded amongst
+  // \param[out] maxDepth largest depth recorded amongst
   //    all \colliding
   // \return false if there was an inconsistency or error in querying
   //    the collision states in any world
@@ -69,7 +69,7 @@ namespace collision_benchmark
                       const GzWorldManager::Ptr& worldManager,
                       std::vector<std::string>& colliding,
                       std::vector<std::string>& notColliding,
-                      double& maxNegDepth);
+                      double& maxDepth);
 
   // checks that AABB of model 1 is the same in all worlds in
   // \e worldManager and returns the AABBs of the model if it is

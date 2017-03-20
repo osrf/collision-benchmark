@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <iostream>
+#include <limits>
 
 namespace collision_benchmark
 {
@@ -42,12 +43,25 @@ class Contact
 
   public: friend std::ostream& operator<<(std::ostream& o, const Self& c)
   {
-    o << "{Position: " << c.position << ", depth: " << c.depth << "}";
+    o << "{";
+    // o <<"Position: " << c.position << " ";
+    // o <<"normal: " << c.normal << " ";
+    o <<"force: b1=" << c.wrench.body1Force
+      << " b2=" << c.wrench.body2Force << " ";
+    o <<"torque: b1=" << c.wrench.body1Torque
+      << " b2=" << c.wrench.body2Torque << " ";
+    o <<"depth: " << c.depth;
+    o << "}";
     return o;
   }
   public: Vector3 position;
   public: Vector3 normal;
   public: Wrench wrench;
+  // penetration depth: depth to which the two bodies inter-penetrate each
+  // other. If zero, tho bodies "just touch". However due to inaccuracies
+  // this will rarely be exactly zero.
+  // If negative, the bodies don't touch and the contact should be considered
+  // invalid.
   public: double depth;
 };
 
@@ -117,18 +131,33 @@ class ContactInfo
   // checks for validity of the contact configuration
   public: bool isValid() const { return model1 < model2; }
 
-  // returns minimum depth amongst all contacts or positive
-  // value if contacts are empty (the deepest penetration)
-  public: double minDepth() const
+  // returns minimum depth amongst all contacts in \e min.
+  // \return false if contacts are empty
+  public: bool minDepth(double& min) const
   {
-    double min=1;
+    if (contacts.empty()) return false;
+    min=std::numeric_limits<double>::max();
     for (typename std::vector<Contact>::const_iterator
          cit = contacts.begin(); cit != contacts.end(); ++cit)
     {
       const Contact& c = *cit;
       if (c.depth < min) min = c.depth;
     }
-    return min;
+    return true;
+  }
+  // returns maximum depth amongst all contacts in \e max.
+  // \return false if contacts are empty
+  public: bool maxDepth(double& max) const
+  {
+    if (contacts.empty()) return false;
+    max=std::numeric_limits<double>::min();
+    for (typename std::vector<Contact>::const_iterator
+         cit = contacts.begin(); cit != contacts.end(); ++cit)
+    {
+      const Contact& c = *cit;
+      if (c.depth > max) max = c.depth;
+    }
+    return true;
   }
 
   public: friend std::ostream& operator<<(std::ostream& o, const Self& c)

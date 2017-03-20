@@ -37,10 +37,10 @@ void collision_benchmark::getTriangleSoup
 
   vtkSmartPointer<vtkPolyData> tridata = triangulate(polydata);
 
-  std::cout << "There are " << tridata->GetNumberOfPoints()
+/*  std::cout << "There are " << tridata->GetNumberOfPoints()
             << " points." << std::endl;
   std::cout << "There are " << tridata->GetNumberOfPolys()
-            << " triangles." << std::endl;
+            << " triangles." << std::endl;*/
 
   for(vtkIdType i = 0; i < tridata->GetNumberOfPoints(); i++)
   {

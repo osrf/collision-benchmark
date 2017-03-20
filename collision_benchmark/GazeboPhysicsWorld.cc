@@ -534,13 +534,35 @@ GetContactInfoHelper(const gazebo::physics::WorldPtr& world,
              m2Name, c->collision2->GetLink()->GetName()));
     for (int i=0; i < c->count; ++i)
     {
+      if (c->depths[i] < 0)
+      {
+        // negative depths shoudl be considered invalid if they
+        // are far beyond 0
+        static double tol = 1e-03;
+        if (c->depths[i] < -tol)
+        {
+          std::cout << "DEBUG-INFO: Negative contact distance found in world "
+                    << world->Name() <<", depth = " << c->depths[i]
+                    << ". Skipping contact. " << std::endl;
+          continue;
+        }
+      }
       cInfo->contacts.push_back
         (GazeboPhysicsWorld::Contact(c->positions[i], c->normals[i],
                                      c->wrench[i], c->depths[i]));
     }
 
-    GZ_ASSERT(!cInfo->contacts.empty(), "Should have at least one contact");
-    ret.push_back(cInfo);
+    if (cInfo->contacts.empty())
+    {
+     std::cout << "WARNING: All contact points gotten from models "
+               << m1Name << " / " << c->collision1->GetLink()->GetName() << ", "
+               << m2Name << " / " << c->collision2->GetLink()->GetName()
+               << " world " << world->Name() <<" skipped. " << std::endl;
+    }
+    else
+    {
+      ret.push_back(cInfo);
+    }
   }
   return ret;
 }

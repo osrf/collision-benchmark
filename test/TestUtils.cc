@@ -129,11 +129,11 @@ bool collision_benchmark::CollisionState(const std::string& modelName1,
                                        const GzWorldManager::Ptr& worldManager,
                                        std::vector<std::string>& colliding,
                                        std::vector<std::string>& notColliding,
-                                       double& maxNegDepth)
+                                       double& maxDepth)
 {
   colliding.clear();
   notColliding.clear();
-  maxNegDepth = 0;
+  maxDepth = 0;
   if (!worldManager) return false;
 
   std::vector<GzWorldManager::PhysicsWorldPtr>
@@ -158,8 +158,12 @@ bool collision_benchmark::CollisionState(const std::string& modelName1,
            cit = contacts.begin(); cit != contacts.end(); ++cit)
       {
         GzContactInfoPtr c = *cit;
-        if (c->minDepth() < maxNegDepth) maxNegDepth = c->minDepth();
+        // std::cout << "World " << w->GetName() <<" Contact: " << *c << std::endl;
+        double tmpMax;
+        if (c->maxDepth(tmpMax) && tmpMax > maxDepth)
+          maxDepth = tmpMax;
       }
+      // std::cout << "Max depth: " << maxDepth << std::endl;
     }
     else
     {

@@ -14,6 +14,13 @@ using collision_benchmark::Shape;
 using collision_benchmark::PrimitiveShape;
 using collision_benchmark::SimpleTriMeshShape;
 
+// tolerance for values close to zero: All contacts as close to zero will be
+// considered "just touching" and disagreement of engines won't be triggered.
+const double zeroDepthTol = 5e-02;
+
+// minimum agreement of engines that has to be reached, value in range [0..1].
+const double minAgree = 0.999;
+
 class StaticTest : public StaticTestFramework {};
 
 TEST_F(StaticTest, TwoShapesTest1)
@@ -21,7 +28,7 @@ TEST_F(StaticTest, TwoShapesTest1)
   std::vector<std::string> selectedEngines;
   selectedEngines.push_back("bullet");
   selectedEngines.push_back("ode");
-  selectedEngines.push_back("dart");
+  // selectedEngines.push_back("dart");
   // selectedEngines.push_back("simbody");
 
   /*std::set<std::string> engines =
@@ -39,9 +46,10 @@ TEST_F(StaticTest, TwoShapesTest1)
   PrepareWorld(selectedEngines);
   LoadShape(shape1, modelName1);
   LoadShape(shape2, modelName2);
-  const static bool interactive = false;
+  const static bool interactive = true;
   const static float cellSizeFactor = 0.1;
-  AaBbTest(modelName1, modelName2, cellSizeFactor, interactive);
+  AaBbTest(modelName1, modelName2, cellSizeFactor, minAgree,
+           zeroDepthTol, interactive);
 }
 
 TEST_F(StaticTest, TwoShapesTest2)
@@ -80,10 +88,11 @@ TEST_F(StaticTest, TwoShapesTest2)
   PrepareWorld(selectedEngines);
   LoadShape(shape1, modelName1);
   LoadShape(shape2, modelName2);
-  const static bool interactive = false;
+  const static bool interactive = true;
   const static float cellSizeFactor = 0.1;
   const std::string outputPath; // ="/home/jenny/testResults";
-  AaBbTest(modelName1, modelName2, cellSizeFactor, interactive, outputPath);
+  AaBbTest(modelName1, modelName2, cellSizeFactor, minAgree, zeroDepthTol,
+           interactive, outputPath);
 }
 
 TEST_F(StaticTest, MeshGenTest)
@@ -121,7 +130,8 @@ TEST_F(StaticTest, MeshGenTest)
   const static bool interactive = true;
   const static float cellSizeFactor = 0.1;
   const std::string outputPath; // ="/home/jenny/testResults";
-  AaBbTest(meshName, primName, cellSizeFactor, interactive, outputPath);
+  AaBbTest(meshName, primName, cellSizeFactor, minAgree, zeroDepthTol,
+           interactive, outputPath);
 }
 
 int main(int argc, char**argv)
