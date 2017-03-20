@@ -178,8 +178,6 @@ void StaticTestFramework::AaBbTest(const std::string& modelName1,
     worldManager->Update(numSteps);
     if (msSleep > 0) gazebo::common::Time::MSleep(msSleep);
 
-
-
     std::vector<std::string> colliding, notColliding;
     double maxContactDepth;
     ASSERT_TRUE(collision_benchmark::CollisionState(modelName1, modelName2,
@@ -228,13 +226,15 @@ void StaticTestFramework::AaBbTest(const std::string& modelName1,
         ((positive <= negative) && (negative < minAgree)))
     {
       std::stringstream str;
-      std::cout<<"Agreement: "<<positive<<", "<<negative<<std::endl;
-      str << "Minimum agreement not reached.";
+      std::cout << "FAIL "<<failCnt << ": Minimum agreement not reached. "
+                << "Agreement: "<<positive<<", "<<negative<<std::endl;
 
       // str << " Collision: "<< VectorToString(colliding) << ", no collision: "
       //     << VectorToString(notColliding) << ".";
 
-      str << std::endl << "Colliding: " << std::endl << " ------ " << std::endl;
+      str << "------ " << std::endl;
+      str << "Colliding: " << std::endl
+          << "------ " << std::endl;
       for (std::vector<std::string>::iterator it = colliding.begin();
            it != colliding.end(); ++it)
       {
@@ -244,8 +244,11 @@ void StaticTestFramework::AaBbTest(const std::string& modelName1,
                                               *it, worldManager);
         str << *it << ": " << VectorPtrToString(contacts);
       }
-      str << std::endl << "Not colliding: " << std::endl
-          << " ------ " << std::endl;
+
+      str << std::endl;
+      str << "------ " << std::endl;
+      str << "Not colliding: " << std::endl
+          << "------ " << std::endl;
       for (std::vector<std::string>::iterator it = notColliding.begin();
            it != notColliding.end(); ++it)
       {
@@ -260,7 +263,7 @@ void StaticTestFramework::AaBbTest(const std::string& modelName1,
       if (!outputPath.empty())
       {
         std::stringstream namePrefix;
-        namePrefix << "Static_fail_" << failCnt << "_";
+        namePrefix << "STest_fail_" << failCnt << "_";
         int nFails = worldManager->SaveAllWorlds(outputPath, namePrefix.str());
         std::cout << "Worlds written to " << outputPath
                   << " (failed: "<< nFails << ")" <<std::endl;

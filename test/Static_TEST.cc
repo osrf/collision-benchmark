@@ -23,12 +23,33 @@ const double minAgree = 0.999;
 
 class StaticTest : public StaticTestFramework {};
 
+
+Shape::Ptr GetSimpleTestTriangle(const std::string& modelName)
+{
+  std::string modelName1 = "model1";
+  // create simple mesh for testing
+  SimpleTriMeshShape::MeshDataPtr meshData(new SimpleTriMeshShape::MeshDataT());
+  typedef SimpleTriMeshShape::Vertex Vertex;
+  typedef SimpleTriMeshShape::Face Face;
+  std::vector<Vertex>& vertices=meshData->GetVertices();
+  std::vector<Face>& triangles=meshData->GetFaces();
+  vertices.push_back(Vertex(-1,0,0));
+  vertices.push_back(Vertex(0,0,-1));
+  vertices.push_back(Vertex(1,0,0));
+  vertices.push_back(Vertex(0,1,0));
+  triangles.push_back(Face(0,1,2));
+  triangles.push_back(Face(0,2,3));
+  Shape::Ptr shape(new SimpleTriMeshShape(meshData, modelName1));
+  return shape;
+}
+
+
 TEST_F(StaticTest, TwoShapesTest1)
 {
   std::vector<std::string> selectedEngines;
   selectedEngines.push_back("bullet");
   selectedEngines.push_back("ode");
-  // selectedEngines.push_back("dart");
+  selectedEngines.push_back("dart");
   // selectedEngines.push_back("simbody");
 
   /*std::set<std::string> engines =
@@ -52,7 +73,7 @@ TEST_F(StaticTest, TwoShapesTest1)
            zeroDepthTol, interactive);
 }
 
-TEST_F(StaticTest, TwoShapesTest2)
+TEST_F(StaticTest, CylinderAndTwoTriangles)
 {
   std::vector<std::string> selectedEngines;
   selectedEngines.push_back("bullet");
@@ -67,19 +88,7 @@ TEST_F(StaticTest, TwoShapesTest2)
 
   // Model 1
   std::string modelName1 = "model1";
-  // create simple mesh for testing
-  SimpleTriMeshShape::MeshDataPtr meshData(new SimpleTriMeshShape::MeshDataT());
-  typedef SimpleTriMeshShape::Vertex Vertex;
-  typedef SimpleTriMeshShape::Face Face;
-  std::vector<Vertex>& vertices=meshData->GetVertices();
-  std::vector<Face>& triangles=meshData->GetFaces();
-  vertices.push_back(Vertex(-1,0,0));
-  vertices.push_back(Vertex(0,0,-1));
-  vertices.push_back(Vertex(1,0,0));
-  vertices.push_back(Vertex(0,1,0));
-  triangles.push_back(Face(0,1,2));
-  triangles.push_back(Face(0,2,3));
-  Shape::Ptr shape1(new SimpleTriMeshShape(meshData, modelName1));
+  Shape::Ptr shape1 = GetSimpleTestTriangle(modelName1);
 
   // Model 2
   std::string modelName2 = "model2";
@@ -95,7 +104,7 @@ TEST_F(StaticTest, TwoShapesTest2)
            interactive, outputPath);
 }
 
-TEST_F(StaticTest, MeshGenTest)
+TEST_F(StaticTest, SpherePrimMesh)
 {
   std::vector<std::string> selectedEngines;
   selectedEngines.push_back("bullet");
