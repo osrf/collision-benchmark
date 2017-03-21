@@ -16,9 +16,9 @@ be helpful for debugging.
 # Table of Contents
 1. [Dependencies](#dependencies)
 2. [Install](#install)
-3. [Simulating multiple parallel worlds](#Simulating-multiple-parallel-worlds)
-4. [Physics engine testing](#Physics-engine-testing)
-5. [Short introduction to the API](#Short-introduction-to the-API)
+3. [Simulating multiple parallel worlds](#simulating-multiple-parallel-worlds)
+4. [Physics engine testing](#physics-engine-testing)
+5. [Short introduction to the API](#short-introduction-to the-API)
 
 
 ## Dependencies
