@@ -49,12 +49,14 @@ If you compiled Gazebo from source, don't forget to source ``<your-gazebo-instal
 gazebo environment variables. We will in particular need the ``GAZEBO_RESOURCE_PATH``.
 
 Compile:
+
 ```
 cd build
 cmake ..
 make
 make tests
 make install
+```
 
 Make sure that:
 
