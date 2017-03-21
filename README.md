@@ -13,6 +13,14 @@ implementations and find cases in which the engines significantly disagree
 on a specific situation (e.g. collision / no collision). Such cases can
 be helpful for debugging.
 
+# Table of Contents
+1. [Dependencies](#dependencies)
+2. [Install](#install)
+3. [Simulating multiple parallel worlds](#Simulating-multiple-parallel-worlds)
+4. [Physics engine testing](#Physics-engine-testing)
+5. [Short introduction to the API](#Short-introduction-to the-API)
+
+
 ## Dependencies
 
 You will reqiure 
@@ -174,6 +182,8 @@ Example:
 multiple_worlds_server worlds/rubble.world worlds/empty.world -e bullet ode
 ```
 
+This will load four worlds, twice the rubble world
+and twice the empty world (each once with bullet and once with ODE).
 
 ## Physics engine testing
 
@@ -198,31 +208,33 @@ To build the tests, you need to do
 
 ### The "static tests"
 
-The "static tests" comprise a number of test cases in which the dynamics
-in the physics engine(s) are disabled, meaning that the world will not react
+The "static tests" comprise a number of tests in which the dynamics
+in the physics engine(s) are disabled, meaning that the world(s) will not react
 to the physics. However contact points between objects are still computed.
 The static tests are therefore suitable for testing collision and
 contact properties.
 
 The main method of testing implemented so far is the "AABB intersection test"
 in which two object's axis-aligned bounding boxes are intersected in many
-possible ways, which generally leads to many states in which the objects are
+possible ways that they can intersect.
+This generally leads to many states in which the objects are
 colliding, and also states in which they are not (but in which they are
-still close to each other). The world with the two objects is loaded multiple
-times, either with different physics engines, or with different representations
-of the objects (e.g. primitive *vs.* mesh), or both.   
+still close to each other).
+The two objects world is loaded multiple times, either multiple times with
+different physics engines, or with different representations
+of the objects (e.g. primitive *vs.* mesh), or both.
 The test iterates through all AABB intersection states, moves the objects in the
-worlds accordingly so all worlds are in the same state, and compares the
-output of the worlds. If the worlds disagree about the collision state,
-a failure is triggered.
+worlds accordingly with the AABB, so all worlds are in the same state; it
+then compares the output of the worlds.
+If the worlds disagree about the collision state, a failure is triggered.
 
 The static tests can be run interactively or automated.
 In interactive mode, the test will stop at each failure so you can inspect
 it with gzclient. The default is automated mode.
 
-The test can also optionally
-be set to save all the failure cases to *.world* files, which can be opened
-for inspection at a later point. The default is to not write any files.
+The test can also be set to save all the failure cases to *.world* files, which
+can be opened for inspection at a later point.
+The default is to not write any files.
 
 To run the test:
 
@@ -230,24 +242,26 @@ To run the test:
 ./static_test [--interactive] [--output <your-output-path>] [<gtest parameters>]
 ```
 
+If you don't specify an output path, world files won't be written to file.
+
 For example, to run only the particular test named *SpherePrimMesh*
-(for test names please refer to *test/Static_TEST.cc*)
-in interactive mode and save files to */home/me/test/*:
+(for other test names please refer to *test/Static_TEST.cc*),
+run it in interactive mode, and save world files to */home/me/test/*:
 
 ```
 ./static_test --gtest_filter=*SpherePrimMesh* --interactive --output /home/me/test
 ```
 
-In interactive mode, when the test prompts you to hit [Enter] to continue,
+In interactive mode, when the test prompts you to hit ``[Enter]`` to continue,
 you have time to start gzclient with the world switching GUI interface: 
 
 ```
 gzclient --g libcollision_benchmark_gui.so
 ```
 
-Then hit [Enter] in the terminal running the test and watch
+Then hit ``[Enter]`` in the terminal running the test and watch
 the test unfold. If it stops due to a failure, it will prompt you to hit
-[Enter] again to continue. Before you continue, you may switch between
+``[Enter]`` again to continue. Before you continue, you may switch between
 the worlds in gzclient and inspect the results. Some information will also
 have been printed in the terminal about the test failure details.
 
