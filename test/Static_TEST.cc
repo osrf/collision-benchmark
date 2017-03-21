@@ -6,7 +6,7 @@
 #include <collision_benchmark/MeshShapeGeneratorVtk.hh>
 
 #include <gazebo/gazebo.hh>
-
+#include <gazebo/test/helper_physics_generator.hh>
 
 #include "StaticTestFramework.hh"
 
@@ -21,9 +21,15 @@ const double zeroDepthTol = 5e-02;
 // minimum agreement of engines that has to be reached, value in range [0..1].
 const double minAgree = 0.999;
 
-class StaticTest : public StaticTestFramework {};
+class StaticTest:
+  public StaticTestFramework {};
 
+class StaticTestWithParam:
+  public StaticTestFramework,
+  public testing::WithParamInterface<const char*> {};
 
+//////////////////////////////////////////////////////////////////////////////
+// Helper to create a simple shape out of two triangles
 Shape::Ptr GetSimpleTestTriangle(const std::string& modelName)
 {
   std::string modelName1 = "model1";
@@ -44,7 +50,9 @@ Shape::Ptr GetSimpleTestTriangle(const std::string& modelName)
 }
 
 
-TEST_F(StaticTest, TwoShapesTest1)
+//////////////////////////////////////////////////////////////////////////////
+// AABBTestWorldsAgreement with one cylinder primitive and one box primitive
+TEST_F(StaticTest, BoxCylinderTest)
 {
   std::vector<std::string> selectedEngines;
   selectedEngines.push_back("bullet");
@@ -73,6 +81,9 @@ TEST_F(StaticTest, TwoShapesTest1)
            zeroDepthTol, interactive);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+// AABBTestWorldsAgreement with one cylinder primitive and a simple
+// triangle (GetSimpleTestTriangle)
 TEST_F(StaticTest, CylinderAndTwoTriangles)
 {
   std::vector<std::string> selectedEngines;
@@ -84,7 +95,8 @@ TEST_F(StaticTest, CylinderAndTwoTriangles)
   /*std::set<std::string> engines =
     collision_benchmark::GetSupportedPhysicsEngines();
   // run test on all engines
-  selectedEngines.insert(selectedEngines.end(), engines.begin(), engines.end());*/
+  selectedEngines.insert(selectedEngines.end(),
+                         engines.begin(), engines.end());*/
 
   // Model 1
   std::string modelName1 = "model1";
@@ -104,6 +116,8 @@ TEST_F(StaticTest, CylinderAndTwoTriangles)
                           minAgree, zeroDepthTol, interactive, outputPath);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+// AABBTestWorldsAgreement with one sphere primitive and one sphere mesh
 TEST_F(StaticTest, SpherePrimMesh)
 {
   std::vector<std::string> selectedEngines;
@@ -115,7 +129,8 @@ TEST_F(StaticTest, SpherePrimMesh)
   /*std::set<std::string> engines =
     collision_benchmark::GetSupportedPhysicsEngines();
   // run test on all engines
-  selectedEngines.insert(selectedEngines.end(), engines.begin(), engines.end());*/
+  selectedEngines.insert(selectedEngines.end(),
+                         engines.begin(), engines.end());*/
 
   typedef SimpleTriMeshShape::MeshDataT::VertexPrecision Precision;
   collision_benchmark::MeshShapeGenerator<Precision>::Ptr generator
@@ -145,6 +160,49 @@ TEST_F(StaticTest, SpherePrimMesh)
   AABBTestWorldsAgreement(meshName, primName, cellSizeFactor, minAgree,
                           zeroDepthTol, interactive, outputPath);
 }
+
+//////////////////////////////////////////////////////////////////////////////
+// AABBTestWorldsAgreement with only one physics engine, testing a world
+// with two primitive spheres and another world with two mesh representations
+// of the same sphere
+TEST_P(StaticTestWithParam, SphereEquivalentsTest)
+{
+  gzerr << "BOBO "<< GetParam() << std::endl;
+
+  std::vector<std::string> selectedEngines;
+  selectedEngines.push_back("bullet");
+
+  typedef SimpleTriMeshShape::MeshDataT::VertexPrecision Precision;
+  collision_benchmark::MeshShapeGenerator<Precision>::Ptr generator
+      (new collision_benchmark::MeshShapeGeneratorVtk<Precision>());
+
+  double radius = 2;
+
+  // sphere as mesh
+  std::string meshName = "SphereMesh";
+  SimpleTriMeshShape::MeshDataT::Ptr sphereMeshData =
+    generator->MakeSphere(radius, 10, 10);
+    //generator->MakeCylinder(radius, 4, 50, true);
+  //sphereMeshData->Perturb(-0.2, 0.2, SimpleTriMeshShape::MeshDataT::Vertex(0,0,0),
+  //                        SimpleTriMeshShape::MeshDataT::Vertex(0,1,0));
+  Shape::Ptr sphereMesh(new SimpleTriMeshShape(sphereMeshData, meshName));
+
+  // sphere as a primitive
+  std::string primName = "SpherePrimitive";
+  Shape::Ptr spherePrimitive(PrimitiveShape::CreateSphere(radius));
+
+  InitMultipleEngines(selectedEngines);
+  LoadShape(sphereMesh, meshName);
+  LoadShape(spherePrimitive, primName);
+  const static bool interactive = true;
+  const static float cellSizeFactor = 0.1;
+  const std::string outputPath; // ="/home/jenny/testResults";
+  AABBTestWorldsAgreement(meshName, primName, cellSizeFactor, minAgree,
+                          zeroDepthTol, interactive, outputPath);
+}
+
+INSTANTIATE_TEST_CASE_P(PhysicsEngines, StaticTestWithParam,
+                        PHYSICS_ENGINE_VALUES);
 
 int main(int argc, char**argv)
 {
