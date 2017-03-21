@@ -19,8 +19,6 @@ branch which is also merged with
 
 - the PR for [contact_manager_enforcable](https://bitbucket.org/JenniferBuehler/gazebo/branch/contact_manager_enforcable)
 (see [PR #2629](https://bitbucket.org/osrf/gazebo/pull-requests/2629/possibility-to-enforce-contact-addition-in/diff)).
-- the PR for branch [bullet_update_collisions_when_disabled](https://bitbucket.org/JenniferBuehler/gazebo/src/acc334fc2bff406fc217e918ae3aba1cf8782c57/?at=bullet_update_collisions_when_disabled)
-(see [PR #2654](https://bitbucket.org/osrf/gazebo/pull-requests/2654/bullet-should-update-contact-information/diff))
 - branch [user_cmd_mangager_using_world_name](https://bitbucket.org/JenniferBuehler/gazebo/src/a6a05d9575229ca1d73dcc8f7e40ef1da7a1307e?at=user_cmd_mangager_using_world_name) (see also [issue 2186](https://bitbucket.org/osrf/gazebo/issues/2186/usercmdmanager-does-not-use-world-name-to))
   recommended for full functionality.
 - fixes for DART in branch [dart-6-fix-like-PR-2654](https://bitbucket.org/JenniferBuehler/gazebo/src/952623bc3c907c85237b29757790698386fdff0c/gazebo/physics/dart/DARTPhysics.cc?at=dart-6-fix-like-PR-2654&fileviewer=file-view-default#DARTPhysics.cc-195)

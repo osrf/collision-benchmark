@@ -322,7 +322,7 @@ Only works when no engines are specified with -e.")
 
     if (selectedEngines.empty())
     {
-      if (g_server->AutoLoad(worldfile, worldPrefix) != 0)
+      if (g_server->AutoLoad(worldfile, worldPrefix) < 0)
         std::cerr << "Could not auto-load world " << worldfile << std::endl;
     }
     else

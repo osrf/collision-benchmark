@@ -117,7 +117,7 @@ class MultipleWorldsServer
       std::stringstream _worldname;
       _worldname << namePrefix << "_engine_" << i << "_" << engine;
       std::string worldname=_worldname.str();
-      if (!Load(worldfile, engine, worldname))
+      if (Load(worldfile, engine, worldname) < 0)
       {
         std::cerr << "Could not load world " << worldfile << " with engine "
                   << engine << ", skipping it." << std::endl;
@@ -128,14 +128,18 @@ class MultipleWorldsServer
   }
 
   // \brief Loads the world file with the given engine.
-  // This will create one new worlds using this engine which will be
+  // This will create one new world using this engine which will be
   // added to the WorldManager.
   // \param worldfile the filename the filename
   // \param engine the physics engine (identified by name) to use.
   // \param worldname name to use for the world. If empty, will use the
   //    name specified in the file.
-  // \return false if worlds with this engine name cannot be loaded
-  public: bool Load(const std::string& worldfile,
+  // \retval >= 0 on success, the index at which this world can be accessed in
+  //    the world manager.
+  // \retval -1 no world loader exists for this engine
+  // \retval -2 world with this engine name cannot be loaded
+  // \retval -3 world with this name already exists
+  public: int Load(const std::string& worldfile,
                    const std::string& engine,
                    const std::string& worldname = "")
   {
@@ -143,7 +147,7 @@ class MultipleWorldsServer
     WorldLoader_M::iterator wlIt = worldLoaders.find(engine);
     if (wlIt == worldLoaders.end())
     {
-      return false;
+      return -1;
     }
     WorldLoader::ConstPtr loader = wlIt->second;
     assert(loader);
@@ -154,10 +158,11 @@ class MultipleWorldsServer
     PhysicsWorldBaseInterface::Ptr world =
       loader->LoadFromFile(worldfile, worldname);
 
-    if (!world) return false;
+    if (!world) return -2;
 
-    worldManager->AddPhysicsWorld(world);
-    return true;
+    int ret = worldManager->AddPhysicsWorld(world);
+    if (ret < 0) return -3;
+    return ret;
   }
 
   // \brief Loads the world file and determines the engine to use from the file.
@@ -166,10 +171,12 @@ class MultipleWorldsServer
   // \param worldfile the filename the filename
   // \param worldname name to use for the world. If empty, will use the
   //    name specified in the file.
-  // \retval 0 success
+  // \retval >0 success, and index this world can be accessed at in the
+  //    world manager.
   // \retval -1 f there is no world loader which can determine the
   //    engine from the file
   // \retval -2 if the loader failed to the world
+  // \retval -3 world with this name already exists
   public: int AutoLoad(const std::string& worldfile,
                    const std::string& worldname = "")
   {
@@ -183,8 +190,9 @@ class MultipleWorldsServer
 
     if (!world) return -2;
 
-    worldManager->AddPhysicsWorld(world);
-    return 0;
+    int ret = worldManager->AddPhysicsWorld(world);
+    if (ret < 0) return -3;
+    return ret;
   }
 
   WorldManagerPtr GetWorldManager() { return worldManager; }

@@ -36,20 +36,37 @@ protected:
   virtual ~StaticTestFramework()
   {}
 
-  // Loads a shape. You must call PrepareWorld() before you can use this.
+
+  // \brief Initializes the framework and creates the world manager, but no
+  // worlds are added to it.
+  //
+  // Throws gtest assertions so needs to be called from top-level
+  // test function (nested function calls will not work correctly)
+  void Init();
+
+  // \brief Calls Init() and loads the empty world with all the given engines.
+  //
+  // Throws gtest assertions so needs to be called from top-level
+  // test function (nested function calls will not work correctly)
+  void InitMultipleEngines(const std::vector<std::string>& engines);
+
+  // \brief Calls Init() and loads the empty world \e numWorld times
+  // with the given engine. The world manager will have \e numWorld empty
+  // worlds loaded after this call. Each world can be accessed in the world
+  // manager given the index [0..numWorlds-1].
+  //
+  // Throws gtest assertions so needs to be called from top-level
+  // test function (nested function calls will not work correctly)
+  void InitOneEngine(const std::string& engine,
+                     const unsigned int numWorlds);
+
+  // \brief Loads a shape into *all* worlds.
+  // You must call InitMultipleEngines() or Init() before you can use this.
   //
   // Throws gtest assertions so needs to be called from top-level
   // test function (nested function calls will not work correctly)
   void LoadShape(const collision_benchmark::Shape::Ptr& shape,
                  const std::string& modelName);
-
-  // loads the empty world with all the given engines and creates
-  // the world manager.
-  //
-  // Throws gtest assertions so needs to be called from top-level
-  // test function (nested function calls will not work correctly)
-  void PrepareWorld(const std::vector<std::string>& engines);
-
 
 
   // Two models, which must already have been loaded, are moved relative to
@@ -79,7 +96,7 @@ protected:
   // \param[in] outputPath if not empty, this should be a writable path to
   //    a directory into which the failure results will be written. If emtpy,
   //    no failure results will be written to file.
-  void AaBbTest(const std::string& modelName1,
+  void AABBTestWorldsAgreement(const std::string& modelName1,
                 const std::string& modelName2,
                 const float cellSizeFactor = 0.1,
                 const double minAgree = 0.999,

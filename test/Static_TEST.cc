@@ -64,12 +64,12 @@ TEST_F(StaticTest, TwoShapesTest1)
   std::string modelName2 = "model2";
   Shape::Ptr shape2(PrimitiveShape::CreateCylinder(1,3));
 
-  PrepareWorld(selectedEngines);
+  InitMultipleEngines(selectedEngines);
   LoadShape(shape1, modelName1);
   LoadShape(shape2, modelName2);
   const static bool interactive = true;
   const static float cellSizeFactor = 0.1;
-  AaBbTest(modelName1, modelName2, cellSizeFactor, minAgree,
+  AABBTestWorldsAgreement(modelName1, modelName2, cellSizeFactor, minAgree,
            zeroDepthTol, interactive);
 }
 
@@ -94,14 +94,14 @@ TEST_F(StaticTest, CylinderAndTwoTriangles)
   std::string modelName2 = "model2";
   Shape::Ptr shape2(PrimitiveShape::CreateCylinder(1,3));
 
-  PrepareWorld(selectedEngines);
+  InitMultipleEngines(selectedEngines);
   LoadShape(shape1, modelName1);
   LoadShape(shape2, modelName2);
   const static bool interactive = true;
   const static float cellSizeFactor = 0.1;
   const std::string outputPath; // ="/home/jenny/testResults";
-  AaBbTest(modelName1, modelName2, cellSizeFactor, minAgree, zeroDepthTol,
-           interactive, outputPath);
+  AABBTestWorldsAgreement(modelName1, modelName2, cellSizeFactor,
+                          minAgree, zeroDepthTol, interactive, outputPath);
 }
 
 TEST_F(StaticTest, SpherePrimMesh)
@@ -136,14 +136,14 @@ TEST_F(StaticTest, SpherePrimMesh)
   std::string primName = "SpherePrimitive";
   Shape::Ptr spherePrimitive(PrimitiveShape::CreateSphere(radius));
 
-  PrepareWorld(selectedEngines);
+  InitMultipleEngines(selectedEngines);
   LoadShape(sphereMesh, meshName);
   LoadShape(spherePrimitive, primName);
   const static bool interactive = true;
   const static float cellSizeFactor = 0.1;
   const std::string outputPath; // ="/home/jenny/testResults";
-  AaBbTest(meshName, primName, cellSizeFactor, minAgree, zeroDepthTol,
-           interactive, outputPath);
+  AABBTestWorldsAgreement(meshName, primName, cellSizeFactor, minAgree,
+                          zeroDepthTol, interactive, outputPath);
 }
 
 int main(int argc, char**argv)
