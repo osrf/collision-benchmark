@@ -51,13 +51,25 @@ protected:
   void InitMultipleEngines(const std::vector<std::string>& engines);
 
   // \brief Calls Init() and loads the empty world \e numWorld times
-  // with the given engine. The world manager will have \e numWorld empty
-  // worlds loaded after this call. Each world can be accessed in the world
+  // with the given engine by calling LoadOneEngine().
+  // Each world can be accessed in the world
   // manager given the index [0..numWorlds-1].
   //
   // Throws gtest assertions so needs to be called from top-level
   // test function (nested function calls will not work correctly)
   void InitOneEngine(const std::string& engine,
+                     const unsigned int numWorlds);
+
+
+  // \brief Loads the empty world \e numWorld times with the given engine.
+  // If the world manager previously had \e n engines, then it will then have
+  // \e n + \e numWorld empty worlds loaded after this call.
+  // Each world can be accessed in the world
+  // manager given the index ``[n-1..n+numWorlds-1]``.
+  //
+  // Throws gtest assertions so needs to be called from top-level
+  // test function (nested function calls will not work correctly)
+  void LoadOneEngine(const std::string& engine,
                      const unsigned int numWorlds);
 
   // \brief Loads a shape into *all* worlds.

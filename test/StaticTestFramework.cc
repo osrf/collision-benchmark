@@ -75,6 +75,20 @@ void StaticTestFramework::InitOneEngine(const std::string& engine,
   int numWorldsInMgr = worldManager->GetNumWorlds();
   ASSERT_EQ(numWorldsInMgr, 0) << "No worlds should be loaded yet.";
 
+  LoadOneEngine(engine, numWorlds);
+}
+
+////////////////////////////////////////////////////////////////
+void StaticTestFramework::LoadOneEngine(const std::string& engine,
+                                        const unsigned int numWorlds)
+{
+  GzMultipleWorldsServer::Ptr mServer = GetServer();
+  ASSERT_NE(mServer.get(), nullptr) << "Could not create and start server";
+  GzWorldManager::Ptr worldManager = mServer->GetWorldManager();
+  ASSERT_NE(worldManager.get(), nullptr) << "No valid world manager created";
+
+  int numWorldsInMgr = worldManager->GetNumWorlds();
+
   // world to load
   std::string worldfile = "test_worlds/void.world";
   for (int i = 0; i < numWorlds; ++i)
@@ -84,10 +98,12 @@ void StaticTestFramework::InitOneEngine(const std::string& engine,
     std::string worldname=_worldname.str();
     mServer->Load(worldfile, engine, worldname);
   }
-  numWorldsInMgr = worldManager->GetNumWorlds();
-  ASSERT_EQ(numWorldsInMgr, numWorlds) << "Could not load up world "
-                                       << numWorlds << " times.";
+  int numWorldsInMgrNew = worldManager->GetNumWorlds();
+  ASSERT_EQ(numWorldsInMgrNew, numWorldsInMgr + numWorlds)
+    << "Could not load up world " << numWorlds << " times.";
 }
+
+
 
 ////////////////////////////////////////////////////////////////
 void StaticTestFramework::LoadShape(const Shape::Ptr& shape,
