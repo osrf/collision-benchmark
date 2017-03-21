@@ -24,7 +24,7 @@ const double minAgree = 0.999;
 
 // Default tolerance for comparison of bounding box sizes. The min
 // and max coordinates (per x,y,z) are allowed to vary by this much.
-const double bbTol = 1e-02;
+const double bbTol = 1e-01;
 
 // Default value to run tests interactively (if false, automated)
 const static bool defaultInteractive = false;
