@@ -348,7 +348,8 @@ void StaticTestFramework::AABBTestWorldsAgreement(const std::string& modelName1,
       }
       str << std::endl;
 
-      if (!outputPath.empty())
+      if (!outputPath.empty() &&
+          collision_benchmark::makeDirectoryIfNeeded(outputPath))
       {
         std::stringstream namePrefix;
         namePrefix << "STest_fail_" << failCnt << "_";

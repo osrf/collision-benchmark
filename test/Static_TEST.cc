@@ -27,7 +27,10 @@ const double minAgree = 0.999;
 const double bbTol = 1e-01;
 
 // Default value to run tests interactively (if false, automated)
-const static bool defaultInteractive = false;
+bool defaultInteractive = false;
+
+// Default output path (empty string prevents writing to file)
+std::string defaultOutputPath = "";
 
 class StaticTest:
   public StaticTestFramework {};
@@ -85,8 +88,11 @@ TEST_F(StaticTest, BoxCylinderTest)
   LoadShape(shape2, modelName2);
   const static bool interactive = defaultInteractive;
   const static float cellSizeFactor = 0.1;
+  std::string outputPath;
+  if (!defaultOutputPath.empty())
+    outputPath = defaultOutputPath + "/BoxCylinderTest";
   AABBTestWorldsAgreement(modelName1, modelName2, cellSizeFactor, minAgree,
-           bbTol, zeroDepthTol, interactive);
+           bbTol, zeroDepthTol, interactive, outputPath);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -119,7 +125,9 @@ TEST_F(StaticTest, CylinderAndTwoTriangles)
   LoadShape(shape2, modelName2);
   const static bool interactive = defaultInteractive;
   const static float cellSizeFactor = 0.1;
-  const std::string outputPath; // ="/home/jenny/testResults";
+  std::string outputPath;
+  if (!defaultOutputPath.empty())
+    outputPath = defaultOutputPath + "/CylinderAndTwoTriangles";
   AABBTestWorldsAgreement(modelName1, modelName2, cellSizeFactor, minAgree,
                           bbTol, zeroDepthTol, interactive, outputPath);
 }
@@ -162,7 +170,9 @@ TEST_F(StaticTest, SpherePrimMesh)
   LoadShape(spherePrimitive, primName);
   const static bool interactive = defaultInteractive;
   const static float cellSizeFactor = 0.1;
-  const std::string outputPath; // ="/home/jenny/testResults";
+  std::string outputPath;
+  if (!defaultOutputPath.empty())
+    outputPath = defaultOutputPath + "/SpherePrimMesh";
   AABBTestWorldsAgreement(meshName, primName, cellSizeFactor, minAgree,
                           bbTol, zeroDepthTol, interactive, outputPath);
 }
@@ -201,9 +211,11 @@ TEST_P(StaticTestWithParam, SphereEquivalentsTest)
   // first world, and the mesh into the second
   LoadShape(spherePrimitive, modelName2, 0);
   LoadShape(sphereMesh, modelName2, 1);
-  const static bool interactive = true;
+  const static bool interactive = defaultInteractive;
   const static float cellSizeFactor = 0.1;
-  const std::string outputPath; // ="/home/jenny/testResults";
+  std::string outputPath;
+  if (!defaultOutputPath.empty())
+    outputPath = defaultOutputPath + "/SphereEquivalentTest";
   const double _bbTol = 0.15;
   AABBTestWorldsAgreement(modelName1, modelName2, cellSizeFactor, minAgree,
                           _bbTol, zeroDepthTol, interactive, outputPath);
@@ -218,5 +230,29 @@ INSTANTIATE_TEST_CASE_P(PhysicsEngines, StaticTestWithParam,
 int main(int argc, char**argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
+
+  for (int i = 1; i < argc; ++i)
+  {
+    if (strcmp(argv[i], "--interactive") == 0)
+    {
+      defaultInteractive = true;
+    }
+    else if (strcmp(argv[i], "--output") == 0)
+    {
+      if (i+1 >= argc)
+      {
+        std::cerr << "--output requires specification of a path" << std::endl;
+        continue;
+      }
+      ++i;
+      defaultOutputPath = argv[i];
+      std::cout << "Writing files to " << defaultOutputPath << std::endl;
+    }
+    else
+    {
+      std::cerr << "Unrecognized command line parameter: "
+                << argv[i] << std::endl;
+    }
+  }
   return RUN_ALL_TESTS();
 }

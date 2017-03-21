@@ -30,9 +30,13 @@ namespace collision_benchmark
 {
 
 /**
- * \brief Server which can be used to run a world with multiple physics engines.
+ * \brief Server which can be used to run one or more world with
+ * multiple physics engines.
  *
- * This results in several worlds running in parallel.
+ * Several worlds can be running in parallel.
+ * This interface offers methods to make the use of multiple worlds
+ * easier, including the maintenance of a WorldManager and providing methods
+ * for loading, starting and stopping worlds.
  *
  * \author Jennifer Buehler
  * \date March 2017

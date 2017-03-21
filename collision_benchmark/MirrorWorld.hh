@@ -29,11 +29,16 @@ namespace collision_benchmark
 {
 
 /**
- * \brief World which can be set to mirror another physics::World.
+ * \brief World which can be set to mirror a PhysicsWorld.
  *
- * The world which mirrors another world is called the ''mirror world''.
- * Because it is a mirror, manipulation of the original world should not
- * be possible via this interface.
+ * The world which mirrors another world is called the *mirror world*.
+ * Because it is only a mirror to the other *original* world,
+ * manipulation of the original world should not be possible via this interface.
+ * It is only possible to view the original world in the mirror.
+ *
+ * The mirror can be useful for scenarios such as visualization of a world,
+ * in which the mirror world is the one used for displaying the original world;
+ * it can be switched to display a different world.
  *
  * This is just a basic interface which can have a variety of implementations.
  *

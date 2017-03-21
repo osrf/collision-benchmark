@@ -93,6 +93,11 @@ namespace collision_benchmark
   // updates the worlds
   void UpdateUntilEnter(GzWorldManager::Ptr& worlds);
 
+  // makes the directory given in \e dPath if it does not already exist.
+  // \return false on error, true if directory already exists or has been
+  //    successfully created.
+  bool makeDirectoryIfNeeded(const std::string& dPath);
+
   // helper which builds a string of the vector. T has to be a non-pointer
   // type and support the << operator.
   template<typename T>

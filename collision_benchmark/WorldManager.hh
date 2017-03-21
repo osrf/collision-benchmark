@@ -39,9 +39,13 @@ namespace collision_benchmark
 {
 
 /**
- * \brief Simple convenience class which maintains a number of worlds
- * along with an optional MirrorWorld and accepts messages to control
- * switching the mirror world.
+ * \brief Convenience class which maintains a number of worlds
+ * and provides functionality to access the same method in all worlds,
+ * e.g. to add the same model to all worlds.
+ *
+ * In addition to this, the WorldManager can maintain a MirrorWorld.
+ * It also accepts messages to control switching the world currently
+ * mirrored by the mirror world.
  *
  * Communication with the client works via gazebo::Any messages.
  * An INT32 of -1 is received for "Prev", an integer of 1 for "Next",
