@@ -13,15 +13,17 @@ implementations and find cases in which the engines significantly disagree
 on a specific situation (e.g. collision / no collision). Such cases can
 be helpful for debugging.
 
-# Table of Contents
-1. [Dependencies](#dependencies)
-2. [Install](#install)
-3. [Simulating multiple parallel worlds](#simulating-multiple-parallel-worlds)
-4. [Physics engine testing](#physics-engine-testing)
-5. [Short introduction to the API](#short-introduction-to the-API)
+## Table of Contents
+
+1. [Install](#install)
+1. [Simulating multiple parallel worlds](#simulating-multiple-parallel-worlds)
+1. [Physics engine testing](#physics-engine-testing)
+1. [Short introduction to the API](#short-introduction-to-the-API)
 
 
-## Dependencies
+## Install
+
+### Dependencies
 
 You will reqiure 
 
@@ -51,7 +53,6 @@ branch which is also merged with
 If you are using dart-6-dev, those changes are merged already.
 
 
-## Install
 
 If you compiled Gazebo from source, don't forget to source ``<your-gazebo-install-path>/share/setup.sh`` to set up the 
 gazebo environment variables. We will in particular need the ``GAZEBO_RESOURCE_PATH``.
