@@ -18,7 +18,7 @@ be helpful for debugging.
 1. [Install](#install)
 1. [Simulating multiple parallel worlds](#simulating-multiple-parallel-worlds)
 1. [Physics engine testing](#physics-engine-testing)
-1. [Short introduction to the API](#short-introduction-to-the-API)
+1. [Short introduction to the API](#short-introduction-to-the-api)
 
 
 ## Install
