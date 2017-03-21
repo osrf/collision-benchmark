@@ -135,8 +135,43 @@ void StaticTestFramework::LoadShape(const Shape::Ptr& shape,
 }
 
 ////////////////////////////////////////////////////////////////
+void StaticTestFramework::LoadShape(const Shape::Ptr& shape,
+                                    const std::string& modelName,
+                                    const unsigned int worldIdx)
+{
+  GzMultipleWorldsServer::Ptr mServer = GetServer();
+  ASSERT_NE(mServer.get(), nullptr) << "Could not create and start server";
+  GzWorldManager::Ptr worldManager = mServer->GetWorldManager();
+  ASSERT_NE(worldManager.get(), nullptr) << "No valid world manager created";
+
+  int numWorlds = worldManager->GetNumWorlds();
+
+  // get the world
+  PhysicsWorldBaseInterface::Ptr world = worldManager->GetWorld(worldIdx);
+  ASSERT_NE(world.get(), nullptr) << "No world at index " << worldIdx;
+
+  GzWorldManager::PhysicsWorldModelInterfacePtr mWorld =
+   GzWorldManager::ToWorldWithModel(world);
+  ASSERT_NE(mWorld.get(), nullptr) << "Cast failure";
+
+  // Load model
+  typedef GzWorldManager::ModelLoadResult ModelLoadResult;
+  ModelLoadResult res =
+    mWorld->AddModelFromShape(modelName, shape, shape);
+
+  ASSERT_EQ(res.opResult, collision_benchmark::SUCCESS)
+    << "Could not load model";
+
+  ASSERT_EQ(res.modelID, modelName)
+    << "Model names should be equal";
+}
+
+
+
+////////////////////////////////////////////////////////////////
 bool StaticTestFramework::GetAABBs(const std::string& modelName1,
                                    const std::string& modelName2,
+                                   const double bbTol,
                                    collision_benchmark::GzAABB& m1,
                                    collision_benchmark::GzAABB& m2)
 {
@@ -145,9 +180,11 @@ bool StaticTestFramework::GetAABBs(const std::string& modelName1,
   GzWorldManager::Ptr worldManager = mServer->GetWorldManager();
   if (!worldManager) return false;
 
-  return collision_benchmark::GetConsistentAABB(modelName1, worldManager, m1)
+  return collision_benchmark::GetConsistentAABB(modelName1, worldManager,
+                                                bbTol, m1)
          &&
-         collision_benchmark::GetConsistentAABB(modelName2, worldManager, m2);
+         collision_benchmark::GetConsistentAABB(modelName2, worldManager,
+                                                bbTol, m2);
 }
 
 
@@ -156,6 +193,7 @@ void StaticTestFramework::AABBTestWorldsAgreement(const std::string& modelName1,
                                    const std::string& modelName2,
                                    const float cellSizeFactor,
                                    const double minAgree,
+                                   const double bbTol,
                                    const double zeroDepthTol,
                                    const bool interactive,
                                    const std::string& outputPath)
@@ -175,7 +213,7 @@ void StaticTestFramework::AABBTestWorldsAgreement(const std::string& modelName1,
   // set models to their initial pose
 
   collision_benchmark::GzAABB aabb1, aabb2;
-  ASSERT_TRUE(GetAABBs(modelName1, modelName2, aabb1, aabb2));
+  ASSERT_TRUE(GetAABBs(modelName1, modelName2, bbTol, aabb1, aabb2));
 
   // std::cout<<"Got AABB 1: " <<  aabb1.min << ", " << aabb1.max << std::endl;
   // std::cout<<"Got AABB 2: " <<  aabb2.min << ", " << aabb2.max << std::endl;

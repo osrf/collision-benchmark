@@ -73,13 +73,24 @@ protected:
                      const unsigned int numWorlds);
 
   // \brief Loads a shape into *all* worlds.
-  // You must call InitMultipleEngines() or Init() before you can use this.
+  // You must call Init(), InitMultipleEngines() or InitOneEngine()
+  // before you can use this.
   //
   // Throws gtest assertions so needs to be called from top-level
   // test function (nested function calls will not work correctly)
   void LoadShape(const collision_benchmark::Shape::Ptr& shape,
                  const std::string& modelName);
 
+
+  // \brief Loads a shape into the worlds at the given index \e worldIdx.
+  // You must call Init(), InitMultipleEngines() or InitOneEngine()
+  // before you can use this.
+  //
+  // Throws gtest assertions so needs to be called from top-level
+  // test function (nested function calls will not work correctly)
+  void LoadShape(const collision_benchmark::Shape::Ptr& shape,
+                 const std::string& modelName,
+                 const unsigned int worldIdx);
 
   // Two models, which must already have been loaded, are moved relative to
   // each other by iterating through states in which their AABBs intersect.
@@ -96,6 +107,9 @@ protected:
   // \param[in] cellSizeFactor the proportion of the 3D grid
   //    that will be used to determine the cell size, which is the size
   //    of cells that the models will be moved through.
+  // \param[in] bbTol tolerance for comparison of bounding box sizes. The min
+  //    and max coordinates (per x,y,z) are allowed to vary by this much in
+  //    the worlds, otherwise an exception will be thrown.
   // \param[in] zeroDepthTol tolerance to accept contacts as zero depth
   //    contacts - all contacts as close to this tolerance to zero will be
   //    considered "just touching" contacts, and no disagreement of the
@@ -112,6 +126,7 @@ protected:
                 const std::string& modelName2,
                 const float cellSizeFactor = 0.1,
                 const double minAgree = 0.999,
+                const double bbTol = 5e-02,
                 const double zeroDepthTol = 5e-02,
                 const bool interactive = false,
                 const std::string& outputPath = "");
@@ -120,9 +135,12 @@ private:
 
   // checks that AABB of model 1 and 2 are the same in all worlds and
   // returns the two AABBs
+  // \param bbTol tolerance for comparison of bounding box sizes. The min/max
+  //    coordinates (per x,y,z) are allowed to vary by this much in the worlds.
   // \return true if worlds are consistent, falsle otherwise
   bool GetAABBs(const std::string& modelName1,
                 const std::string& modelName2,
+                const double bbTol,
                 collision_benchmark::GzAABB& m1,
                 collision_benchmark::GzAABB& m2);
 

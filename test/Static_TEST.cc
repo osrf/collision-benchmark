@@ -21,6 +21,14 @@ const double zeroDepthTol = 5e-02;
 // minimum agreement of engines that has to be reached, value in range [0..1].
 const double minAgree = 0.999;
 
+
+// Default tolerance for comparison of bounding box sizes. The min
+// and max coordinates (per x,y,z) are allowed to vary by this much.
+const double bbTol = 1e-02;
+
+// Default value to run tests interactively (if false, automated)
+const static bool defaultInteractive = false;
+
 class StaticTest:
   public StaticTestFramework {};
 
@@ -75,10 +83,10 @@ TEST_F(StaticTest, BoxCylinderTest)
   InitMultipleEngines(selectedEngines);
   LoadShape(shape1, modelName1);
   LoadShape(shape2, modelName2);
-  const static bool interactive = true;
+  const static bool interactive = defaultInteractive;
   const static float cellSizeFactor = 0.1;
   AABBTestWorldsAgreement(modelName1, modelName2, cellSizeFactor, minAgree,
-           zeroDepthTol, interactive);
+           bbTol, zeroDepthTol, interactive);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -109,11 +117,11 @@ TEST_F(StaticTest, CylinderAndTwoTriangles)
   InitMultipleEngines(selectedEngines);
   LoadShape(shape1, modelName1);
   LoadShape(shape2, modelName2);
-  const static bool interactive = true;
+  const static bool interactive = defaultInteractive;
   const static float cellSizeFactor = 0.1;
   const std::string outputPath; // ="/home/jenny/testResults";
-  AABBTestWorldsAgreement(modelName1, modelName2, cellSizeFactor,
-                          minAgree, zeroDepthTol, interactive, outputPath);
+  AABBTestWorldsAgreement(modelName1, modelName2, cellSizeFactor, minAgree,
+                          bbTol, zeroDepthTol, interactive, outputPath);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -142,23 +150,21 @@ TEST_F(StaticTest, SpherePrimMesh)
   std::string meshName = "SphereMesh";
   SimpleTriMeshShape::MeshDataT::Ptr sphereMeshData =
     generator->MakeSphere(radius, 10, 10);
-    //generator->MakeCylinder(radius, 4, 50, true);
-  //sphereMeshData->Perturb(-0.2, 0.2, SimpleTriMeshShape::MeshDataT::Vertex(0,0,0),
-  //                        SimpleTriMeshShape::MeshDataT::Vertex(0,1,0));
   Shape::Ptr sphereMesh(new SimpleTriMeshShape(sphereMeshData, meshName));
 
   // sphere as a primitive
   std::string primName = "SpherePrimitive";
   Shape::Ptr spherePrimitive(PrimitiveShape::CreateSphere(radius));
 
+  // load up the worlds
   InitMultipleEngines(selectedEngines);
   LoadShape(sphereMesh, meshName);
   LoadShape(spherePrimitive, primName);
-  const static bool interactive = true;
+  const static bool interactive = defaultInteractive;
   const static float cellSizeFactor = 0.1;
   const std::string outputPath; // ="/home/jenny/testResults";
   AABBTestWorldsAgreement(meshName, primName, cellSizeFactor, minAgree,
-                          zeroDepthTol, interactive, outputPath);
+                          bbTol, zeroDepthTol, interactive, outputPath);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -167,11 +173,6 @@ TEST_F(StaticTest, SpherePrimMesh)
 // of the same sphere
 TEST_P(StaticTestWithParam, SphereEquivalentsTest)
 {
-  gzerr << "BOBO "<< GetParam() << std::endl;
-
-  std::vector<std::string> selectedEngines;
-  selectedEngines.push_back("bullet");
-
   typedef SimpleTriMeshShape::MeshDataT::VertexPrecision Precision;
   collision_benchmark::MeshShapeGenerator<Precision>::Ptr generator
       (new collision_benchmark::MeshShapeGeneratorVtk<Precision>());
@@ -179,30 +180,40 @@ TEST_P(StaticTestWithParam, SphereEquivalentsTest)
   double radius = 2;
 
   // sphere as mesh
-  std::string meshName = "SphereMesh";
+  std::string modelName2 = "SphereMesh";
   SimpleTriMeshShape::MeshDataT::Ptr sphereMeshData =
     generator->MakeSphere(radius, 10, 10);
     //generator->MakeCylinder(radius, 4, 50, true);
   //sphereMeshData->Perturb(-0.2, 0.2, SimpleTriMeshShape::MeshDataT::Vertex(0,0,0),
   //                        SimpleTriMeshShape::MeshDataT::Vertex(0,1,0));
-  Shape::Ptr sphereMesh(new SimpleTriMeshShape(sphereMeshData, meshName));
+  Shape::Ptr sphereMesh(new SimpleTriMeshShape(sphereMeshData, modelName2));
 
   // sphere as a primitive
-  std::string primName = "SpherePrimitive";
+  std::string modelName1 = "SpherePrimitive";
   Shape::Ptr spherePrimitive(PrimitiveShape::CreateSphere(radius));
 
-  InitMultipleEngines(selectedEngines);
-  LoadShape(sphereMesh, meshName);
-  LoadShape(spherePrimitive, primName);
+  // load up the worlds
+  InitOneEngine(GetParam(), 2);
+
+  // as a first shape, load the primitive into both worlds
+  LoadShape(spherePrimitive, modelName1);
+  // as the second shape, load the primitive into the
+  // first world, and the mesh into the second
+  LoadShape(spherePrimitive, modelName2, 0);
+  LoadShape(sphereMesh, modelName2, 1);
   const static bool interactive = true;
   const static float cellSizeFactor = 0.1;
   const std::string outputPath; // ="/home/jenny/testResults";
-  AABBTestWorldsAgreement(meshName, primName, cellSizeFactor, minAgree,
-                          zeroDepthTol, interactive, outputPath);
+  const double _bbTol = 0.15;
+  AABBTestWorldsAgreement(modelName1, modelName2, cellSizeFactor, minAgree,
+                          _bbTol, zeroDepthTol, interactive, outputPath);
 }
 
+// cannot test simbody because there are still issues with meshes and
+// lack of bounding box support
 INSTANTIATE_TEST_CASE_P(PhysicsEngines, StaticTestWithParam,
-                        PHYSICS_ENGINE_VALUES);
+                        ::testing::Values("ode", "bullet", "dart"));
+                        // PHYSICS_ENGINE_VALUES);
 
 int main(int argc, char**argv)
 {

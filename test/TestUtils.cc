@@ -46,6 +46,7 @@ void collision_benchmark::UpdateUntilEnter(GzWorldManager::Ptr& worlds)
 ////////////////////////////////////////////////////////////////
 bool collision_benchmark::GetConsistentAABB(const std::string& modelName,
                                   const GzWorldManager::Ptr& worldManager,
+                                  const double bbTol,
                                   GzAABB& mAABB)
 {
   std::vector<GzWorldManager::PhysicsWorldModelInterfacePtr>
@@ -76,9 +77,6 @@ bool collision_benchmark::GetConsistentAABB(const std::string& modelName,
     return false;
   }
 
-  // epsilon for vector comparison
-  const static float eps = 5e-02;
-
   // Check that all AABBs are the same
   std::vector<GzAABB>::iterator itAABB;
   GzAABB lastAABB;
@@ -87,8 +85,8 @@ bool collision_benchmark::GetConsistentAABB(const std::string& modelName,
     const GzAABB& aabb = *itAABB;
     if (itAABB != aabbs.begin())
     {
-      if (!aabb.min.Equal(lastAABB.min, eps) ||
-          !aabb.max.Equal(lastAABB.max, eps))
+      if (!aabb.min.Equal(lastAABB.min, bbTol) ||
+          !aabb.max.Equal(lastAABB.max, bbTol))
       {
         std::cerr << "Bounding boxes should be of the same size: "
                   <<  aabb.min << ", " << aabb.max << " --- "

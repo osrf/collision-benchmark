@@ -126,8 +126,9 @@ TEST_F(WorldInterfaceTest, WorldManager)
   // All worlds should have a cube named "box", and only two models (ground and cube).
   for (int i=0; i<worldManager.GetNumWorlds(); ++i)
   {
-    PhysicsWorldBaseInterface::Ptr world=worldManager.GetWorld(i);
-    GzPhysicsWorldStateInterface::Ptr sWorld=worldManager.ToWorldWithState<GzWorldState>(world);
+    PhysicsWorldBaseInterface::Ptr world = worldManager.GetWorld(i);
+    GzPhysicsWorldStateInterface::Ptr sWorld =
+      GzWorldManager::ToWorldWithState(world);
     ASSERT_NE(sWorld, nullptr) <<"World should have been of Gazebo type";
     GzWorldState state = sWorld->GetWorldState();
     ASSERT_EQ(state.GetModelStates().size(), 2) <<"World "<<world->GetName()<<" should have only two models.";

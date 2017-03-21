@@ -304,8 +304,7 @@ class WorldManager
           it = this->worlds.begin();
           it != this->worlds.end(); ++it, ++i)
      {
-       PhysicsWorldModelInterfacePtr
-         w = ToWorldWithModel<ModelID, ModelPartID, Vector3>(*it);
+       PhysicsWorldModelInterfacePtr w = ToWorldWithModel(*it);
        if (!w)
        {
          std::cerr<<"Cannot cast world " << i << " to "
@@ -334,7 +333,7 @@ class WorldManager
           it != this->worlds.end(); ++it, ++i)
      {
        PhysicsWorldContactInterfacePtr
-         w = ToWorldWithContact<ModelID, ModelPartID, Vector3, Wrench>(*it);
+         w = ToWorldWithContact(*it);
        if (!w)
        {
          std::cerr<<"Cannot cast world " << i << " to "
@@ -459,37 +458,26 @@ class WorldManager
 
   // Convenience method which casts the world \e w to a
   // PhysicsWorldStateInterface with the given state
-  public: template<class WorldState_>
-         static typename PhysicsWorldStateInterface<WorldState_>::Ptr
+  public: static PhysicsWorldStateInterfacePtr
            ToWorldWithState(const PhysicsWorldBaseInterface::Ptr& w)
   {
-   return std::dynamic_pointer_cast
-          <PhysicsWorldStateInterface<WorldState_>>(w);
+   return std::dynamic_pointer_cast<PhysicsWorldStateInterfaceT>(w);
   }
 
   // Convenience method which casts the world \e w to a
   // PhysicsWorldModelInterface
-  public: template<class ModelID_, class ModelPartID_, class Vector3_>
-         static typename
-           PhysicsWorldModelInterface<ModelID_, ModelPartID_, Vector3_>::Ptr
-           ToWorldWithModel(const PhysicsWorldBaseInterface::Ptr& w)
+  public: static PhysicsWorldModelInterfacePtr
+          ToWorldWithModel(const PhysicsWorldBaseInterface::Ptr& w)
   {
-   return std::dynamic_pointer_cast
-          <PhysicsWorldModelInterface<ModelID_, ModelPartID_, Vector3_>>(w);
+   return std::dynamic_pointer_cast <PhysicsWorldModelInterfaceT>(w);
   }
 
   // Convenience method which casts the world \e w to a
   // PhysicsWorldContactInterface
-  public: template<class ModelID_, class ModelPartID_,
-                   class Vector3_, class Wrench_>
-          static typename PhysicsWorldContactInterface<ModelID_,
-                                                       ModelPartID_,
-                                                       Vector3_, Wrench_>::Ptr
+  public: static PhysicsWorldContactInterfacePtr
           ToWorldWithContact(const PhysicsWorldBaseInterface::Ptr& w)
   {
-   return std::dynamic_pointer_cast
-          <PhysicsWorldContactInterface<ModelID_, ModelPartID_,
-                                        Vector3_, Wrench_>>(w);
+   return std::dynamic_pointer_cast<PhysicsWorldContactInterfaceT>(w);
   }
 
    // Convenience method which casts the world \e w to a PhysicsWorld
@@ -650,7 +638,7 @@ class WorldManager
           it != this->worlds.end(); ++it)
      {
        PhysicsWorldModelInterfacePtr
-         w =ToWorldWithModel<ModelID, ModelPartID, Vector3>(*it);
+         w =ToWorldWithModel(*it);
        if (!w)
        {
          THROW_EXCEPTION("Only support worlds which have the "
@@ -811,8 +799,7 @@ class WorldManager
           it = this->worlds.begin();
           it != this->worlds.end(); ++it)
      {
-       PhysicsWorldModelInterfacePtr w =
-          ToWorldWithModel<ModelID, ModelPartID, Vector3>(*it);
+       PhysicsWorldModelInterfacePtr w = ToWorldWithModel(*it);
        if (!w)
        {
          THROW_EXCEPTION("Only support worlds which have the "
