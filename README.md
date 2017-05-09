@@ -35,7 +35,7 @@ You will reqiure
 
 To fulfill current requirements for some functionality, it is highly
 recommended to compile Gazebo from source and use the
-the [dart-6-dev](https://bitbucket.org/JenniferBuehler/gazebo/src/6b01e236886123ae0a9d3c585a841a303bb8a3bd/?at=dart-6-dev)
+the [dart-6-devel](https://bitbucket.org/JenniferBuehler/gazebo/branch/dart-6-devel)
 branch, which is the default branch merged with
 
 - [PR 2629](https://bitbucket.org/osrf/gazebo/pull-requests/2629) to enable enforcing contact computation.
