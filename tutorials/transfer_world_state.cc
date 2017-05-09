@@ -87,8 +87,11 @@ int main(int argc, char** argv)
   // physics engine reacts to it).
   world1->SetDynamicsEnabled(false);
 
-  // In the second world, load the rubble world.
-  if (world2->LoadFromFile("worlds/rubble.world") != collision_benchmark::SUCCESS)
+  // In the second world, load the rubble world. Name it 'rubble', because
+  // the name in the SDF file is 'default', just as for the empty world loaded
+  // before... and loading two worlds with the same name won't work.
+  if (world2->LoadFromFile("worlds/rubble.world", "rubble")
+      != collision_benchmark::SUCCESS)
   {
     std::cerr << "Could not load rubble world" << std::endl;
     return 1;

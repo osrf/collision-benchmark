@@ -686,7 +686,7 @@ void GazeboPhysicsWorld::SetEnforceContactsComputation(bool flag)
   }
 #else
   assert(world->Physics() && world->Physics()->GetContactManager());
-  world->Physics()->GetContactManager()->SetEnforceContacts(flag);
+  world->Physics()->GetContactManager()->SetNeverDropContacts(flag);
 #endif
 }
 
