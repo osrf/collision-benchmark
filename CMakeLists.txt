@@ -71,16 +71,12 @@ add_custom_target(tests)
 add_executable(multiple_worlds_server
   collision_benchmark/multiple_worlds_server.cc)
 
-add_executable(multiple_worlds_server_test_simple
-  collision_benchmark/multiple_worlds_server_test_simple.cc)
-
 target_link_libraries(collision_benchmark
   ${dependencies_LIBRARIES})
 
 target_link_libraries(collision_benchmark_gui
   ${dependencies_LIBRARIES})
 
-target_link_libraries(multiple_worlds_server_test_simple collision_benchmark)
 target_link_libraries(multiple_worlds_server collision_benchmark)
 
 # testing
@@ -154,6 +150,6 @@ install (FILES ${physics_SDF}
 install (FILES ${test_WORLDS}
   DESTINATION ${CMAKE_INSTALL_PREFIX}/share/test_worlds)
 
-install (TARGETS collision_benchmark multiple_worlds_server multiple_worlds_server_test_simple
+install (TARGETS collision_benchmark multiple_worlds_server 
   LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
   RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
