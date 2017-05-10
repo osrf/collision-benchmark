@@ -37,6 +37,7 @@ class BasicTestFramework : public ::testing::Test {
     // and pass away constness, so that fakeProgramName can be
     // initialized easily in constructor.
     gazebo::setupServer(1, (char**)&fakeProgramName);
+    gazebo::common::Console::SetQuiet(false);
   }
 
   virtual void TearDown()

@@ -84,7 +84,9 @@ class PrimitiveShape: public Shape
   // Documentation inherited from parent class
   public: virtual sdf::ElementPtr
                   GetShapeSDF(bool detailed=true,
-                              bool uriOnlyWithSubdir=false) const;
+                              const std::string& resourceDir = "/tmp/",
+                              const std::string& resourceSubDir = "",
+                              const bool useFullPath = false) const;
 
   private: PrimitiveShapeParameters::Ptr params;
 };

@@ -52,10 +52,6 @@ class SimpleTriMeshShape: public Shape
   // The file extension to be used for all mesh data written to file
   // with GetShapeSDF(). May not start with a dot!
   public: static const std::string MESH_EXT;
-  // Subdirectory to use in addition to parents RESOURCE_SUB_DIR
-  // in GetShapeSDF().
-  // This will be a subdirectory in RESOURCE_SUB_DIR.
-  public: static const std::string MESH_SUB_DIR;
 
   /**
    * \param data_ the mesh data
@@ -79,7 +75,9 @@ class SimpleTriMeshShape: public Shape
   // Documentation inherited from parent class
   public: virtual sdf::ElementPtr
                   GetShapeSDF(bool detailed=true,
-                              bool uriOnlyWithSubdir=false) const;
+                              const std::string& resourceDir = "/tmp/",
+                              const std::string& resourceSubDir = "",
+                              const bool useFullPath = false) const;
 
   private: MeshDataT::Ptr data;
 
