@@ -303,8 +303,13 @@ TEST_F(WorldInterfaceTest, GazeboWorldSaving)
   ASSERT_EQ(res.opResult, collision_benchmark::SUCCESS)
     << "Could not add test shape to world";
 
-  ASSERT_EQ(world->SaveToFile("/tmp/test_file.world"), true)
+  std::string filename = "/tmp/test_file.world";
+  ASSERT_EQ(world->SaveToFile(filename), true)
     << "Could not save world to file";
+
+  std::ifstream inFile(filename);
+  ASSERT_EQ(inFile.is_open(), true)
+    << "Unable to open file[" << filename << "]\n";
 }
 
 /**
