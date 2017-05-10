@@ -42,6 +42,7 @@ branch, which is the default branch merged with
 - [PR 2704](https://bitbucket.org/osrf/gazebo/pull-requests/2704): updating contact information also if physics engine is disabled.
 - [PR 2657](https://bitbucket.org/osrf/gazebo/pull-requests/2657): problems with transport
 - only minor: [PR 2705](https://bitbucket.org/osrf/gazebo/pull-requests/2705)
+- only minor: [PR 2707](https://bitbucket.org/osrf/gazebo/pull-requests/2707)
 
 If you compiled Gazebo from source, don't forget to source ``<your-gazebo-install-path>/share/setup.sh`` to set up the 
 gazebo environment variables. We will in particular need the ``GAZEBO_RESOURCE_PATH``.
@@ -205,6 +206,29 @@ To build the tests, you need to do
 
 ``make tests``
 
+To run all tests, type
+
+``make test``
+
+or to run only a specific test, use the test executable directly and
+select the test with gtest parameter ``--gtest_filter``:
+
+``<test executable> --gtest_filter=*<pattern in test name>*``
+
+for example, to run WorldInterfaceTest.TransferWorldState:
+
+``<your-build-dir>/world_interface_test --gtest_filter=*TransferWorldState*``
+
+In order to be able to visualize all shapes in gzclient, for the tests you
+will need to have the directory
+``<temp-path>/.gazebo/models``
+in your ``GAZEBO_RESOURCE_PATH``, because the tests use generated mesh shapes
+which have to be written to file (because SDF reads meshes from file).
+``<temp-path>`` should be your default system path temp folder
+(more specifically, the one returned by
+ ``gazebo::common::SystemPaths::TmpPath()``):
+
+``export GAZEBO_RESOURCE_PATH=${GAZEBO_RESOURCE_PATH}:/tmp/.gazebo/models``
 
 ### The "static tests"
 
@@ -271,6 +295,8 @@ you may want to enable the displaying of contacts
 paused. And in paused state, enabling the contacts displaying will only show
 the contacts once the worlds are advanced again -  so you won't see the contacts
 until the next test failure.
+It will also be helpful to switch on wireframe rendering (``View -> Wireframe``)
+to see the contacts better.
 
 To start the test, hit ``[Enter]`` in the terminal running the test and watch
 the test unfold. If it stops due to a failure, it will prompt you to hit

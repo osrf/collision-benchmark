@@ -14,23 +14,23 @@
  * limitations under the License.
  *
  */
+#ifndef COLLISION_BENCHMARK_HELPERS
+#define COLLISION_BENCHMARK_HELPERS
 
-#include <collision_benchmark/Shape.hh>
+#include <string>
 
-using collision_benchmark::Shape;
-
-sdf::ElementPtr Shape::GetPoseSDF() const
+namespace collision_benchmark
 {
-  sdf::ElementPtr root(new sdf::Element());
-  root->SetName("pose");
-  std::stringstream vals;
-  vals<<pose.Pos().X()<<" "
-      <<pose.Pos().Y()<<" "
-      <<pose.Pos().Z()<<" "
-      <<pose.Rot().Euler().X()<<" "
-      <<pose.Rot().Euler().Y()<<" "
-      <<pose.Rot().Euler().Z();
-  root->AddValue("pose", vals.str(), "0", "description");
-  return root;
-}
 
+// checks if \e path is a directory, or a potential path to a
+// non-existing directory
+bool isDirectory(const std::string& path);
+
+// Creates the directory given in \e dPath if it does not already exist.
+// \return false on error, true if directory already exists or has been
+//    successfully created.
+bool makeDirectoryIfNeeded(const std::string& dPath);
+
+}  // namespace
+
+#endif  // COLLISION_BENCHMARK_HELPERS

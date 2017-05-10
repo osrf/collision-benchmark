@@ -3,6 +3,7 @@
 #include <collision_benchmark/PrimitiveShape.hh>
 #include <collision_benchmark/SimpleTriMeshShape.hh>
 #include <collision_benchmark/BasicTypes.hh>
+#include <collision_benchmark/Helpers.hh>
 
 #include <ignition/math/Vector3.hh>
 

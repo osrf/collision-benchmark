@@ -290,7 +290,7 @@ class PhysicsWorldModelInterface
   public: virtual ModelLoadResult
                   AddModelFromShape(const std::string& modelname,
                                     const Shape::Ptr& shape,
-                                    const Shape::Ptr collShape
+                                    const Shape::Ptr& collShape
                                       = Shape::Ptr()) = 0;
 
   public: virtual std::vector<ModelID> GetAllModelIDs() const = 0;

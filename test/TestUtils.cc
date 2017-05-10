@@ -31,39 +31,6 @@ void WaitForEnterImpl()
   g_keypressed=true;
 }
 
-
-////////////////////////////////////////////////////////////////
-bool collision_benchmark::makeDirectoryIfNeeded(const std::string& dPath)
-{
-  if (boost::filesystem::exists(dPath)) return true;
-  try
-  {
-    boost::filesystem::path dir(dPath);
-    boost::filesystem::path buildPath;
-
-    for (boost::filesystem::path::iterator it(dir.begin()),
-       it_end(dir.end()); it != it_end; ++it)
-    {
-      buildPath /= *it;
-      //std::cout << buildPath << std::endl;
-
-      if (!boost::filesystem::exists(buildPath) &&
-        !boost::filesystem::create_directory(buildPath))
-      {
-        std::cerr << "Could not create directory " << buildPath << std::endl;
-        return false;
-      }
-    }
-  }
-  catch (const boost::filesystem::filesystem_error& ex)
-  {
-    std::cerr << ex.what() << std::endl;
-    return false;
-  }
-  return true;
-}
-
-
 ////////////////////////////////////////////////////////////////
 void collision_benchmark::UpdateUntilEnter(GzWorldManager::Ptr& worlds)
 {

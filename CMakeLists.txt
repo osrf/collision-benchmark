@@ -12,41 +12,43 @@ include(${PROJECT_SOURCE_DIR}/cmake/SearchForStuff.cmake)
 
 set(collision_benchmark_HEADERS
   collision_benchmark/boost_std_conversion.hh
-  collision_benchmark/ContactInfo.hh
-  collision_benchmark/GazeboTopicForwarder.hh
-  collision_benchmark/GazeboTopicForwardingMirror.hh
-  collision_benchmark/GazeboStateCompare.hh
-  collision_benchmark/MirrorWorld.hh
-  collision_benchmark/Shape.hh
-  collision_benchmark/PrimitiveShape.hh
-  collision_benchmark/PrimitiveShapeParameters.hh
-  collision_benchmark/SimpleTriMeshShape.hh
-  collision_benchmark/WorldManager.hh
   collision_benchmark/ClientGui.hh
-  collision_benchmark/GazeboHelpers.hh
-  collision_benchmark/GazeboPhysicsWorld.hh
-  collision_benchmark/GazeboWorldState.hh
-  collision_benchmark/PhysicsWorld.hh
-  collision_benchmark/GazeboWorldLoader.hh
+  collision_benchmark/ContactInfo.hh
   collision_benchmark/ControlServer.hh
   collision_benchmark/GazeboControlServer.hh
+  collision_benchmark/GazeboHelpers.hh
+  collision_benchmark/GazeboPhysicsWorld.hh
+  collision_benchmark/GazeboStateCompare.hh
+  collision_benchmark/GazeboTopicForwarder.hh
+  collision_benchmark/GazeboTopicForwardingMirror.hh
+  collision_benchmark/GazeboWorldLoader.hh
+  collision_benchmark/GazeboWorldState.hh
+  collision_benchmark/Helpers.hh
+  collision_benchmark/MirrorWorld.hh
+  collision_benchmark/PhysicsWorld.hh
+  collision_benchmark/PrimitiveShape.hh
+  collision_benchmark/PrimitiveShapeParameters.hh
+  collision_benchmark/Shape.hh
+  collision_benchmark/SimpleTriMeshShape.hh
   collision_benchmark/TypeHelper.hh
+  collision_benchmark/WorldManager.hh
 )
 
 add_library(collision_benchmark SHARED
-  collision_benchmark/GazeboWorldLoader.cc
-  collision_benchmark/GazeboPhysicsWorld.cc
-  collision_benchmark/GazeboWorldState.cc
-  collision_benchmark/GazeboTopicForwardingMirror.cc
+  collision_benchmark/GazeboControlServer.cc
   collision_benchmark/GazeboHelpers.cc
+  collision_benchmark/GazeboMultipleWorldsServer.cc
+  collision_benchmark/GazeboPhysicsWorld.cc
   collision_benchmark/GazeboStateCompare.cc
-  collision_benchmark/Shape.cc
+  collision_benchmark/GazeboTopicForwardingMirror.cc
+  collision_benchmark/GazeboWorldLoader.cc
+  collision_benchmark/GazeboWorldState.cc
+  collision_benchmark/Helpers.cc
+  collision_benchmark/MeshShapeGenerationVtk.cc
   collision_benchmark/PrimitiveShape.cc
   collision_benchmark/SimpleTriMeshShape.cc
-  collision_benchmark/GazeboControlServer.cc
-  collision_benchmark/GazeboMultipleWorldsServer.cc
+  collision_benchmark/Shape.cc
   collision_benchmark/TypeHelper.cc
-  collision_benchmark/MeshShapeGenerationVtk.cc
 )
  
 # when using a different folder for the header file, must to

@@ -28,6 +28,10 @@
 #include <collision_benchmark/boost_std_conversion.hh>
 
 #include <gazebo/physics/physics.hh>
+#include <gazebo/common/SystemPaths.hh>
+
+#include <boost/filesystem.hpp>
+#include <algorithm>
 
 using collision_benchmark::GazeboPhysicsWorld;
 using collision_benchmark::Contact;
@@ -134,7 +138,24 @@ bool GazeboPhysicsWorld::SaveToFile(const std::string& filename)
   if(!ofs.is_open()) return false;
   ofs.close();
 
-  world->Save(filename);
+  sdf::ElementPtr sdf = world->GetSDF();
+  sdf->SetName("sdf");
+  std::string sdfString = sdf->ToString("");
+
+  std::cout << "SDF string: " << sdfString << std::endl;
+  // we could use world->Save(filename), however this would not include
+  // saving mesh files in the same directory to the resource target directory.
+
+  std::ofstream out(filename.c_str(), std::ios::out);
+  if (!out)
+  {
+    std::cerr << "Unable to open file[" << filename << "]\n";
+    return false;
+  }
+
+  out << "<?xml version ='1.0'?>\n";
+  out << sdfString;
+  out.close();
   return true;
 }
 
@@ -193,7 +214,7 @@ GazeboPhysicsWorld::AddModelFromString(const std::string& str,
 }
 
 GazeboPhysicsWorld::ModelLoadResult
-GazeboPhysicsWorld::AddModelFromSDF(const sdf::ElementPtr& sdf,\
+GazeboPhysicsWorld::AddModelFromSDF(const sdf::ElementPtr& sdf,
                                     const std::string& modelname)
 {
   gazebo::physics::ModelPtr model =
@@ -217,7 +238,7 @@ bool GazeboPhysicsWorld::SupportsShapes() const
 GazeboPhysicsWorld::ModelLoadResult
 GazeboPhysicsWorld::AddModelFromShape(const std::string& modelname,
                                       const Shape::Ptr& shape,
-                                      const Shape::Ptr collShape)
+                                      const Shape::Ptr& collShape)
 {
   ModelLoadResult ret;
   ret.opResult=FAILED;
@@ -242,24 +263,58 @@ GazeboPhysicsWorld::AddModelFromShape(const std::string& modelname,
   link->AddAttribute("name", "string", "link", true, "link name");
   root->InsertElement(link);
 
-  sdf::ElementPtr shapeGeom=shape->GetShapeSDF(true,false);
+  // use the default gazebo models directory to temporarily put the mesh file
+  // there. Make sure the path is added to the gazebo file paths as well so
+  // that Gazebo will be able to find it.
+
+  std::string outputPath =
+    (boost::filesystem::path(gazebo::common::SystemPaths::Instance()->TmpPath())
+     / boost::filesystem::path(".gazebo/models")).native();
+  std::string outputSubDir = "meshes";
+
+  std::list<std::string> gzSysPaths =
+    gazebo::common::SystemPaths::Instance()->GetGazeboPaths();
+  if (std::find(gzSysPaths.begin(), gzSysPaths.end(), outputPath)
+        == gzSysPaths.end())
+  {
+    std::cout << "Adding path " << outputPath << " to Gazebo paths"
+              << std::endl;
+    gazebo::common::SystemPaths::Instance()->AddGazeboPaths(outputPath);
+  }
+
+  sdf::ElementPtr shapeGeom=shape->GetShapeSDF(true, outputPath, outputSubDir);
   sdf::ElementPtr visual(new sdf::Element());
   visual->SetName("visual");
   visual->AddAttribute("name", "string", "visual", true, "visual name");
   visual->InsertElement(shapeGeom);
   link->InsertElement(visual);
 
-  sdf::ElementPtr shapeColl=shapeGeom;
-  if (shape->SupportLowRes())
-    shapeColl = shape->GetShapeSDF(false,false);
+  sdf::ElementPtr shapeColl;
+  if (collShape)
+  {
+    shapeColl = collShape->GetShapeSDF(true, outputPath, outputSubDir);
+  }
+  else
+  {
+    // build collision shape out of the visual shape
+    if (shape->SupportLowRes())
+      shapeColl = shape->GetShapeSDF(false, outputPath, outputSubDir);
+    else
+      shapeColl=shapeGeom;
+  }
+
+  if (!shapeColl)
+  {
+    std::cerr << "Could not construct collision shape SDF" << std::endl;
+    return ret;
+  }
+
   sdf::ElementPtr collision(new sdf::Element());
   collision->SetName("collision");
   collision->AddAttribute("name", "string", "collision",
                           true, "collision name");
   collision->InsertElement(shapeColl);
   link->InsertElement(collision);
-
-  // std::cout<<"SDF shape: "<<root->ToString("");
 
   return AddModelFromSDF(root);
 }

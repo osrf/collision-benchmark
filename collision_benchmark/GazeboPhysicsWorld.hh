@@ -122,7 +122,7 @@ class GazeboPhysicsWorld:
   public: virtual ModelLoadResult
                   AddModelFromShape(const std::string& modelname,
                                     const Shape::Ptr& shape,
-                                    const Shape::Ptr collShape=Shape::Ptr());
+                                    const Shape::Ptr& collShape=Shape::Ptr());
 
   public: virtual std::vector<ModelID> GetAllModelIDs() const;
   public: virtual int GetIntegerModelID(const ModelID& id) const;

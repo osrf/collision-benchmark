@@ -16,73 +16,30 @@
 */
 #include <collision_benchmark/SimpleTriMeshShape.hh>
 #include <collision_benchmark/MeshHelper.hh>
-
-#include <boost/filesystem.hpp>
+#include <collision_benchmark/Helpers.hh>
 
 using collision_benchmark::SimpleTriMeshShape;
 
-const std::string SimpleTriMeshShape::MESH_SUB_DIR="meshes";
 const std::string SimpleTriMeshShape::MESH_EXT="stl";
 
-// checks if \e path is a directory, or a potential path to a
-// non-existing directory
-bool isDirectory(const std::string& path)
+sdf::ElementPtr
+SimpleTriMeshShape::GetShapeSDF(bool detailed,
+                                const std::string& resourceDir,
+                                const std::string& resourceSubDir,
+                                const bool useFullPath) const
 {
-  boost::filesystem::path dir(path);
-  // is an existing directory
-  // or a non-existing directory
-  return boost::filesystem::is_directory(dir)
-         || (!path.empty() && dir.extension().empty());
-}
-
-/**
- * Creates a directory if required.
- */
-bool makeDirectoryIfNeeded(const std::string& dPath)
-{
-  if (!isDirectory(dPath))
+  if (resourceDir.empty() && resourceSubDir.empty())
   {
-    std::cerr<<"Trying to access a directory which has the format "
-             <<"of a file name"<<std::endl;
-    return false;
+    std::cerr << "Resource directory to write mesh data to is empty, "
+              << "so cannot create SDF for mesh."<<std::endl;
+    return sdf::ElementPtr();
   }
 
-  try
-  {
-    boost::filesystem::path dir(dPath);
-    boost::filesystem::path buildPath;
-
-    for (boost::filesystem::path::iterator
-         it(dir.begin()), it_end(dir.end()); it != it_end; ++it)
-    {
-      buildPath /= *it;
-
-      if (!boost::filesystem::exists(buildPath) &&
-          !boost::filesystem::create_directory(buildPath))
-      {
-        std::cerr<<"Could not create directory " << buildPath;
-        return false;
-      }
-    }
-  }
-  catch (const boost::filesystem::filesystem_error& ex)
-  {
-    std::cerr<<ex.what()<<std::endl;
-    return false;
-  }
-  return true;
-}
-
-
-sdf::ElementPtr SimpleTriMeshShape::GetShapeSDF(bool detailed,
-                                                bool uriOnlyWithSubdir) const
-{
-  // full path of subdirectories
-  std::string subdir =  (boost::filesystem::path(RESOURCE_SUB_DIR) /
-                          boost::filesystem::path(MESH_SUB_DIR)).native();
+  // full path of subdirectory
+  std::string subdir =  boost::filesystem::path(resourceSubDir).native();
 
   // full path to resources
-  std::string fulldir = (boost::filesystem::path(RESOURCE_OUT_DIR) /
+  std::string fulldir = (boost::filesystem::path(resourceDir) /
                           boost::filesystem::path(subdir)).native();
 
   // filename only with the subdirectory structure
@@ -91,23 +48,25 @@ sdf::ElementPtr SimpleTriMeshShape::GetShapeSDF(bool detailed,
                         (detailed ? "" : "_lowres") + "." + MESH_EXT)).native();
 
   // filename with the full directory structure
-  std::string fullname = (boost::filesystem::path(RESOURCE_OUT_DIR) /
+  std::string fullname = (boost::filesystem::path(resourceDir) /
                           boost::filesystem::path(subname)).native();
 
-  if (!makeDirectoryIfNeeded(fulldir))
+  if (!collision_benchmark::makeDirectoryIfNeeded(fulldir))
   {
-    std::cerr<<"Could not create directory to write mesh data to"<<std::endl;
+    std::cerr << "Could not create directory to write mesh data to"
+              << std::endl;
     return sdf::ElementPtr();
   }
 
   std::string useURI;
-  if (uriOnlyWithSubdir)
+
+  if (useFullPath)
   {
-    useURI="file://"+subname;
+    useURI="file://"+fullname;
   }
   else
   {
-    useURI="file://"+fullname;
+    useURI="file://"+subname;
   }
 
   if (!collision_benchmark::WriteTrimesh(fullname, MESH_EXT, data))
