@@ -41,13 +41,16 @@ branch, which is the default branch merged with
 - [PR 2629](https://bitbucket.org/osrf/gazebo/pull-requests/2629) to enable enforcing contact computation.
 - [PR 2704](https://bitbucket.org/osrf/gazebo/pull-requests/2704): updating contact information also if physics engine is disabled.
 - [PR 2657](https://bitbucket.org/osrf/gazebo/pull-requests/2657): problems with transport
+- [PR 2708](https://bitbucket.org/osrf/gazebo/pull-requests/2708)
 - only minor: [PR 2705](https://bitbucket.org/osrf/gazebo/pull-requests/2705)
 - only minor: [PR 2707](https://bitbucket.org/osrf/gazebo/pull-requests/2707)
 
-If you compiled Gazebo from source, don't forget to source ``<your-gazebo-install-path>/share/setup.sh`` to set up the 
-gazebo environment variables. We will in particular need the ``GAZEBO_RESOURCE_PATH``.
+If you compiled Gazebo from source, don't forget to source
+``<your-gazebo-install-path>/share/setup.sh`` to set up the 
+gazebo environment variables.
+We will in particular need the ``GAZEBO_RESOURCE_PATH``.
 
-Compile:
+### Compile and Setup
 
 ```
 cd build
@@ -64,6 +67,17 @@ is in your GAZEBO_PLUGIN_PATH, and
 2. that you add ``<your-install-prefix>/share`` to your GAZEBO_RESOURCE_PATH.
 3. You may also want to add the ``<your-install-prefix>/bin`` path to your PATH.
 
+In order to be able to visualize all models you saved with the test
+framework in gzclient, you will need to have the directory
+``<temp-path>/.gazebo/models``
+in your ``GAZEBO_RESOURCE_PATH``. This is required for enerated mesh shapes
+which have to be written to file for Gazebo
+(because SDF reads meshes from file).
+``<temp-path>`` should be your default system path temp folder
+(more specifically, the one returned by
+ ``gazebo::common::SystemPaths::TmpPath()``):
+
+``export GAZEBO_RESOURCE_PATH=${GAZEBO_RESOURCE_PATH}:/tmp/.gazebo/models``
 
 ## Simulating multiple parallel worlds
 
@@ -219,16 +233,13 @@ for example, to run WorldInterfaceTest.TransferWorldState:
 
 ``<your-build-dir>/world_interface_test --gtest_filter=*TransferWorldState*``
 
-In order to be able to visualize all shapes in gzclient, for the tests you
+In order to be able to visualize all shapes in gzclient, you
 will need to have the directory
 ``<temp-path>/.gazebo/models``
-in your ``GAZEBO_RESOURCE_PATH``, because the tests use generated mesh shapes
+in your ``GAZEBO_RESOURCE_PATH``, as described in the 
+[Installation](#installation) section.
+This is required because the tests use generated mesh shapes
 which have to be written to file (because SDF reads meshes from file).
-``<temp-path>`` should be your default system path temp folder
-(more specifically, the one returned by
- ``gazebo::common::SystemPaths::TmpPath()``):
-
-``export GAZEBO_RESOURCE_PATH=${GAZEBO_RESOURCE_PATH}:/tmp/.gazebo/models``
 
 ### The "static tests"
 
@@ -304,6 +315,11 @@ the test unfold. If it stops due to a failure, it will prompt you to hit
 the worlds in gzclient and inspect the results. Some information will also
 have been printed in the terminal about the test failure details.
 
+**Reminder:** If you wish to display the test results which were saved to file
+in gazebo later, don't forget to start gazebo in paused mode, as you probably
+would like the world to be displayed in the state it was in when the test
+failed. The tests also don't use a ground floor, which means the objects will
+be falling in free space.
 
 ## Short introduction to the API
 

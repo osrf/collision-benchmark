@@ -139,10 +139,8 @@ bool GazeboPhysicsWorld::SaveToFile(const std::string& filename)
   ofs.close();
 
   sdf::ElementPtr sdf = world->GetSDF();
-  sdf->SetName("sdf");
   std::string sdfString = sdf->ToString("");
 
-  std::cout << "SDF string: " << sdfString << std::endl;
   // we could use world->Save(filename), however this would not include
   // saving mesh files in the same directory to the resource target directory.
 
@@ -152,6 +150,8 @@ bool GazeboPhysicsWorld::SaveToFile(const std::string& filename)
     std::cerr << "Unable to open file[" << filename << "]\n";
     return false;
   }
+
+  std::cout << "Saving world to file " << filename << std::endl;
 
   out << "<?xml version ='1.0'?>\n";
   out << sdfString;
