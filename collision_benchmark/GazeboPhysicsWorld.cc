@@ -25,6 +25,7 @@
 #include <collision_benchmark/GazeboStateCompare.hh>
 #include <collision_benchmark/GazeboHelpers.hh>
 #include <collision_benchmark/GazeboWorldLoader.hh>
+#include <collision_benchmark/Helpers.hh>
 #include <collision_benchmark/boost_std_conversion.hh>
 
 #include <gazebo/physics/physics.hh>
@@ -129,17 +130,147 @@ GazeboPhysicsWorld::LoadFromString(const std::string& str,
 
 }
 
-bool GazeboPhysicsWorld::SaveToFile(const std::string& filename)
+bool CopyAllResourcesHelper(const sdf::ElementPtr& elem,
+                            const std::list<std::string>& parentElemNames,
+                            const std::string& destinationBase,
+                            const std::string& destinationSubdir)
+{
+  if (!elem) return false;
+  for (std::list<std::string>::const_iterator it = parentElemNames.begin();
+       it != parentElemNames.end(); ++it)
+  {
+    std::string name = *it;
+    if (elem->HasElement(name))
+    {
+      // std::cout << "Found a '" << name << "' element in element "
+      //          << elem->GetName() << std::endl;
+      sdf::ElementPtr subElem = elem->GetElement(name);
+      if (subElem->HasElement("uri"))
+      {
+        sdf::ElementPtr uriElem = subElem->GetElement("uri");
+        if (!uriElem->GetValue() ||
+            (uriElem->GetValue()->GetTypeName() != "string"))
+        {
+          std::cerr << "URI has no value or is not of expected string type"
+                    << std::endl;
+          continue;
+        }
+
+        std::string uri = uriElem->GetValue()->GetAsString();
+        int index = uri.find("://");
+        std::string prefix = uri.substr(0, index);
+        boost::filesystem::path relPath =
+          uri.substr(index + 3, uri.size() - index - 3);
+        // the URI should be changed to:
+        boost::filesystem::path uriDest =
+          boost::filesystem::path(destinationSubdir) / relPath;
+        // the absolute path to the directory where to move the file to:
+        boost::filesystem::path fullDestinationDir =
+          boost::filesystem::path(destinationBase) / uriDest.parent_path();
+        // make the directory
+        if (!collision_benchmark::makeDirectoryIfNeeded
+                                                 (fullDestinationDir.native()))
+        {
+          std::cerr << "Could not create directory "
+                    << fullDestinationDir << std::endl;
+          return false;
+        }
+        // find the file in the existing GAZEBO_RESOURCE_PATH
+        boost::filesystem::path filename = gazebo::common::find_file(uri);
+        if (filename.empty())
+        {
+          std::cerr << "Could not find file " << uri << " in gazebo paths. "
+                    << std::endl;
+          return false;
+        }
+        // full filename path in destination:
+        boost::filesystem::path fullDestinationFile =
+          fullDestinationDir / filename.filename();
+        // copy the file and print a warning if it already existed.
+        // We could use boost::filesystem::copy_option::overwrite_if_exists
+        // instead to force overwriting, maybe add this as a parameter later
+        // on. For now, we're conservative and keep existing files.
+        std::cout << "Copy file from " << filename.string()
+                  << " to " << fullDestinationFile << std::endl;
+        boost::system::error_code err;
+        boost::filesystem::copy_file(filename, fullDestinationFile,
+                        boost::filesystem::copy_option::fail_if_exists, err);
+        if (err.value() != boost::system::errc::success)
+        {
+          bool exists = err.value() == boost::system::errc::file_exists;
+          if (exists) std::cerr << "WARNING: ";
+          else std::cerr << "ERROR: ";
+          std::cerr << "Could not copy file from " << filename.string()
+                    << " to " << fullDestinationFile;
+          if (exists)
+          {
+            std::cerr << " because file exists. Keeping existing file. "
+                      << std::endl;
+          }
+          else
+          { // fatal error
+            std::cerr << ". Error: " << err.message() << std::endl;
+            return false;
+          }
+        }
+        // std::cout <<"Setting uri to " << prefix << "://"
+        //           << uriDest.string() << std::endl;
+        uriElem->GetValue()->Set(prefix + "://" +uriDest.string());
+      }
+    }
+  }
+
+  // recurse into children
+  for (sdf::ElementPtr childElem = elem->GetFirstElement(); childElem;
+        childElem = childElem->GetNextElement())
+  {
+    // std::cout << "Has child "
+    //          << childElem->GetName() << std::endl;
+    CopyAllResourcesHelper(childElem, parentElemNames, destinationBase,
+                           destinationSubdir);
+  }
+  return true;
+}
+
+bool GazeboPhysicsWorld::CopyAllModelResources(const sdf::ElementPtr& elem,
+                                const std::list<std::string>& parentElemNames,
+                                const std::string& destinationBase,
+                                const std::string& destinationSubdir)
+{
+  // replace the resources for all models...
+  for (sdf::ElementPtr modelElem = elem->GetElement("model"); modelElem;
+       modelElem = modelElem->GetNextElement("model"))
+  {
+    // std::cout << "Found model "
+    //          << modelElem->GetAttribute("name")->GetAsString() << std::endl;
+
+    if (!CopyAllResourcesHelper(modelElem, parentElemNames,
+                                destinationBase, destinationSubdir))
+    {
+      std::cerr << "Could not replace URI resource in model "
+                << modelElem->GetAttribute("name")->GetAsString()
+                << std::endl;
+      return false;
+    }
+    // recurse into nested models
+    if (modelElem->HasElement("model") &&
+        !CopyAllModelResources(modelElem, parentElemNames,
+                               destinationBase, destinationSubdir))
+    {
+      std::cerr << "Could not replace URI resource in nested model "
+                << modelElem->GetAttribute("name")->GetAsString()
+                << std::endl;
+      return false;
+    }
+  }
+  return true;
+}
+
+bool GazeboPhysicsWorld::SaveToFile(const std::string& filename,
+                                    const std::string& resourceDir,
+                                    const std::string& resourceSubdir)
 {
   if (!world) return false;
-
-  std::ofstream ofs(filename);
-  // file cannot be read for writing
-  if(!ofs.is_open()) return false;
-  ofs.close();
-
-  sdf::ElementPtr sdf = world->GetSDF();
-  std::string sdfString = sdf->ToString("");
 
   // we could use world->Save(filename), however this would not include
   // saving mesh files in the same directory to the resource target directory.
@@ -147,12 +278,46 @@ bool GazeboPhysicsWorld::SaveToFile(const std::string& filename)
   std::ofstream out(filename.c_str(), std::ios::out);
   if (!out)
   {
-    std::cerr << "Unable to open file[" << filename << "]\n";
+    // try to make directory first
+    boost::filesystem::path fpath(filename);
+    fpath = fpath.parent_path();
+    if (!collision_benchmark::makeDirectoryIfNeeded(fpath.string()))
+    {
+      std::cerr << "Unable to make directory for " << filename << std::endl;
+      return false;
+    }
+    out.open(filename.c_str(), std::ios::out);
+    if (!out.is_open())
+    {
+      std::cerr << "Unable to write file " << filename << std::endl;
+      return false;
+    }
+  }
+
+  sdf::ElementPtr sdf = world->GetSDF();
+  if (!sdf)
+  {
+    std::cerr << "Could not get SDF of world" << std::endl;
     return false;
   }
 
-  std::cout << "Saving world to file " << filename << std::endl;
+  if (!sdf->HasElement("world"))
+  {
+    std::cerr << "Missing SDF 'world' element" << std::endl;
+    return false;
+  }
+  if (!resourceDir.empty())
+  {
+    sdf::ElementPtr worldElem = sdf->GetElement("world");
+    std::list<std::string> parentElemNames;
+    parentElemNames.push_back("mesh");
+    CopyAllModelResources(worldElem, parentElemNames,
+                          resourceDir, resourceSubdir);
+  }
+  // std::cout << "Writing world " << worldElem->ToString("") << std::endl;
+  // std::cout << "Saving world to file " << filename << std::endl;
 
+  std::string sdfString = sdf->ToString("");
   out << "<?xml version ='1.0'?>\n";
   out << sdfString;
   out.close();
@@ -235,6 +400,18 @@ bool GazeboPhysicsWorld::SupportsShapes() const
   return true;
 }
 
+std::string
+GazeboPhysicsWorld::GetMeshOutputPath(std::string& outputSubdir) const
+{
+  std::string outputPath =
+    (boost::filesystem::path(gazebo::common::SystemPaths::Instance()->TmpPath())
+     / boost::filesystem::path(".gazebo/models")).native();
+
+  outputSubdir = "meshes";
+  return outputPath;
+}
+
+
 GazeboPhysicsWorld::ModelLoadResult
 GazeboPhysicsWorld::AddModelFromShape(const std::string& modelname,
                                       const Shape::Ptr& shape,
@@ -263,14 +440,11 @@ GazeboPhysicsWorld::AddModelFromShape(const std::string& modelname,
   link->AddAttribute("name", "string", "link", true, "link name");
   root->InsertElement(link);
 
-  // use the default gazebo models directory to temporarily put the mesh file
-  // there. Make sure the path is added to the gazebo file paths as well so
+  // use a temporary gazebo models directory to put the mesh file
+  // there. Make sure the path is added to the gazebo file paths as well, so
   // that Gazebo will be able to find it.
-
-  std::string outputPath =
-    (boost::filesystem::path(gazebo::common::SystemPaths::Instance()->TmpPath())
-     / boost::filesystem::path(".gazebo/models")).native();
-  std::string outputSubDir = "meshes";
+  std::string outputSubdir;
+  std::string outputPath = GetMeshOutputPath(outputSubdir);
 
   std::list<std::string> gzSysPaths =
     gazebo::common::SystemPaths::Instance()->GetGazeboPaths();
@@ -282,7 +456,7 @@ GazeboPhysicsWorld::AddModelFromShape(const std::string& modelname,
     gazebo::common::SystemPaths::Instance()->AddGazeboPaths(outputPath);
   }
 
-  sdf::ElementPtr shapeGeom=shape->GetShapeSDF(true, outputPath, outputSubDir);
+  sdf::ElementPtr shapeGeom=shape->GetShapeSDF(true, outputPath, outputSubdir);
   sdf::ElementPtr visual(new sdf::Element());
   visual->SetName("visual");
   visual->AddAttribute("name", "string", "visual", true, "visual name");
@@ -292,13 +466,13 @@ GazeboPhysicsWorld::AddModelFromShape(const std::string& modelname,
   sdf::ElementPtr shapeColl;
   if (collShape)
   {
-    shapeColl = collShape->GetShapeSDF(true, outputPath, outputSubDir);
+    shapeColl = collShape->GetShapeSDF(true, outputPath, outputSubdir);
   }
   else
   {
     // build collision shape out of the visual shape
     if (shape->SupportLowRes())
-      shapeColl = shape->GetShapeSDF(false, outputPath, outputSubDir);
+      shapeColl = shape->GetShapeSDF(false, outputPath, outputSubdir);
     else
       shapeColl=shapeGeom;
   }

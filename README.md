@@ -38,8 +38,6 @@ recommended to compile Gazebo from source and use the
 the [dart-6-devel](https://bitbucket.org/JenniferBuehler/gazebo/branch/dart-6-devel)
 branch, which is the default branch merged with
 
-- [PR 2629](https://bitbucket.org/osrf/gazebo/pull-requests/2629) to enable enforcing contact computation.
-- [PR 2704](https://bitbucket.org/osrf/gazebo/pull-requests/2704): updating contact information also if physics engine is disabled.
 - [PR 2657](https://bitbucket.org/osrf/gazebo/pull-requests/2657): problems with transport
 - [PR 2708](https://bitbucket.org/osrf/gazebo/pull-requests/2708)
 - only minor: [PR 2705](https://bitbucket.org/osrf/gazebo/pull-requests/2705)
