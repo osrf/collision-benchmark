@@ -197,7 +197,8 @@ void StaticTestFramework::AABBTestWorldsAgreement(const std::string& modelName1,
                                    const double bbTol,
                                    const double zeroDepthTol,
                                    const bool interactive,
-                                   const std::string& outputPath)
+                                   const std::string& outputBasePath,
+                                   const std::string& outputSubdir)
 {
   ASSERT_GT(cellSizeFactor, 1e-07) << "Cell size factor too small";
 
@@ -349,13 +350,18 @@ void StaticTestFramework::AABBTestWorldsAgreement(const std::string& modelName1,
       }
       str << std::endl;
 
-      if (!outputPath.empty() &&
-          collision_benchmark::makeDirectoryIfNeeded(outputPath))
+      if (!outputBasePath.empty() &&
+          collision_benchmark::makeDirectoryIfNeeded(outputBasePath+
+                                                     "/"+outputSubdir))
       {
         std::stringstream namePrefix;
         namePrefix << "STest_fail_" << failCnt << "_";
-        int nFails = worldManager->SaveAllWorlds(outputPath, namePrefix.str());
-        std::cout << "Worlds written to " << outputPath
+        int nFails = worldManager->SaveAllWorlds(outputBasePath,
+                                                 outputSubdir,
+                                                 namePrefix.str(),
+                                                 "world", true);
+        std::cout << "Worlds written to " << outputBasePath
+                  << "/" << outputSubdir
                   << " (failed: "<< nFails << ")" <<std::endl;
       }
 

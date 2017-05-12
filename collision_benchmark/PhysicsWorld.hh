@@ -124,9 +124,26 @@ class PhysicsWorldBaseInterface
                                           const std::string& worldname="") = 0;
 
   /// Saves the world to the file.
-  /// \param[in] filename the filename
+  /// \param[in] filename the filename (absolute path).
+  /// \param[in] resourceDir If not empty, relevant
+  ///   resource files referenced by the world are copied to
+  ///   ``resourceDir/resourceSubdir``, and the reference in the written file
+  ///   \e filename to the resource files is changed to the new file location.
+  ///   The purpose of \e resourceSubdir is that if the file format references
+  ///   files with a relative path, this is the part of the full path
+  ///   ``resourceDir/resourceSubdir`` that the resource file will be
+  ///   referenced with, meaning that ``resourceDir`` is the part of the path
+  ///   which is specific to the hard drive used at the time of writing to file.
+  ///   When copying \e resourceSubdir to a different location on a harddrive,
+  ///   the references would then still be valid relative to the new base
+  ///   directory. If this path is empty, it has no effect, so resource files
+  ///   won't be copied then.
+  /// \param[in] resourceSubdir see description of \e resourceDir. If empty,
+  ///   has no effect.
   /// \return success or not
-  public: virtual bool SaveToFile(const std::string& filename) = 0;
+  public: virtual bool SaveToFile(const std::string& filename,
+                                  const std::string& resourceDir = "",
+                                  const std::string& resourceSubdir = "") = 0;
 
   /// Set the dynamics engine to enabledl or disabled. If disabled, the objects
   /// won't react to physics laws, but objects can be maintained in the world

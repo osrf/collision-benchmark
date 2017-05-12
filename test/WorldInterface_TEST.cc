@@ -11,6 +11,8 @@
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
 
+#include <boost/filesystem.hpp>
+
 #include "BasicTestFramework.hh"
 
 using collision_benchmark::PhysicsWorldBaseInterface;
@@ -303,13 +305,46 @@ TEST_F(WorldInterfaceTest, GazeboWorldSaving)
   ASSERT_EQ(res.opResult, collision_benchmark::SUCCESS)
     << "Could not add test shape to world";
 
-  std::string filename = "/tmp/test_file.world";
-  ASSERT_EQ(world->SaveToFile(filename), true)
+  // first, delete the test directory which may exist from previous tests
+  boost::filesystem::path testDir = "/tmp/.gazebo/test/";
+  if (boost::filesystem::exists(testDir))
+  {
+    boost::system::error_code ec;
+    boost::filesystem::remove_all(testDir, ec);
+    ASSERT_EQ(ec.value(), boost::system::errc::success)
+      << "Could not delete test directory";
+  }
+
+  std::string filename = testDir.string() + "/test_file.world";
+  std::string resourceDir = testDir.string() + "/models";
+  std::string resourceSubdir = "resources";
+  std::cout << "Saving world to " << filename << " and resources to "
+   << "'" << resourceDir << "', subdir '" << resourceSubdir << "'" << std::endl;
+
+  ASSERT_EQ(world->SaveToFile(filename, resourceDir, resourceSubdir), true)
     << "Could not save world to file";
 
   std::ifstream inFile(filename);
   ASSERT_EQ(inFile.is_open(), true)
-    << "Unable to open file[" << filename << "]\n";
+    << "Did not save world to '" << filename << "'";
+
+  // to get the temporary path used to write mesh files in Gazebo, we need
+  // to dynamic_cast the world, as this is something specific to the gazebo
+  // implementation. We need the subdirectory into which the mesh file
+  // is expected to have been written, as this will be part of the mesh URI.
+  std::shared_ptr<GazeboPhysicsWorld> gzWorld
+    = std::dynamic_pointer_cast<GazeboPhysicsWorld>(world);
+  ASSERT_NE(gzWorld, nullptr) << "Expecting a GazeboPhyscisWorld";
+  std::string tempOutputSubdir;
+  std::string tempOutputPath = gzWorld->GetMeshOutputPath(tempOutputSubdir);
+
+  boost::filesystem::path expectedMeshLocation =
+    boost::filesystem::path(resourceDir) /
+    boost::filesystem::path(resourceSubdir) /
+    boost::filesystem::path(tempOutputSubdir) / "test_mesh.stl";
+  std::ifstream inFileRes(expectedMeshLocation.string());
+  ASSERT_EQ(inFileRes.is_open(), true)
+    << "Did not save mesh to '" << filename << "'";
 }
 
 /**

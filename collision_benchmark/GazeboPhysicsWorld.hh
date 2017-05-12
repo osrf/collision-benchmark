@@ -103,7 +103,9 @@ class GazeboPhysicsWorld:
   public: virtual OpResult LoadFromString(const std::string& str,
                                           const std::string& worldname="");
 
-  public: virtual bool SaveToFile(const std::string& filename);
+  public: virtual bool SaveToFile(const std::string& filename,
+                                  const std::string& resourceDir = "",
+                                  const std::string& resourceSubdir = "");
 
   public: virtual ModelLoadResult
                     AddModelFromFile(const std::string& filename,
@@ -119,6 +121,8 @@ class GazeboPhysicsWorld:
 
   public: virtual bool SupportsShapes() const;
 
+  // The gazebo implementation needs to write mesh shapes to file. This method
+  // will use the return value of GetMeshOutputPath() for this.
   public: virtual ModelLoadResult
                   AddModelFromShape(const std::string& modelname,
                                     const Shape::Ptr& shape,
@@ -192,12 +196,40 @@ class GazeboPhysicsWorld:
   public: virtual bool GetBasicModelState(const ModelID& id,
                                           BasicState& state);
 
+
+  // Returns the absolute path which is used to temporarily write mesh files to.
+  // This is required for AddModelFromShape(), because a SDF is generated
+  // which needs to reference meshes in files.
+  // This path should be in the gazebo file paths (GAZEBO_RESOURCE_PATH),
+  // so that Gazebo will be able to find it.
+  // AddModelFromShape() already adds this to the current runtime gazebo path.
+  // \param[out] outputSubdir the subdirectory in the retured path which will
+  //    contain the mesh file. This is the relative path which will appear in
+  //    the URI of the resource in the SDF (the SDF won't use absolute paths).
+  public: std::string GetMeshOutputPath(std::string& outputSubdir) const;
+
   /// wait for the namespace of this world
   private: bool WaitForNamespace(const gazebo::physics::WorldPtr& gzworld,
                                  float maxWait, float waitSleep);
 
-  // called after a world has been loaded
+  // \brief called after a world has been loaded
   private: void PostWorldLoaded();
+
+  // Helper function which copies files which are specified as URIs in
+  // the ``<uri>`` elemens within elements \e parentElementNames.
+  // It copies the files to ``destinationBase/destinationSubdir`` and
+  // prefixes the existing URI with ``destinationSubdir``.
+  // Example: For a file with URI ``file://my_models/mesh.stl`` and
+  // \e destinationBase ``/home/user/target`` and \e destinationSubdir
+  // ``copied``, a directory ``/home/user/target/my_models/copied`` is
+  // created and ``mesh.stl`` is placed there; the URI is changed to
+  // ``file://copied/my_models/mesh.stl``. So the new GAZEBO_RESOURCE_PATH
+  // can be set to \e destinationBase and the resource will be found.
+  // This is applied recursively to all ``<model>`` children of \e elem.
+  private: bool CopyAllModelResources(const sdf::ElementPtr& elem,
+                                const std::list<std::string>& parentElemNames,
+                                const std::string& destinationBase,
+                                const std::string& destinationSubdir);
 
   private: gazebo::physics::WorldPtr world;
   // by default, contacts in Gazebo are only computed if

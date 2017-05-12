@@ -88,11 +88,9 @@ TEST_F(StaticTest, BoxCylinderTest)
   LoadShape(shape2, modelName2);
   const static bool interactive = defaultInteractive;
   const static float cellSizeFactor = 0.1;
-  std::string outputPath;
-  if (!defaultOutputPath.empty())
-    outputPath = defaultOutputPath + "/BoxCylinderTest";
   AABBTestWorldsAgreement(modelName1, modelName2, cellSizeFactor, minAgree,
-           bbTol, zeroDepthTol, interactive, outputPath);
+           bbTol, zeroDepthTol, interactive,
+           defaultOutputPath, "BoxCylinderTest");
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -125,11 +123,9 @@ TEST_F(StaticTest, CylinderAndTwoTriangles)
   LoadShape(shape2, modelName2);
   const static bool interactive = defaultInteractive;
   const static float cellSizeFactor = 0.1;
-  std::string outputPath;
-  if (!defaultOutputPath.empty())
-    outputPath = defaultOutputPath + "/CylinderAndTwoTriangles";
   AABBTestWorldsAgreement(modelName1, modelName2, cellSizeFactor, minAgree,
-                          bbTol, zeroDepthTol, interactive, outputPath);
+                          bbTol, zeroDepthTol, interactive,
+                          defaultOutputPath, "CylinderAndTwoTriangles");
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -170,11 +166,9 @@ TEST_F(StaticTest, SpherePrimMesh)
   LoadShape(spherePrimitive, primName);
   const static bool interactive = defaultInteractive;
   const static float cellSizeFactor = 0.1;
-  std::string outputPath;
-  if (!defaultOutputPath.empty())
-    outputPath = defaultOutputPath + "/SpherePrimMesh";
   AABBTestWorldsAgreement(meshName, primName, cellSizeFactor, minAgree,
-                          bbTol, zeroDepthTol, interactive, outputPath);
+                          bbTol, zeroDepthTol, interactive,
+                          defaultOutputPath, "SpherePrimMesh");
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -213,12 +207,10 @@ TEST_P(StaticTestWithParam, SphereEquivalentsTest)
   LoadShape(sphereMesh, modelName2, 1);
   const static bool interactive = defaultInteractive;
   const static float cellSizeFactor = 0.1;
-  std::string outputPath;
-  if (!defaultOutputPath.empty())
-    outputPath = defaultOutputPath + "/SphereEquivalentTest";
   const double _bbTol = 0.15;
   AABBTestWorldsAgreement(modelName1, modelName2, cellSizeFactor, minAgree,
-                          _bbTol, zeroDepthTol, interactive, outputPath);
+                          _bbTol, zeroDepthTol, interactive,
+                          defaultOutputPath, "SphereEquivalentTest");
 }
 
 // cannot test simbody because there are still issues with meshes and
