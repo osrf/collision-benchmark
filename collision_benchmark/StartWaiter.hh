@@ -56,6 +56,8 @@ class StartWaiter
     while (!unpaused && !keypressed)
     {
       gazebo::common::Time::MSleep(100);
+      if (unpausedCallback && unpausedCallback())
+        break;
     }
     delete t;
   }
@@ -63,10 +65,18 @@ class StartWaiter
   // callback to trigger the pause state to \e pause.
   // WaitForUnpause() is going to be idling until this callback
   // is called with \e pause being true.
-  public: void pauseCallback(bool pause)
+  public: void PauseCallback(bool pause)
   {
     //std::cout<<"############ Pause callback: "<<pause<<std::endl;
     unpaused = !pause;
+  }
+
+  // this callback can be used to additionally determine whether there
+  // has been an 'unpause'.
+  // \param fct returns true if unpaused
+  public: void SetUnpausedCallback(const std::function<bool(void)>& fct)
+  {
+    unpausedCallback = fct;
   }
 
   // waits until enter has been pressed and sets keypressed to true
@@ -79,10 +89,9 @@ class StartWaiter
   // test is paused or not
   private: std::atomic<bool> unpaused;
   private: std::atomic<bool> keypressed;
+  private: std::function<bool(void)> unpausedCallback;
 };
 
 }
 
 #endif  // COLLISION_BENCHMARK_START_WAITER_HH
-
-

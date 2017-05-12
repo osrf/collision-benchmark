@@ -168,8 +168,15 @@ class WorldManager
     }
   }
 
-  public: ~WorldManager() {}
+  public: ~WorldManager()
+          { Fini(); }
 
+  public: void Fini()
+  {
+    worlds.clear();
+    this->mirrorWorld.reset();
+    this->controlServer.reset();
+  }
 
   /// Sets the mirror world. This world can be set to mirror any of the worlds,
   /// for example for visualization of the currently selected world.

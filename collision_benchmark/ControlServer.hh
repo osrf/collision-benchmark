@@ -36,7 +36,8 @@ namespace collision_benchmark
 /**
  * \brief Implements certain controls that can be applied to a world.
  * Detaches the implementation of how the controls are received from
- * the application to the worlds. Application to the worlds can be
+ * the application of the control to the worlds.
+ * Application to the worlds can be
  * done via callbacks which need to be registered via this interface.
  *
  * \param _ModelID the identifier for a specific model
@@ -80,7 +81,6 @@ class ControlServer
   // function to set the gravity
   public: typedef std::function<void(const float, const float, const float)>
             NotifyGravityFct;
-
 
   /// Constructor.
   public:  ControlServer() {}
@@ -249,8 +249,6 @@ class ControlServer
   private: std::vector<NotifyDynamicsEnableFct> dynamicsEnableCallbacks;
   private: std::vector<NotifyGravityFct> gravityCallbacks;
   private: std::shared_ptr<NotifySelectWorldFct> selectWorldCallback;
-
-
 };
 
 }  // namespace collision_benchmark

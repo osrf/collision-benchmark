@@ -74,13 +74,14 @@ class MultipleWorldsServer
                                      nullptr):
           worldLoaders(_worldLoaders),
           universalLoader(_universalLoader) {}
-  public: virtual ~MultipleWorldsServer() {}
+  public: virtual ~MultipleWorldsServer() { Fini(); }
 
   // Start the server. Starting of the server may accept
   // command line parameters depending on the implementation.
   // \return success of starting the server
   public: virtual bool Start(int argc=0, const char** argv=NULL) = 0;
   public: virtual void Stop() = 0;
+  public: virtual bool isRunning() const = 0;
 
   // Initializes the server. Should be called before any Load()
   // functions and will create the world manager.
@@ -94,6 +95,11 @@ class MultipleWorldsServer
   {
     worldManager = createWorldManager(mirror_name, allowMirrorControl);
     assert(worldManager);
+  }
+
+  public: void Fini()
+  {
+    worldManager.reset();
   }
 
   // \brief Loads the world file with the different engines.

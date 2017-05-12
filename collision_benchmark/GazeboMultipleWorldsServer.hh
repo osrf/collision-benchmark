@@ -22,7 +22,7 @@
 
 #include <gazebo/physics/WorldState.hh>
 #include <ignition/math/Vector3.hh>
-
+#include <atomic>
 namespace collision_benchmark
 {
 
@@ -48,14 +48,16 @@ class GazeboMultipleWorldsServer:
   public: GazeboMultipleWorldsServer(const WorldLoader_M& _worldLoaders,
                                const WorldLoader::ConstPtr& _universalLoader =
                                   nullptr):
-          Super(_worldLoaders, _universalLoader) {}
+          Super(_worldLoaders, _universalLoader),
+          running(false) {}
   public: virtual ~GazeboMultipleWorldsServer() { Stop(); }
   public: virtual bool Start(int argc, const char** argv);
   public: virtual void Stop();
+  public: virtual bool isRunning() const;
   protected: virtual WorldManagerPtr
              createWorldManager(const std::string& mirror_name = "",
                                 const bool allowMirrorControl = false);
-
+  private: std::atomic<bool> running;
 };  // class GazeboMultipleWorldsServer
 
 

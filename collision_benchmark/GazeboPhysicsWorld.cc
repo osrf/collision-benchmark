@@ -294,7 +294,7 @@ bool GazeboPhysicsWorld::SaveToFile(const std::string& filename,
     }
   }
 
-  sdf::ElementPtr sdf = world->GetSDF();
+  sdf::ElementPtr sdf = world->SDF();
   if (!sdf)
   {
     std::cerr << "Could not get SDF of world" << std::endl;

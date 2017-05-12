@@ -37,6 +37,8 @@
 
 #include <boost/program_options.hpp>
 
+#include <unistd.h>
+#include <sys/wait.h>
 
 using collision_benchmark::PhysicsWorldBaseInterface;
 using collision_benchmark::PhysicsWorldStateInterface;
@@ -74,7 +76,11 @@ typedef WorldManager<GazeboPhysicsWorldTypes::WorldState,
 // the server
 GzMultipleWorldsServer::Ptr g_server;
 
-// will be called at each loop iteration
+// the child process ID for running gzclient
+pid_t g_gzclient_pid;
+
+
+// will be called at each server update iteration
 void LoopIter(int iter)
 {
 }
@@ -111,6 +117,19 @@ bool Init(const bool loadMirror,
   return true;
 }
 
+bool isClientRunning()
+{
+  if (g_gzclient_pid == 0)
+    throw std::runtime_error("CONSISTENCY: This must be the parent process!");
+  int child_status;
+  // result will be 0 if child is still running
+  pid_t result = waitpid(g_gzclient_pid, &child_status, WNOHANG);
+  if (result != 0) // child has stopped (client closed)
+  {
+    return false;
+  }
+  return true;
+}
 
 // Runs the multiple worlds server
 bool Run()
@@ -121,7 +140,9 @@ bool Run()
   GzWorldManager::ControlServerPtr controlServer =
     worldManager->GetControlServer();
 
+  // helper class which will wait for the start signal
   StartWaiter startWaiter;
+  startWaiter.SetUnpausedCallback(isClientRunning);
 
   if (controlServer)
   {
@@ -132,9 +153,6 @@ bool Run()
 
   worldManager->SetPaused(true);
 
-  std::cout << "Now start gzclient if you would like "
-            << "to view the worlds: "<<std::endl;
-  std::cout << "gzclient --g libcollision_benchmark_gui.so" << std::endl;
   std::cout << "Press [Enter] to continue without gzclient or hit "
             << "the play button in gzclient."<<std::endl;
 
@@ -145,9 +163,7 @@ bool Run()
 
   std::cout << "Now starting to update worlds."<<std::endl;
   int iter = 0;
-  // TODO: at this point, we can only stop the program with Ctrl+C
-  // which is not great. Find a better way to do this.
-  while(true)
+  while(isClientRunning())
   {
     int numSteps=1;
     worldManager->Update(numSteps);
@@ -162,36 +178,52 @@ bool Run()
 /////////////////////////////////////////////////
 int main(int argc, char **argv)
 {
+  g_gzclient_pid = fork();
+  if (g_gzclient_pid == 0)
+  {
+    // child process: Start gzclient with the multiple worlds plugin
+    char **argvClient = new char*[4];
+    // silly const cast to avoid compiler warning
+    argvClient[0] = const_cast<char*>(static_cast<const char*>("gzclient"));
+    argvClient[1] = const_cast<char*>(static_cast<const char*>("--g"));
+    argvClient[2] = const_cast<char*>
+                    (static_cast<const char*>("libcollision_benchmark_gui.so"));
+    argvClient[3] = static_cast<char*>(NULL);
+
+    execvp(argvClient[0], argvClient);
+    return 0;
+  }
+  else if (g_gzclient_pid < 0)
+  {
+    std::cerr << "Failed to fork process." << std::endl;
+    return 1;
+  }
+  // this must be the parent process
+
   std::vector<std::string> selectedEngines;
-  std::vector<std::string> worldFiles;
 
   // description for engine options as stream so line doesn't go over 80 chars.
   std::stringstream descEngines;
   descEngines <<  "Specify one or several physics engines. " <<
-      "Can contain [ode, bullet, dart, simbody]. When not specified, worlds " <<
-      "are loaded with the engine specified in the file. If specified, all " <<
-      "worlds are loaded with each of the engines specified.";
+      "Can contain [ode, bullet, dart, simbody]. Default is [ode].";
 
   // Declare the supported options.
   po::options_description desc("Allowed options");
   desc.add_options()
     ("help,h", "Produce help message")
+    ;
+
+  po::options_description desc_hidden("Positional options");
+  desc_hidden.add_options()
     ("engines,e",
       po::value<std::vector<std::string>>(&selectedEngines)->multitoken(),
       descEngines.str().c_str())
-    ("keep-name,k", "keep the names of the worlds as specified in the files. \
-Only works when no engines are specified with -e.")
-    ;
-  po::options_description desc_hidden("Positional options");
-  desc_hidden.add_options()
-    ("worlds,w", po::value<std::vector<std::string>>(&worldFiles)->multitoken(),
-      "World file(s).")
     ;
 
   po::variables_map vm;
   po::positional_options_description p;
-  // positional arguments default to "worlds" argument
-  p.add("worlds", -1);
+  // positional arguments default to "engines" argument
+  p.add("engines", -1);
 
   po::options_description desc_composite;
   desc_composite.add(desc).add(desc_hidden);
@@ -204,7 +236,7 @@ Only works when no engines are specified with -e.")
 
   if (vm.count("help"))
   {
-    std::cout << argv[0] <<" <list of world files> " << std::endl;
+    std::cout << argv[0] <<" <list of engines> " << std::endl;
     std::cout << desc << std::endl;
     return 1;
   }
@@ -220,14 +252,8 @@ Only works when no engines are specified with -e.")
   }
   else
   {
-    std::cout << "No engines were given, so using physics information "
-              << "specified in world files" << std::endl;
-  }
-
-  if (!vm.count("worlds"))
-  {
-    std::cout << "You need to specify at least one world." << std::endl;
-    return 0;
+    std::cout << "No engines were given, so using 'ode'" << std::endl;
+    selectedEngines.push_back("ode");
   }
 
   // Initialize server
@@ -237,33 +263,19 @@ Only works when no engines are specified with -e.")
   Init(loadMirror, allowControlViaMirror, enforceContactCalc);
   assert(g_server);
 
-  // load the worlds as given in command line arguments
-  // with the engine names given
-  int i = 0;
-  for (std::vector<std::string>::iterator it = worldFiles.begin();
-       it != worldFiles.end(); ++it, ++i)
-  {
-    std::string worldfile = *it;
-    std::cout<<"Loading world " << worldfile <<std::endl;
+  // load the world with the engine names given
+  std::string worldPrefix = "collide_world";
 
-    std::string worldPrefix;
-    if (!selectedEngines.empty() || !vm.count("keep-name"))
-    {
-      std::stringstream _worldPrefix;
-      _worldPrefix << "world" << "_" << i;
-      worldPrefix = _worldPrefix.str();
-    }
-
-    if (selectedEngines.empty())
-    {
-      if (g_server->AutoLoad(worldfile, worldPrefix) < 0)
-        std::cerr << "Could not auto-load world " << worldfile << std::endl;
-    }
-    else
-    {
-      g_server->Load(worldfile, selectedEngines, worldPrefix);
-    }
-  }
+  g_server->Load("worlds/empty.world", selectedEngines, worldPrefix);
 
   Run();
+
+  // need to call server Fini() (or delete the server)
+  // because if it's deleted after program exit
+  // then it still will try to access static variables
+  // which may have been deleted before.
+  // g_server.reset();
+  g_server->Fini();
+  std::cout << "Bye, bye." << std::endl;
+  return 0;
 }
