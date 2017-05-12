@@ -12,10 +12,7 @@
   Actually sensors::run_once(true) can be called, which is done from Server::Run(), but we don't use this.
   We need to manually hack this by calling ``World::_SetSensorsInitialized(true);`` in GazeboWorldLoader.cc
 
-# Issues to address soon
-
-- physics::World saves meshes in /tmp. Find a way to save them in the results
-  directory of the static test, ideally also naming them somehow uniquely.
+# Issues to address
 
 - After setting the world to a state, and before advancing the world, the states should be completely equal even if dynamics is
   disabled - currently the acceleration has to be skipped in the comparison. See also transfer_world_state tutorial.
@@ -37,6 +34,23 @@
 
 - Extension for [PR 2661](https://bitbucket.org/osrf/gazebo/pull-requests/2661): Add the function for all entities
   See also [this issue](https://bitbucket.org/osrf/gazebo/issues/2242/adding-method-to-physics-world-which)
+
+- Improvement of static test: Allow "agreement"/"disagreement" to be specified
+  with strategy pattern instead of with simple boolean function only.
+  Particularly useful would be to adjust penetration depth, so consider a state
+  to be non-intersecting if the penetration depth is very slow, which can help
+  when comparing primitive vs. mesh collisions of same shape (because mesh
+  representation will sometimes not collide when the actual primitive does).
+    - Variation: Instead of engine agreement, test for certain
+      quality metrics (e.g. contact point quality metrics) or any other
+      evaluation criteria.
+
+- Improvement of static test in interactive mode: Don't save all results, but
+ ask first whether this result should be saved, and display filename it would
+ have.
+
+- multiple_worlds_server.cc: Can only interrupt with Ctrl+c and then it's
+ not shut down nicely. Find a better way to do this.
 
 For reference: Libraries to maybe look into again for primitive/mesh generation
 

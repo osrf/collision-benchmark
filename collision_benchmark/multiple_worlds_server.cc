@@ -136,26 +136,8 @@ bool Init(const bool loadMirror,
           const bool allowControlViaMirror,
           const bool enforceContactCalc)
 {
-  std::set<std::string> engines =
-    collision_benchmark::GetSupportedPhysicsEngines();
-  GzMultipleWorldsServer::WorldLoader_M loaders;
-  for (std::set<std::string>::const_iterator
-       it = engines.begin(); it != engines.end(); ++it)
-  {
-    std::string engine = *it;
-    try
-    {
-      loaders[engine] =
-        WorldLoader::ConstPtr(new GazeboWorldLoader(engine,
-                                                    enforceContactCalc));
-    }
-    catch (collision_benchmark::Exception& e)
-    {
-      std::cerr << "Could not add support for engine "
-                <<engine << ": " << e.what() << std::endl;
-      continue;
-    }
-  }
+  GzMultipleWorldsServer::WorldLoader_M loaders =
+    collision_benchmark::GetSupportedGazeboWorldLoaders(enforceContactCalc);
 
   if (loaders.empty())
   {
@@ -197,20 +179,23 @@ bool Run()
                                                    std::placeholders::_1));
   }
 
-//  worldManager->SetDynamicsEnabled(false);
   worldManager->SetPaused(true);
 
   std::cout << "Now start gzclient if you would like "
-            << "to view the test: "<<std::endl;
+            << "to view the worlds: "<<std::endl;
   std::cout << "gzclient --g libcollision_benchmark_gui.so" << std::endl;
   std::cout << "Press [Enter] to continue without gzclient or hit "
             << "the play button in gzclient."<<std::endl;
+
+  // wait until either the [Play] button has been clicked, or [Enter] pressed.
   WaitForUnpause();
 
   worldManager->SetPaused(false);
 
   std::cout << "Now starting to update worlds."<<std::endl;
   int iter = 0;
+  // TODO: at this point, we can only stop the program with Ctrl+C
+  // which is not great. Find a better way to do this.
   while(true)
   {
     int numSteps=1;
@@ -253,7 +238,6 @@ Only works when no engines are specified with -e.")
     ;
 
   po::variables_map vm;
-
   po::positional_options_description p;
   // positional arguments default to "worlds" argument
   p.add("worlds", -1);

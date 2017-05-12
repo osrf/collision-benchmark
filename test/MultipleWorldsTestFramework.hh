@@ -61,27 +61,8 @@ class MultipleWorldsTestFramework : public ::testing::Test
   virtual void SetUp()
   {
     bool enforceContactCalc=true;
-    std::set<std::string> engines =
-      collision_benchmark::GetSupportedPhysicsEngines();
-    GzMultipleWorldsServer::WorldLoader_M loaders;
-    for (std::set<std::string>::const_iterator
-         it = engines.begin(); it != engines.end(); ++it)
-    {
-      std::string engine = *it;
-      try
-      {
-        loaders[engine] =
-          collision_benchmark::WorldLoader::ConstPtr
-            (new collision_benchmark::GazeboWorldLoader(engine,
-                                                        enforceContactCalc));
-      }
-      catch (collision_benchmark::Exception& e)
-      {
-        std::cerr << "Could not add support for engine "
-                  <<engine << ": " << e.what() << std::endl;
-        continue;
-      }
-    }
+    GzMultipleWorldsServer::WorldLoader_M loaders =
+      collision_benchmark::GetSupportedGazeboWorldLoaders(enforceContactCalc);
 
     if (loaders.empty())
     {

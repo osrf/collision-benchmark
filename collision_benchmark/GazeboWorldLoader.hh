@@ -184,6 +184,13 @@ class Worldfile
 std::vector<gazebo::physics::WorldPtr>
 LoadWorlds(const std::vector<Worldfile>& worldfiles);
 
+
+// Returns a map of GazeboWorldLoader instances for all
+// supported physics engines
+std::map<std::string, WorldLoader::ConstPtr>
+GetSupportedGazeboWorldLoaders(const bool enforceContactCalc);
+
+
 /// Waits for the namespace \e worldNamespace to appear in the Gazebo
 /// list of namespaces.
 /// Repeatedly waits for new incoming namespaces (waiting *maximum*

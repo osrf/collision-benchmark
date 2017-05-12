@@ -28,6 +28,7 @@
 #include <sstream>
 
 using collision_benchmark::PhysicsWorldBaseInterface;
+using collision_benchmark::WorldLoader;
 using collision_benchmark::GazeboWorldLoader;
 using collision_benchmark::GazeboPhysicsWorld;
 
@@ -644,3 +645,33 @@ collision_benchmark::LoadWorlds(const std::vector<Worldfile>& worldfiles)
   }
   return worlds;
 }
+
+std::map<std::string, WorldLoader::ConstPtr>
+collision_benchmark::GetSupportedGazeboWorldLoaders
+  (const bool enforceContactCalc)
+{
+  std::set<std::string> engines =
+    collision_benchmark::GetSupportedPhysicsEngines();
+  std::map<std::string, WorldLoader::ConstPtr> loaders;
+  for (std::set<std::string>::const_iterator
+       it = engines.begin(); it != engines.end(); ++it)
+  {
+    std::string engine = *it;
+    try
+    {
+      loaders[engine] =
+        WorldLoader::ConstPtr(new GazeboWorldLoader(engine,
+                                                    enforceContactCalc));
+    }
+    catch (collision_benchmark::Exception& e)
+    {
+      std::cerr << "Could not add support for engine "
+                <<engine << ": " << e.what() << std::endl;
+      continue;
+    }
+  }
+  return loaders;
+}
+
+
+
