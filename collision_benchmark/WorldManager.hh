@@ -31,6 +31,8 @@
 #include <gazebo/transport/transport.hh>
 #include <gazebo/msgs/msgs.hh>
 
+#include <boost/filesystem.hpp>
+
 #include <string>
 #include <iostream>
 #include <mutex>
@@ -578,11 +580,23 @@ class WorldManager
   // into the \e directory and the filename will be composed as
   // follows: \e prefix + PhysicsWorldBaseInterface::GetName() + "." + \e ext.
   // \param[in] directory the directory to write in. If empty, the local
-  //    directory is used.
+  //    directory is used. The directory \e subDirectory (if not empty)
+  //    is created in \e directory, saving files and resources in
+  //    ``directory/subDirectory``.
+  // \param[in] subDirectory directory created in \e directory where the files
+  //    are saved to.
+  //    If resources like meshes (which are read from additional files)
+  //    are referenced from within the world file, they may be referenced
+  //    with a relative path, which will then
+  //    be ``subDirectory/generated-filename``.
+  // \param[in] copyResources if true, all resources (such as mesh files)
+  //    will be copied to ``directory/subDirectory``
   // \return number of failures
   public: int SaveAllWorlds(const std::string& directory = "",
-                             const std::string& prefix = "",
-                             const std::string& ext = "world")
+                            const std::string& subDirectory = "",
+                            const std::string& prefix = "",
+                            const std::string& ext = "world",
+                            const bool copyResources = true)
   {
     int fail = 0;
     std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
@@ -591,14 +605,21 @@ class WorldManager
          it != this->worlds.end(); ++it)
     {
       PhysicsWorldBaseInterface::Ptr w=*it;
-      std::string filename;
-      if (!directory.empty()) filename += directory + "/";
-      filename += prefix + w->GetName() + "." + ext;
+      boost::filesystem::path filename =
+        boost::filesystem::path(directory) /
+        boost::filesystem::path(subDirectory) /
+        boost::filesystem::path(prefix + "_" + w->GetName() + "." + ext);
       std::cout << "Writing to file " << filename << std::endl;
-      if (!w->SaveToFile(filename))
+      std::string resourceDir, resourceSubdir;
+      if (copyResources)
+      {
+        resourceDir = directory;
+        resourceSubdir = subDirectory;
+      }
+      if (!w->SaveToFile(filename.string(), directory, subDirectory))
       {
         std::cerr << "ERROR: Could not save world " << w->GetName() <<
-                     " to file " << filename << std::endl;
+                     " to file " << filename.string() << std::endl;
         ++fail;
       }
     }

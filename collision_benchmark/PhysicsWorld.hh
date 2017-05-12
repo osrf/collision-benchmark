@@ -124,8 +124,8 @@ class PhysicsWorldBaseInterface
                                           const std::string& worldname="") = 0;
 
   /// Saves the world to the file.
-  /// \param[in] filename the filename
-  /// \param[in] resourceDir if empty, has no effect. If not empty, relevant
+  /// \param[in] filename the filename (absolute path).
+  /// \param[in] resourceDir If not empty, relevant
   ///   resource files referenced by the world are copied to
   ///   ``resourceDir/resourceSubdir``, and the reference in the written file
   ///   \e filename to the resource files is changed to the new file location.
@@ -136,7 +136,8 @@ class PhysicsWorldBaseInterface
   ///   which is specific to the hard drive used at the time of writing to file.
   ///   When copying \e resourceSubdir to a different location on a harddrive,
   ///   the references would then still be valid relative to the new base
-  ///   directory.
+  ///   directory. If this path is empty, it has no effect, so resource files
+  ///   won't be copied then.
   /// \param[in] resourceSubdir see description of \e resourceDir. If empty,
   ///   has no effect.
   /// \return success or not

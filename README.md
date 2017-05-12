@@ -318,6 +318,8 @@ in gazebo later, don't forget to start gazebo in paused mode, as you probably
 would like the world to be displayed in the state it was in when the test
 failed. The tests also don't use a ground floor, which means the objects will
 be falling in free space.
+You will also need to add ``<your-output-path>`` to the ``GAZEBO_RESOURCE_PATH``
+in order to be able to display models which contain meshes.
 
 ## Short introduction to the API
 

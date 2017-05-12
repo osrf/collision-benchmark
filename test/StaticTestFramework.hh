@@ -119,9 +119,17 @@ protected:
   // \param[in] interactive if true, the test will be run interactively,
   //    which means the user gets the chance to start gzclient, and each
   //    test failure the test will be paused so they can look at the result.
-  // \param[in] outputPath if not empty, this should be a writable path to
+  // \param[in] outputBasePath if not empty, this should be a writable path to
   //    a directory into which the failure results will be written. If emtpy,
-  //    no failure results will be written to file.
+  //    no failure results will be written to file. In this directory,
+  //    the directory structure \e outputSubdir will be created, and the
+  //    results are placed there. Resources which are written to file and
+  //    referenced from the world file, e.g. meshes, may be referenced
+  //    relative path \e outputSubdir, so not containing
+  //    \e outputBasePath.
+  // \param outputSubdir subdirectory of \e outputBasePath where the result
+  //    files will be written to. Resource references use this relative path.
+  //    If \e outputBasePath is emtpy, this parameter will have no effect.
   void AABBTestWorldsAgreement(const std::string& modelName1,
                 const std::string& modelName2,
                 const float cellSizeFactor = 0.1,
@@ -129,7 +137,8 @@ protected:
                 const double bbTol = 5e-02,
                 const double zeroDepthTol = 5e-02,
                 const bool interactive = false,
-                const std::string& outputPath = "");
+                const std::string& outputBasePath = "",
+                const std::string& outputSubdir = "");
 
 private:
 
