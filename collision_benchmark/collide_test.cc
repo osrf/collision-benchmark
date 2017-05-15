@@ -151,6 +151,8 @@ int main(int argc, char **argv)
     = gzMultiWorld.GetWorldManager();
   assert(worldManager);
 
+  std::vector<std::string> loadedModelNames;
+
   // load all primitive shapes
   typedef GzWorldManager::ModelLoadResult ModelLoadResult;
   int i = 0;
@@ -175,17 +177,15 @@ int main(int argc, char **argv)
       std::cerr << "Unknown shape type: " << shapeID << std::endl;
       return 1;
     }
-
-    // Load model to world
+    std::string modelName = "unit_" + shapeID + "_" + std::to_string(i);
     std::vector<ModelLoadResult> res
-      = worldManager->AddModelFromShape("unit_" + shapeID
-                                        + "_" + std::to_string(i),
-                                        shape, shape);
+      = worldManager->AddModelFromShape(modelName, shape, shape);
     if (res.size() != worldManager->GetNumWorlds())
     {
       std::cerr << "Model must have been loaded in all worlds" << std::endl;
       return 1;
     }
+    loadedModelNames.push_back(modelName);
   }
 
   // load all models:
@@ -196,15 +196,16 @@ int main(int argc, char **argv)
     const std::string& modelResource = *it;
     std::string modelSDF =
       GazeboModelLoader::GetModelSdfFilename(modelResource);
-    std::cout << "Loading model: " << modelSDF << std::endl;
-
+    // std::cout << "Loading model: " << modelSDF << std::endl;
+    std::string modelName = "model" + std::to_string(i);
     std::vector<ModelLoadResult> res =
-      worldManager->AddModelFromFile(modelSDF, "model" + std::to_string(i));
+      worldManager->AddModelFromFile(modelSDF, modelName);
     if (res.size() != worldManager->GetNumWorlds())
     {
       std::cerr << "Model must have been loaded in all worlds" << std::endl;
       return 1;
     }
+    loadedModelNames.push_back(modelName);
   }
 
   // physics should be disable as this test only is meant to

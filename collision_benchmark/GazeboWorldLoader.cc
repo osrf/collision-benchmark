@@ -257,7 +257,8 @@ collision_benchmark::GetSDFElementFromFile(const std::string& filename,
     return sdfRoot;
   }
 
-  std::cout << "File "<<fullFile<<" (from "<<filename<<") found. " << std::endl;
+  // std::cout << "File "<<fullFile<<" (from "<<filename<<") found. "
+  //           << std::endl;
 
   try
   {

@@ -49,7 +49,6 @@ class GazeboModelLoader
     // this must be a model name, so try to find it in the gazebo paths
     std::string modelPath =
         gazebo::common::find_file("model://" + modelNameOrFile);
-    std::cout << "Found model: " << modelNameOrFile << std::endl;
 
     std::string sdfFilename;
     // find the manifest.config (or .xml) to read the SDF file from
