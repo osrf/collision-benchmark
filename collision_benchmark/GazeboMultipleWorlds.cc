@@ -26,12 +26,9 @@
 
 #include <collision_benchmark/GazeboMultipleWorldsServer.hh>
 #include <collision_benchmark/WorldLoader.hh>
-
 #include <collision_benchmark/StartWaiter.hh>
 
 #include <gazebo/gazebo.hh>
-#include <gazebo/physics/physics.hh>
-#include <gazebo/sensors/SensorsIface.hh>
 
 using collision_benchmark::GazeboMultipleWorlds;
 
@@ -50,6 +47,15 @@ using collision_benchmark::GazeboWorldLoader;
 using collision_benchmark::MultipleWorldsServer;
 using collision_benchmark::GazeboMultipleWorldsServer;
 using collision_benchmark::StartWaiter;
+
+GazeboMultipleWorlds::~GazeboMultipleWorlds()
+{
+  if (IsClientRunning())
+  {
+    KillClient();
+  }
+  // XXX TODO: abort server as well (interrupt Run() if it was called)
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 bool GazeboMultipleWorlds::Init(const bool loadMirror,
@@ -84,7 +90,7 @@ bool GazeboMultipleWorlds::Init(const bool loadMirror,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-bool GazeboMultipleWorlds::isClientRunning()
+bool GazeboMultipleWorlds::IsClientRunning()
 {
   if (gzclient_pid == 0)
     throw std::runtime_error("CONSISTENCY: This must be the parent process!");
@@ -99,20 +105,38 @@ bool GazeboMultipleWorlds::isClientRunning()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+void GazeboMultipleWorlds::KillClient()
+{
+  if (IsParent())
+  {
+    kill(gzclient_pid, SIGKILL);
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+GazeboMultipleWorlds::GzWorldManager::Ptr
+GazeboMultipleWorlds::GetWorldManager()
+{
+  if (!server) return nullptr;
+  return server->GetWorldManager();
+}
+
+///////////////////////////////////////////////////////////////////////////////
 bool GazeboMultipleWorlds::Run(bool physicsEnabled,
                                bool waitForStartSignal,
                                const std::function<void(int)>& loopCallback)
 
 {
-  if (!IsChild() && !IsParent())
+  if (!IsParent())
   {
     std::cerr << "Must initialize correctly before running." << std::endl;
     return false;
   }
   if (IsChild())
   {
-    std::cout <<"######## Child process is already running." << std::endl;
-    return true;
+    std::cerr << "Consistency: Calling this from child process, "
+              << "this should not happen. " << std::endl;
+    return false;
   }
 
   GzWorldManager::Ptr worldManager = server->GetWorldManager();
@@ -122,7 +146,7 @@ bool GazeboMultipleWorlds::Run(bool physicsEnabled,
 
   // wait until the client is running before starting the simulation.
   std::cout << "Waiting for client to come up... " << std::endl;
-  while (!isClientRunning())
+  while (!IsClientRunning())
   {
     gazebo::common::Time::MSleep(100);
   }
@@ -138,7 +162,7 @@ bool GazeboMultipleWorlds::Run(bool physicsEnabled,
     // XXX REMOVE ME (old implementation) use this to wait until
     // gzclient has started up, though we do this above already.
     // startWaiter.SetUnpausedCallback
-    //  (std::bind(&GazeboMultipleWorlds::isClientRunning, this));
+    //  (std::bind(&GazeboMultipleWorlds::IsClientRunning, this));
 
     if (controlServer)
     {
@@ -160,7 +184,7 @@ bool GazeboMultipleWorlds::Run(bool physicsEnabled,
 
   std::cout << "Now starting to update worlds."<<std::endl;
   int iter = 0;
-  while(isClientRunning())
+  while(IsClientRunning())
   {
     int numSteps=1;
     worldManager->Update(numSteps);

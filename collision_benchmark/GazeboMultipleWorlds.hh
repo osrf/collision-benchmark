@@ -48,13 +48,15 @@ class GazeboMultipleWorlds
                          GazeboPhysicsWorldTypes::Wrench>
                           GzMultipleWorldsServer;
 
-  private: typedef collision_benchmark::WorldManager
+  public: typedef collision_benchmark::WorldManager
                     <GazeboPhysicsWorldTypes::WorldState,
                      GazeboPhysicsWorldTypes::ModelID,
                      GazeboPhysicsWorldTypes::ModelPartID,
                      GazeboPhysicsWorldTypes::Vector3,
                      GazeboPhysicsWorldTypes::Wrench>
                         GzWorldManager;
+
+  public: virtual ~GazeboMultipleWorlds();
 
   // Loads the client and initializes the server.
   // Must be called before Run().
@@ -64,6 +66,9 @@ class GazeboMultipleWorlds
                     bool loadMirror = true,
                     bool enforceContactCalc=false,
                     bool allowControlViaMirror = true);
+
+  // \return the world manager.
+  public: GzWorldManager::Ptr GetWorldManager();
 
   // Runs the multiple worlds server. Blocks until the client has been closed.
   // \param waitForStartSignal if true, waits for the user to press [Enter] or
@@ -84,7 +89,9 @@ class GazeboMultipleWorlds
                      const bool enforceContactCalc);
 
   // returns true if gzclient is still running
-  protected: bool isClientRunning();
+  protected: bool IsClientRunning();
+
+  protected: void KillClient();
 
   // the server
   GzMultipleWorldsServer::Ptr server;
