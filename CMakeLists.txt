@@ -17,6 +17,8 @@ set(collision_benchmark_HEADERS
   collision_benchmark/ControlServer.hh
   collision_benchmark/GazeboControlServer.hh
   collision_benchmark/GazeboHelpers.hh
+  collision_benchmark/GazeboMultipleWorlds.hh
+  collision_benchmark/GazeboMultipleWorldsServer.hh
   collision_benchmark/GazeboPhysicsWorld.hh
   collision_benchmark/GazeboStateCompare.hh
   collision_benchmark/GazeboTopicForwarder.hh
@@ -37,6 +39,7 @@ set(collision_benchmark_HEADERS
 add_library(collision_benchmark SHARED
   collision_benchmark/GazeboControlServer.cc
   collision_benchmark/GazeboHelpers.cc
+  collision_benchmark/GazeboMultipleWorlds.cc
   collision_benchmark/GazeboMultipleWorldsServer.cc
   collision_benchmark/GazeboPhysicsWorld.cc
   collision_benchmark/GazeboStateCompare.cc

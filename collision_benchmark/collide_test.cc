@@ -15,191 +15,18 @@
  *
 */
 
-#include <collision_benchmark/GazeboWorldLoader.hh>
-#include <collision_benchmark/PhysicsWorld.hh>
-#include <collision_benchmark/GazeboPhysicsWorld.hh>
-#include <collision_benchmark/GazeboWorldState.hh>
-#include <collision_benchmark/GazeboTopicForwardingMirror.hh>
-#include <collision_benchmark/GazeboPhysicsWorld.hh>
-#include <collision_benchmark/boost_std_conversion.hh>
-#include <collision_benchmark/GazeboHelpers.hh>
-#include <collision_benchmark/WorldManager.hh>
-#include <collision_benchmark/GazeboControlServer.hh>
-
-#include <collision_benchmark/GazeboMultipleWorldsServer.hh>
-#include <collision_benchmark/WorldLoader.hh>
-
-#include <collision_benchmark/StartWaiter.hh>
-
-#include <gazebo/gazebo.hh>
-#include <gazebo/physics/physics.hh>
-#include <gazebo/sensors/SensorsIface.hh>
-
+#include <collision_benchmark/GazeboMultipleWorlds.hh>
 #include <boost/program_options.hpp>
 
 #include <unistd.h>
 #include <sys/wait.h>
 
-using collision_benchmark::PhysicsWorldBaseInterface;
-using collision_benchmark::PhysicsWorldStateInterface;
-using collision_benchmark::PhysicsWorld;
-using collision_benchmark::GazeboPhysicsWorld;
-using collision_benchmark::GazeboPhysicsWorldTypes;
-using collision_benchmark::MirrorWorld;
-using collision_benchmark::GazeboTopicForwardingMirror;
-using collision_benchmark::WorldManager;
-using collision_benchmark::GazeboControlServer;
-
-using collision_benchmark::WorldLoader;
-using collision_benchmark::GazeboWorldLoader;
-using collision_benchmark::MultipleWorldsServer;
-using collision_benchmark::GazeboMultipleWorldsServer;
-using collision_benchmark::StartWaiter;
-
+using collision_benchmark::GazeboMultipleWorlds;
 namespace po = boost::program_options;
-
-typedef MultipleWorldsServer<GazeboPhysicsWorldTypes::WorldState,
-                             GazeboPhysicsWorldTypes::ModelID,
-                             GazeboPhysicsWorldTypes::ModelPartID,
-                             GazeboPhysicsWorldTypes::Vector3,
-                             GazeboPhysicsWorldTypes::Wrench>
-                                GzMultipleWorldsServer;
-
-typedef WorldManager<GazeboPhysicsWorldTypes::WorldState,
-                     GazeboPhysicsWorldTypes::ModelID,
-                     GazeboPhysicsWorldTypes::ModelPartID,
-                     GazeboPhysicsWorldTypes::Vector3,
-                     GazeboPhysicsWorldTypes::Wrench>
-          GzWorldManager;
-
-
-// the server
-GzMultipleWorldsServer::Ptr g_server;
-
-// the child process ID for running gzclient
-pid_t g_gzclient_pid;
-
-
-// will be called at each server update iteration
-void LoopIter(int iter)
-{
-}
-
-// Initializes the multiple worlds server
-bool Init(const bool loadMirror,
-          const bool allowControlViaMirror,
-          const bool enforceContactCalc)
-{
-  GzMultipleWorldsServer::WorldLoader_M loaders =
-    collision_benchmark::GetSupportedGazeboWorldLoaders(enforceContactCalc);
-
-  if (loaders.empty())
-  {
-    std::cerr << "Could not get support for any engine." << std::endl;
-    return false;
-  }
-
-  WorldLoader::Ptr universalLoader(new GazeboWorldLoader(enforceContactCalc));
-
-  g_server.reset(new GazeboMultipleWorldsServer(loaders, universalLoader));
-
-  int argc = 1;
-  const char * argv = "MultipleWorldsServer";
-  g_server->Start(argc, &argv);
-
-  std::string mirrorName = "";
-  if (loadMirror) mirrorName = "mirror";
-
-  g_server->Init(mirrorName, allowControlViaMirror);
-
-  GzWorldManager::Ptr worldManager = g_server->GetWorldManager();
-  if (!worldManager) return false;
-  return true;
-}
-
-bool isClientRunning()
-{
-  if (g_gzclient_pid == 0)
-    throw std::runtime_error("CONSISTENCY: This must be the parent process!");
-  int child_status;
-  // result will be 0 if child is still running
-  pid_t result = waitpid(g_gzclient_pid, &child_status, WNOHANG);
-  if (result != 0) // child has stopped (client closed)
-  {
-    return false;
-  }
-  return true;
-}
-
-// Runs the multiple worlds server
-bool Run()
-{
-  GzWorldManager::Ptr worldManager = g_server->GetWorldManager();
-  if (!worldManager) return false;
-
-  GzWorldManager::ControlServerPtr controlServer =
-    worldManager->GetControlServer();
-
-  // helper class which will wait for the start signal
-  StartWaiter startWaiter;
-  startWaiter.SetUnpausedCallback(isClientRunning);
-
-  if (controlServer)
-  {
-    controlServer->RegisterPauseCallback(std::bind(&StartWaiter::PauseCallback,
-                                                   &startWaiter,
-                                                   std::placeholders::_1));
-  }
-
-  worldManager->SetPaused(true);
-
-  std::cout << "Press [Enter] to continue without gzclient or hit "
-            << "the play button in gzclient."<<std::endl;
-
-  // wait until either the [Play] button has been clicked, or [Enter] pressed.
-  startWaiter.WaitForUnpause();
-
-  worldManager->SetPaused(false);
-
-  std::cout << "Now starting to update worlds."<<std::endl;
-  int iter = 0;
-  while(isClientRunning())
-  {
-    int numSteps=1;
-    worldManager->Update(numSteps);
-    LoopIter(iter);
-    ++iter;
-  }
-  g_server->Stop();
-  return true;
-}
-
 
 /////////////////////////////////////////////////
 int main(int argc, char **argv)
 {
-  g_gzclient_pid = fork();
-  if (g_gzclient_pid == 0)
-  {
-    // child process: Start gzclient with the multiple worlds plugin
-    char **argvClient = new char*[4];
-    // silly const cast to avoid compiler warning
-    argvClient[0] = const_cast<char*>(static_cast<const char*>("gzclient"));
-    argvClient[1] = const_cast<char*>(static_cast<const char*>("--g"));
-    argvClient[2] = const_cast<char*>
-                    (static_cast<const char*>("libcollision_benchmark_gui.so"));
-    argvClient[3] = static_cast<char*>(NULL);
-
-    execvp(argvClient[0], argvClient);
-    return 0;
-  }
-  else if (g_gzclient_pid < 0)
-  {
-    std::cerr << "Failed to fork process." << std::endl;
-    return 1;
-  }
-  // this must be the parent process
-
   std::vector<std::string> selectedEngines;
 
   // description for engine options as stream so line doesn't go over 80 chars.
@@ -252,7 +79,7 @@ int main(int argc, char **argv)
   }
   else
   {
-    std::cout << "No engines were given, so using 'ode'" << std::endl;
+    std::cout << "No engines were specified, so using 'ode'" << std::endl;
     selectedEngines.push_back("ode");
   }
 
@@ -260,22 +87,14 @@ int main(int argc, char **argv)
   bool loadMirror = true;
   bool enforceContactCalc=false;
   bool allowControlViaMirror = true;
-  Init(loadMirror, allowControlViaMirror, enforceContactCalc);
-  assert(g_server);
+  GazeboMultipleWorlds gzMultiWorld;
+  gzMultiWorld.Load(selectedEngines, loadMirror, enforceContactCalc);
 
-  // load the world with the engine names given
-  std::string worldPrefix = "collide_world";
+  // physics should be disable as this test only is meant to
+  // display the contacts.
+  bool physicsEnabled = false;
+  gzMultiWorld.Run(physicsEnabled);
 
-  g_server->Load("worlds/empty.world", selectedEngines, worldPrefix);
-
-  Run();
-
-  // need to call server Fini() (or delete the server)
-  // because if it's deleted after program exit
-  // then it still will try to access static variables
-  // which may have been deleted before.
-  // g_server.reset();
-  g_server->Fini();
   std::cout << "Bye, bye." << std::endl;
   return 0;
 }
