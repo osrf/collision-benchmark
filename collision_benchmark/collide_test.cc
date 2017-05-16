@@ -28,8 +28,46 @@ using collision_benchmark::GazeboMultipleWorlds;
 using collision_benchmark::GazeboModelLoader;
 using collision_benchmark::Shape;
 using collision_benchmark::PrimitiveShape;
+using collision_benchmark::GazeboMultipleWorlds;
 
 namespace po = boost::program_options;
+
+typedef GazeboMultipleWorlds::GzWorldManager
+          ::PhysicsWorldModelInterfaceT::Vector3 Vector3;
+
+// Returns the AABB of the model from the first world in \e worldManager.
+// Presumes that the model exists in all worlds and the AABB would be
+// the same (or very, very similar) in all worlds.
+// See also collision_benchmark::GetConsistentAABB() (in test/TestUtils.hh)
+// which checks that all AABBs are the same in both worlds. Automated tests
+// have ensured that this is the case if the model has been loaded in
+// all collision engine worlds simultaneously and the world hasn't been updated
+// since the model was added.
+//
+// \retval 0 success
+// \retval -1 the model does not exist in the first world.
+// \retval -2 no worlds in world manager
+// \retval -3 could not get AABB from model
+int GetAABB(const std::string& modelName,
+             const GazeboMultipleWorlds::GzWorldManager::Ptr& worldManager,
+             Vector3& min, Vector3& max)
+{
+  std::vector<GazeboMultipleWorlds::GzWorldManager
+              ::PhysicsWorldModelInterfacePtr>
+    worlds = worldManager->GetModelPhysicsWorlds();
+
+  if (worlds.empty()) return -2;
+
+  GazeboMultipleWorlds::GzWorldManager::PhysicsWorldModelInterfacePtr w =
+    worlds.front();
+  if (!w->GetAABB(modelName, min, max))
+  {
+      std::cerr << "Model " << modelName << ": AABB could not be retrieved"
+                << std::endl;
+      return -3;
+  }
+  return 0;
+}
 
 /////////////////////////////////////////////////
 int main(int argc, char **argv)
@@ -37,6 +75,9 @@ int main(int argc, char **argv)
   std::vector<std::string> selectedEngines;
   std::vector<std::string> unitShapes;
   std::vector<std::string> sdfModels;
+
+  // Read command line parameters
+  // ----------------------
 
   // description for engine options as stream so line doesn't go over 80 chars.
   std::stringstream descEngines;
@@ -139,6 +180,7 @@ int main(int argc, char **argv)
 
 
   // Initialize server
+  // ----------------------
   bool loadMirror = true;
   bool enforceContactCalc=false;
   bool allowControlViaMirror = true;
@@ -146,6 +188,7 @@ int main(int argc, char **argv)
   gzMultiWorld.Load(selectedEngines, loadMirror, enforceContactCalc);
 
   // Load extra models to the world
+  // ----------------------
   typedef GazeboMultipleWorlds::GzWorldManager GzWorldManager;
   GzWorldManager::Ptr worldManager
     = gzMultiWorld.GetWorldManager();
@@ -153,7 +196,7 @@ int main(int argc, char **argv)
 
   std::vector<std::string> loadedModelNames;
 
-  // load all primitive shapes
+  // load primitive shapes
   typedef GzWorldManager::ModelLoadResult ModelLoadResult;
   int i = 0;
   for (std::vector<std::string>::iterator it = unitShapes.begin();
@@ -188,7 +231,7 @@ int main(int argc, char **argv)
     loadedModelNames.push_back(modelName);
   }
 
-  // load all models:
+  // load models from SDF
   i = 0;
   for (std::vector<std::string>::iterator it = sdfModels.begin();
        it != sdfModels.end(); ++it, ++i)
@@ -208,6 +251,23 @@ int main(int argc, char **argv)
     loadedModelNames.push_back(modelName);
   }
 
+  if (loadedModelNames.size() != 2)
+    throw std::runtime_error("Inconsistency: There have to be two models");
+
+  // position models so they're not intersecting.
+  // ----------------------
+
+  // Get the AABB's of the two models
+  Vector3 min1, min2, max1, max2;
+  if ((GetAABB(loadedModelNames[0], worldManager, min1, max1) != 0) ||
+      (GetAABB(loadedModelNames[1], worldManager, min2, max2) != 0))
+  {
+    std::cerr << "Could not get AABBs of models" << std::endl;
+    return false;
+  }
+
+  // Run the world(s)
+  // ----------------------
   // physics should be disable as this test only is meant to
   // display the contacts.
   bool physicsEnabled = false;

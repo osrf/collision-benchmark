@@ -52,7 +52,17 @@
 - multiple_worlds_server.cc: Can only interrupt with Ctrl+c and then it's
  not shut down nicely. Find a better way to do this.
 
-For reference: Libraries to maybe look into again for primitive/mesh generation
+
+
+- Use collision_benchmark::GetConsistentAABB() (in test/TestUtils.hh)
+  which checks that all AABBs are the same in both worlds. Separate tests
+  still need to be designed using this function with a number of
+  complex models
+
+
+# References
+
+Libraries to maybe look into again for primitive/mesh generation
 
 - [Ogre procedural](https://bitbucket.org/transporter/ogre-procedural) seems a bit outdated / not maintained, links broken
 - [Libmesh](http://libmesh.github.io/doxygen/index.html)
