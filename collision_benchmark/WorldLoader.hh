@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,57 +14,50 @@
  * limitations under the License.
  *
  */
-#ifndef COLLISIONBENCHMARK_WORLDLOADER_
-#define COLLISIONBENCHMARK_WORLDLOADER_
+#ifndef COLLISION_BENCHMARK_GAZEBOWORLDLOADER_H
+#define COLLISION_BENCHMARK_GAZEBOWORLDLOADER_H
 
-#include <gazebo/gazebo.hh>
-
-#include <set>
+#include <collision_benchmark/PhysicsWorld.hh>
 
 namespace collision_benchmark
 {
 
-/// returns the root of the world in the SDF
-sdf::ElementPtr GetWorldFromSDF(const std::string& filename, const std::string& name);
-
-/// loads a world given a SDF element
-gazebo::physics::WorldPtr LoadWorldFromSDF(const sdf::ElementPtr& sdfRoot, const std::string& name);
-
-/// loads a world from file
-gazebo::physics::WorldPtr LoadWorldFromFile(const std::string &_worldFile, const std::string& name);
-
-/// Like LoadWorldFromFile(), but does additional error checking and waiting for the
-/// namespace to be loaded
-gazebo::physics::WorldPtr LoadWorld(const std::string& worldfile, const std::string& name);
-
-class Worldfile
+/**
+ * \brief Factory class to help load worlds using a specific physics engine.
+ *
+ * \author Jennifer Buehler
+ * \date March 2017
+ */
+class WorldLoader
 {
-  public: Worldfile(const std::string& filename_, const std::string& worldname_):
-            filename(filename_),
-            worldname(worldname_) {}
+  public: typedef std::shared_ptr<WorldLoader> Ptr;
+  public: typedef std::shared_ptr<const WorldLoader> ConstPtr;
 
-  public: Worldfile(const Worldfile& o):
-            filename(o.filename),
-            worldname(o.worldname) {}
+  // \param _engine name of the engine which will be used for the created
+  //    worlds. If empty, this loader is to be considered universal and will
+  //    load worlds with the physics engine specified in the file/SDF.
+  public: WorldLoader(const std::string& _engine):
+          engine(_engine) {}
 
-  public: friend bool operator<(const Worldfile& w1, const Worldfile& w2)
-          {
-            return w1.filename < w2.filename || (w1.filename == w2.filename && w1.worldname < w2.worldname);
-          }
+  // \sa PhysicsWorldBaseInterface::LoadFromSDF
+  public: virtual PhysicsWorldBaseInterface::Ptr
+          LoadFromSDF(const sdf::ElementPtr& sdf,
+                      const std::string& worldname="") const = 0;
 
-  public: std::string filename;
-  public: std::string worldname;
+  // \sa PhysicsWorldBaseInterface::LoadFromFile
+  public: virtual PhysicsWorldBaseInterface::Ptr
+          LoadFromFile(const std::string& filename,
+                       const std::string& worldname="") const = 0;
+
+  // \sa PhysicsWorldBaseInterface::LoadFromString
+  public: virtual PhysicsWorldBaseInterface::Ptr
+          LoadFromString(const std::string& str,
+                         const std::string& worldname="") const = 0;
+
+  public: std::string EngineName() const { return engine; }
+  private: std::string engine;
 };
 
-/// Convenience function to load several worlds at once
-/// \param worldNames has to be of same size as \e worldfiles and contains names
-///        of the respective worlds to override the name given in the world file.
-///        If a names is an empty string, it will instead keep the name in the original world
-///        file or use the default name.
-/// \return worlds will contain the loaded worlds
-std::vector<gazebo::physics::WorldPtr> LoadWorlds(const std::set<Worldfile>& worldfiles);
+}  // namespace
 
-}  // namespace collision_benchmark
-
-
-#endif  // COLLISIONBENCHMARK_WORLDLOADER_
+#endif  // COLLISION_BENCHMARK_GAZEBOWORLDLOADER_H

@@ -1,0 +1,55 @@
+<?xml version="1.0" ?>
+<sdf version="1.5">
+  <world name="ode_sphere_world">
+  
+    <physics type='bullet'>
+    </physics>
+
+    <model name="sphere">
+      <pose>0.0 0.0 3  0 0 0</pose>
+      <link name="link">
+        <inertial>
+          <mass>2.5132741228718346e-06</mass>
+          <inertia>
+            <ixx>1.0053096491487337e-12</ixx>
+            <iyy>1.0053096491487337e-12</iyy>
+            <izz>1.0053096491487337e-12</izz>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyz>0</iyz>
+          </inertia>
+        </inertial>
+        <collision name="sphere_collision">
+          <geometry>
+            <sphere>
+              <radius>0.1</radius>
+            </sphere>
+          </geometry>
+        </collision>
+        <visual name="sphere_visual">
+          <geometry>
+            <sphere>
+              <radius>0.1</radius>
+            </sphere>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Grey</name>
+            </script>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+
+      <!-- A global light source -->
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <!-- A ground plane -->
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+  </world>
+</sdf>

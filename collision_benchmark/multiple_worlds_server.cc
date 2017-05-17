@@ -15,92 +15,210 @@
  *
 */
 
+#include <collision_benchmark/GazeboWorldLoader.hh>
+#include <collision_benchmark/PhysicsWorld.hh>
+#include <collision_benchmark/GazeboPhysicsWorld.hh>
+#include <collision_benchmark/GazeboWorldState.hh>
+#include <collision_benchmark/GazeboTopicForwardingMirror.hh>
+#include <collision_benchmark/GazeboPhysicsWorld.hh>
+#include <collision_benchmark/boost_std_conversion.hh>
+#include <collision_benchmark/GazeboHelpers.hh>
+#include <collision_benchmark/WorldManager.hh>
+#include <collision_benchmark/GazeboControlServer.hh>
+
+#include <collision_benchmark/GazeboMultipleWorldsServer.hh>
 #include <collision_benchmark/WorldLoader.hh>
+
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
+#include <gazebo/sensors/SensorsIface.hh>
 
-//#define WORLDSTATES_QUIET
+#include <boost/program_options.hpp>
+#include <atomic>
 
-void PrintWorldState(const gazebo::physics::WorldPtr world)
+using collision_benchmark::PhysicsWorldBaseInterface;
+using collision_benchmark::PhysicsWorldStateInterface;
+using collision_benchmark::PhysicsWorld;
+using collision_benchmark::GazeboPhysicsWorld;
+using collision_benchmark::GazeboPhysicsWorldTypes;
+using collision_benchmark::MirrorWorld;
+using collision_benchmark::GazeboTopicForwardingMirror;
+using collision_benchmark::WorldManager;
+using collision_benchmark::GazeboControlServer;
+
+using collision_benchmark::WorldLoader;
+using collision_benchmark::GazeboWorldLoader;
+using collision_benchmark::MultipleWorldsServer;
+using collision_benchmark::GazeboMultipleWorldsServer;
+
+namespace po = boost::program_options;
+
+typedef MultipleWorldsServer<GazeboPhysicsWorldTypes::WorldState,
+                             GazeboPhysicsWorldTypes::ModelID,
+                             GazeboPhysicsWorldTypes::ModelPartID,
+                             GazeboPhysicsWorldTypes::Vector3,
+                             GazeboPhysicsWorldTypes::Wrench>
+                                GzMultipleWorldsServer;
+
+typedef WorldManager<GazeboPhysicsWorldTypes::WorldState,
+                     GazeboPhysicsWorldTypes::ModelID,
+                     GazeboPhysicsWorldTypes::ModelPartID,
+                     GazeboPhysicsWorldTypes::Vector3,
+                     GazeboPhysicsWorldTypes::Wrench>
+          GzWorldManager;
+
+// test is paused or not
+std::atomic<bool> g_unpaused(false);
+std::atomic<bool> g_keypressed(false);
+
+
+// the server
+GzMultipleWorldsServer::Ptr g_server;
+
+// waits until enter has been pressed and sets g_keypressed to true
+void WaitForEnter()
 {
-  std::cout << "## State of world " << world->GetName() << std::endl;
-  gazebo::physics::WorldState _state(world);
-  std::cout << _state << std::endl;
+  int key = getchar();
+  g_keypressed=true;
 }
 
-void PrintWorldStates(const std::vector<gazebo::physics::WorldPtr>& worlds)
+// waits for either g_unpaused is set to
+// true or until enter key was pressed.
+void WaitForUnpause()
 {
-  std::cout << "## World states ###" << std::endl;
-  for (std::vector<gazebo::physics::WorldPtr>::const_iterator w = worlds.begin();
-      w != worlds.end(); ++w)
+  g_keypressed = false;
+  std::thread * t = new std::thread(WaitForEnter);
+  t->detach();  // detach so it can be terminated
+  while (!g_unpaused && !g_keypressed)
   {
-    PrintWorldState(*w);
+    gazebo::common::Time::MSleep(100);
   }
-  std::cout << "#####" << std::endl;
+  delete t;
 }
 
-/// Convenience function to call gazebo::runWorld() on several worlds
-void RunWorlds(int iter, const std::vector<gazebo::physics::WorldPtr>& worlds)
+void pauseCallback(bool pause)
 {
-#ifndef WORLDSTATES_QUIET
-  std::cout << "##### States of all worlds before running:" << std::endl;
-  PrintWorldStates(worlds);
-#endif
-  int steps = 1;
-  for (unsigned int i = 0; i < iter; ++i)
+  //std::cout<<"############ Pause callback: "<<pause<<std::endl;
+  g_unpaused = !pause;
+}
+
+// will be called at each loop iteration
+void LoopIter(int iter)
+{
+/*
+  GzWorldManager::Ptr worldManager = g_server->GetWorldManager();
+  PhysicsWorldBaseInterface::Ptr mirroredWorld
+      = worldManager.GetMirroredWorld();
+  GzPhysicsWorld::Ptr mirroredWorldCast =
+      std::dynamic_pointer_cast<GzPhysicsWorld>(mirroredWorld);
+  assert(mirroredWorldCast);
+  std::vector<GzPhysicsWorld::ContactInfoPtr> contacts =
+      mirroredWorldCast->GetContactInfo();
+  std::cout<<"Number of contacts: "<<contacts.size()<<std::endl;
+  getchar();*/
+
+  // temporary for testing: when paused, idle a little,
+  // to not make this print too often
+  /*const static int printCnt = 100;
+  static int print = printCnt;
+  if (!g_unpaused)
+    gazebo::common::Time::MSleep(100);
+  if (print <= 0)
   {
-    // std::cout << "##### Running world(s), iter=" << i << std::endl;
-    for (std::vector<gazebo::physics::WorldPtr>::const_iterator w = worlds.begin();
-        w != worlds.end(); ++w)
+    std::cout<<"Updating world still going."<<std::endl;
+    print=printCnt;
+  }
+  --print;*/
+}
+
+// Initializes the multiple worlds server
+bool Init(const bool loadMirror,
+          const bool allowControlViaMirror,
+          const bool enforceContactCalc)
+{
+  std::set<std::string> engines =
+    collision_benchmark::GetSupportedPhysicsEngines();
+  GzMultipleWorldsServer::WorldLoader_M loaders;
+  for (std::set<std::string>::const_iterator
+       it = engines.begin(); it != engines.end(); ++it)
+  {
+    std::string engine = *it;
+    try
     {
-      gazebo::physics::WorldPtr world = *w;
-      std::cout<<"World "<<world->GetName()<<" physics engine: "<<world->GetPhysicsEngine()->GetType()<<std::endl;
-      // Run simulation for given number of steps.
-      // This method calls world->RunBlocking(_iterations);
-      gazebo::runWorld(world, steps);
+      loaders[engine] =
+        WorldLoader::ConstPtr(new GazeboWorldLoader(engine,
+                                                    enforceContactCalc));
+    }
+    catch (collision_benchmark::Exception& e)
+    {
+      std::cerr << "Could not add support for engine "
+                <<engine << ": " << e.what() << std::endl;
+      continue;
     }
   }
-#ifndef WORLDSTATES_QUIET
-  std::cout << "##### States of all worlds after running:" << std::endl;
-  PrintWorldStates(worlds);
-#endif
+
+  if (loaders.empty())
+  {
+    std::cerr << "Could not get support for any engine." << std::endl;
+    return false;
+  }
+
+  WorldLoader::Ptr universalLoader(new GazeboWorldLoader(enforceContactCalc));
+
+  g_server.reset(new GazeboMultipleWorldsServer(loaders, universalLoader));
+
+  int argc = 1;
+  const char * argv = "MultipleWorldsServer";
+  g_server->Start(argc, &argv);
+
+  std::string mirrorName = "";
+  if (loadMirror) mirrorName = "mirror";
+
+  g_server->Init(mirrorName, allowControlViaMirror);
+
+  GzWorldManager::Ptr worldManager = g_server->GetWorldManager();
+  if (!worldManager) return false;
+  return true;
 }
 
-// Main method to play the test, later to be replaced by a dedicated structure (without command line arument params)
-bool PlayTest(int argc, char **argv)
+
+// Runs the multiple worlds server
+bool Run()
 {
-  if (argc < 3)
+  GzWorldManager::Ptr worldManager = g_server->GetWorldManager();
+  if (!worldManager) return false;
+
+  GzWorldManager::ControlServerPtr controlServer =
+    worldManager->GetControlServer();
+
+  if (controlServer)
   {
-    std::cerr<<"Usage: "<<argv[0]<<" <number iterations> <list of world filenames>"<<std::endl;
-    return false;
+    controlServer->RegisterPauseCallback(std::bind(pauseCallback,
+                                                   std::placeholders::_1));
   }
 
-  // list of worlds to be loaded
-  std::set<collision_benchmark::Worldfile> worldsToLoad;
+//  worldManager->SetDynamicsEnabled(false);
+  worldManager->SetPaused(true);
 
-  int numIters = atoi(argv[1]);
+  std::cout << "Now start gzclient if you would like "
+            << "to view the test: "<<std::endl;
+  std::cout << "gzclient --g libcollision_benchmark_gui.so" << std::endl;
+  std::cout << "Press [Enter] to continue without gzclient or hit "
+            << "the play button in gzclient."<<std::endl;
+  WaitForUnpause();
 
-  for (int i = 2; i < argc; ++i)
+  worldManager->SetPaused(false);
+
+  std::cout << "Now starting to update worlds."<<std::endl;
+  int iter = 0;
+  while(true)
   {
-    std::string worldfile = std::string(argv[i]);
-    std::stringstream worldname;
-    worldname << "world_" << i - 1;
-    worldsToLoad.insert(collision_benchmark::Worldfile(worldfile,worldname.str()));
+    int numSteps=1;
+    worldManager->Update(numSteps);
+    LoopIter(iter);
+    ++iter;
   }
-
-  std::cout << "Loading worlds..." << std::endl;
-  std::vector<gazebo::physics::WorldPtr> worlds = collision_benchmark::LoadWorlds(worldsToLoad);
-  if (worlds.size()!=worldsToLoad.size())
-  {
-    std::cerr << "Could not load worlds." << std::endl;
-    return false;
-  }
-
-  // Go through all worlds and print info
-  for (int i = 0; i < worlds.size(); ++i)
-  {
-    RunWorlds(numIters, worlds);
-  }
+  g_server->Stop();
   return true;
 }
 
@@ -108,12 +226,110 @@ bool PlayTest(int argc, char **argv)
 /////////////////////////////////////////////////
 int main(int argc, char **argv)
 {
-  // Initialize gazebo.
-  gazebo::setupServer(argc, argv);
+  std::vector<std::string> selectedEngines;
+  std::vector<std::string> worldFiles;
 
-  PlayTest(argc, argv);
+  // description for engine options as stream so line doesn't go over 80 chars.
+  std::stringstream descEngines;
+  descEngines <<  "Specify one or several physics engines. " <<
+      "Can contain [ode, bullet, dart, simbody]. When not specified, worlds " <<
+      "are loaded with the engine specified in the file. If specified, all " <<
+      "worlds are loaded with each of the engines specified.";
 
-  gazebo::shutdown();
+  // Declare the supported options.
+  po::options_description desc("Allowed options");
+  desc.add_options()
+    ("help,h", "Produce help message")
+    ("engines,e",
+      po::value<std::vector<std::string>>(&selectedEngines)->multitoken(),
+      descEngines.str().c_str())
+    ("keep-name,k", "keep the names of the worlds as specified in the files. \
+Only works when no engines are specified with -e.")
+    ;
+  po::options_description desc_hidden("Positional options");
+  desc_hidden.add_options()
+    ("worlds,w", po::value<std::vector<std::string>>(&worldFiles)->multitoken(),
+      "World file(s).")
+    ;
 
-  std::cout << "Test ended." << std::endl;
+  po::variables_map vm;
+
+  po::positional_options_description p;
+  // positional arguments default to "worlds" argument
+  p.add("worlds", -1);
+
+  po::options_description desc_composite;
+  desc_composite.add(desc).add(desc_hidden);
+
+  po::command_line_parser parser{argc, argv};
+  parser.options(desc_composite).positional(p); // .allow_unregistered();
+  po::parsed_options parsedOpt = parser.run();
+  po::store(parsedOpt, vm);
+  po::notify(vm);
+
+  if (vm.count("help"))
+  {
+    std::cout << argv[0] <<" <list of world files> " << std::endl;
+    std::cout << desc << std::endl;
+    return 1;
+  }
+
+  if (vm.count("engines"))
+  {
+    std::cout << "Engines to load: " << std::endl;
+    for (std::vector<std::string>::iterator it = selectedEngines.begin();
+         it != selectedEngines.end(); ++it)
+    {
+      std::cout<<*it<<std::endl;
+    }
+  }
+  else
+  {
+    std::cout << "No engines were given, so using physics information "
+              << "specified in world files" << std::endl;
+  }
+
+  if (!vm.count("worlds"))
+  {
+    std::cout << "You need to specify at least one world." << std::endl;
+    return 0;
+  }
+
+  // Initialize server
+  bool loadMirror = true;
+  bool enforceContactCalc=false;
+  bool allowControlViaMirror = true;
+  Init(loadMirror, allowControlViaMirror, enforceContactCalc);
+  assert(g_server);
+
+  // load the worlds as given in command line arguments
+  // with the engine names given
+  int i = 0;
+  for (std::vector<std::string>::iterator it = worldFiles.begin();
+       it != worldFiles.end(); ++it, ++i)
+  {
+    std::string worldfile = *it;
+    std::cout<<"Loading world " << worldfile <<std::endl;
+
+    std::string worldPrefix;
+
+    if (!selectedEngines.empty() || !vm.count("keep-name"))
+    {
+      std::stringstream _worldPrefix;
+      _worldPrefix << "world" << "_" << i;
+      worldPrefix = _worldPrefix.str();
+    }
+
+    if (selectedEngines.empty())
+    {
+      if (g_server->AutoLoad(worldfile, worldPrefix) < 0)
+        std::cerr << "Could not auto-load world " << worldfile << std::endl;
+    }
+    else
+    {
+      g_server->Load(worldfile, selectedEngines, worldPrefix);
+    }
+  }
+
+  Run();
 }
