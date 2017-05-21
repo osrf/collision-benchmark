@@ -63,6 +63,7 @@ class GazeboMultipleWorlds
   // A call to this funciton will fork the process, returning one parent
   // and one child. Though only the parent returns from this call.
   public: bool Load(const std::vector<std::string>& selectedEngines,
+                    bool physicsEnabled = true,
                     bool loadMirror = true,
                     bool enforceContactCalc=false,
                     bool allowControlViaMirror = true);
@@ -75,8 +76,7 @@ class GazeboMultipleWorlds
   //    hit the play button in the client before starting the simulation
   // \param loopCallback optional: callback which will be called once per
   //    server update loop
-  public: bool Run(bool physicsEnabled,
-                   bool waitForStartSignal = false,
+  public: bool Run(bool waitForStartSignal = false,
                    const std::function<void(int)>& loopCallback
                       = std::function<void(int)>());
 
@@ -85,8 +85,8 @@ class GazeboMultipleWorlds
 
     // Initializes the multiple worlds server
   protected: bool Init(const bool loadMirror,
-                     const bool allowControlViaMirror,
-                     const bool enforceContactCalc);
+                       const bool allowControlViaMirror,
+                       const bool enforceContactCalc);
 
   // returns true if gzclient is still running
   protected: bool IsClientRunning();

@@ -62,7 +62,8 @@ bool collision_benchmark::GetConsistentAABB(const std::string& modelName,
   {
     GzWorldManager::PhysicsWorldModelInterfacePtr w = *it;
     GzAABB aabb;
-    if (!w->GetAABB(modelName, aabb.min, aabb.max))
+    bool inLocalFrame;
+    if (!w->GetAABB(modelName, aabb.min, aabb.max, inLocalFrame))
     {
       std::cerr << "Model " << modelName << " AABB could not be retrieved"
                 << std::endl;

@@ -86,6 +86,7 @@ bool GazeboMultipleWorlds::Init(const bool loadMirror,
 
   GzWorldManager::Ptr worldManager = server->GetWorldManager();
   if (!worldManager) return false;
+
   return true;
 }
 
@@ -122,8 +123,7 @@ GazeboMultipleWorlds::GetWorldManager()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-bool GazeboMultipleWorlds::Run(bool physicsEnabled,
-                               bool waitForStartSignal,
+bool GazeboMultipleWorlds::Run(bool waitForStartSignal,
                                const std::function<void(int)>& loopCallback)
 
 {
@@ -141,8 +141,6 @@ bool GazeboMultipleWorlds::Run(bool physicsEnabled,
 
   GzWorldManager::Ptr worldManager = server->GetWorldManager();
   if (!worldManager) return false;
-
-  worldManager->SetDynamicsEnabled(physicsEnabled);
 
   // wait until the client is running before starting the simulation.
   std::cout << "Waiting for client to come up... " << std::endl;
@@ -214,6 +212,7 @@ bool GazeboMultipleWorlds::IsParent() const
 
 ///////////////////////////////////////////////////////////////////////////////
 bool GazeboMultipleWorlds::Load(const std::vector<std::string>& selectedEngines,
+                                bool physicsEnabled,
                                 bool loadMirror,
                                 bool enforceContactCalc,
                                 bool allowControlViaMirror)
@@ -247,7 +246,13 @@ bool GazeboMultipleWorlds::Load(const std::vector<std::string>& selectedEngines,
   // load the world with the engine names given
   std::string worldPrefix = "collide_world";
 
-  server->Load("worlds/empty.world", selectedEngines, worldPrefix);
+  server->Load("test_worlds/void.world", selectedEngines, worldPrefix);
+  // server->Load("worlds/empty.world", selectedEngines, worldPrefix);
+
+  GzWorldManager::Ptr worldManager = server->GetWorldManager();
+  if (!worldManager) return false;
+
+  worldManager->SetDynamicsEnabled(physicsEnabled);
 
   return true;
 }

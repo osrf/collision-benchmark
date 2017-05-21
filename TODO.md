@@ -14,6 +14,9 @@
 
 # Issues to address
 
+- AABB: PhysicsWorld returns AABB in model coordinate frame. This has to be fixed up in the static test still.
+  It doesn't matter if all objects are added with identity orientation, but it does matter if they are rotated.
+
 - After setting the world to a state, and before advancing the world, the states should be completely equal even if dynamics is
   disabled - currently the acceleration has to be skipped in the comparison. See also transfer_world_state tutorial.
 

@@ -18,6 +18,7 @@
 #include <collision_benchmark/GazeboMultipleWorlds.hh>
 #include <collision_benchmark/PrimitiveShape.hh>
 #include <collision_benchmark/GazeboModelLoader.hh>
+#include <collision_benchmark/BasicTypes.hh>
 
 #include <boost/program_options.hpp>
 
@@ -29,13 +30,15 @@ using collision_benchmark::GazeboModelLoader;
 using collision_benchmark::Shape;
 using collision_benchmark::PrimitiveShape;
 using collision_benchmark::GazeboMultipleWorlds;
+using collision_benchmark::BasicState;
 
 namespace po = boost::program_options;
 
 typedef GazeboMultipleWorlds::GzWorldManager
           ::PhysicsWorldModelInterfaceT::Vector3 Vector3;
 
-// Returns the AABB of the model from the first world in \e worldManager.
+// Helper fuction which returns the AABB of the model from the first
+// world in \e worldManager.
 // Presumes that the model exists in all worlds and the AABB would be
 // the same (or very, very similar) in all worlds.
 // See also collision_benchmark::GetConsistentAABB() (in test/TestUtils.hh)
@@ -49,8 +52,8 @@ typedef GazeboMultipleWorlds::GzWorldManager
 // \retval -2 no worlds in world manager
 // \retval -3 could not get AABB from model
 int GetAABB(const std::string& modelName,
-             const GazeboMultipleWorlds::GzWorldManager::Ptr& worldManager,
-             Vector3& min, Vector3& max)
+            const GazeboMultipleWorlds::GzWorldManager::Ptr& worldManager,
+            Vector3& min, Vector3& max, bool& inLocalFrame)
 {
   std::vector<GazeboMultipleWorlds::GzWorldManager
               ::PhysicsWorldModelInterfacePtr>
@@ -60,7 +63,7 @@ int GetAABB(const std::string& modelName,
 
   GazeboMultipleWorlds::GzWorldManager::PhysicsWorldModelInterfacePtr w =
     worlds.front();
-  if (!w->GetAABB(modelName, min, max))
+  if (!w->GetAABB(modelName, min, max, inLocalFrame))
   {
       std::cerr << "Model " << modelName << ": AABB could not be retrieved"
                 << std::endl;
@@ -68,6 +71,36 @@ int GetAABB(const std::string& modelName,
   }
   return 0;
 }
+
+
+// Helper function which gets state of the model in the first world of the
+// \e worldManager. Presumes that the model exists in all worlds and the state
+// would be the same (or very, very similar) in all worlds.
+// \retval 0 success
+// \retval -1 the model does not exist in the first world.
+// \retval -2 no worlds in world manager
+// \retval -3 could not get state of model
+int GetBasicModelState(const std::string& modelName,
+               const GazeboMultipleWorlds::GzWorldManager::Ptr& worldManager,
+               BasicState& state)
+{
+  std::vector<GazeboMultipleWorlds::GzWorldManager
+              ::PhysicsWorldModelInterfacePtr>
+    worlds = worldManager->GetModelPhysicsWorlds();
+
+  if (worlds.empty()) return -2;
+
+  GazeboMultipleWorlds::GzWorldManager::PhysicsWorldModelInterfacePtr w =
+    worlds.front();
+  if (!w->GetBasicModelState(modelName, state))
+  {
+      std::cerr << "Model " << modelName << ": state could not be retrieved"
+                << std::endl;
+      return -3;
+  }
+  return 0;
+}
+
 
 /////////////////////////////////////////////////
 int main(int argc, char **argv)
@@ -185,7 +218,12 @@ int main(int argc, char **argv)
   bool enforceContactCalc=false;
   bool allowControlViaMirror = true;
   GazeboMultipleWorlds gzMultiWorld;
-  gzMultiWorld.Load(selectedEngines, loadMirror, enforceContactCalc);
+
+  // physics should be disable as this test only is meant to
+  // display the contacts.
+  bool physicsEnabled = false;
+  gzMultiWorld.Load(selectedEngines, physicsEnabled,
+                    loadMirror, enforceContactCalc, allowControlViaMirror);
 
   // Load extra models to the world
   // ----------------------
@@ -241,6 +279,8 @@ int main(int argc, char **argv)
       GazeboModelLoader::GetModelSdfFilename(modelResource);
     // std::cout << "Loading model: " << modelSDF << std::endl;
     std::string modelName = "model" + std::to_string(i);
+    std::cout << "Adding model name: " << modelName
+              << " from resource " << modelSDF << std::endl;
     std::vector<ModelLoadResult> res =
       worldManager->AddModelFromFile(modelSDF, modelName);
     if (res.size() != worldManager->GetNumWorlds())
@@ -259,18 +299,49 @@ int main(int argc, char **argv)
 
   // Get the AABB's of the two models
   Vector3 min1, min2, max1, max2;
-  if ((GetAABB(loadedModelNames[0], worldManager, min1, max1) != 0) ||
-      (GetAABB(loadedModelNames[1], worldManager, min2, max2) != 0))
+  bool local1, local2;
+  if ((GetAABB(loadedModelNames[0], worldManager, min1, max1, local1) != 0) ||
+      (GetAABB(loadedModelNames[1], worldManager, min2, max2, local2) != 0))
   {
     std::cerr << "Could not get AABBs of models" << std::endl;
-    return false;
+    return 1;
   }
+
+  std::cout << "AABB 1: " << min1 << " -- " << max1 << std::endl;
+  std::cout << "AABB 2: " << min2 << " -- " << max2 << std::endl;
+
+  // separate them along the desired global coodrinate frame axis.
+  // Leave model 1 where it is and move model 2 away from it.
+  Vector3 axis(0,0,1); // can be unit x, y or z axis
+  double dist = min2.Dot(axis) - max1.Dot(axis);
+  double desiredDistance = 0;
+  double moveDistance = desiredDistance - dist;
+  std::cout << "Move model 2 along axis " << axis*moveDistance << std::endl;
+
+  BasicState modelState2;
+  if (GetBasicModelState(loadedModelNames[1], worldManager, modelState2) != 0)
+  {
+    std::cerr << "Could not get BasicModelState." << std::endl;
+    return 1;
+  }
+
+  if (!modelState2.PosEnabled())
+  {
+    std::cerr << "Model is expected to have a position" << std::endl;
+    return 1;
+  }
+
+  axis *= moveDistance;
+  std::cout << "State of model 2: " << modelState2 << std::endl;
+  collision_benchmark::Vector3 modelPos = modelState2.position;
+  modelPos.x += axis.X();
+  modelPos.y += axis.Y();
+  modelPos.z += axis.Z();
+  modelState2.SetPosition(modelPos);
+  worldManager->SetBasicModelState(loadedModelNames[1], modelState2);
 
   // Run the world(s)
   // ----------------------
-  // physics should be disable as this test only is meant to
-  // display the contacts.
-  bool physicsEnabled = false;
   gzMultiWorld.Run(physicsEnabled);
 
   std::cout << "Bye, bye." << std::endl;

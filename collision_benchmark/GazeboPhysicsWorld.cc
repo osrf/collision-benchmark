@@ -942,13 +942,15 @@ GazeboPhysicsWorld::GetModel(const ModelID& model) const
 
 
 bool GazeboPhysicsWorld::GetAABB(const ModelID& id,
-                                 Vector3& min, Vector3& max) const
+                                 Vector3& min, Vector3& max,
+                                 bool& inLocalFrame) const
 {
   gazebo::physics::ModelPtr m=world->ModelByName(id);
   if (!m) return false;
   ignition::math::Box box = m->BoundingBox();
   min = Vector3(box.Min().X(), box.Min().Y(), box.Min().Z());
   max = Vector3(box.Max().X(), box.Max().Y(), box.Max().Z());
+  inLocalFrame = true;
   return true;
 }
 
