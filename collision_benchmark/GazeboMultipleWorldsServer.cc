@@ -25,6 +25,12 @@
 using collision_benchmark::GazeboMultipleWorldsServer;
 
 /////////////////////////////////////////////////////////////////////
+bool GazeboMultipleWorldsServer::isRunning() const
+{
+  return running;
+}
+
+/////////////////////////////////////////////////////////////////////
 bool GazeboMultipleWorldsServer::Start(int argc, const char** argv)
 {
   if ((argc == 0) || !argv)
@@ -49,15 +55,18 @@ bool GazeboMultipleWorldsServer::Start(int argc, const char** argv)
     std::cerr<<"Could not setup server"<<std::endl;
     return false;
   }
+  running = true;
   return true;
 }
 
 /////////////////////////////////////////////////////////////////////
 void GazeboMultipleWorldsServer::Stop()
 {
+  if (!running) return;
   std::cout << "Shutting down..." <<std::endl;
   gazebo::shutdown();
-  std::cout << "Multi-world server ended." << std::endl;
+  std::cout << "Multi-world server shut down." << std::endl;
+  running = false;
 }
 
 /////////////////////////////////////////////////////////////////////

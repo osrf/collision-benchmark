@@ -39,9 +39,16 @@ the [dart-6-devel](https://bitbucket.org/JenniferBuehler/gazebo/branch/dart-6-de
 branch, which is the default branch merged with
 
 - [PR 2657](https://bitbucket.org/osrf/gazebo/pull-requests/2657): problems with transport
-- [PR 2708](https://bitbucket.org/osrf/gazebo/pull-requests/2708)
+- [PR 2708](https://bitbucket.org/osrf/gazebo/pull-requests/2708): add method World::SDF()
+- [PR 2709](https://bitbucket.org/osrf/gazebo/pull-requests/2709): ODE contact points not constantly displayed
+- [PR 2713](https://bitbucket.org/osrf/gazebo/pull-requests/2713): Faulty bounding boxes in bullet and dart
 - only minor: [PR 2705](https://bitbucket.org/osrf/gazebo/pull-requests/2705)
 - only minor: [PR 2707](https://bitbucket.org/osrf/gazebo/pull-requests/2707)
+
+Please also see [dart PR 881](https://github.com/dartsim/dart/pull/881)
+and [fcl PR 213](https://github.com/flexible-collision-library/fcl/pull/213)
+which fix some issues with DART/fcl. At the time of writing,
+the changes to fix the issues have not been merged yet.
 
 If you compiled Gazebo from source, don't forget to source
 ``<your-gazebo-install-path>/share/setup.sh`` to set up the 

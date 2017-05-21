@@ -29,12 +29,14 @@
 #include <collision_benchmark/GazeboMultipleWorldsServer.hh>
 #include <collision_benchmark/WorldLoader.hh>
 
+#include <collision_benchmark/StartWaiter.hh>
+
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
 #include <gazebo/sensors/SensorsIface.hh>
 
 #include <boost/program_options.hpp>
-#include <atomic>
+
 
 using collision_benchmark::PhysicsWorldBaseInterface;
 using collision_benchmark::PhysicsWorldStateInterface;
@@ -50,6 +52,7 @@ using collision_benchmark::WorldLoader;
 using collision_benchmark::GazeboWorldLoader;
 using collision_benchmark::MultipleWorldsServer;
 using collision_benchmark::GazeboMultipleWorldsServer;
+using collision_benchmark::StartWaiter;
 
 namespace po = boost::program_options;
 
@@ -67,68 +70,13 @@ typedef WorldManager<GazeboPhysicsWorldTypes::WorldState,
                      GazeboPhysicsWorldTypes::Wrench>
           GzWorldManager;
 
-// test is paused or not
-std::atomic<bool> g_unpaused(false);
-std::atomic<bool> g_keypressed(false);
-
 
 // the server
 GzMultipleWorldsServer::Ptr g_server;
 
-// waits until enter has been pressed and sets g_keypressed to true
-void WaitForEnter()
-{
-  int key = getchar();
-  g_keypressed=true;
-}
-
-// waits for either g_unpaused is set to
-// true or until enter key was pressed.
-void WaitForUnpause()
-{
-  g_keypressed = false;
-  std::thread * t = new std::thread(WaitForEnter);
-  t->detach();  // detach so it can be terminated
-  while (!g_unpaused && !g_keypressed)
-  {
-    gazebo::common::Time::MSleep(100);
-  }
-  delete t;
-}
-
-void pauseCallback(bool pause)
-{
-  //std::cout<<"############ Pause callback: "<<pause<<std::endl;
-  g_unpaused = !pause;
-}
-
 // will be called at each loop iteration
 void LoopIter(int iter)
 {
-/*
-  GzWorldManager::Ptr worldManager = g_server->GetWorldManager();
-  PhysicsWorldBaseInterface::Ptr mirroredWorld
-      = worldManager.GetMirroredWorld();
-  GzPhysicsWorld::Ptr mirroredWorldCast =
-      std::dynamic_pointer_cast<GzPhysicsWorld>(mirroredWorld);
-  assert(mirroredWorldCast);
-  std::vector<GzPhysicsWorld::ContactInfoPtr> contacts =
-      mirroredWorldCast->GetContactInfo();
-  std::cout<<"Number of contacts: "<<contacts.size()<<std::endl;
-  getchar();*/
-
-  // temporary for testing: when paused, idle a little,
-  // to not make this print too often
-  /*const static int printCnt = 100;
-  static int print = printCnt;
-  if (!g_unpaused)
-    gazebo::common::Time::MSleep(100);
-  if (print <= 0)
-  {
-    std::cout<<"Updating world still going."<<std::endl;
-    print=printCnt;
-  }
-  --print;*/
 }
 
 // Initializes the multiple worlds server
@@ -136,26 +84,8 @@ bool Init(const bool loadMirror,
           const bool allowControlViaMirror,
           const bool enforceContactCalc)
 {
-  std::set<std::string> engines =
-    collision_benchmark::GetSupportedPhysicsEngines();
-  GzMultipleWorldsServer::WorldLoader_M loaders;
-  for (std::set<std::string>::const_iterator
-       it = engines.begin(); it != engines.end(); ++it)
-  {
-    std::string engine = *it;
-    try
-    {
-      loaders[engine] =
-        WorldLoader::ConstPtr(new GazeboWorldLoader(engine,
-                                                    enforceContactCalc));
-    }
-    catch (collision_benchmark::Exception& e)
-    {
-      std::cerr << "Could not add support for engine "
-                <<engine << ": " << e.what() << std::endl;
-      continue;
-    }
-  }
+  GzMultipleWorldsServer::WorldLoader_M loaders =
+    collision_benchmark::GetSupportedGazeboWorldLoaders(enforceContactCalc);
 
   if (loaders.empty())
   {
@@ -191,26 +121,32 @@ bool Run()
   GzWorldManager::ControlServerPtr controlServer =
     worldManager->GetControlServer();
 
+  StartWaiter startWaiter;
+
   if (controlServer)
   {
-    controlServer->RegisterPauseCallback(std::bind(pauseCallback,
+    controlServer->RegisterPauseCallback(std::bind(&StartWaiter::PauseCallback,
+                                                   &startWaiter,
                                                    std::placeholders::_1));
   }
 
-//  worldManager->SetDynamicsEnabled(false);
   worldManager->SetPaused(true);
 
   std::cout << "Now start gzclient if you would like "
-            << "to view the test: "<<std::endl;
+            << "to view the worlds: "<<std::endl;
   std::cout << "gzclient --g libcollision_benchmark_gui.so" << std::endl;
   std::cout << "Press [Enter] to continue without gzclient or hit "
             << "the play button in gzclient."<<std::endl;
-  WaitForUnpause();
+
+  // wait until either the [Play] button has been clicked, or [Enter] pressed.
+  startWaiter.WaitForUnpause();
 
   worldManager->SetPaused(false);
 
   std::cout << "Now starting to update worlds."<<std::endl;
   int iter = 0;
+  // TODO: at this point, we can only stop the program with Ctrl+C
+  // which is not great. Find a better way to do this.
   while(true)
   {
     int numSteps=1;
@@ -253,7 +189,6 @@ Only works when no engines are specified with -e.")
     ;
 
   po::variables_map vm;
-
   po::positional_options_description p;
   // positional arguments default to "worlds" argument
   p.add("worlds", -1);
@@ -312,7 +247,6 @@ Only works when no engines are specified with -e.")
     std::cout<<"Loading world " << worldfile <<std::endl;
 
     std::string worldPrefix;
-
     if (!selectedEngines.empty() || !vm.count("keep-name"))
     {
       std::stringstream _worldPrefix;

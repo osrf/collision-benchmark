@@ -168,8 +168,15 @@ class WorldManager
     }
   }
 
-  public: ~WorldManager() {}
+  public: ~WorldManager()
+          { Fini(); }
 
+  public: void Fini()
+  {
+    worlds.clear();
+    this->mirrorWorld.reset();
+    this->controlServer.reset();
+  }
 
   /// Sets the mirror world. This world can be set to mirror any of the worlds,
   /// for example for visualization of the currently selected world.
@@ -493,17 +500,6 @@ class WorldManager
    return std::dynamic_pointer_cast<PhysicsWorldT>(w);
   }
 
-  /*  public: template<class WorldState_, class ModelID_, class ModelPartID_,
-                   class Vector3_, class Wrench_>
-          static typename PhysicsWorld<WorldState, ModelID_, ModelPartID_,
-                                       Vector3_, Wrench_>::Ptr
-          ToPhysicsWorld(const PhysicsWorldBaseInterface::Ptr& w)
-  {
-   return std::dynamic_pointer_cast
-          <PhysicsWorld<WorldState_, ModelID_, ModelPartID_,
-                         Vector3_, Wrench_>>(w);
-  }*/
-
   public: void SetPaused(bool flag)
   {
    std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
@@ -545,7 +541,6 @@ class WorldManager
    // therefore there will be a deadlock for accessing the worlds in
    // the callback functions of this class. Only block the worlds
    // vector while absolutey necessary.
-   // std::cout<<"__________UPDATE__________"<<std::endl;
    this->worldsMutex.lock();
    int numWorlds=this->worlds.size();
    this->worldsMutex.unlock();
@@ -568,7 +563,6 @@ class WorldManager
    {
      this->mirrorWorld->Sync();
    }
-   // std::cout<<"__________UPDATE END__________"<<std::endl;
   }
 
   public: ControlServerPtr GetControlServer()
@@ -682,20 +676,6 @@ class WorldManager
        }
      }
   }
-
-  // changing gravity is not supported yet, but if it is,
-  // it can be implemented here at some point
-  /*public: void SetGravity(const float x, const float y, const float z)
-   {
-     std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
-     for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator
-          it = this->worlds.begin();
-          it != this->worlds.end(); ++it)
-     {
-         PhysicsWorldBaseInterface::Ptr w=*it;
-         ...
-     }
-   }*/
 
   /**
    * Changes the mirror world to either the previous one or the last one.

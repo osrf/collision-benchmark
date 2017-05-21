@@ -333,10 +333,13 @@ class PhysicsWorldModelInterface
   public: virtual bool GetBasicModelState(const ModelID& id,
                                           BasicState& state) = 0;
 
-  /// get axis aligned bounding box of the model
+  /// \brief Get axis aligned bounding box of the model.
+  /// \param[out] inLocalFrame true if the AABB is expressed in the
+  ///   local coordinate system of the model, false if it's in global.
   /// \retval false the model was not in the world
   public: virtual bool GetAABB(const ModelID& id,
-                               Vector3& min, Vector3& max) const = 0;
+                               Vector3& min, Vector3& max,
+                               bool& inLocalFrame) const = 0;
 };
 
 /**
