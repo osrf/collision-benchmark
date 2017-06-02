@@ -119,7 +119,6 @@ void CollisionBarHandler(const ignition::math::Pose3d& collBarPose,
                          const float cylinderLength,
                          const std::string& mirrorName)
 {
-
   // make a model publisher which will publish the bar to gzclient
   gazebo::transport::NodePtr node =
     gazebo::transport::NodePtr(new gazebo::transport::Node());
@@ -168,7 +167,34 @@ void CollisionBarHandler(const ignition::math::Pose3d& collBarPose,
   gazebo::msgs::Set(visualMsg.mutable_pose(), visualRelPose);
   visualMsg.set_type(gazebo::msgs::Visual::VISUAL);
   visualMsg.set_is_static(true);
-  visualMsg.set_transparency(200);
+  gazebo::msgs::Material * mat = visualMsg.mutable_material();
+  gazebo::msgs::Color * colDiffuse = mat->mutable_diffuse();
+  colDiffuse->set_r(1);
+  colDiffuse->set_g(0.5);
+  colDiffuse->set_b(0.5);
+  colDiffuse->set_a(0.5);
+  gazebo::msgs::Color * colAmbient = mat->mutable_ambient();
+  colAmbient->set_r(1);
+  colAmbient->set_g(0.5);
+  colAmbient->set_b(0.5);
+  colAmbient->set_a(0.5);
+/*  gazebo::msgs::Color * colSpecular = mat->mutable_specular();
+  colSpecular->set_r(1);
+  colSpecular->set_g(0);
+  colSpecular->set_b(0);
+  colSpecular->set_a(0.5);
+  gazebo::msgs::Color * colEmissive = mat->mutable_emissive();
+  colEmissive->set_r(1);
+  colEmissive->set_g(0);
+  colEmissive->set_b(0);
+  colEmissive->set_a(0.5);*/
+  // transparency doesn't really work unfortunately...
+  // XXX TODO figure out how to do this
+  visualMsg.set_transparency(0.5);
+
+  /*visualMsg.mutable_material()->mutable_diffuse()->set_r(1);
+  visualMsg.mutable_material()->mutable_specular()->set_r(1);*/
+
   // This is a bit of a HACK at this point:
   // Parent name must be scene name (the one gzclient subscribes to,
   // which is the mirror world), otherwise the visual won't be added
