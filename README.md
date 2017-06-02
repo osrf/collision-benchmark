@@ -19,6 +19,8 @@ all physics engines coming with Gazebo are supported.
 1. [Installation](#installation)
 1. [Simulating multiple parallel worlds](#simulating-multiple-parallel-worlds)
 1. [Physics engine testing](#physics-engine-testing)
+    - [Static tests](#the-static-tests)
+    - [Dynamic tests](#the-dynamic-tests)
 1. [Short introduction to the API](#short-introduction-to-the-api)
 
 ## Installation
@@ -327,6 +329,18 @@ failed. The tests also don't use a ground floor, which means the objects will
 be falling in free space.
 You will also need to add ``<your-output-path>`` to the ``GAZEBO_RESOURCE_PATH``
 in order to be able to display models which contain meshes.
+
+
+### The "dynamic tests"
+
+**WORK IN PROGRESS**
+
+Examples:
+
+``collide_test <list of physics engines> -m mailbox -m <path-to-SDF>``
+
+``collide_test <list of physics engines> -m mailbox -s sphere``
+
 
 ## Short introduction to the API
 

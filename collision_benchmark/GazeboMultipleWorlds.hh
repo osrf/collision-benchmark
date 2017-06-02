@@ -60,7 +60,7 @@ class GazeboMultipleWorlds
 
   // Loads the client and initializes the server.
   // Must be called before Run().
-  // A call to this funciton will fork the process, returning one parent
+  // A call to this function will fork the process, returning one parent
   // and one child. Though only the parent returns from this call.
   public: bool Load(const std::vector<std::string>& selectedEngines,
                     bool physicsEnabled = true,
@@ -80,6 +80,13 @@ class GazeboMultipleWorlds
                    const std::function<void(int)>& loopCallback
                       = std::function<void(int)>());
 
+  // \brief Returns the name of the mirror.
+  // This is the name of the world which the gzclient will use.
+  // This is useful when Load() was called with parameter \e loadMirror
+  // set to true, and the application needs to know the name of the
+  // mirror being used.
+  public: std::string GetMirrorName() const { return MirrorName; }
+
   protected: bool IsChild() const;
   protected: bool IsParent() const;
 
@@ -93,11 +100,15 @@ class GazeboMultipleWorlds
 
   protected: void KillClient();
 
+  // the name of the mirror. This is the name of the world which the
+  // gzclient will use.
+  private: static const std::string MirrorName;
+
   // the server
-  GzMultipleWorldsServer::Ptr server;
+  private: GzMultipleWorldsServer::Ptr server;
 
   // the child process ID for running gzclient
-  pid_t gzclient_pid;
+  private: pid_t gzclient_pid;
 
 };  // class GazeboMultipleWorlds
 

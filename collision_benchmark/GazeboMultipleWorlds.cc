@@ -48,6 +48,8 @@ using collision_benchmark::MultipleWorldsServer;
 using collision_benchmark::GazeboMultipleWorldsServer;
 using collision_benchmark::StartWaiter;
 
+const std::string GazeboMultipleWorlds::MirrorName = "mirror";
+
 GazeboMultipleWorlds::~GazeboMultipleWorlds()
 {
   if (IsClientRunning())
@@ -80,7 +82,7 @@ bool GazeboMultipleWorlds::Init(const bool loadMirror,
   server->Start(argc, &argv);
 
   std::string mirrorName = "";
-  if (loadMirror) mirrorName = "mirror";
+  if (loadMirror) mirrorName = MirrorName;
 
   server->Init(mirrorName, allowControlViaMirror);
 
@@ -182,6 +184,7 @@ bool GazeboMultipleWorlds::Run(bool waitForStartSignal,
 
   std::cout << "Now starting to update worlds."<<std::endl;
   int iter = 0;
+  worldManager->SetPaused(false);
   while(IsClientRunning())
   {
     int numSteps=1;
@@ -211,12 +214,29 @@ bool GazeboMultipleWorlds::IsParent() const
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// handler for SIGSEV to kill all child processes
+pid_t gPGid;
+void handler(int sig) {
+  if (sig == SIGSEGV)
+  {
+    std::cout << "Segmentation fault - caught SIGSEV and killing "
+              << "child process(es). " << __FILE__
+              << ", " << __LINE__ << std::endl;
+    kill(-gPGid, SIGTERM);     // kill the whole process group
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 bool GazeboMultipleWorlds::Load(const std::vector<std::string>& selectedEngines,
                                 bool physicsEnabled,
                                 bool loadMirror,
                                 bool enforceContactCalc,
                                 bool allowControlViaMirror)
 {
+  setpgid(0, 0);       // Make new process group, if needed
+  gPGid = getpgid(0);
+  signal(SIGSEGV, handler);
+
   gzclient_pid = fork();
   if (gzclient_pid == 0)
   {
@@ -253,6 +273,5 @@ bool GazeboMultipleWorlds::Load(const std::vector<std::string>& selectedEngines,
   if (!worldManager) return false;
 
   worldManager->SetDynamicsEnabled(physicsEnabled);
-
   return true;
 }
