@@ -90,6 +90,36 @@ ignition::math::Matrix4<Float>
   return m;
 }
 
+// Unfortunately, we can't do this:
+//  ``v[i] = ...``
+// because ignition::math::Vector3::operator[] returns no l-value.
+// This function achieves this. Supported are idx in range [0..2].
+template<typename Float>
+void SetIdx(const int idx,
+            const Float val,
+            ignition::math::Vector3<Float>& v)
+{
+  uint32_t index = idx < 0 ? 0u : idx > 2 ? 2 : idx;
+  switch(index)
+  {
+    case 0:
+      {
+        v.X(val);
+        break;
+      }
+    case 1:
+      {
+        v.Y(val);
+        break;
+      }
+    case 2:
+      {
+        v.Z(val);
+        break;
+      }
+  }
+}
+
 /**
  * \brief Transforms the axis-aligned bounding box by \e transform.
  */
@@ -100,7 +130,7 @@ void UpdateAABB(const ignition::math::Vector3<Float>& initialMin,
                 ignition::math::Vector3<Float>& newMin,
                 ignition::math::Vector3<Float>& newMax)
 {
-#if 1
+#if 0
     // brute force implementation
     Float xCoords[2] = { initialMin.X(), initialMax.X() };
     Float yCoords[2] = { initialMin.Y(), initialMax.Y() };
@@ -125,6 +155,29 @@ void UpdateAABB(const ignition::math::Vector3<Float>& initialMin,
     // alternative implementation: see book "real-time collision detection"
     // by Ericson, Vol 1, chapter 4.2.6, p. 86, function UpdateAABB
 
+    // for all 3 axes
+    for (int i=0; i < 3; ++i)
+    {
+      // Start by adding in translation
+      SetIdx(i, transform(i,3), newMin);
+      SetIdx(i, transform(i,3), newMax);
+      // form extent by summing smaller and larger terms respectively
+      for (int j=0; j < 3; ++j)
+      {
+        Float e = transform(i,j) * initialMin[j];
+        Float f = transform(i,j) * initialMax[j];
+        if (e < f)
+        {
+          SetIdx(i, newMin[i] + e, newMin);
+          SetIdx(i, newMax[i] + f, newMax);
+        }
+        else
+        {
+          SetIdx(i, newMin[i] + f, newMin);
+          SetIdx(i, newMax[i] + e, newMax);
+        }
+      }
+    }
 #endif
 }
 

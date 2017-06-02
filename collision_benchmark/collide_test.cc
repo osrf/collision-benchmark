@@ -427,6 +427,8 @@ int main(int argc, char **argv)
   if (loadedModelNames.size() != 2)
     throw std::runtime_error("Inconsistency: There have to be two models");
 
+#define TEST_AABB
+#ifndef TEST_AABB
   // make sure the models are at the origin first
   BasicState modelState1;
   modelState1.SetPosition(0,0,0);
@@ -440,8 +442,8 @@ int main(int argc, char **argv)
     std::cerr << "Could not set all model poses to origin" << std::endl;
     return 1;
   }
-
-  /*  XXX not needed any more as we are enforcing origin pose:
+#else
+  BasicState modelState1, modelState2;
   // get the states of the models as loaded in their original pose
   if (GetBasicModelState(loadedModelNames[0], worldManager, modelState1) != 0)
   {
@@ -452,7 +454,8 @@ int main(int argc, char **argv)
   {
     std::cerr << "Could not get BasicModelState." << std::endl;
     return 1;
-  }*/
+  }
+#endif
 
   if (!modelState1.PosEnabled() ||
       !modelState2.PosEnabled())
@@ -475,13 +478,10 @@ int main(int argc, char **argv)
     return 1;
   }
 
-  std::cout << "AABB 1: " << min1 << " -- " << max1 << std::endl;
-  std::cout << "AABB 2: " << min2 << " -- " << max2 << std::endl;
+#ifdef TEST_AABB
+  // The following is only needed if objects are not at origin
+  // to start with (because then global frame = local frame)
 
-  // XXX The following should not be needed any more because we are translating
-  // both objects to the origin in the beginning, so local coordinate frame
-  // will be equal to global
-  /*
   // If the ABBs are not given in global coordinate frame, need to transform
   // the AABBs first.
   if (local1)
@@ -507,7 +507,11 @@ int main(int argc, char **argv)
     collision_benchmark::UpdateAABB(ignMin, ignMax, trans, newMin, newMax);
     min2 = newMin;
     max2 = newMax;
-  }*/
+  }
+#endif
+
+  std::cout << "AABB 1: " << min1 << " -- " << max1 << std::endl;
+  std::cout << "AABB 2: " << min2 << " -- " << max2 << std::endl;
 
   // separate them along the desired global coodrinate frame axis.
   // Leave model 1 where it is and move model 2 away from it.
@@ -516,7 +520,7 @@ int main(int argc, char **argv)
   const float aabb2LenOnAxis = (max2-min2).Dot(axis);
   // desired distance between models is as long as half of the
   // larger AABBs on this axis
-  double desiredDistance = 0; // std::max(aabb1LenOnAxis/2, aabb2LenOnAxis/2);
+  double desiredDistance = std::max(aabb1LenOnAxis/2, aabb2LenOnAxis/2);
   // distance between both AABBs in their orignal pose
   double dist = min2.Dot(axis) - max1.Dot(axis);
   double moveDistance = desiredDistance - dist;
