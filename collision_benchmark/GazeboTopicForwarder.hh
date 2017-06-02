@@ -567,10 +567,10 @@ class GazeboTopicBlockPrinter:
     assert(_msg);
     if (!msgFilter || msgFilter->Filter(_msg))
     {
-      std::cout<<printPrefix<<": Blocked message of type "<<GetTypeName<Msg>();
+      /* std::cout<<printPrefix<<": Blocked message of type "<<GetTypeName<Msg>();
       if (this->sub) std::cout<<" on topic "<<this->sub->GetTopic();
       else std::cout<<" <null>";
-      std::cout<<std::endl;
+      std::cout<<std::endl;*/
     }
   }
 

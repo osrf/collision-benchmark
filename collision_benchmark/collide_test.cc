@@ -20,6 +20,7 @@
 #include <collision_benchmark/GazeboModelLoader.hh>
 #include <collision_benchmark/GazeboWorldLoader.hh>
 #include <collision_benchmark/BasicTypes.hh>
+#include <collision_benchmark/MathHelpers.hh>
 
 #include <boost/program_options.hpp>
 
@@ -191,9 +192,7 @@ void CollisionBarHandler(const ignition::math::Pose3d& collBarPose,
   // transparency doesn't really work unfortunately...
   // XXX TODO figure out how to do this
   visualMsg.set_transparency(0.5);
-
-  /*visualMsg.mutable_material()->mutable_diffuse()->set_r(1);
-  visualMsg.mutable_material()->mutable_specular()->set_r(1);*/
+  visualMsg.set_cast_shadows(false);
 
   // This is a bit of a HACK at this point:
   // Parent name must be scene name (the one gzclient subscribes to,
@@ -428,10 +427,45 @@ int main(int argc, char **argv)
   if (loadedModelNames.size() != 2)
     throw std::runtime_error("Inconsistency: There have to be two models");
 
+  // make sure the models are at the origin first
+  BasicState modelState1;
+  modelState1.SetPosition(0,0,0);
+  modelState1.SetRotation(0,0,0,1);
+  BasicState modelState2(modelState1);
+  if ((worldManager->SetBasicModelState(loadedModelNames[0], modelState1)
+       != worldManager->GetNumWorlds()) ||
+      (worldManager->SetBasicModelState(loadedModelNames[1], modelState2)
+       != worldManager->GetNumWorlds()))
+  {
+    std::cerr << "Could not set all model poses to origin" << std::endl;
+    return 1;
+  }
+
+  /*  XXX not needed any more as we are enforcing origin pose:
+  // get the states of the models as loaded in their original pose
+  if (GetBasicModelState(loadedModelNames[0], worldManager, modelState1) != 0)
+  {
+    std::cerr << "Could not get BasicModelState." << std::endl;
+    return 1;
+  }
+  if (GetBasicModelState(loadedModelNames[1], worldManager, modelState2) != 0)
+  {
+    std::cerr << "Could not get BasicModelState." << std::endl;
+    return 1;
+  }*/
+
+  if (!modelState1.PosEnabled() ||
+      !modelState2.PosEnabled())
+  {
+    std::cerr << "Models are expected to have a position" << std::endl;
+    return 1;
+  }
+
+
   // position models so they're not intersecting.
   // ----------------------
 
-  // Get the AABB's of the two models
+  // Get the AABB's of the two models.
   Vector3 min1, min2, max1, max2;
   bool local1, local2;
   if ((GetAABB(loadedModelNames[0], worldManager, min1, max1, local1) != 0) ||
@@ -444,45 +478,79 @@ int main(int argc, char **argv)
   std::cout << "AABB 1: " << min1 << " -- " << max1 << std::endl;
   std::cout << "AABB 2: " << min2 << " -- " << max2 << std::endl;
 
+  // XXX The following should not be needed any more because we are translating
+  // both objects to the origin in the beginning, so local coordinate frame
+  // will be equal to global
+  /*
+  // If the ABBs are not given in global coordinate frame, need to transform
+  // the AABBs first.
+  if (local1)
+  {
+    ignition::math::Matrix4d trans =
+      collision_benchmark::GetMatrix<double>(modelState1.position,
+                                             modelState1.rotation);
+    ignition::math::Vector3d newMin, newMax;
+    ignition::math::Vector3d ignMin(collision_benchmark::ConvIgn<double>(min1));
+    ignition::math::Vector3d ignMax(collision_benchmark::ConvIgn<double>(max1));
+    collision_benchmark::UpdateAABB(ignMin, ignMax, trans, newMin, newMax);
+    min1 = newMin;
+    max1 = newMax;
+  }
+  if (local2)
+  {
+    ignition::math::Matrix4d trans =
+      collision_benchmark::GetMatrix<double>(modelState2.position,
+                                             modelState2.rotation);
+    ignition::math::Vector3d newMin, newMax;
+    ignition::math::Vector3d ignMin(collision_benchmark::ConvIgn<double>(min2));
+    ignition::math::Vector3d ignMax(collision_benchmark::ConvIgn<double>(max2));
+    collision_benchmark::UpdateAABB(ignMin, ignMax, trans, newMin, newMax);
+    min2 = newMin;
+    max2 = newMax;
+  }*/
+
   // separate them along the desired global coodrinate frame axis.
   // Leave model 1 where it is and move model 2 away from it.
-  Vector3 axis(0,0,1); // can be unit x, y or z axis
+  const Vector3 axis(0,1,0); // can be unit x, y or z axis
+  const float aabb1LenOnAxis = (max1-min1).Dot(axis);
+  const float aabb2LenOnAxis = (max2-min2).Dot(axis);
+  // desired distance between models is as long as half of the
+  // larger AABBs on this axis
+  double desiredDistance = 0; // std::max(aabb1LenOnAxis/2, aabb2LenOnAxis/2);
+  // distance between both AABBs in their orignal pose
   double dist = min2.Dot(axis) - max1.Dot(axis);
-  double desiredDistance = 0;
   double moveDistance = desiredDistance - dist;
   std::cout << "Move model 2 along axis " << axis*moveDistance << std::endl;
 
-  BasicState modelState2;
-  if (GetBasicModelState(loadedModelNames[1], worldManager, modelState2) != 0)
-  {
-    std::cerr << "Could not get BasicModelState." << std::endl;
-    return 1;
-  }
-
-  if (!modelState2.PosEnabled())
-  {
-    std::cerr << "Model is expected to have a position" << std::endl;
-    return 1;
-  }
-
-  axis *= moveDistance;
+  Vector3 moveAlongAxis = axis * moveDistance;
   std::cout << "State of model 2: " << modelState2 << std::endl;
-  collision_benchmark::Vector3 modelPos = modelState2.position;
-  modelPos.x += axis.X();
-  modelPos.y += axis.Y();
-  modelPos.z += axis.Z();
-  modelState2.SetPosition(modelPos);
+  collision_benchmark::Vector3 newModelPos2 = modelState2.position;
+  newModelPos2.x += moveAlongAxis.X();
+  newModelPos2.y += moveAlongAxis.Y();
+  newModelPos2.z += moveAlongAxis.Z();
+  modelState2.SetPosition(newModelPos2);
   worldManager->SetBasicModelState(loadedModelNames[1], modelState2);
 
   // start the thread to handle the collision bar
   running = true;
-  ignition::math::Vector3d collBarP(0,0,0);
+  double cylLength = desiredDistance + aabb1LenOnAxis / 2.0f
+                    + aabb2LenOnAxis / 2.0f;
+
+  ignition::math::Vector3d modelPos1(modelState1.position.x,
+                                     modelState1.position.y,
+                                     modelState1.position.z);
+  ignition::math::Vector3d collBarP
+    = modelPos1 +
+      ignition::math::Vector3d(axis.X(), axis.Y(), axis.Z()) * cylLength/2;
+
+/*  ignition::math::Vector3d
+    collBarP(moveCylAlongAxis.x(), moveCylAlongAxis.y(), moveCylAlongAxis.z());*/
   // 90 rotation around y axis
   // ignition::math::Quaterniond collBarQ(sqrt(0.5),0,sqrt(0.5),0);
   // 90 rotation around x axis
   ignition::math::Quaterniond collBarQ(sqrt(0.5),sqrt(0.5),0, 0);
   ignition::math::Pose3d collBarPose(collBarP, collBarQ);
-  std::thread t(CollisionBarHandler, collBarPose, 0.05, 5,
+  std::thread t(CollisionBarHandler, collBarPose, 0.05, cylLength,
                 gzMultiWorld.GetMirrorName());
 
   // Run the world(s)

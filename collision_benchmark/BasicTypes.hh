@@ -69,9 +69,13 @@ class Quaternion: public Vector3
   public: double w;
 };
 
-// simple state of an object
-// Not all values are mandatory.
-// If disabled, assumes current values are kept.
+/**
+ * \brief Simple state of an object
+ * Not all values are mandatory.
+ * If disabled, assumes current values are kept.
+ * \author Jennifer Buehler
+ * \date 2017
+ */
 class BasicState
 {
   // constructor which enables only fields which are not NULL
