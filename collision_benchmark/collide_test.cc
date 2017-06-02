@@ -106,9 +106,20 @@ int GetBasicModelState(const std::string& modelName,
 // for the thread handling the collision bar
 std::atomic<bool> running;
 
-// handles the collision bar
-void collisionBar(const std::string& mirrorName)
+// \brief Handles the collision bar visual in gzclient.
+// This will add a visual cylinder of given radius and length (visual
+// is oriented along z axis) to the gzclient scene.
+// It will keep re-publishing the collision bar pose in order to enforce
+// that it cannot be moved with the move tools of gzclient.
+// The model will not be added to the world(s), it will only be added to
+// gzclient. Trying to manipulate the pose of the collision bar may
+// print errors of that the model cannot be found. This can be ignored.
+void CollisionBarHandler(const ignition::math::Pose3d& collBarPose,
+                         const float cylinderRadius,
+                         const float cylinderLength,
+                         const std::string& mirrorName)
 {
+
   // make a model publisher which will publish the bar to gzclient
   gazebo::transport::NodePtr node =
     gazebo::transport::NodePtr(new gazebo::transport::Node());
@@ -130,21 +141,22 @@ void collisionBar(const std::string& mirrorName)
     gazebo::common::Time::MSleep(500);
   }
 
-  gzerr << "TEMPORARY: Wait for all other connections to be there (eg. ModelListWidget)" << std::endl;
-  gazebo::common::Time::MSleep(2000);
-
-  int visualID = 100;
-
+  // visual ID to use for the bar. This will be the ID
+  // which we can use to set (and keep enforcing) the position of
+  // the bar in gzclient, so it cannot be moved with the move tools in
+  // gzclient.
+  int visualID = std::numeric_limits<uint32_t>::max()-1;
+  // create the model message to add the collision bar model
   gazebo::msgs::Model modelMsg;
   modelMsg.set_name("collision_bar");
   modelMsg.set_id(visualID);
   modelMsg.set_is_static(true);
-  ignition::math::Pose3d barPose;
-  gazebo::msgs::Set(modelMsg.mutable_pose(), barPose);
+  gazebo::msgs::Set(modelMsg.mutable_pose(), collBarPose);
 
   // create visual
   collision_benchmark::Shape::Ptr shape
-    (collision_benchmark::PrimitiveShape::CreateCylinder(1,6));
+    (collision_benchmark::PrimitiveShape::CreateCylinder(cylinderRadius,
+                                                         cylinderLength));
   sdf::ElementPtr shapeGeom=shape->GetShapeSDF();
   sdf::ElementPtr visualSDF(new sdf::Element());
   visualSDF->SetName("visual");
@@ -156,6 +168,7 @@ void collisionBar(const std::string& mirrorName)
   gazebo::msgs::Set(visualMsg.mutable_pose(), visualRelPose);
   visualMsg.set_type(gazebo::msgs::Visual::VISUAL);
   visualMsg.set_is_static(true);
+  visualMsg.set_transparency(200);
   // This is a bit of a HACK at this point:
   // Parent name must be scene name (the one gzclient subscribes to,
   // which is the mirror world), otherwise the visual won't be added
@@ -183,9 +196,6 @@ void collisionBar(const std::string& mirrorName)
 
   while (running)
   {
-    ignition::math::Vector3d p(0,0,0);
-    ignition::math::Quaterniond q(1,0,0,0);
-    ignition::math::Pose3d origPose(p,q);
     gazebo::msgs::PosesStamped poseMsg;
     gazebo::msgs::Set(poseMsg.mutable_time(), 0);
     gazebo::msgs::Pose * singlePoseMsg = poseMsg.add_pose();
@@ -193,13 +203,11 @@ void collisionBar(const std::string& mirrorName)
     singlePoseMsg->set_name("collision_bar");
     singlePoseMsg->set_id(visualID);
 
-    // singlePoseMsg->set_name("unit_sphere_0");
-    // singlePoseMsg->set_id(31);
-
-    gazebo::msgs::Set(singlePoseMsg, origPose);
+    gazebo::msgs::Set(singlePoseMsg, collBarPose);
     posePub->Publish(poseMsg);
     gazebo::common::Time::MSleep(100);
   }
+  std::cout << "Stopping to publish collision bar." << std::endl;
 }
 
 /////////////////////////////////////////////////
@@ -442,11 +450,20 @@ int main(int argc, char **argv)
 
   // start the thread to handle the collision bar
   running = true;
-  std::thread t(collisionBar, gzMultiWorld.GetMirrorName());
+  ignition::math::Vector3d collBarP(0,0,0);
+  // 90 rotation around y axis
+  // ignition::math::Quaterniond collBarQ(sqrt(0.5),0,sqrt(0.5),0);
+  // 90 rotation around x axis
+  ignition::math::Quaterniond collBarQ(sqrt(0.5),sqrt(0.5),0, 0);
+  ignition::math::Pose3d collBarPose(collBarP, collBarQ);
+  std::thread t(CollisionBarHandler, collBarPose, 0.05, 5,
+                gzMultiWorld.GetMirrorName());
 
   // Run the world(s)
   // ----------------------
-  bool waitForStart = true;
+  bool waitForStart = false;
+  // XXX FIXME: if watiForStart is set to true, and we close gzclient,
+  // the application won't exit. See GazeboMultipleWorlds::Run().
   gzMultiWorld.Run(waitForStart);
 
   // end the thread to handle the collision bar
