@@ -236,6 +236,12 @@ void CollisionBarHandler(const ignition::math::Pose3d& collBarPose,
 }
 
 /////////////////////////////////////////////////
+void loopCallback(int iter)
+{
+  // std::cout << "CALLBACK" << std::endl;
+}
+
+/////////////////////////////////////////////////
 int main(int argc, char **argv)
 {
   std::vector<std::string> selectedEngines;
@@ -427,7 +433,7 @@ int main(int argc, char **argv)
   if (loadedModelNames.size() != 2)
     throw std::runtime_error("Inconsistency: There have to be two models");
 
-#define TEST_AABB
+//#define TEST_AABB
 #ifndef TEST_AABB
   // make sure the models are at the origin first
   BasicState modelState1;
@@ -562,7 +568,7 @@ int main(int argc, char **argv)
   bool waitForStart = false;
   // XXX FIXME: if watiForStart is set to true, and we close gzclient,
   // the application won't exit. See GazeboMultipleWorlds::Run().
-  gzMultiWorld.Run(waitForStart);
+  gzMultiWorld.Run(waitForStart, loopCallback);
 
   // end the thread to handle the collision bar
   running = false;
