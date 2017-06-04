@@ -116,6 +116,11 @@ class CollidingShapesTestFramework
                    const GzWorldManager::Ptr& worldManager,
                    BasicState& state);
 
+  // \brief Helper function which moves models towards/away from each other
+  // along the axis by distance \e moveDist.
+  // \param[in] moveDist distance to move each model along axis
+  private: void MoveModelsAlongAxis(const float moveDist);
+
   private: collision_benchmark::GazeboMultipleWorlds::Ptr gzMultiWorld;
 
   // \brief Flag indicating whether the framework is running.

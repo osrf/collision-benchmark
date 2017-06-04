@@ -74,8 +74,14 @@ bool CollidingShapesTestFramework::Run
 
   // Initialize server
   ///////////////////////////////
+
+  // we need to load the mirror world in order to use gzclient.
   bool loadMirror = true;
-  bool enforceContactCalc=false;
+  // important to be true so contacts are calculated for all worlds,
+  // not only the displayed one!
+  bool enforceContactCalc=true;
+  // control via mirror has to be allowed so we can move around models
+  // relative to collision bar.
   bool allowControlViaMirror = true;
   // physics should be disable as this test only is meant to
   // display the contacts.
@@ -287,9 +293,10 @@ bool CollidingShapesTestFramework::Run
 
   // Run the world(s)
   ///////////////////////////////
-  bool waitForStart = false;
-  // XXX FIXME: if watiForStart is set to true, and we close gzclient,
-  // the application won't exit. See GazeboMultipleWorlds::Run().
+  bool waitForStart = true;
+  // XXX FIXME: if waitForStart is set to true, and we close gzclient before
+  // we hit "play", the application (parent fork) won't exit.
+  // See GazeboMultipleWorlds::Run() to fix it.
   gzMultiWorld->Run(waitForStart,
                     std::bind(&CollidingShapesTestFramework::LoopCallback, this,
                               std::placeholders::_1));
@@ -308,6 +315,43 @@ void CollidingShapesTestFramework::LoopCallback(int iter)
 {
   GzWorldManager::Ptr worldManager = gzMultiWorld->GetWorldManager();
   assert(worldManager);
+
+  std::vector<GzWorldManager::PhysicsWorldContactInterfacePtr>
+    contactWorlds = worldManager->GetContactPhysicsWorlds();
+
+  assert(contactWorlds.size() == worldManager->GetNumWorlds());
+
+  int modelsColliding = 0;
+  int i = 0;
+  for (std::vector<GzWorldManager::PhysicsWorldContactInterfacePtr>::iterator
+       it = contactWorlds.begin(); it != contactWorlds.end(); ++it, ++i)
+  {
+    GzWorldManager::PhysicsWorldContactInterfacePtr world = *it;
+    std::vector<GzWorldManager::PhysicsWorldContactInterfaceT::ContactInfoPtr>
+      contacts = world->GetContactInfo();
+    if (!contacts.empty())
+    {
+      ++modelsColliding;
+    }
+  }
+
+  // while collision is not found, move models towards each other
+  if (modelsColliding < contactWorlds.size())  // all worlds have to collide
+  //if (modelsColliding == 0)  // only one world has to collide
+  {
+    bool towards = true;
+    int sign = towards ? 1 : -1;
+    // XXX TODO moveDist should depend on the simulation speed (delta time)
+    const float moveDist = sign * 0.0001;
+    MoveModelsAlongAxis(moveDist);
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+void CollidingShapesTestFramework::MoveModelsAlongAxis(const float moveDist)
+{
+  GzWorldManager::Ptr worldManager = gzMultiWorld->GetWorldManager();
+  assert(worldManager);
   // get state of both models
   BasicState modelState1, modelState2;
   // get the states of the models as loaded in their original pose
@@ -322,14 +366,13 @@ void CollidingShapesTestFramework::LoopCallback(int iter)
     return;
   }
 
-  const float moveDist = 0.0001;
   const ignition::math::Vector3d mv = collisionAxis * moveDist;
   modelState1.SetPosition(modelState1.position.x + mv.X(),
                           modelState1.position.y + mv.Y(),
                           modelState1.position.z + mv.Z());
-  modelState2.SetPosition(modelState2.position.x -mv.X(),
-                          modelState2.position.y -mv.Y(),
-                          modelState2.position.z -mv.Z());
+  modelState2.SetPosition(modelState2.position.x - mv.X(),
+                          modelState2.position.y - mv.Y(),
+                          modelState2.position.z - mv.Z());
 
   if ((worldManager->SetBasicModelState(loadedModelNames[0], modelState1)
        != worldManager->GetNumWorlds()) ||
