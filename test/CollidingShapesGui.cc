@@ -46,37 +46,33 @@ CollidingShapesGui::CollidingShapesGui()
   // Create the main layout
   QHBoxLayout *mainLayout = new QHBoxLayout;
 
-  // Create the frame & layout to hold all the buttons
+  // Create the frame and layout to hold all elements
   QFrame *collidingShapesFrame = new QFrame();
   QHBoxLayout *collidingShapesLayout = new QHBoxLayout();
 
-#if 1
-  // Create the push buttons and connect to OnButton* functions
-  QPushButton * buttonNext = new QPushButton("Gaga");
-  buttonNext->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-  buttonNext->resize(buttonNext->sizeHint());
-//  connect(buttonNext, SIGNAL(clicked()), this, SLOT(OnButtonNext()));
-  collidingShapesLayout->addWidget(buttonNext);
-#endif
+  // Button to the left
+  QPushButton * buttonDec = new QPushButton("<");
+  buttonDec->resize(buttonDec->sizeHint());
+  connect(buttonDec, SIGNAL(clicked()), this, SLOT(OnButtonDec()));
+  collidingShapesLayout->addWidget(buttonDec);
 
 #if 0
-  QScrollBar * scrollbar = new QScrollBar();
-  // scrollbar->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-  connect(scrollbar, SIGNAL(valueChanged(int)),
-          this, SLOT(OnValueChanged(int)));
-  collidingShapesLayout->addWidget(scrollbar);
-#endif
-
-#if 1
+  QScrollBar * slider = new QScrollBar(Qt::Horizontal);
+#else
   QSlider * slider = new QSlider(Qt::Horizontal);
+#endif
   slider->setMinimum(-100);
   slider->setMaximum(100);
   slider->resize(300,20);
-//  slider->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
   connect(slider, SIGNAL(valueChanged(int)),
           this, SLOT(OnValueChanged(int)));
   collidingShapesLayout->addWidget(slider);
-#endif
+
+  // Button to the right
+  QPushButton * buttonInc = new QPushButton(">");
+  buttonInc->resize(buttonInc->sizeHint());
+  connect(buttonInc, SIGNAL(clicked()), this, SLOT(OnButtonInc()));
+  collidingShapesLayout->addWidget(buttonInc);
 
   // set the layout and add the frame as widget
   collidingShapesFrame->setLayout(collidingShapesLayout);
@@ -89,13 +85,9 @@ CollidingShapesGui::CollidingShapesGui()
   this->setLayout(mainLayout);
 
   // Position and resize this widget
-  QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-  sizePolicy.setHorizontalStretch(0);
-  sizePolicy.setVerticalStretch(0);
-  this->setSizePolicy(sizePolicy);
   this->move(10, 100);
 
-  QSize minSize = maxHeightAddWidth(buttonNext->size(), slider->size());
+  QSize minSize = maxHeightAddWidth(buttonInc->size(), slider->size());
   this->resize(minSize);
 
   // Set up transportation system
@@ -122,3 +114,18 @@ void CollidingShapesGui::OnValueChanged(int val)
   m.set_int_value(1); // "Next" world
   this->mirrorWorldPub->Publish(m);
 }
+
+/////////////////////////////////////////////////
+void CollidingShapesGui::OnButtonInc()
+{
+  std::cout << "INC" << std::endl;
+}
+/////////////////////////////////////////////////
+void CollidingShapesGui::OnButtonDec()
+{
+  std::cout << "DEC" << std::endl;
+}
+
+
+
+

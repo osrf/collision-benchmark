@@ -56,6 +56,13 @@ class GAZEBO_VISIBLE CollidingShapesGui : public gazebo::GUIPlugin
   /// \brief Callback trigged when the slider is changed
   protected slots: void OnValueChanged(int value);
 
+  /// \brief Callback trigged when the button "<" is pressed.
+  protected slots: void OnButtonDec();
+
+  /// \brief Callback trigged when the button ">" is pressed.
+  protected slots: void OnButtonInc();
+
+
   /// \brief Node used to establish communication with gzserver.
   private: gazebo::transport::NodePtr node;
 
