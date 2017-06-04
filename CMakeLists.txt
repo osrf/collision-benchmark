@@ -76,8 +76,6 @@ add_custom_target(tests)
 add_executable(multiple_worlds_server
   collision_benchmark/multiple_worlds_server.cc)
 
-add_executable(collide_test
-  collision_benchmark/collide_test.cc)
 
 add_executable(multiple_worlds_server_test_simple
   collision_benchmark/multiple_worlds_server_test_simple.cc)
@@ -90,7 +88,6 @@ target_link_libraries(collision_benchmark_gui
 
 target_link_libraries(multiple_worlds_server_test_simple collision_benchmark)
 target_link_libraries(multiple_worlds_server collision_benchmark)
-target_link_libraries(collide_test collision_benchmark)
 
 # testing
 enable_testing()
@@ -100,13 +97,20 @@ include_directories(${GTEST_INCLUDE_DIRS})
 set(TEST_LIB_SRCS
     test/TestUtils.cc
     test/MultipleWorldsTestFramework.cc
-    test/StaticTestFramework.cc)
+    test/StaticTestFramework.cc
+    test/CollidingShapesTestFramework.cc)
 
 add_library(collision_benchmark_test EXCLUDE_FROM_ALL ${TEST_LIB_SRCS})
 target_link_libraries(collision_benchmark_test
   collision_benchmark ${GTEST_BOTH_LIBRARIES})
 add_test(MultipleWorldsTest collision_benchmark_test)
 add_dependencies(tests collision_benchmark_test)
+
+add_executable(colliding_shapes_test
+  test/colliding_shapes_test.cc)
+target_link_libraries(colliding_shapes_test collision_benchmark
+                                            collision_benchmark_test)
+add_dependencies(tests colliding_shapes_test)
 
 add_executable(multiple_worlds_test EXCLUDE_FROM_ALL test/MultipleWorlds_TEST.cc)
 target_link_libraries(multiple_worlds_test
@@ -164,6 +168,6 @@ install (FILES ${test_WORLDS}
   DESTINATION ${CMAKE_INSTALL_PREFIX}/share/test_worlds)
 
 install (TARGETS collision_benchmark multiple_worlds_server
-                 collide_test multiple_worlds_server_test_simple
+                 multiple_worlds_server_test_simple
   LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
   RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)

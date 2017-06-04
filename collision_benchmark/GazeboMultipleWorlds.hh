@@ -28,6 +28,7 @@
 
 #include <unistd.h>
 #include <sys/wait.h>
+#include <memory>
 
 namespace collision_benchmark
 {
@@ -39,6 +40,9 @@ namespace collision_benchmark
  */
 class GazeboMultipleWorlds
 {
+
+  public: typedef std::shared_ptr<GazeboMultipleWorlds> Ptr;
+  public: typedef std::shared_ptr<const GazeboMultipleWorlds> ConstPtr;
 
   private: typedef collision_benchmark::MultipleWorldsServer
                         <GazeboPhysicsWorldTypes::WorldState,
