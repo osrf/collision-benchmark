@@ -34,6 +34,7 @@ using collision_benchmark::PrimitiveShape;
 using collision_benchmark::GazeboMultipleWorlds;
 using collision_benchmark::BasicState;
 
+/////////////////////////////////////////////////////////////////////////////
 CollidingShapesTestFramework::CollidingShapesTestFramework():
   collisionAxis(0,1,0)
 {
@@ -45,6 +46,16 @@ bool CollidingShapesTestFramework::Run
      const std::vector<std::string>& unitShapes,
      const std::vector<std::string>& sdfModels)
 {
+  static const double axEp = 1e-06;
+  if (!collision_benchmark::EqualVectors(collisionAxis, Vector3(1,0,0), axEp) &&
+      !collision_benchmark::EqualVectors(collisionAxis, Vector3(0,1,0), axEp) &&
+      !collision_benchmark::EqualVectors(collisionAxis, Vector3(0,0,1), axEp))
+  {
+    std::cerr << "Only collision axes supported are x,y or z axis. Is "
+              << collisionAxis << std::endl;
+    return false;
+  }
+
   if (unitShapes.size() + sdfModels.size() != 2)
   {
     std::cerr << "Have to specify exactly two shapes or models" << std::endl;
@@ -75,12 +86,8 @@ bool CollidingShapesTestFramework::Run
 
   // Load the two models to the world(s)
   ///////////////////////////////
-  typedef GazeboMultipleWorlds::GzWorldManager GzWorldManager;
-  GzWorldManager::Ptr worldManager
-    = gzMultiWorld->GetWorldManager();
+  GzWorldManager::Ptr worldManager = gzMultiWorld->GetWorldManager();
   assert(worldManager);
-
-  std::vector<std::string> loadedModelNames;
 
   // load primitive shapes
   typedef GzWorldManager::ModelLoadResult ModelLoadResult;
@@ -114,7 +121,8 @@ bool CollidingShapesTestFramework::Run
       std::cerr << "Model must have been loaded in all worlds" << std::endl;
       return false;
     }
-    loadedModelNames.push_back(modelName);
+    assert(modelNum >= 0 && modelNum < 2);
+    loadedModelNames[modelNum] = modelName;
   }
 
   // load models from SDF
@@ -135,11 +143,9 @@ bool CollidingShapesTestFramework::Run
       std::cerr << "Model must have been loaded in all worlds" << std::endl;
       return false;
     }
-    loadedModelNames.push_back(modelName);
+    assert(modelNum >= 0 && modelNum < 2);
+    loadedModelNames[modelNum] = modelName;
   }
-
-  if (loadedModelNames.size() != 2)
-    throw std::runtime_error("Inconsistency: There have to be two models");
 
 //#define TEST_AABB
 #ifndef TEST_AABB
@@ -285,7 +291,7 @@ bool CollidingShapesTestFramework::Run
   // XXX FIXME: if watiForStart is set to true, and we close gzclient,
   // the application won't exit. See GazeboMultipleWorlds::Run().
   gzMultiWorld->Run(waitForStart,
-                    std::bind(&CollidingShapesTestFramework::loopCallback, this,
+                    std::bind(&CollidingShapesTestFramework::LoopCallback, this,
                               std::placeholders::_1));
 
   // end the thread to handle the collision bar
@@ -298,9 +304,41 @@ bool CollidingShapesTestFramework::Run
 }
 
 //////////////////////////////////////////////////////////////////////////////
-void CollidingShapesTestFramework::loopCallback(int iter)
+void CollidingShapesTestFramework::LoopCallback(int iter)
 {
-  // std::cout << "CALLBACK" << std::endl;
+  GzWorldManager::Ptr worldManager = gzMultiWorld->GetWorldManager();
+  assert(worldManager);
+  // get state of both models
+  BasicState modelState1, modelState2;
+  // get the states of the models as loaded in their original pose
+  if (GetBasicModelState(loadedModelNames[0], worldManager, modelState1) != 0)
+  {
+    std::cerr << "Could not get BasicModelState." << std::endl;
+    return;
+  }
+  if (GetBasicModelState(loadedModelNames[1], worldManager, modelState2) != 0)
+  {
+    std::cerr << "Could not get BasicModelState." << std::endl;
+    return;
+  }
+
+  const float moveDist = 0.0001;
+  const ignition::math::Vector3d mv = collisionAxis * moveDist;
+  modelState1.SetPosition(modelState1.position.x + mv.X(),
+                          modelState1.position.y + mv.Y(),
+                          modelState1.position.z + mv.Z());
+  modelState2.SetPosition(modelState2.position.x -mv.X(),
+                          modelState2.position.y -mv.Y(),
+                          modelState2.position.z -mv.Z());
+
+  if ((worldManager->SetBasicModelState(loadedModelNames[0], modelState1)
+       != worldManager->GetNumWorlds()) ||
+      (worldManager->SetBasicModelState(loadedModelNames[1], modelState2)
+       != worldManager->GetNumWorlds()))
+  {
+    std::cerr << "Could not set all model poses to origin" << std::endl;
+    return;
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////////

@@ -72,7 +72,7 @@ class CollidingShapesTestFramework
                    const std::vector<std::string>& sdfModels);
 
   // \brief Callback function for the main loop in GazeboMultipleWorlds
-  private: void loopCallback(int iter);
+  private: void LoopCallback(int iter);
 
   // \brief Handles the collision bar visual in gzclient.
   // This will add a visual cylinder of given radius and length (visual
@@ -125,7 +125,10 @@ class CollidingShapesTestFramework
 
   // \brief Axis to use for collision.
   // Can be unit x, y or z axis
-  private: Vector3 collisionAxis;
+  private: const Vector3 collisionAxis;
+
+  // \brief Names of both loaded models
+  private: std::string loadedModelNames[2];
 
 };  // class
 
