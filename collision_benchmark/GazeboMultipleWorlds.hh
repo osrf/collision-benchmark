@@ -34,7 +34,11 @@ namespace collision_benchmark
 {
 
 /**
- * Helper class which loads up a MultpleWorldsServer and a gzclient
+ * \brief Helper class which loads up a MultpleWorldsServer and a gzclient
+ * at the same time.
+ * Will also load the collision benchmark GUI (collision_benchmark::ClientGui)
+ * and provides the option to load additional GUI interfaces.
+ *
  * \author Jennifer Buehler
  * \date May 2017
  */
@@ -71,7 +75,9 @@ class GazeboMultipleWorlds
                     bool physicsEnabled = true,
                     bool loadMirror = true,
                     bool enforceContactCalc=false,
-                    bool allowControlViaMirror = true);
+                    bool allowControlViaMirror = true,
+                    const std::vector<std::string>& additionalGuis
+                      = std::vector<std::string>());
 
   // \return the world manager.
   public: GzWorldManager::Ptr GetWorldManager();

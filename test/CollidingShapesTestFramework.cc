@@ -89,8 +89,11 @@ bool CollidingShapesTestFramework::Run
   // display the contacts.
   bool physicsEnabled = false;
   gzMultiWorld.reset(new GazeboMultipleWorlds());
+  std::vector<std::string> additionalGuis
+      = { "libcollision_benchmark_test_gui.so" };
   gzMultiWorld->Load(physicsEngines, physicsEnabled,
-                    loadMirror, enforceContactCalc, allowControlViaMirror);
+                    loadMirror, enforceContactCalc,
+                    allowControlViaMirror, additionalGuis);
 
   // Load the two models to the world(s)
   ///////////////////////////////

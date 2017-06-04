@@ -18,6 +18,9 @@
 #include <sstream>
 #include <gazebo/msgs/msgs.hh>
 
+#include <QScrollBar>
+#include <QSlider>
+
 using collision_benchmark::test::CollidingShapesGui;
 
 // Register this plugin with the simulator
@@ -44,34 +47,40 @@ CollidingShapesGui::CollidingShapesGui()
   QHBoxLayout *mainLayout = new QHBoxLayout;
 
   // Create the frame & layout to hold all the buttons
-  QFrame *switchWorldsFrame = new QFrame();
+  QFrame *collidingShapesFrame = new QFrame();
   QHBoxLayout *collidingShapesLayout = new QHBoxLayout();
 
+#if 1
   // Create the push buttons and connect to OnButton* functions
-  QPushButton * buttonPrev = new QPushButton("Gigi");
   QPushButton * buttonNext = new QPushButton("Gaga");
-  buttonPrev->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-  buttonPrev->resize(buttonPrev->sizeHint());
   buttonNext->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
   buttonNext->resize(buttonNext->sizeHint());
-
-//  connect(buttonPrev, SIGNAL(clicked()), this, SLOT(OnButtonPrev()));
 //  connect(buttonNext, SIGNAL(clicked()), this, SLOT(OnButtonNext()));
-
-/*  minSize = maxHeightAddWidth(buttonPrev->sizeHint(), buttonNext->sizeHint());
-
-  // Create label to sit in-between buttons ad display world name
-  labelName = new QLabel("<...>");
-  connect(this, SIGNAL(TriggerNameChange(const std::string&)),
-          this, SLOT(OnNameChange(const std::string&)));*/
-
-  // Add the buttons to the frame's layout
-  collidingShapesLayout->addWidget(buttonPrev);
-  // collidingShapesLayout->addWidget(labelName);
   collidingShapesLayout->addWidget(buttonNext);
+#endif
 
-  switchWorldsFrame->setLayout(collidingShapesLayout);
-  mainLayout->addWidget(switchWorldsFrame);
+#if 0
+  QScrollBar * scrollbar = new QScrollBar();
+  // scrollbar->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+  connect(scrollbar, SIGNAL(valueChanged(int)),
+          this, SLOT(OnValueChanged(int)));
+  collidingShapesLayout->addWidget(scrollbar);
+#endif
+
+#if 1
+  QSlider * slider = new QSlider(Qt::Horizontal);
+  slider->setMinimum(-100);
+  slider->setMaximum(100);
+  slider->resize(300,20);
+//  slider->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+  connect(slider, SIGNAL(valueChanged(int)),
+          this, SLOT(OnValueChanged(int)));
+  collidingShapesLayout->addWidget(slider);
+#endif
+
+  // set the layout and add the frame as widget
+  collidingShapesFrame->setLayout(collidingShapesLayout);
+  mainLayout->addWidget(collidingShapesFrame);
 
   // Remove margins to reduce space
   collidingShapesLayout->setContentsMargins(0, 0, 0, 0);
@@ -84,19 +93,17 @@ CollidingShapesGui::CollidingShapesGui()
   sizePolicy.setHorizontalStretch(0);
   sizePolicy.setVerticalStretch(0);
   this->setSizePolicy(sizePolicy);
-  this->move(100, 10);
-//  QSize totalSize = maxHeightAddWidth(scrollBar->sizeHint(), minSize, 1.1);
-//  this->resize(totalSize);
+  this->move(10, 100);
+
+  QSize minSize = maxHeightAddWidth(buttonNext->size(), slider->size());
+  this->resize(minSize);
 
   // Set up transportation system
   this->node = gazebo::transport::NodePtr(new gazebo::transport::Node());
   this->node->Init();
   std::string TOPIC="collide_shapes_test/test";
-
-  std::cout<<"Waiting for connection to topic "<<TOPIC<<std::endl;
-  this->mirrorWorldPub->WaitForConnection();
-  std::cout<<"Received."<<std::endl;
-
+  this->mirrorWorldPub =
+    this->node->Advertise<gazebo::msgs::Any>(TOPIC);
 }
 
 /////////////////////////////////////////////////
@@ -107,6 +114,8 @@ CollidingShapesGui::~CollidingShapesGui()
 /////////////////////////////////////////////////
 void CollidingShapesGui::OnValueChanged(int val)
 {
+  std::cout << "Value changed! " << val << std::endl;
+  // this->mirrorWorldPub->WaitForConnection();
   // Send the model to the gazebo server
   gazebo::msgs::Any m;
   m.set_type(gazebo::msgs::Any::INT32);

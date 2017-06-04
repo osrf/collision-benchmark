@@ -276,8 +276,11 @@ bool GazeboMultipleWorlds::Load(const std::vector<std::string>& selectedEngines,
                                 bool physicsEnabled,
                                 bool loadMirror,
                                 bool enforceContactCalc,
-                                bool allowControlViaMirror)
+                                bool allowControlViaMirror,
+                                const std::vector<std::string>& additionalGuis
+                                )
 {
+  bool verbose = false;
   setpgid(0, 0);       // Make new process group, if needed
   gPGid = getpgid(0);
   signal(SIGSEGV, handler);
@@ -286,13 +289,31 @@ bool GazeboMultipleWorlds::Load(const std::vector<std::string>& selectedEngines,
   if (gzclient_pid == 0)
   {
     // child process: Start gzclient with the multiple worlds plugin
-    char **argvClient = new char*[4];
+    char **argvClient = new char*[4 +
+                                  additionalGuis.size() * 2 +
+                                  verbose ? 1 : 0];
     // silly const cast to avoid compiler warning
     argvClient[0] = const_cast<char*>(static_cast<const char*>("gzclient"));
     argvClient[1] = const_cast<char*>(static_cast<const char*>("--g"));
     argvClient[2] = const_cast<char*>
                     (static_cast<const char*>("libcollision_benchmark_gui.so"));
-    argvClient[3] = static_cast<char*>(NULL);
+    int i = 3;
+    for (int g = 0; g < additionalGuis.size(); ++g)
+    {
+      argvClient[i] = const_cast<char*>(static_cast<const char*>("--g"));
+      ++i;
+      argvClient[i] = const_cast<char*>
+                      (static_cast<const char*>(additionalGuis[g].c_str()));
+      ++i;
+    }
+
+    if (verbose)
+    {
+      argvClient[i] = const_cast<char*>(static_cast<const char*>("--verbose"));
+      ++i;
+    }
+
+    argvClient[i] = static_cast<char*>(NULL);
 
     execvp(argvClient[0], argvClient);
     return true;
