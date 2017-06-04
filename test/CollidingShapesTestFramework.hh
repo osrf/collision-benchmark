@@ -136,6 +136,9 @@ class CollidingShapesTestFramework
   // CollisionBarHandler.
   private: std::atomic<bool> running;
 
+  // \brief is true when a signal is received to auto-collide objects
+  private: std::atomic<bool> triggeredAutoCollide;
+
   // \brief Axis to use for collision.
   // Can be unit x, y or z axis
   private: const Vector3 collisionAxis;

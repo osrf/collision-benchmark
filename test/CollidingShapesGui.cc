@@ -14,14 +14,14 @@
  * limitations under the License.
  *
 */
+#include "CollidingShapesGui.hh"
 #include <sstream>
 #include <gazebo/msgs/msgs.hh>
-#include "ClientGui.hh"
 
-using collision_benchmark::ClientGui;
+using collision_benchmark::test::CollidingShapesGui;
 
 // Register this plugin with the simulator
-GZ_REGISTER_GUI_PLUGIN(ClientGui)
+GZ_REGISTER_GUI_PLUGIN(CollidingShapesGui)
 
 
 QSize maxHeightAddWidth(const QSize& s1, const QSize& s2,
@@ -33,7 +33,7 @@ QSize maxHeightAddWidth(const QSize& s1, const QSize& s2,
 
 
 /////////////////////////////////////////////////
-ClientGui::ClientGui()
+CollidingShapesGui::CollidingShapesGui()
   : GUIPlugin()
 {
   // Set the frame background and foreground colors
@@ -45,36 +45,36 @@ ClientGui::ClientGui()
 
   // Create the frame & layout to hold all the buttons
   QFrame *switchWorldsFrame = new QFrame();
-  QHBoxLayout *switchWorldsLayout = new QHBoxLayout();
+  QHBoxLayout *collidingShapesLayout = new QHBoxLayout();
 
   // Create the push buttons and connect to OnButton* functions
-  QPushButton * buttonPrev = new QPushButton("Prev");
-  QPushButton * buttonNext = new QPushButton("Next");
+  QPushButton * buttonPrev = new QPushButton("Gigi");
+  QPushButton * buttonNext = new QPushButton("Gaga");
   buttonPrev->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
   buttonPrev->resize(buttonPrev->sizeHint());
   buttonNext->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
   buttonNext->resize(buttonNext->sizeHint());
 
-  connect(buttonPrev, SIGNAL(clicked()), this, SLOT(OnButtonPrev()));
-  connect(buttonNext, SIGNAL(clicked()), this, SLOT(OnButtonNext()));
+//  connect(buttonPrev, SIGNAL(clicked()), this, SLOT(OnButtonPrev()));
+//  connect(buttonNext, SIGNAL(clicked()), this, SLOT(OnButtonNext()));
 
-  minSize = maxHeightAddWidth(buttonPrev->sizeHint(), buttonNext->sizeHint());
+/*  minSize = maxHeightAddWidth(buttonPrev->sizeHint(), buttonNext->sizeHint());
 
   // Create label to sit in-between buttons ad display world name
   labelName = new QLabel("<...>");
   connect(this, SIGNAL(TriggerNameChange(const std::string&)),
-          this, SLOT(OnNameChange(const std::string&)));
+          this, SLOT(OnNameChange(const std::string&)));*/
 
   // Add the buttons to the frame's layout
-  switchWorldsLayout->addWidget(buttonPrev);
-  switchWorldsLayout->addWidget(labelName);
-  switchWorldsLayout->addWidget(buttonNext);
+  collidingShapesLayout->addWidget(buttonPrev);
+  // collidingShapesLayout->addWidget(labelName);
+  collidingShapesLayout->addWidget(buttonNext);
 
-  switchWorldsFrame->setLayout(switchWorldsLayout);
+  switchWorldsFrame->setLayout(collidingShapesLayout);
   mainLayout->addWidget(switchWorldsFrame);
 
   // Remove margins to reduce space
-  switchWorldsLayout->setContentsMargins(0, 0, 0, 0);
+  collidingShapesLayout->setContentsMargins(0, 0, 0, 0);
   mainLayout->setContentsMargins(0, 0, 0, 0);
 
   this->setLayout(mainLayout);
@@ -84,67 +84,32 @@ ClientGui::ClientGui()
   sizePolicy.setHorizontalStretch(0);
   sizePolicy.setVerticalStretch(0);
   this->setSizePolicy(sizePolicy);
-  this->move(10, 10);
-  QSize totalSize = maxHeightAddWidth(labelName->sizeHint(), minSize, 1.1);
-  this->resize(totalSize);
+  this->move(100, 10);
+//  QSize totalSize = maxHeightAddWidth(scrollBar->sizeHint(), minSize, 1.1);
+//  this->resize(totalSize);
 
   // Set up transportation system
   this->node = gazebo::transport::NodePtr(new gazebo::transport::Node());
   this->node->Init();
-  std::string SET_TOPIC="mirror_world/set_world";
-  std::string GET_TOPIC="mirror_world/get_world";
-  this->mirrorWorldPub =
-    this->node->Advertise<gazebo::msgs::Any>(SET_TOPIC);
-  this->mirrorWorldSub =
-    this->node->Subscribe(GET_TOPIC, &ClientGui::receiveWorldMsg, this);
+  std::string TOPIC="collide_shapes_test/test";
 
-  std::cout<<"Waiting for connection to topic "<<SET_TOPIC<<std::endl;
+  std::cout<<"Waiting for connection to topic "<<TOPIC<<std::endl;
   this->mirrorWorldPub->WaitForConnection();
   std::cout<<"Received."<<std::endl;
 
-  // Send the name request to the gazebo server
-  gazebo::msgs::Any m;
-  m.set_type(gazebo::msgs::Any::INT32);
-  m.set_int_value(0); // Request world name
-  this->mirrorWorldPub->Publish(m);
 }
 
 /////////////////////////////////////////////////
-ClientGui::~ClientGui()
+CollidingShapesGui::~CollidingShapesGui()
 {
-}
-
-void ClientGui::receiveWorldMsg(ConstAnyPtr &_msg)
-{
-  // std::cout << "Any msg: "<<_msg->DebugString();
-  std::string worldName=_msg->string_value();
-  emit TriggerNameChange(worldName);
-}
-
-void ClientGui::OnNameChange(const std::string& name)
-{
-  labelName->setText(name.c_str());
-  QSize totalSize = maxHeightAddWidth(labelName->sizeHint(), minSize, 1.1);
-  this->resize(totalSize);
 }
 
 /////////////////////////////////////////////////
-void ClientGui::OnButtonNext()
+void CollidingShapesGui::OnValueChanged(int val)
 {
   // Send the model to the gazebo server
   gazebo::msgs::Any m;
   m.set_type(gazebo::msgs::Any::INT32);
   m.set_int_value(1); // "Next" world
-  this->mirrorWorldPub->Publish(m);
-}
-
-
-/////////////////////////////////////////////////
-void ClientGui::OnButtonPrev()
-{
-  // Send the model to the gazebo server
-  gazebo::msgs::Any m;
-  m.set_type(gazebo::msgs::Any::INT32);
-  m.set_int_value(-1); // "Prev" world
   this->mirrorWorldPub->Publish(m);
 }

@@ -55,13 +55,6 @@ add_library(collision_benchmark SHARED
   collision_benchmark/Shape.cc
   collision_benchmark/TypeHelper.cc
 )
- 
-# when using a different folder for the header file, must to
-# QT5_WRAP_CPP despite of the AUTOMOC=ON, or it won't generate the MOC
-QT5_WRAP_CPP(ClientGui_MOC collision_benchmark/ClientGui.hh)
-add_library(collision_benchmark_gui SHARED
-    collision_benchmark/ClientGui.cc
-)
 
 # expand the dependencies_* variables for the include directories and libraries
 set(dependencies_INCLUDE_DIRS
@@ -70,6 +63,13 @@ set(dependencies_INCLUDE_DIRS
 
 include_directories(${dependencies_INCLUDE_DIRS})
 link_directories(${dependencies_LIBRARY_DIRS})
+
+# when using a different folder for the header file, must do
+# QT5_WRAP_CPP despite of the AUTOMOC=ON, or it won't generate the MOC
+QT5_WRAP_CPP(ClientGui_MOC collision_benchmark/ClientGui.hh)
+add_library(collision_benchmark_gui SHARED
+    collision_benchmark/ClientGui.cc
+)
 
 list(APPEND CMAKE_CXX_FLAGS "${GAZEBO_CXX_FLAGS}")
 
@@ -91,7 +91,22 @@ target_link_libraries(collision_benchmark_gui
 target_link_libraries(multiple_worlds_server_test_simple collision_benchmark)
 target_link_libraries(multiple_worlds_server collision_benchmark)
 
+#############################################
 # testing
+#############################################
+
+# Compile the GUI library for the "colliding shapes test".
+# When using a different folder for the header file, must to
+# QT5_WRAP_CPP despite of the AUTOMOC=ON, or it won't generate the MOC
+# -----------------------------------------
+QT5_WRAP_CPP(CollidingShapesGui_MOC test/CollidingShapesGui.hh)
+add_library(collision_benchmark_test_gui SHARED
+    test/CollidingShapesGui.cc
+)
+add_dependencies(tests collision_benchmark_test_gui)
+
+# compile testing libraries and executables
+# -----------------------------------------
 enable_testing()
 find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})

@@ -315,9 +315,16 @@ bool CollidingShapesTestFramework::Run
   {
       // while collision is not found, move models towards each other
       bool allWorlds = false;
-      AutoCollide(allWorlds);
-      // MoveModelsAlongAxis(0.001);
-
+      if (triggeredAutoCollide)
+      {
+        AutoCollide(allWorlds);
+        triggeredAutoCollide = false;
+      }
+      /* if (triggeredMove)
+      {
+        const double stepSize = 0.01;
+        MoveModelsAlongAxis(stepSize);
+      }*/
       int numSteps = 1;
       worldManager->Update(numSteps);
   }
