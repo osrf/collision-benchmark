@@ -21,6 +21,8 @@
 #include <collision_benchmark/BasicTypes.hh>
 #include <collision_benchmark/MathHelpers.hh>
 
+#include <gazebo/common/Timer.hh>
+
 #include <thread>
 #include <unistd.h>
 #include <sys/wait.h>
@@ -243,9 +245,11 @@ bool CollidingShapesTestFramework::Run
   const float aabb1LenOnAxis = (max1-min1).Dot(collisionAxis);
   const float aabb2LenOnAxis = (max2-min2).Dot(collisionAxis);
 
-  // desired distance between models is half of the
+  // desired distance between models is \e distFact of the
   // larger AABBs on collisionAxis
-  double desiredDistance = std::max(aabb1LenOnAxis/2, aabb2LenOnAxis/2);
+  double distFact = 0.2;
+  double desiredDistance = std::max(aabb1LenOnAxis*distFact,
+                                    aabb2LenOnAxis*distFact);
 
   // distance between both AABBs in their orignal pose
   double dist = min2.Dot(collisionAxis) - max1.Dot(collisionAxis);
@@ -274,7 +278,8 @@ bool CollidingShapesTestFramework::Run
                                      modelState1.position.z);
   ignition::math::Vector3d collBarP
     = modelPos1 +
-      ignition::math::Vector3d(collisionAxis.X(), collisionAxis.Y(), collisionAxis.Z()) * cylLength/2;
+      ignition::math::Vector3d(collisionAxis.X(), collisionAxis.Y(),
+                               collisionAxis.Z()) * cylLength/2;
 
 
   const Vector3 zAxis(0,0,1); // default axis of cylinder
@@ -285,21 +290,40 @@ bool CollidingShapesTestFramework::Run
   // start the thread to handle the collision bar
   ///////////////////////////////
   running = true;
+  double cylRadius = 0.02;
   std::thread t(std::bind(&CollidingShapesTestFramework::CollisionBarHandler,
                           this, std::placeholders::_1, std::placeholders::_2,
                           std::placeholders::_3, std::placeholders::_4),
-                          collBarPose, 0.05, cylLength,
+                          collBarPose, cylRadius, cylLength,
                           gzMultiWorld->GetMirrorName());
 
   // Run the world(s)
   ///////////////////////////////
   bool waitForStart = true;
-  // XXX FIXME: if waitForStart is set to true, and we close gzclient before
-  // we hit "play", the application (parent fork) won't exit.
-  // See GazeboMultipleWorlds::Run() to fix it.
-  gzMultiWorld->Run(waitForStart,
-                    std::bind(&CollidingShapesTestFramework::LoopCallback, this,
-                              std::placeholders::_1));
+  gzMultiWorld->Run(waitForStart, false);
+
+  std::cout << "Wait until the simulation should be started..." << std::endl;
+  // Sleep while the start signal has not been triggered yet
+  while (!gzMultiWorld->HasStarted())
+    gazebo::common::Time::MSleep(100);
+
+
+  std::cout << "Starting simulation." << std::endl;
+
+  // run the main loop
+  while (gzMultiWorld->IsClientRunning())
+  {
+      // while collision is not found, move models towards each other
+      bool allWorlds = false;
+      AutoCollide(allWorlds);
+      // MoveModelsAlongAxis(0.001);
+
+      int numSteps = 1;
+      worldManager->Update(numSteps);
+  }
+
+  std::cout << "Client shut down, stopping simulation." << std::endl;
+  gzMultiWorld->ShutdownServer();
 
   // end the thread to handle the collision bar
   running = false;
@@ -311,7 +335,47 @@ bool CollidingShapesTestFramework::Run
 }
 
 //////////////////////////////////////////////////////////////////////////////
-void CollidingShapesTestFramework::LoopCallback(int iter)
+void CollidingShapesTestFramework::AutoCollide(bool allWorlds)
+{
+  GzWorldManager::Ptr worldManager = gzMultiWorld->GetWorldManager();
+  assert(worldManager);
+  // to allow for a certain animation effect, move the shapes at a maximum
+  // distance per second.
+  // There cannot be a minimum velocity because we have to make tiny
+  // movements in order to capture the first point of collision as exact
+  // as possible.
+  const float maxMovePerSec = 0.4;
+  double moved = 0;
+  gazebo::common::Timer timer;
+  timer.Start();
+  // while collision is not found, move models towards each other
+  while (!ModelsCollide(allWorlds) && gzMultiWorld->IsClientRunning())
+  {
+    gazebo::common::Time elapsed = timer.GetElapsed();
+    // move the shapes towards each other in steps of this size
+    const double stepSize = 1e-04;
+    if (moved > 0)
+    {
+      // slow down the movement if it's too fast.
+      // Not the most accurate way to achieve a maximum velocity,
+      // but considering this is only for animation purposes, this will do.
+      if (moved / elapsed.Double() > maxMovePerSec)
+      {
+        // slow down the move as we've already moved too far.
+        // Sleep a tiny bit.
+        gazebo::common::Time::MSleep(10);
+        continue;
+      }
+    }
+    MoveModelsAlongAxis(stepSize);
+    moved += stepSize;
+    int numSteps = 1;
+    worldManager->Update(numSteps);
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+bool CollidingShapesTestFramework::ModelsCollide(bool allWorlds)
 {
   GzWorldManager::Ptr worldManager = gzMultiWorld->GetWorldManager();
   assert(worldManager);
@@ -322,9 +386,8 @@ void CollidingShapesTestFramework::LoopCallback(int iter)
   assert(contactWorlds.size() == worldManager->GetNumWorlds());
 
   int modelsColliding = 0;
-  int i = 0;
   for (std::vector<GzWorldManager::PhysicsWorldContactInterfacePtr>::iterator
-       it = contactWorlds.begin(); it != contactWorlds.end(); ++it, ++i)
+       it = contactWorlds.begin(); it != contactWorlds.end(); ++it)
   {
     GzWorldManager::PhysicsWorldContactInterfacePtr world = *it;
     std::vector<GzWorldManager::PhysicsWorldContactInterfaceT::ContactInfoPtr>
@@ -336,16 +399,14 @@ void CollidingShapesTestFramework::LoopCallback(int iter)
   }
 
   // while collision is not found, move models towards each other
-  if (modelsColliding < contactWorlds.size())  // all worlds have to collide
-  //if (modelsColliding == 0)  // only one world has to collide
-  {
-    bool towards = true;
-    int sign = towards ? 1 : -1;
-    // XXX TODO moveDist should depend on the simulation speed (delta time)
-    const float moveDist = sign * 0.0001;
-    MoveModelsAlongAxis(moveDist);
-  }
+  if (allWorlds)
+    // all worlds have to collide
+    return modelsColliding == contactWorlds.size();
+
+  // only one world has to collide
+  return modelsColliding > 0;
 }
+
 
 //////////////////////////////////////////////////////////////////////////////
 void CollidingShapesTestFramework::MoveModelsAlongAxis(const float moveDist)

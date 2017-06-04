@@ -71,9 +71,6 @@ class CollidingShapesTestFramework
                    const std::vector<std::string>& unitShapes,
                    const std::vector<std::string>& sdfModels);
 
-  // \brief Callback function for the main loop in GazeboMultipleWorlds
-  private: void LoopCallback(int iter);
-
   // \brief Handles the collision bar visual in gzclient.
   // This will add a visual cylinder of given radius and length (visual
   // is oriented along z axis) to the gzclient scene.
@@ -121,6 +118,17 @@ class CollidingShapesTestFramework
   // \param[in] moveDist distance to move each model along axis
   private: void MoveModelsAlongAxis(const float moveDist);
 
+  // \brief Moves models along collision axis until they collide
+  // \param[in] allWorlds collision criteria is only met if all physics
+  //    engines report collision between the objects
+  private: void AutoCollide(bool allWorlds);
+
+  // \brief Checks whether models collide
+  // \param[in] allWorlds collision criteria is only met if all physics
+  //    engines report collision between the objects
+  private: bool ModelsCollide(bool allWorlds);
+
+  // \brief Pointer to the multiple worlds server/client
   private: collision_benchmark::GazeboMultipleWorlds::Ptr gzMultiWorld;
 
   // \brief Flag indicating whether the framework is running.

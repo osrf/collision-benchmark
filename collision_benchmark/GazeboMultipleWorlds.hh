@@ -60,6 +60,7 @@ class GazeboMultipleWorlds
                      GazeboPhysicsWorldTypes::Wrench>
                         GzWorldManager;
 
+  public: GazeboMultipleWorlds();
   public: virtual ~GazeboMultipleWorlds();
 
   // Loads the client and initializes the server.
@@ -75,14 +76,42 @@ class GazeboMultipleWorlds
   // \return the world manager.
   public: GzWorldManager::Ptr GetWorldManager();
 
-  // Runs the multiple worlds server. Blocks until the client has been closed.
+  // \brief Runs the multiple worlds server.
+  // Can be run in blocking or non-blocking mode.
+  //
+  // \param blocking if true, blocks until the client has been closed.
+  //    If false, the caller is responsible for repeatedly calling
+  //    ``GetWorldManager()->Update()``, and after the simulation is finished,
+  //    calling ShutdownServer().
+  //    The function HasStarted() can be useful to know when the user has
+  //    triggered the start signal, in case \e waitForStartSignal is true.
+  //    The function IsClientRunning() can be useful to know whether the
+  //    gzclient has been closed by the user.
   // \param waitForStartSignal if true, waits for the user to press [Enter] or
   //    hit the play button in the client before starting the simulation
   // \param loopCallback optional: callback which will be called once per
-  //    server update loop
+  //    server update loop. Only will be called if \e blocking is true.
   public: bool Run(bool waitForStartSignal = false,
+                   bool blocking = true,
                    const std::function<void(int)>& loopCallback
                       = std::function<void(int)>());
+
+  // \brief flag whether the simulation has been started.
+  // This will only be true after the user hit "play" or [Enter] after
+  // Run() is being called (if Run() was called with \e waitForStartSignal
+  // set to false, then this will be true just before the simulation starts
+  // running).
+  public: bool HasStarted() const;
+
+  // returns true if gzclient is still running
+  public: bool IsClientRunning();
+  // returns !isClientRunning()
+  private: bool IsClientClosed();
+
+  // \brief Shuts down the server.
+  // Must be called after Run() has been used with
+  // \e blocking set to false. Otherwise doesn't need to be called.
+  public: void ShutdownServer();
 
   // \brief Returns the name of the mirror.
   // This is the name of the world which the gzclient will use.
@@ -99,8 +128,6 @@ class GazeboMultipleWorlds
                        const bool allowControlViaMirror,
                        const bool enforceContactCalc);
 
-  // returns true if gzclient is still running
-  protected: bool IsClientRunning();
 
   protected: void KillClient();
 
@@ -113,6 +140,9 @@ class GazeboMultipleWorlds
 
   // the child process ID for running gzclient
   private: pid_t gzclient_pid;
+
+  // \brief flag whether the simulation has been started.
+  private: std::atomic<bool> started;
 
 };  // class GazeboMultipleWorlds
 
