@@ -26,6 +26,8 @@ set(collision_benchmark_HEADERS
   collision_benchmark/GazeboWorldLoader.hh
   collision_benchmark/GazeboWorldState.hh
   collision_benchmark/Helpers.hh
+  collision_benchmark/MathHelpers.hh
+  collision_benchmark/MathHelpers-inl.hh
   collision_benchmark/MirrorWorld.hh
   collision_benchmark/PhysicsWorld.hh
   collision_benchmark/PrimitiveShape.hh

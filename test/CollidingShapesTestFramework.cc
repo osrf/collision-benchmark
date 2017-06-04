@@ -34,11 +34,16 @@ using collision_benchmark::PrimitiveShape;
 using collision_benchmark::GazeboMultipleWorlds;
 using collision_benchmark::BasicState;
 
+CollidingShapesTestFramework::CollidingShapesTestFramework():
+  collisionAxis(0,1,0)
+{
+}
+
 /////////////////////////////////////////////////////////////////////////////
-bool
-CollidingShapesTestFramework::Run(const std::vector<std::string>& physicsEngines,
-                   const std::vector<std::string>& unitShapes,
-                   const std::vector<std::string>& sdfModels)
+bool CollidingShapesTestFramework::Run
+    (const std::vector<std::string>& physicsEngines,
+     const std::vector<std::string>& unitShapes,
+     const std::vector<std::string>& sdfModels)
 {
   if (unitShapes.size() + sdfModels.size() != 2)
   {
@@ -57,7 +62,7 @@ CollidingShapesTestFramework::Run(const std::vector<std::string>& physicsEngines
   }
 
   // Initialize server
-  // ----------------------
+  ///////////////////////////////
   bool loadMirror = true;
   bool enforceContactCalc=false;
   bool allowControlViaMirror = true;
@@ -68,8 +73,8 @@ CollidingShapesTestFramework::Run(const std::vector<std::string>& physicsEngines
   gzMultiWorld->Load(physicsEngines, physicsEnabled,
                     loadMirror, enforceContactCalc, allowControlViaMirror);
 
-  // Load extra models to the world
-  // ----------------------
+  // Load the two models to the world(s)
+  ///////////////////////////////
   typedef GazeboMultipleWorlds::GzWorldManager GzWorldManager;
   GzWorldManager::Ptr worldManager
     = gzMultiWorld->GetWorldManager();
@@ -79,9 +84,9 @@ CollidingShapesTestFramework::Run(const std::vector<std::string>& physicsEngines
 
   // load primitive shapes
   typedef GzWorldManager::ModelLoadResult ModelLoadResult;
-  int i = 0;
+  int modelNum = 0;
   for (std::vector<std::string>::const_iterator it = unitShapes.begin();
-       it != unitShapes.end(); ++it, ++i)
+       it != unitShapes.end(); ++it, ++modelNum)
   {
     const std::string& shapeID = *it;
     Shape::Ptr shape;
@@ -101,7 +106,7 @@ CollidingShapesTestFramework::Run(const std::vector<std::string>& physicsEngines
       std::cerr << "Unknown shape type: " << shapeID << std::endl;
       return false;
     }
-    std::string modelName = "unit_" + shapeID + "_" + std::to_string(i);
+    std::string modelName = "model_" + std::to_string(modelNum);
     std::vector<ModelLoadResult> res
       = worldManager->AddModelFromShape(modelName, shape, shape);
     if (res.size() != worldManager->GetNumWorlds())
@@ -113,15 +118,14 @@ CollidingShapesTestFramework::Run(const std::vector<std::string>& physicsEngines
   }
 
   // load models from SDF
-  i = 0;
   for (std::vector<std::string>::const_iterator it = sdfModels.begin();
-       it != sdfModels.end(); ++it, ++i)
+       it != sdfModels.end(); ++it, ++modelNum)
   {
     const std::string& modelResource = *it;
     std::string modelSDF =
       GazeboModelLoader::GetModelSdfFilename(modelResource);
     // std::cout << "Loading model: " << modelSDF << std::endl;
-    std::string modelName = "model" + std::to_string(i);
+    std::string modelName = "model_" + std::to_string(modelNum);
     std::cout << "Adding model name: " << modelName
               << " from resource " << modelSDF << std::endl;
     std::vector<ModelLoadResult> res =
@@ -176,9 +180,9 @@ CollidingShapesTestFramework::Run(const std::vector<std::string>& physicsEngines
 
 
   // position models so they're not intersecting.
-  // ----------------------
+  ///////////////////////////////
 
-  // Get the AABB's of the two models.
+  // First, get the AABB's of the two models.
   Vector3 min1, min2, max1, max2;
   bool local1, local2;
   if ((GetAABB(loadedModelNames[0], worldManager, min1, max1, local1) != 0) ||
@@ -223,25 +227,21 @@ CollidingShapesTestFramework::Run(const std::vector<std::string>& physicsEngines
   std::cout << "AABB 1: " << min1 << " -- " << max1 << std::endl;
   std::cout << "AABB 2: " << min2 << " -- " << max2 << std::endl;
 
-  // set parameters of collision bar: starting at origin of Model 1,
-  // along the chosen axis, and ending at origin of Model 2.
-  ///////////////////////////////
-
   // Leave model 1 where it is and move model 2 away from it.
-  const Vector3 axis(0,1,0); // can be unit x, y or z axis
-  const float aabb1LenOnAxis = (max1-min1).Dot(axis);
-  const float aabb2LenOnAxis = (max2-min2).Dot(axis);
+  const float aabb1LenOnAxis = (max1-min1).Dot(collisionAxis);
+  const float aabb2LenOnAxis = (max2-min2).Dot(collisionAxis);
 
-  // desired distance between models is as long as half of the
-  // larger AABBs on this axis
+  // desired distance between models is half of the
+  // larger AABBs on collisionAxis
   double desiredDistance = std::max(aabb1LenOnAxis/2, aabb2LenOnAxis/2);
 
   // distance between both AABBs in their orignal pose
-  double dist = min2.Dot(axis) - max1.Dot(axis);
+  double dist = min2.Dot(collisionAxis) - max1.Dot(collisionAxis);
   double moveDistance = desiredDistance - dist;
-  std::cout << "Move model 2 along axis " << axis*moveDistance << std::endl;
+  std::cout << "Move model 2 along axis "
+            << collisionAxis*moveDistance << std::endl;
 
-  Vector3 moveAlongAxis = axis * moveDistance;
+  Vector3 moveAlongAxis = collisionAxis * moveDistance;
   std::cout << "State of model 2: " << modelState2 << std::endl;
   collision_benchmark::Vector3 newModelPos2 = modelState2.position;
   newModelPos2.x += moveAlongAxis.X();
@@ -249,6 +249,10 @@ CollidingShapesTestFramework::Run(const std::vector<std::string>& physicsEngines
   newModelPos2.z += moveAlongAxis.Z();
   modelState2.SetPosition(newModelPos2);
   worldManager->SetBasicModelState(loadedModelNames[1], modelState2);
+
+  // set parameters of collision bar: starting at origin of Model 1,
+  // along the chosen axis, and ending at origin of Model 2.
+  ///////////////////////////////
 
   double cylLength = desiredDistance + aabb1LenOnAxis / 2.0f
                     + aabb2LenOnAxis / 2.0f;
@@ -258,16 +262,16 @@ CollidingShapesTestFramework::Run(const std::vector<std::string>& physicsEngines
                                      modelState1.position.z);
   ignition::math::Vector3d collBarP
     = modelPos1 +
-      ignition::math::Vector3d(axis.X(), axis.Y(), axis.Z()) * cylLength/2;
+      ignition::math::Vector3d(collisionAxis.X(), collisionAxis.Y(), collisionAxis.Z()) * cylLength/2;
 
-  // 90 rotation around y axis
-  // ignition::math::Quaterniond collBarQ(sqrt(0.5),0,sqrt(0.5),0);
-  // 90 rotation around x axis
-  ignition::math::Quaterniond collBarQ(sqrt(0.5),sqrt(0.5),0, 0);
+
+  const Vector3 zAxis(0,0,1); // default axis of cylinder
+  ignition::math::Quaterniond collBarQ;
+  collBarQ.From2Axes(zAxis, collisionAxis);
   ignition::math::Pose3d collBarPose(collBarP, collBarQ);
 
-
   // start the thread to handle the collision bar
+  ///////////////////////////////
   running = true;
   std::thread t(std::bind(&CollidingShapesTestFramework::CollisionBarHandler,
                           this, std::placeholders::_1, std::placeholders::_2,
@@ -276,7 +280,7 @@ CollidingShapesTestFramework::Run(const std::vector<std::string>& physicsEngines
                           gzMultiWorld->GetMirrorName());
 
   // Run the world(s)
-  // ----------------------
+  ///////////////////////////////
   bool waitForStart = false;
   // XXX FIXME: if watiForStart is set to true, and we close gzclient,
   // the application won't exit. See GazeboMultipleWorlds::Run().

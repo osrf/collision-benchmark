@@ -1,5 +1,6 @@
 #include <collision_benchmark/GazeboStateCompare.hh>
 #include <collision_benchmark/GazeboHelpers.hh>
+#include <collision_benchmark/MathHelpers.hh>
 
 #include <gazebo/physics/WorldState.hh>
 #include <gazebo/physics/ModelState.hh>
@@ -21,28 +22,6 @@ using collision_benchmark::GazeboStateCompare;
 const GazeboStateCompare::Tolerances GazeboStateCompare::Tolerances::Default
         = GazeboStateCompare::Tolerances::CreateDefault();
 
-template<typename Float1, typename Float2>
-bool EqualFloats(const Float1& f1, const Float2& f2, const double& t)
-{
-  return fabs(f1-f2) < t;
-}
-
-bool EqualVectors(const ignition::math::Vector3d& v1,
-                  const ignition::math::Vector3d& v2, const double& t)
-{
-  return EqualFloats(v1.X(),v2.X(),t)
-      && EqualFloats(v1.Y(),v2.Y(),t)
-      && EqualFloats(v1.Z(),v2.Z(),t);
-}
-
-template<typename Float>
-bool EqualVectors(const ignition::math::Vector3<Float>& v1,
-                  const ignition::math::Vector3<Float>& v2, const double& t)
-{
-  return EqualFloats(v1.X(),v2.X(),t)
-      && EqualFloats(v1.Y(),v2.Y(),t)
-      && EqualFloats(v1.Z(),v2.Z(),t);
-}
 
 bool GazeboStateCompare::Equal(const WorldState& s1, const WorldState& s2,
                                const Tolerances& tolerances,

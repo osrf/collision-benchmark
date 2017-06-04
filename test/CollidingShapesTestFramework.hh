@@ -48,6 +48,8 @@ class CollidingShapesTestFramework
   private: typedef GzWorldManager
             ::PhysicsWorldModelInterfaceT::Vector3 Vector3;
 
+  public: CollidingShapesTestFramework();
+
   // \brief Runs the test framework with the physics engines \e physicsEngines
   // and the unit shapes \e unitShapes and SDF models \e sdfModels. There
   // may only be two models altogether specified in \e unitShapes and
@@ -120,6 +122,10 @@ class CollidingShapesTestFramework
   // Mainly used for the thread handling the collision bar in
   // CollisionBarHandler.
   private: std::atomic<bool> running;
+
+  // \brief Axis to use for collision.
+  // Can be unit x, y or z axis
+  private: Vector3 collisionAxis;
 
 };  // class
 
