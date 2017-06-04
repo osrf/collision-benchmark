@@ -53,6 +53,8 @@ class GAZEBO_VISIBLE CollidingShapesGui : public gazebo::GUIPlugin
   /// \brief Destructor
   public: virtual ~CollidingShapesGui();
 
+  public: virtual void Load(sdf::ElementPtr /*_sdf*/);
+
   /// \brief Callback trigged when the slider is changed
   protected slots: void OnValueChanged(int value);
 
@@ -62,15 +64,19 @@ class GAZEBO_VISIBLE CollidingShapesGui : public gazebo::GUIPlugin
   /// \brief Callback trigged when the button ">" is pressed.
   protected slots: void OnButtonInc();
 
+  /// \brief Callback trigged when the button "AutoCollide" is pressed.
+  protected slots: void OnButtonAutoCollide();
+
+  protected: bool eventFilter(QObject *obj, QEvent *event);
 
   /// \brief Node used to establish communication with gzserver.
   private: gazebo::transport::NodePtr node;
 
   /// \brief Publisher for the events
-  private: gazebo::transport::PublisherPtr mirrorWorldPub;
+  private: gazebo::transport::PublisherPtr pub;
 
-  /// \brief minimum size of the widget, set by the buttons width and height
-  private: QSize minSize;
+  /// \brief the slider object
+  private: QSlider * slider;
 };
 
 }  // namespace test

@@ -114,6 +114,7 @@ ClientGui::~ClientGui()
 {
 }
 
+/////////////////////////////////////////////////
 void ClientGui::receiveWorldMsg(ConstAnyPtr &_msg)
 {
   // std::cout << "Any msg: "<<_msg->DebugString();
@@ -121,6 +122,7 @@ void ClientGui::receiveWorldMsg(ConstAnyPtr &_msg)
   emit TriggerNameChange(worldName);
 }
 
+/////////////////////////////////////////////////
 void ClientGui::OnNameChange(const std::string& name)
 {
   labelName->setText(name.c_str());
@@ -131,7 +133,6 @@ void ClientGui::OnNameChange(const std::string& name)
 /////////////////////////////////////////////////
 void ClientGui::OnButtonNext()
 {
-  // Send the model to the gazebo server
   gazebo::msgs::Any m;
   m.set_type(gazebo::msgs::Any::INT32);
   m.set_int_value(1); // "Next" world
@@ -142,7 +143,6 @@ void ClientGui::OnButtonNext()
 /////////////////////////////////////////////////
 void ClientGui::OnButtonPrev()
 {
-  // Send the model to the gazebo server
   gazebo::msgs::Any m;
   m.set_type(gazebo::msgs::Any::INT32);
   m.set_int_value(-1); // "Prev" world

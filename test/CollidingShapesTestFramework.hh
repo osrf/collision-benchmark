@@ -128,6 +128,9 @@ class CollidingShapesTestFramework
   //    engines report collision between the objects
   private: bool ModelsCollide(bool allWorlds);
 
+  // \brief Receives control messages from the GUI
+  private: void receiveControlMsg(ConstAnyPtr &_msg);
+
   // \brief Pointer to the multiple worlds server/client
   private: collision_benchmark::GazeboMultipleWorlds::Ptr gzMultiWorld;
 

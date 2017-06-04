@@ -300,6 +300,17 @@ bool CollidingShapesTestFramework::Run
                           collBarPose, cylRadius, cylLength,
                           gzMultiWorld->GetMirrorName());
 
+
+  // Subscribe to the GUI control
+  ///////////////////////////////
+  std::string topic="collide_shapes_test/control";
+  gazebo::transport::NodePtr node
+    = gazebo::transport::NodePtr(new gazebo::transport::Node());
+  node->Init();
+  gazebo::transport::SubscriberPtr controlSub =
+    node->Subscribe(topic, &CollidingShapesTestFramework::receiveControlMsg,
+                    this);
+
   // Run the world(s)
   ///////////////////////////////
   bool waitForStart = true;
@@ -343,6 +354,16 @@ bool CollidingShapesTestFramework::Run
   std::cout << "Finished running CollidingShapesTestFramework." << std::endl;
   return true;
 }
+
+
+/////////////////////////////////////////////////
+void CollidingShapesTestFramework::receiveControlMsg(ConstAnyPtr &_msg)
+{
+  std::cout << "Any msg: "<<_msg->DebugString();
+  /*std::string worldName=_msg->string_value();
+  emit TriggerNameChange(worldName);*/
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 void CollidingShapesTestFramework::AutoCollide(bool allWorlds)
