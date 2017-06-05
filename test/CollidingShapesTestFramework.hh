@@ -20,6 +20,8 @@
 #include <collision_benchmark/GazeboMultipleWorlds.hh>
 
 #include <thread>
+#include <mutex>
+#include <atomic>
 #include <unistd.h>
 #include <sys/wait.h>
 
@@ -149,8 +151,13 @@ class CollidingShapesTestFramework
   // CollisionBarHandler.
   private: std::atomic<bool> running;
 
-  // \brief is true when a signal is received to auto-collide objects
+  // \brief is set to true when a message is received to auto-collide objects
   private: std::atomic<bool> triggeredAutoCollide;
+
+  // \brief is set to when a message is received to save the config to this file
+  private: std::string triggeredSaveConfig;
+  // \brief mutex for triggeredSaveConfig
+  private: std::mutex triggeredSaveConfigMtx;
 
   // \brief position of the shapes along the axis.
   // 0 is when objects are moved as far as the axis allowed towards each

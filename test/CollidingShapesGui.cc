@@ -78,6 +78,12 @@ CollidingShapesGui::CollidingShapesGui()
           SLOT(OnButtonAutoCollide()));
   collidingShapesLayout->addWidget(buttonAutoCollide);
 
+  QPushButton * buttonSave = new QPushButton("Save config");
+  buttonSave->resize(buttonSave->sizeHint());
+  connect(buttonSave, SIGNAL(clicked()), this,
+          SLOT(OnButtonSaveConfig()));
+  collidingShapesLayout->addWidget(buttonSave);
+
   // set the layout and add the frame as widget
   collidingShapesFrame->setLayout(collidingShapesLayout);
   mainLayout->addWidget(collidingShapesFrame);
@@ -89,6 +95,7 @@ CollidingShapesGui::CollidingShapesGui()
 
   // Resize this widget
   QSize buttonsSize = maxHeightAddWidth(buttonInc->size(), buttonDec->size());
+  buttonsSize = maxHeightAddWidth(buttonsSize, buttonSave->size());
   buttonsSize = maxHeightAddWidth(buttonsSize, buttonAutoCollide->size());
   QSize totalSize = maxHeightAddWidth(buttonsSize, slider->size());
   this->resize(totalSize);
@@ -182,6 +189,39 @@ void CollidingShapesGui::OnButtonAutoCollide()
   gazebo::msgs::Any m;
   m.set_type(gazebo::msgs::Any::BOOLEAN);
   m.set_bool_value(true);
+  this->pub->Publish(m);
+}
+
+/////////////////////////////////////////////////
+void CollidingShapesGui::OnButtonSaveConfig()
+{
+  char * home = std::getenv("HOME");
+  std::string dir;
+  if (home) dir = std::string(home);
+  QString qConfigFile = QFileDialog::getSaveFileName(this,
+    tr("Save configuration"), dir.c_str(),
+    tr("CollidingShapes test config (*.cstc);;All Files (*)"));
+
+  if (qConfigFile.isEmpty())
+  {
+    std::cout << "Cancelled." << std::endl;
+    return;
+  }
+  std::string configFile = qConfigFile.toStdString();
+  if (configFile.length() < 5)
+  {
+    configFile += ".cstc";
+  }
+  else
+  {
+    std::string ending = configFile.substr(configFile.length() - 5, 5);
+    if (ending != ".cstc")
+      configFile += ".cstc";
+  }
+  // std::cout << "Chosen to save as file " << configFile << std::endl;
+  gazebo::msgs::Any m;
+  m.set_type(gazebo::msgs::Any::STRING);
+  m.set_string_value(configFile);
   this->pub->Publish(m);
 }
 

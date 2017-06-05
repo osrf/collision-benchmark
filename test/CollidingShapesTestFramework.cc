@@ -367,6 +367,12 @@ bool CollidingShapesTestFramework::Run
                             * sliderStepSize, moveBoth);
         shapesOnAxisPrev = shapesOnAxisPos;
       }
+      if (!triggeredSaveConfig.empty())
+      {
+        std::lock_guard<std::mutex> lock(triggeredSaveConfigMtx);
+        std::cout << "SAVE! " << triggeredSaveConfig << std::endl;
+        triggeredSaveConfig = "";
+      }
 
       int numSteps = 1;
       worldManager->Update(numSteps);
@@ -407,6 +413,15 @@ void CollidingShapesTestFramework::receiveControlMsg(ConstAnyPtr &_msg)
         if (shapesOnAxisPos < 0) shapesOnAxisPos = 0;
         break;
       }
+    case gazebo::msgs::Any::STRING:
+      {
+        std::lock_guard<std::mutex> lock(triggeredSaveConfigMtx);
+        triggeredSaveConfig = _msg->string_value();
+        /* std::cout << "Saving configuration as "
+                  << triggeredSaveConfig << std::endl;*/
+        break;
+      }
+
 
     default:
       std::cerr << "Unsupported AnyMsg type" << std::endl;

@@ -73,6 +73,9 @@ class GAZEBO_VISIBLE CollidingShapesGui : public gazebo::GUIPlugin
   /// \brief Callback trigged when the button "AutoCollide" is pressed.
   protected slots: void OnButtonAutoCollide();
 
+  /// \brief Callback trigged when the button "Save config" is pressed.
+  protected slots: void OnButtonSaveConfig();
+
   protected: bool eventFilter(QObject *obj, QEvent *event);
 
   /// \brief receives feedback from the test
