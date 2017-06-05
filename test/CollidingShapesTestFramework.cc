@@ -32,6 +32,7 @@
 
 using collision_benchmark::test::CollidingShapesTestFramework;
 using collision_benchmark::test::CollidingShapesParams;
+using collision_benchmark::test::CollidingShapesConfiguration;
 
 using collision_benchmark::GazeboMultipleWorlds;
 using collision_benchmark::GazeboModelLoader;
@@ -425,10 +426,15 @@ bool CollidingShapesTestFramework::Run
 }
 
 /////////////////////////////////////////////////
-void CollidingShapesTestFramework::SaveConfiguration(const std::string& file,
-                                        const double model1Slide,
-                                        const double model2Slide)
+CollidingShapesConfiguration::Ptr
+CollidingShapesTestFramework::UpdateConfiguration(const double model1Slide,
+                                                  const double model2Slide)
 {
+  if (!configuration)
+  {
+    std::cerr << "Cannot update not existing configuration." << std::endl;
+    return nullptr;
+  }
   GzWorldManager::Ptr worldManager = gzMultiWorld->GetWorldManager();
   assert(worldManager);
   // get state of both models
@@ -437,12 +443,12 @@ void CollidingShapesTestFramework::SaveConfiguration(const std::string& file,
   if (GetBasicModelState(loadedModelNames[0], worldManager, modelState1) != 0)
   {
     std::cerr << "Could not get BasicModelState." << std::endl;
-    return;
+    return nullptr;
   }
   if (GetBasicModelState(loadedModelNames[1], worldManager, modelState2) != 0)
   {
     std::cerr << "Could not get BasicModelState." << std::endl;
-    return;
+    return nullptr;
   }
   // std::cout << " Model state 2: " << modelState2 << std::endl;
 
@@ -466,20 +472,32 @@ void CollidingShapesTestFramework::SaveConfiguration(const std::string& file,
   /* std::cout << "Model states to save (slides: "
             << model1Slide << ", " << model2Slide << "): " << std::endl
             << modelState1 << std::endl << modelState2 << std::endl;*/
+  configuration->modelState1 = modelState1;
+  configuration->modelState2 = modelState2;
+  return CollidingShapesConfiguration::Ptr
+            (new CollidingShapesConfiguration(*configuration));
+}
 
-
+/////////////////////////////////////////////////
+void CollidingShapesTestFramework::SaveConfiguration(const std::string& file,
+                                        const double model1Slide,
+                                        const double model2Slide)
+{
   std::ofstream ofs(file);
   if (!ofs.is_open())
   {
-    std::cerr << "Cannot write to fiel " << file << std::endl;
+    std::cerr << "Cannot write to file " << file << std::endl;
     return;
   }
-
-  CollidingShapesConfiguration configuration;
-  // save data to archive
+  CollidingShapesConfiguration::Ptr writeConf
+    = UpdateConfiguration(model1Slide, model2Slide);
+  if (!writeConf)
+  {
+    std::cerr << "Could not get configuration. " << std::endl;
+    return;
+  }
   boost::archive::text_oarchive oa(ofs);
-  // write class instance to archive
-  oa << configuration;
+  oa << *writeConf;
   // archive and stream are closed when destructors are called
 }
 

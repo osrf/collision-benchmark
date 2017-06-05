@@ -35,8 +35,8 @@ struct CollidingShapesConfiguration::access
   {
     ar & BOOST_SERIALIZATION_NVP(conf.models);
     ar & BOOST_SERIALIZATION_NVP(conf.shapes);
-    ar & BOOST_SERIALIZATION_NVP(conf.model1State);
-    ar & BOOST_SERIALIZATION_NVP(conf.model2State);
+    ar & BOOST_SERIALIZATION_NVP(conf.modelState1);
+    ar & BOOST_SERIALIZATION_NVP(conf.modelState2);
   }
 };
 

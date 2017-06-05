@@ -17,6 +17,7 @@
 #ifndef COLLISION_BENCHMARK_TEST_COLLIDINGSHAPESFRAMEWORK_H
 #define COLLISION_BENCHMARK_TEST_COLLIDINGSHAPESFRAMEWORK_H
 
+#include <test/CollidingShapesConfiguration.hh>
 #include <collision_benchmark/GazeboMultipleWorlds.hh>
 
 #include <thread>
@@ -159,6 +160,18 @@ class CollidingShapesTestFramework
                                   const double model1Slide,
                                   const double model2Slide);
 
+  // \brief updates the current configuration
+  // by reading the current model poses.
+  // \param[in] model1Slide the amount which model 1 has been slid along the
+  //    collision axis via AutoCollide or the slider
+  // \param[in] model2Slide the amount which model 2 has been slid along the
+  //    collision axis via AutoCollide or the slider
+  // \return a *copy* of the current (updated) configuration or nullptr
+  //    upon error.
+  private: CollidingShapesConfiguration::Ptr
+              UpdateConfiguration(const double model1Slide,
+                                  const double model2Slide);
+
   // \brief Pointer to the multiple worlds server/client
   private: collision_benchmark::GazeboMultipleWorlds::Ptr gzMultiWorld;
 
@@ -191,6 +204,9 @@ class CollidingShapesTestFramework
   // \brief Names of both loaded models
   private: std::string loadedModelNames[2];
 
+  // currently loaded configuration. Ensure this is updated with
+  // UpdateConfiguration() before use.
+  private: CollidingShapesConfiguration::Ptr configuration;
 };  // class
 
 }  // namespace test

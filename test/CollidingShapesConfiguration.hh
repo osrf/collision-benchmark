@@ -18,6 +18,9 @@
 #define COLLISION_BENCHMARK_TEST_COLLIDINGSHAPESCONFIGURATION_H
 
 #include <collision_benchmark/BasicTypes.hh>
+
+#include <memory>
+
 namespace collision_benchmark
 {
 namespace test
@@ -33,9 +36,28 @@ class CollidingShapesConfiguration
   // helper struct to allow external boost serialization
   public: struct access;
 
+  public: typedef std::shared_ptr<CollidingShapesConfiguration> Ptr;
+  public: typedef std::shared_ptr<const CollidingShapesConfiguration> ConstPtr;
+
+  // public: CollidingShapesConfiguration() {}
+  public: CollidingShapesConfiguration(const std::vector<std::string>& _models,
+                        const std::vector<std::string>& _shapes,
+                        const collision_benchmark::BasicState& _modelState1,
+                        const collision_benchmark::BasicState& _modelState2):
+    models(_models),
+    shapes(_shapes),
+    modelState1(_modelState1),
+    modelState2(_modelState2) {}
+
+  public: CollidingShapesConfiguration(const CollidingShapesConfiguration& o):
+    models(o.models),
+    shapes(o.shapes),
+    modelState1(o.modelState1),
+    modelState2(o.modelState2) {}
+
   public: std::vector<std::string> models;
   public: std::vector<std::string> shapes;
-  public: collision_benchmark::BasicState model1State, model2State;
+  public: collision_benchmark::BasicState modelState1, modelState2;
 };
 
 }  // namespace test
