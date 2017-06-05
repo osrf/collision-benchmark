@@ -62,17 +62,27 @@ class CollidingShapesTestFramework
   // This is a blocking call. It returns when the test window (gzclient) was
   // closed.
   //
+  // \param[in] physicsEngines list of physics engines to use
   // \param[in] unitShapes the unit-sized shapes (can be "cylinder", "sphere"
   //    or "cube") to use. Can be maximum two shapes.
   // \param[in] sdfModels the SDF models to use. Can be maximum two shapes.
   //   Can either be the path to a SDF file, or the name of a model in the
   //   GAZEBO_MODEL_PATHS.
-  //
+  // \param[in] modelsGap the distance or "gap" between the models.
+  //    The distance is the length of the gap between the model's AABBs if
+  //    \e modelsGapIsFactor is false, or a factor of the larger of the two
+  //    AABB sizes along the collision axis if \e modelsGapIsFactor is true.
+  //    This also determines the length of the collision axis, which goes from
+  //    the center of the first model to the center of the second model.
+  //    To disable this and use the default, set to negative value.
+  // \param[in] modelGapIsFactor interpretation of parameter \e modelsGap.
   // \return true on successful run, false if the test could not be started
   //        due to an error.
   public: bool Run(const std::vector<std::string>& physicsEngines,
                    const std::vector<std::string>& unitShapes,
-                   const std::vector<std::string>& sdfModels);
+                   const std::vector<std::string>& sdfModels,
+                   const float modelsGap = -1,
+                   const bool modelsGapIsFactor = true);
 
   // \brief Runs the test framework with the physics engines \e physicsEngines
   // and using the configuration saved in the configuration file \e configFile
@@ -86,14 +96,23 @@ class CollidingShapesTestFramework
   // This is a blocking call. It returns when the test window (gzclient) was
   // closed.
   //
+  // \param[in] physicsEngines see documentation in other Run() method.
+  // \param[in] configFile the configuration file
+  // \param[in] modelsGap see documentation in other Run() method.
+  // \param[in] modelsGapIsFactor see documentation in other Run() method.
+  //
   // \return true on successful run, false if the test could not be started
   //        due to an error.
   public: bool Run(const std::vector<std::string>& physicsEngines,
-                   const std::string configFile);
+                   const std::string configFile,
+                   const float modelsGap = -1,
+                   const bool modelsGapIsFactor = true);
 
   // \brief implementation of public Run() methods
   // Requires variable \e configuration to be set.
-  private: bool RunImpl(const std::vector<std::string>& physicsEngines);
+  private: bool RunImpl(const std::vector<std::string>& physicsEngines,
+                        const float modelsGap,
+                        const bool modelsGapIsFactor);
 
   // \brief Handles the collision bar visual in gzclient.
   // This will add a visual cylinder of given radius and length (visual

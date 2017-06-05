@@ -53,7 +53,9 @@ CollidingShapesTestFramework::CollidingShapesTestFramework():
 bool CollidingShapesTestFramework::Run
     (const std::vector<std::string>& physicsEngines,
      const std::vector<std::string>& unitShapes,
-     const std::vector<std::string>& sdfModels)
+     const std::vector<std::string>& sdfModels,
+     const float modelsGap,
+     const bool modelsGapIsFactor)
 {
   static const double axEp = 1e-06;
   if (!collision_benchmark::EqualVectors(collisionAxis, Vector3(1,0,0), axEp) &&
@@ -83,14 +85,16 @@ bool CollidingShapesTestFramework::Run
 
   // create configuration adn add the model references
   configuration.reset(new CollidingShapesConfiguration(sdfModels, unitShapes));
-  return RunImpl(physicsEngines);
+  return RunImpl(physicsEngines, modelsGap, modelsGapIsFactor);
 }
 
 
 /////////////////////////////////////////////////////////////////////////////
 bool CollidingShapesTestFramework::Run
     (const std::vector<std::string>& physicsEngines,
-     const std::string configFile)
+     const std::string configFile,
+     const float modelsGap,
+     const bool modelsGapIsFactor)
 {
   std::ifstream ifs(configFile);
   if (!ifs.is_open())
@@ -109,12 +113,14 @@ bool CollidingShapesTestFramework::Run
 
   // create configuration adn add the model references
   configuration.reset(new CollidingShapesConfiguration(readConf));
-  return RunImpl(physicsEngines);
+  return RunImpl(physicsEngines, modelsGap, modelsGapIsFactor);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 bool CollidingShapesTestFramework::RunImpl
-    (const std::vector<std::string>& physicsEngines)
+    (const std::vector<std::string>& physicsEngines,
+     const float modelsGap,
+     const bool modelsGapIsFactor)
 {
   assert(configuration);
   assert(configuration->models.size() + configuration->shapes.size() == 2);
@@ -141,7 +147,8 @@ bool CollidingShapesTestFramework::RunImpl
                     allowControlViaMirror, additionalGuis);
 
   // Load the two models to the world(s)
-  ///////////////////////////////
+  /////////////////////////////////////////
+
   GzWorldManager::Ptr worldManager = gzMultiWorld->GetWorldManager();
   assert(worldManager);
 
@@ -205,9 +212,8 @@ bool CollidingShapesTestFramework::RunImpl
     loadedModelNames[modelNum] = modelName;
   }
 
-//#define TEST_AABB
-#ifndef TEST_AABB
-  // make sure the models are at the origin first
+  // make sure the models are at the origin first (ie. remove any pose
+  // information they may have in the SDF).
   BasicState modelState1;
   modelState1.SetPosition(0,0,0);
   modelState1.SetRotation(0,0,0,1);
@@ -220,20 +226,6 @@ bool CollidingShapesTestFramework::RunImpl
     std::cerr << "Could not set all model poses to origin" << std::endl;
     return false;
   }
-#else
-  BasicState modelState1, modelState2;
-  // get the states of the models as loaded in their original pose
-  if (GetBasicModelState(loadedModelNames[0], worldManager, modelState1) != 0)
-  {
-    std::cerr << "Could not get BasicModelState." << std::endl;
-    return false;
-  }
-  if (GetBasicModelState(loadedModelNames[1], worldManager, modelState2) != 0)
-  {
-    std::cerr << "Could not get BasicModelState." << std::endl;
-    return false;
-  }
-#endif
 
   if (!modelState1.PosEnabled() ||
       !modelState2.PosEnabled())
@@ -242,8 +234,9 @@ bool CollidingShapesTestFramework::RunImpl
     return false;
   }
 
-
-  // position models
+  // Position models such that they
+  // are separated by a certain distance
+  // between their AABBs.
   ///////////////////////////////
 
   // First, get the AABB's of the two models.
@@ -256,12 +249,12 @@ bool CollidingShapesTestFramework::RunImpl
     return false;
   }
 
-#ifdef TEST_AABB
-  // The following is only needed if objects are not at origin
-  // to start with (because then global frame = local frame)
-
-  // If the ABBs are not given in global coordinate frame, need to transform
-  // the AABBs first.
+  /*
+  // Note: In case models at some point are *not* first placed at the origin
+  // (so when global frame != local frame):
+  // If the ABBs are not given in global coordinate frame, we need to transform
+  // the AABBs first!
+  // Example for first AABB:
   if (local1)
   {
     ignition::math::Matrix4d trans =
@@ -274,19 +267,7 @@ bool CollidingShapesTestFramework::RunImpl
     min1 = newMin;
     max1 = newMax;
   }
-  if (local2)
-  {
-    ignition::math::Matrix4d trans =
-      collision_benchmark::GetMatrix<double>(modelState2.position,
-                                             modelState2.rotation);
-    ignition::math::Vector3d newMin, newMax;
-    ignition::math::Vector3d ignMin(collision_benchmark::ConvIgn<double>(min2));
-    ignition::math::Vector3d ignMax(collision_benchmark::ConvIgn<double>(max2));
-    collision_benchmark::UpdateAABB(ignMin, ignMax, trans, newMin, newMax);
-    min2 = newMin;
-    max2 = newMax;
-  }
-#endif
+  */
 
   // std::cout << "AABB 1: " << min1 << " -- " << max1 << std::endl;
   // std::cout << "AABB 2: " << min2 << " -- " << max2 << std::endl;
@@ -295,16 +276,33 @@ bool CollidingShapesTestFramework::RunImpl
   const float aabb1LenOnAxis = (max1-min1).Dot(collisionAxis);
   const float aabb2LenOnAxis = (max2-min2).Dot(collisionAxis);
 
-  // distance between both AABBs in their orignal pose
+
+  // determine the desired distance / gap between the models AABBs
+  double desiredDistance = 0;
+  if (modelsGap < 0)
+  {
+    // use default:
+    // desired distance between models is \e distFact of the
+    // larger AABBs on collisionAxis
+    double distFact = 0.2;
+    desiredDistance = std::max(aabb1LenOnAxis*distFact,
+                               aabb2LenOnAxis*distFact);
+  }
+  else
+  {
+    if (modelsGapIsFactor)
+      desiredDistance = std::max(aabb1LenOnAxis*modelsGap,
+                                 aabb2LenOnAxis*modelsGap);
+    else
+      desiredDistance = modelsGap;
+  }
+
+  // we will move model 2 away from model 1 such that the desired distance
+  // is achieved between the AABBs.
+
+  // distance between both AABBs when both models are at the origin
   double aabbDist = min2.Dot(collisionAxis) - max1.Dot(collisionAxis);
-
-  // desired distance between models is \e distFact of the
-  // larger AABBs on collisionAxis
-  double distFact = 0.2;
-  double desiredDistance = std::max(aabb1LenOnAxis*distFact,
-                                    aabb2LenOnAxis*distFact);
-
-  // the distance that model 2 has to be moved along the collision axis
+  // distance to move model 2 by
   double moveM2Distance = desiredDistance - aabbDist;
   // std::cout << "Move model 2 along axis "
   //         << collisionAxis*moveM2Distance << std::endl;
@@ -315,18 +313,16 @@ bool CollidingShapesTestFramework::RunImpl
   newModelPos2.y += moveM2AlongAxis.Y();
   newModelPos2.z += moveM2AlongAxis.Z();
   modelState2.SetPosition(newModelPos2);
+  // move model 2
   worldManager->SetBasicModelState(loadedModelNames[1], modelState2);
 
-
-
-  // Set collision bar: starting at origin of Model 1,
+  // Set the collision bar: starting at origin of Model 1,
   // along the chosen axis, and ending at origin of Model 2.
   ///////////////////////////////
 
   // length of the collision axis (which is visibly going to be a cylinder)
   double collAxisLength = desiredDistance + aabb1LenOnAxis / 2.0f
                     + aabb2LenOnAxis / 2.0f;
-
   ignition::math::Vector3d modelPos1(modelState1.position.x,
                                      modelState1.position.y,
                                      modelState1.position.z);
@@ -334,8 +330,8 @@ bool CollidingShapesTestFramework::RunImpl
     = modelPos1 +
       ignition::math::Vector3d(collisionAxis.X(), collisionAxis.Y(),
                                collisionAxis.Z()) * collAxisLength/2;
-
-  const Vector3 zAxis(0,0,1); // default axis of cylinder
+  // axis of cylinder
+  const Vector3 zAxis(0,0,1);
   ignition::math::Quaterniond collBarQ;
   collBarQ.From2Axes(zAxis, collisionAxis);
   ignition::math::Pose3d collBarPose(collBarP, collBarQ);
@@ -349,6 +345,10 @@ bool CollidingShapesTestFramework::RunImpl
                           collBarPose, cylRadius, collAxisLength,
                           gzMultiWorld->GetMirrorName());
 
+
+  // Consider any model poses which
+  // have been loaded from configuration
+  //////////////////////////////////////
 
   // If the configuration has a valid pose, we need move the models
   // according to it. This will be done if the configuration has been
@@ -367,8 +367,6 @@ bool CollidingShapesTestFramework::RunImpl
          configuration->modelState1.rotation);
 
     ignition::math::Matrix4d transformedPose = poseCurr * poseConfig;
-    //ignition::math::Vector3d newPos = transformedPose.Translation();
-    //ignition::math::Quaterniond newRot = transformedPose.Rotation();
     collision_benchmark::Vector3 newPos
       (collision_benchmark::Conv(transformedPose.Translation()));
     collision_benchmark::Quaternion newRot
@@ -389,8 +387,6 @@ bool CollidingShapesTestFramework::RunImpl
          configuration->modelState2.rotation);
 
     ignition::math::Matrix4d transformedPose = poseCurr * poseConfig;
-    //ignition::math::Vector3d newPos = transformedPose.Translation();
-    //ignition::math::Quaterniond newRot = transformedPose.Rotation();
     collision_benchmark::Vector3 newPos
       (collision_benchmark::Conv(transformedPose.Translation()));
     collision_benchmark::Quaternion newRot

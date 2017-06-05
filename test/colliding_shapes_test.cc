@@ -118,14 +118,18 @@ int main(int argc, char **argv)
 */
   collision_benchmark::test::CollidingShapesTestFramework csTest;
   bool success = false;
+  float modelsGap = -1;
+  bool modelsGapIsFactor = false;
   if (!configFile.empty())
   {
     std::cout << "Loading from configuration file " << configFile << std::endl;
-    success = csTest.Run(selectedEngines, configFile);
+    success = csTest.Run(selectedEngines, configFile,
+                         modelsGap, modelsGapIsFactor);
   }
   else
   {
-    success = csTest.Run(selectedEngines, unitShapes, sdfModels);
+    success = csTest.Run(selectedEngines, unitShapes, sdfModels,
+                         modelsGap, modelsGapIsFactor);
   }
   std::cout << "Bye, bye." << std::endl;
   return success ? 0 : 1;
