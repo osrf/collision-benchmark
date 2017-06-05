@@ -63,9 +63,9 @@ bool GazeboMultipleWorldsServer::Start(int argc, const char** argv)
 void GazeboMultipleWorldsServer::Stop()
 {
   if (!running) return;
-  std::cout << "Shutting down..." <<std::endl;
+  // std::cout << "Shutting down..." <<std::endl;
   gazebo::shutdown();
-  std::cout << "Multi-world server shut down." << std::endl;
+  // std::cout << "Multi-world server shut down." << std::endl;
   running = false;
 }
 

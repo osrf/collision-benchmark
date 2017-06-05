@@ -148,10 +148,9 @@ bool CollidingShapesTestFramework::Run
     const std::string& modelResource = *it;
     std::string modelSDF =
       GazeboModelLoader::GetModelSdfFilename(modelResource);
-    // std::cout << "Loading model: " << modelSDF << std::endl;
     std::string modelName = "model_" + std::to_string(modelNum);
-    std::cout << "Adding model name: " << modelName
-              << " from resource " << modelSDF << std::endl;
+    // std::cout << "Adding model " << modelName
+    //          << " from resource " << modelSDF << std::endl;
     std::vector<ModelLoadResult> res =
       worldManager->AddModelFromFile(modelSDF, modelName);
     if (res.size() != worldManager->GetNumWorlds())
@@ -262,11 +261,11 @@ bool CollidingShapesTestFramework::Run
   // distance between both AABBs in their orignal pose
   double dist = min2.Dot(collisionAxis) - max1.Dot(collisionAxis);
   double moveDistance = desiredDistance - dist;
-  std::cout << "Move model 2 along axis "
-            << collisionAxis*moveDistance << std::endl;
+  // std::cout << "Move model 2 along axis "
+  //          << collisionAxis*moveDistance << std::endl;
 
   Vector3 moveAlongAxis = collisionAxis * moveDistance;
-  std::cout << "State of model 2: " << modelState2 << std::endl;
+  // std::cout << "State of model 2: " << modelState2 << std::endl;
   collision_benchmark::Vector3 newModelPos2 = modelState2.position;
   newModelPos2.x += moveAlongAxis.X();
   newModelPos2.y += moveAlongAxis.Y();
@@ -326,13 +325,13 @@ bool CollidingShapesTestFramework::Run
   bool waitForStart = false;
   gzMultiWorld->Run(waitForStart, false);
 
-  std::cout << "Wait until the simulation should be started..." << std::endl;
+  std::cout << "CollidingShapesTestFramework: Wait until the simulation should "
+            << "be started..." << std::endl;
   // Sleep while the start signal has not been triggered yet
   while (!gzMultiWorld->HasStarted())
     gazebo::common::Time::MSleep(100);
-
-
-  std::cout << "Starting simulation." << std::endl;
+  std::cout << "CollidingShapesTestFramework: ... now starting simulation."
+            << std::endl;
 
   double sliderStepSize = (cylLength / CollidingShapesParams::MaxSliderVal);
   // Variable holding how much the shapes were previously moved at
@@ -373,7 +372,8 @@ bool CollidingShapesTestFramework::Run
       worldManager->Update(numSteps);
   }
 
-  std::cout << "Client shut down, stopping simulation." << std::endl;
+  std::cout << "CollidingShapesTestFramework: Client closed, "
+            << "stopping simulation." << std::endl;
   gzMultiWorld->ShutdownServer();
 
   // end the thread to handle the collision bar
@@ -381,7 +381,7 @@ bool CollidingShapesTestFramework::Run
   //std::cout << "Joining thread" << std::endl;
   t.join();
 
-  std::cout << "Finished running CollidingShapesTestFramework." << std::endl;
+  // std::cout << "Finished running CollidingShapesTestFramework." << std::endl;
   return true;
 }
 
@@ -594,21 +594,25 @@ void CollidingShapesTestFramework::CollisionBarHandler
   gazebo::transport::PublisherPtr modelPub =
     node->Advertise<gazebo::msgs::Model>("~/model/info");
 
-  std::cout << "Waiting for gzclient model subscriber..." << std::endl;
+  std::cout << "CollidingShapesTestFramework::CollisionBarHandler: "
+            << "Waiting for gzclient model subscriber..." << std::endl;
   while (!modelPub->HasConnections())
   {
     gazebo::common::Time::MSleep(500);
   }
-  std::cout << "gzclient connected to models." << std::endl;
+  std::cout << "CollidingShapesTestFramework::CollisionBarHandler: "
+            << "... gzclient connected to models." << std::endl;
 
   gazebo::transport::PublisherPtr posePub =
     node->Advertise<gazebo::msgs::PosesStamped>("~/pose/info");
-  std::cout << "Waiting for gzclient pose subscriber..." << std::endl;
+  std::cout << "CollidingShapesTestFramework::CollisionBarHandler: "
+            << "Waiting for gzclient pose subscriber..." << std::endl;
   while (!posePub->HasConnections())
   {
     gazebo::common::Time::MSleep(500);
   }
-  std::cout << "... gzclient connected to pose." << std::endl;
+  std::cout << "CollidingShapesTestFramework::CollisionBarHandler: "
+            << "...gzclient connected to pose." << std::endl;
 
   // visual ID to use for the bar. This will be the ID
   // which we can use to set (and keep enforcing) the position of
@@ -701,7 +705,7 @@ void CollidingShapesTestFramework::CollisionBarHandler
     posePub->Publish(poseMsg);
     gazebo::common::Time::MSleep(100);
   }
-  std::cout << "Stopping to publish collision bar." << std::endl;
+  // std::cout << "Stopping to publish collision bar." << std::endl;
 }
 
 
