@@ -143,6 +143,22 @@ class CollidingShapesTestFramework
   // \brief Receives control messages from the GUI
   private: void receiveControlMsg(ConstAnyPtr &_msg);
 
+  // \brief Saves the configuration.
+  // This will save the model poses relative to their starting pose which
+  // have been changed by the user. The amount the models were slid towards
+  // or away from each other by means of AutoCollide or using the GUI slider
+  // will not count. So when the configuration is loaded again, the models
+  // will still start at each end of the collision axis, and when they are
+  // collided, the same collision configuration as saved by this function
+  // will be achieved by AutoCollide and/or the slider.
+  // \param[in] model1Slide the amount which model 1 has been slid along the
+  //    collision axis via AutoCollide or the slider
+  // \param[in] model2Slide the amount which model 2 has been slid along the
+  //    collision axis via AutoCollide or the slider
+  private: void SaveConfiguration(const std::string& file,
+                                  const double model1Slide,
+                                  const double model2Slide);
+
   // \brief Pointer to the multiple worlds server/client
   private: collision_benchmark::GazeboMultipleWorlds::Ptr gzMultiWorld;
 
@@ -164,7 +180,9 @@ class CollidingShapesTestFramework
   // other, collision_benchmark::test::CollidingShapesParams::MaxSliderVal
   // is as far apart as axis allowed (considering the original object pose,
   // without having moved the objects via gclient).
-  private: std::atomic<int> shapesOnAxisPos;
+  private: int shapesOnAxisPos;
+  // \brief mutex for shapesOnAxisPos
+  private: std::mutex shapesOnAxisPosMtx;
 
   // \brief Axis to use for collision.
   // Can be unit x, y or z axis

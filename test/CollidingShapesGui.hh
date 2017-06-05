@@ -41,7 +41,7 @@ namespace test
  * a boolean indicates the auto-collide has been triggered, and a string
  * gives the filename to save the configuration to.
  *
- * Subscription: An integer can be sent to indicate how much the shapes
+ * Subscription: An integer can be sent to indicate when the shapes
  * have been moved along the collision axis (given in step sizes of the
  * slider bar, 0..MaxSliderVal).
  *

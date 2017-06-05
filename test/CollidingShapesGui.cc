@@ -204,7 +204,7 @@ void CollidingShapesGui::OnButtonSaveConfig()
 
   if (qConfigFile.isEmpty())
   {
-    std::cout << "Cancelled." << std::endl;
+    std::cout << "CollidingShapesGui: Cancelled saving config." << std::endl;
     return;
   }
   std::string configFile = qConfigFile.toStdString();
@@ -247,9 +247,9 @@ void CollidingShapesGui::receiveFeedbackMsg(ConstAnyPtr &_msg)
   {
     case gazebo::msgs::Any::INT32:
       {
-        // std::cout << "GUI feedback: Moved shapes by "
+        // std::cout << "GUI feedback: Moved shapes to "
         //           << _msg->int_value() << std::endl;
-        slider->setValue(slider->value() + _msg->int_value());
+        slider->setValue(_msg->int_value());
         break;
       }
 

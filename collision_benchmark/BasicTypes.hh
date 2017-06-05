@@ -37,6 +37,9 @@ namespace collision_benchmark
 // just for portability of data
 class Vector3
 {
+  // helper struct to allow external boost serialization
+  public: struct access;
+
   public: Vector3(double _x=0, double _y=0, double _z=0):
     x(_x), y(_y), z(_z) {}
   public: Vector3(const Vector3& o):
@@ -55,6 +58,8 @@ class Vector3
 // just for portability of data
 class Quaternion: public Vector3
 {
+  // helper struct to allow external boost serialization
+  public: struct access;
   public: Quaternion(double _x=0, double _y=0, double _z=0, double _w=0):
           Vector3(_x,_y,_z), w(_w) {}
   public: Quaternion(const Quaternion& o):
@@ -78,6 +83,8 @@ class Quaternion: public Vector3
  */
 class BasicState
 {
+  // helper struct to allow external boost serialization
+  public: struct access;
   // constructor which enables only fields which are not NULL
   public: BasicState(const Vector3 *_position=NULL,
                      const Quaternion *_rotation=NULL,

@@ -12,6 +12,7 @@ include(${PROJECT_SOURCE_DIR}/cmake/SearchForStuff.cmake)
 
 set(collision_benchmark_HEADERS
   collision_benchmark/boost_std_conversion.hh
+  collision_benchmark/BoostSerialization.hh
   collision_benchmark/ClientGui.hh
   collision_benchmark/ContactInfo.hh
   collision_benchmark/ControlServer.hh

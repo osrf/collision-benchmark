@@ -16,6 +16,7 @@
 */
 #include "CollidingShapesTestFramework.hh"
 #include "CollidingShapesParams.hh"
+#include "BoostSerialization.hh"
 #include <collision_benchmark/PrimitiveShape.hh>
 #include <collision_benchmark/GazeboModelLoader.hh>
 #include <collision_benchmark/GazeboWorldLoader.hh>
@@ -24,9 +25,10 @@
 
 #include <gazebo/common/Timer.hh>
 
-#include <thread>
-#include <unistd.h>
-#include <sys/wait.h>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+
+#include <fstream>
 
 using collision_benchmark::test::CollidingShapesTestFramework;
 using collision_benchmark::test::CollidingShapesParams;
@@ -252,32 +254,37 @@ bool CollidingShapesTestFramework::Run
   const float aabb1LenOnAxis = (max1-min1).Dot(collisionAxis);
   const float aabb2LenOnAxis = (max2-min2).Dot(collisionAxis);
 
+
+  // distance between both AABBs in their orignal pose
+  double aabbDist = min2.Dot(collisionAxis) - max1.Dot(collisionAxis);
+
   // desired distance between models is \e distFact of the
   // larger AABBs on collisionAxis
   double distFact = 0.2;
   double desiredDistance = std::max(aabb1LenOnAxis*distFact,
                                     aabb2LenOnAxis*distFact);
 
-  // distance between both AABBs in their orignal pose
-  double dist = min2.Dot(collisionAxis) - max1.Dot(collisionAxis);
-  double moveDistance = desiredDistance - dist;
-  // std::cout << "Move model 2 along axis "
-  //          << collisionAxis*moveDistance << std::endl;
 
-  Vector3 moveAlongAxis = collisionAxis * moveDistance;
+
+  // the distance that model 2 has to be moved along the collision axis
+  double moveM2Distance = desiredDistance - aabbDist;
+  // std::cout << "Move model 2 along axis "
+  //         << collisionAxis*moveM2Distance << std::endl;
+  Vector3 moveM2AlongAxis = collisionAxis * moveM2Distance;
   // std::cout << "State of model 2: " << modelState2 << std::endl;
   collision_benchmark::Vector3 newModelPos2 = modelState2.position;
-  newModelPos2.x += moveAlongAxis.X();
-  newModelPos2.y += moveAlongAxis.Y();
-  newModelPos2.z += moveAlongAxis.Z();
+  newModelPos2.x += moveM2AlongAxis.X();
+  newModelPos2.y += moveM2AlongAxis.Y();
+  newModelPos2.z += moveM2AlongAxis.Z();
   modelState2.SetPosition(newModelPos2);
   worldManager->SetBasicModelState(loadedModelNames[1], modelState2);
 
-  // set parameters of collision bar: starting at origin of Model 1,
+  // Set collision bar: starting at origin of Model 1,
   // along the chosen axis, and ending at origin of Model 2.
   ///////////////////////////////
 
-  double cylLength = desiredDistance + aabb1LenOnAxis / 2.0f
+  // length of the collision axis (which is visibly going to be a cylinder)
+  double collAxisLength = desiredDistance + aabb1LenOnAxis / 2.0f
                     + aabb2LenOnAxis / 2.0f;
 
   ignition::math::Vector3d modelPos1(modelState1.position.x,
@@ -286,8 +293,7 @@ bool CollidingShapesTestFramework::Run
   ignition::math::Vector3d collBarP
     = modelPos1 +
       ignition::math::Vector3d(collisionAxis.X(), collisionAxis.Y(),
-                               collisionAxis.Z()) * cylLength/2;
-
+                               collisionAxis.Z()) * collAxisLength/2;
 
   const Vector3 zAxis(0,0,1); // default axis of cylinder
   ignition::math::Quaterniond collBarQ;
@@ -295,13 +301,12 @@ bool CollidingShapesTestFramework::Run
   ignition::math::Pose3d collBarPose(collBarP, collBarQ);
 
   // start the thread to handle the collision bar
-  ///////////////////////////////
   running = true;
   double cylRadius = 0.02;
   std::thread t(std::bind(&CollidingShapesTestFramework::CollisionBarHandler,
                           this, std::placeholders::_1, std::placeholders::_2,
                           std::placeholders::_3, std::placeholders::_4),
-                          collBarPose, cylRadius, cylLength,
+                          collBarPose, cylRadius, collAxisLength,
                           gzMultiWorld->GetMirrorName());
 
 
@@ -333,8 +338,12 @@ bool CollidingShapesTestFramework::Run
   std::cout << "CollidingShapesTestFramework: ... now starting simulation."
             << std::endl;
 
-  double sliderStepSize = (cylLength / CollidingShapesParams::MaxSliderVal);
-  // Variable holding how much the shapes were previously moved at
+  // step size along the collision bar, based on
+  // step sizes of the slider in the GUI and the length of the collision axis.
+  const double sliderStepSize
+    = (collAxisLength / CollidingShapesParams::MaxSliderVal);
+
+  // Variable holding how much the shapes were moved at
   // along the axis already via the controls.
   int shapesOnAxisPrev = CollidingShapesParams::MaxSliderVal;
 
@@ -343,6 +352,9 @@ bool CollidingShapesTestFramework::Run
   {
       // while collision is not found, move models towards each other
       bool allWorlds = false;
+      // set to true to move both models towards/away from each other.
+      // Note: At this point, the folliwng implementation assumes it is
+      // false. Adjust implementation if a value of true is desired later.
       bool moveBoth = false;
       if (triggeredAutoCollide)
       {
@@ -351,29 +363,50 @@ bool CollidingShapesTestFramework::Run
         /* std::cout << "Units moved during auto collide: "
                   << unitsMoved << ". Current value is "
                   << shapesOnAxisPrev << std::endl; */
+        std::lock_guard<std::mutex> lock(shapesOnAxisPosMtx);
         shapesOnAxisPrev -= unitsMoved;
+        // enforce the slider to go onto the same position
+        shapesOnAxisPos = shapesOnAxisPrev;
         gazebo::msgs::Any m;
         m.set_type(gazebo::msgs::Any::INT32);
-        m.set_int_value(-unitsMoved);
+        m.set_int_value(shapesOnAxisPos);
         feedbackPub->Publish(m);
+        // unset trigger
         triggeredAutoCollide = false;
       }
-      if (shapesOnAxisPos != shapesOnAxisPrev)
-      {
-        /* std::cout << "Slider action: Moving shapes by "
-                  << (shapesOnAxisPrev - shapesOnAxisPos)
-                  << " steps." << std::endl;*/
-        MoveModelsAlongAxis((shapesOnAxisPrev - shapesOnAxisPos)
-                            * sliderStepSize, moveBoth);
-        shapesOnAxisPrev = shapesOnAxisPos;
+      { // lock scope
+        std::lock_guard<std::mutex> lock(shapesOnAxisPosMtx);
+        if (shapesOnAxisPos != shapesOnAxisPrev)
+        {
+          /*std::cout << "Slider action: Moving shapes by "
+                    << (shapesOnAxisPrev - shapesOnAxisPos)
+                    << " steps." << std::endl;*/
+          MoveModelsAlongAxis((shapesOnAxisPrev - shapesOnAxisPos)
+                              * sliderStepSize, moveBoth);
+          shapesOnAxisPrev = shapesOnAxisPos;
+        }
       }
-      if (!triggeredSaveConfig.empty())
-      {
+      {  // lock scope
         std::lock_guard<std::mutex> lock(triggeredSaveConfigMtx);
-        std::cout << "SAVE! " << triggeredSaveConfig << std::endl;
-        triggeredSaveConfig = "";
+        if (!triggeredSaveConfig.empty())
+        {
+          std::lock_guard<std::mutex> lock(shapesOnAxisPosMtx);
+          // Get amount that  model 2 has been moved along the collision axis
+          // with the slider - this will not count for the configuration.
+          // (NOTE: presuming moveBoth is false, otherwise we also have
+          // to pass something for model 1)
+          double relMove = (CollidingShapesParams::MaxSliderVal
+                            - shapesOnAxisPos) * sliderStepSize;
+          double model1Slide = 0;
+          // model 2 has moved as we displaced it in the beginning, and
+          // adding onto it the moves via the shapes axis (AutoCollide also
+          // has an effect on the value of the shape axis).
+          double model2Slide = moveM2Distance - relMove;
+          SaveConfiguration(triggeredSaveConfig, model1Slide,
+                            -model2Slide);
+          triggeredSaveConfig = "";
+        }
       }
-
       int numSteps = 1;
       worldManager->Update(numSteps);
   }
@@ -391,43 +424,64 @@ bool CollidingShapesTestFramework::Run
   return true;
 }
 
-
 /////////////////////////////////////////////////
-void CollidingShapesTestFramework::receiveControlMsg(ConstAnyPtr &_msg)
+void CollidingShapesTestFramework::SaveConfiguration(const std::string& file,
+                                        const double model1Slide,
+                                        const double model2Slide)
 {
-  // std::cout << "Any msg: "<<_msg->DebugString();
-  switch (_msg->type())
+  GzWorldManager::Ptr worldManager = gzMultiWorld->GetWorldManager();
+  assert(worldManager);
+  // get state of both models
+  BasicState modelState1, modelState2;
+  // get the states of the models as loaded in their original pose
+  if (GetBasicModelState(loadedModelNames[0], worldManager, modelState1) != 0)
   {
-    case gazebo::msgs::Any::BOOLEAN:
-      {
-        std::cout <<"Triggered auto collide." << std::endl;
-        triggeredAutoCollide = true;
-        break;
-      }
-    case gazebo::msgs::Any::INT32:
-      {
-        // std::cout <<"Moving shapes to " << _msg->int_value() << std::endl;
-        shapesOnAxisPos = _msg->int_value();
-        if (shapesOnAxisPos > CollidingShapesParams::MaxSliderVal)
-          shapesOnAxisPos = CollidingShapesParams::MaxSliderVal;
-        if (shapesOnAxisPos < 0) shapesOnAxisPos = 0;
-        break;
-      }
-    case gazebo::msgs::Any::STRING:
-      {
-        std::lock_guard<std::mutex> lock(triggeredSaveConfigMtx);
-        triggeredSaveConfig = _msg->string_value();
-        /* std::cout << "Saving configuration as "
-                  << triggeredSaveConfig << std::endl;*/
-        break;
-      }
-
-
-    default:
-      std::cerr << "Unsupported AnyMsg type" << std::endl;
+    std::cerr << "Could not get BasicModelState." << std::endl;
+    return;
   }
-}
+  if (GetBasicModelState(loadedModelNames[1], worldManager, modelState2) != 0)
+  {
+    std::cerr << "Could not get BasicModelState." << std::endl;
+    return;
+  }
+  // std::cout << " Model state 2: " << modelState2 << std::endl;
 
+  // the movement that model 1 has been moved via the collision axis
+  const ignition::math::Vector3d mv1 = collisionAxis * model1Slide;
+  // the movement that model 2 has been moved via the collision axis
+  const ignition::math::Vector3d mv2 = collisionAxis * model2Slide;
+
+  // undo the move via the collision axis
+  modelState1.SetPosition(modelState1.position.x + mv1.X(),
+                          modelState1.position.y + mv1.Y(),
+                          modelState1.position.z + mv1.Z());
+
+  modelState2.SetPosition(modelState2.position.x + mv2.X(),
+                          modelState2.position.y + mv2.Y(),
+                          modelState2.position.z + mv2.Z());
+
+  // because models originally were at the origin, the model states
+  // now represent how much they have been moved by the user.
+
+  /* std::cout << "Model states to save (slides: "
+            << model1Slide << ", " << model2Slide << "): " << std::endl
+            << modelState1 << std::endl << modelState2 << std::endl;*/
+
+
+  std::ofstream ofs(file);
+  if (!ofs.is_open())
+  {
+    std::cerr << "Cannot write to fiel " << file << std::endl;
+    return;
+  }
+
+  CollidingShapesConfiguration configuration;
+  // save data to archive
+  boost::archive::text_oarchive oa(ofs);
+  // write class instance to archive
+  oa << configuration;
+  // archive and stream are closed when destructors are called
+}
 
 //////////////////////////////////////////////////////////////////////////////
 double CollidingShapesTestFramework::AutoCollide(bool allWorlds,
@@ -573,9 +627,10 @@ int CollidingShapesTestFramework::GetAABB(const std::string& modelName,
 
 
 //////////////////////////////////////////////////////////////////////////////
-int CollidingShapesTestFramework::GetBasicModelState(const std::string& modelName,
-               const GazeboMultipleWorlds::GzWorldManager::Ptr& worldManager,
-               BasicState& state)
+int CollidingShapesTestFramework::GetBasicModelState
+    (const std::string& modelName,
+     const GazeboMultipleWorlds::GzWorldManager::Ptr& worldManager,
+     BasicState& state)
 {
   std::vector<GazeboMultipleWorlds::GzWorldManager
               ::PhysicsWorldModelInterfacePtr>
@@ -723,4 +778,39 @@ void CollidingShapesTestFramework::CollisionBarHandler
   // std::cout << "Stopping to publish collision bar." << std::endl;
 }
 
+/////////////////////////////////////////////////
+void CollidingShapesTestFramework::receiveControlMsg(ConstAnyPtr &_msg)
+{
+  // std::cout << "Any msg: "<<_msg->DebugString();
+  switch (_msg->type())
+  {
+    case gazebo::msgs::Any::BOOLEAN:
+      {
+        std::cout <<"Triggered auto collide." << std::endl;
+        triggeredAutoCollide = true;
+        break;
+      }
+    case gazebo::msgs::Any::INT32:
+      {
+        // std::cout <<"Moving shapes to " << _msg->int_value() << std::endl;
+        std::lock_guard<std::mutex> lock(shapesOnAxisPosMtx);
+        shapesOnAxisPos = _msg->int_value();
+        if (shapesOnAxisPos > CollidingShapesParams::MaxSliderVal)
+          shapesOnAxisPos = CollidingShapesParams::MaxSliderVal;
+        if (shapesOnAxisPos < 0) shapesOnAxisPos = 0;
+        break;
+      }
+    case gazebo::msgs::Any::STRING:
+      {
+        std::lock_guard<std::mutex> lock(triggeredSaveConfigMtx);
+        triggeredSaveConfig = _msg->string_value();
+        /* std::cout << "Saving configuration as "
+                  << triggeredSaveConfig << std::endl;*/
+        break;
+      }
 
+
+    default:
+      std::cerr << "Unsupported AnyMsg type" << std::endl;
+  }
+}

@@ -31,6 +31,11 @@ else()
   set(VTK_LIBS vtkHybrid vtkWidgets)
 endif()
 
+
+#################################################
+# find boost incl. serialization
+find_package(Boost REQUIRED COMPONENTS system filesystem serialization)
+
 #################################################
 # Set variables with all dependencies
 set(dependencies_INCLUDE_DIRS
@@ -41,6 +46,7 @@ set(dependencies_INCLUDE_DIRS
   ${Qt5Widgets_INCLUDE_DIRS}
   ${QT_INCLUDE_DIR}
   ${VTK_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
 )
 
 set(dependencies_LIBRARY_DIRS
@@ -48,6 +54,7 @@ set(dependencies_LIBRARY_DIRS
   ${TINYXML_LIBRARY_DIRS}
   ${GAZEBO_LIBRARY_DIRS}
   ${VTK_LIBRARY_DIRS}
+  ${Boost_LIBRARY_DIRS}
 )
 
 set(dependencies_LIBRARIES
@@ -57,4 +64,5 @@ set(dependencies_LIBRARIES
   ${Qt5Core_LIBRARIES}
   ${Qt5Widgets_LIBRARIES}
   ${VTK_LIBS}
+  ${Boost_LIBRARIES}
 )
