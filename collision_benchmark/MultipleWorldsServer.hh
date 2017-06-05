@@ -162,8 +162,8 @@ class MultipleWorldsServer
     WorldLoader::ConstPtr loader = wlIt->second;
     assert(loader);
 
-    std::cout << "Loading with physics engine " << engine
-              << " (named as '" << worldname << "')" << std::endl;
+    // std::cout << "Loading with physics engine " << engine
+    //          << " (named as '" << worldname << "')" << std::endl;
 
     PhysicsWorldBaseInterface::Ptr world =
       loader->LoadFromFile(worldfile, worldname);

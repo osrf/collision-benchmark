@@ -207,7 +207,8 @@ void CollidingShapesGui::receiveFeedbackMsg(ConstAnyPtr &_msg)
   {
     case gazebo::msgs::Any::INT32:
       {
-        std::cout <<"GUI feedback: Moved shapes by " << _msg->int_value() << std::endl;
+        // std::cout << "GUI feedback: Moved shapes by "
+        //           << _msg->int_value() << std::endl;
         slider->setValue(slider->value() + _msg->int_value());
         break;
       }

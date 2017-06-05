@@ -159,12 +159,13 @@ bool GazeboMultipleWorlds::Run(bool waitForStartSignal,
   if (!worldManager) return false;
 
   // wait until the client is running before starting the simulation.
-  std::cout << "Waiting for client to come up... " << std::endl;
+  std::cout << "GazeboMultipleWorlds:: Waiting for client to come up... "
+            << std::endl;
   while (!IsClientRunning())
   {
     gazebo::common::Time::MSleep(100);
   }
-  std::cout << "Client has started." << std::endl;
+  std::cout << "GazeboMultipleWorlds: Client has connected." << std::endl;
 
   GzWorldManager::ControlServerPtr controlServer =
     worldManager->GetControlServer();
@@ -209,7 +210,7 @@ bool GazeboMultipleWorlds::Run(bool waitForStartSignal,
     return true;
   }
 
-  std::cout << "Now starting to update worlds."<<std::endl;
+  // std::cout << "Now starting to update worlds."<<std::endl;
   int iter = 0;
   worldManager->SetPaused(false);
 

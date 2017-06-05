@@ -41,6 +41,7 @@ using collision_benchmark::BasicState;
 /////////////////////////////////////////////////////////////////////////////
 CollidingShapesTestFramework::CollidingShapesTestFramework():
   collisionAxis(0,1,0),
+  triggeredAutoCollide(false),
   shapesOnAxisPos(CollidingShapesParams::MaxSliderVal)
 {
 }
@@ -56,8 +57,8 @@ bool CollidingShapesTestFramework::Run
       !collision_benchmark::EqualVectors(collisionAxis, Vector3(0,1,0), axEp) &&
       !collision_benchmark::EqualVectors(collisionAxis, Vector3(0,0,1), axEp))
   {
-    std::cerr << "Only collision axes supported are x,y or z axis. Is "
-              << collisionAxis << std::endl;
+    std::cerr << "At this point, the only collision axes supported are x,y "
+              << "or z axis. Is " << collisionAxis << std::endl;
     return false;
   }
 
@@ -245,8 +246,8 @@ bool CollidingShapesTestFramework::Run
   }
 #endif
 
-  std::cout << "AABB 1: " << min1 << " -- " << max1 << std::endl;
-  std::cout << "AABB 2: " << min2 << " -- " << max2 << std::endl;
+  // std::cout << "AABB 1: " << min1 << " -- " << max1 << std::endl;
+  // std::cout << "AABB 2: " << min2 << " -- " << max2 << std::endl;
 
   // Leave model 1 where it is and move model 2 away from it.
   const float aabb1LenOnAxis = (max1-min1).Dot(collisionAxis);
@@ -593,19 +594,21 @@ void CollidingShapesTestFramework::CollisionBarHandler
   gazebo::transport::PublisherPtr modelPub =
     node->Advertise<gazebo::msgs::Model>("~/model/info");
 
+  std::cout << "Waiting for gzclient model subscriber..." << std::endl;
   while (!modelPub->HasConnections())
   {
-    std::cout << "Waiting gzclient subscriber to models." << std::endl;
     gazebo::common::Time::MSleep(500);
   }
+  std::cout << "gzclient connected to models." << std::endl;
 
   gazebo::transport::PublisherPtr posePub =
     node->Advertise<gazebo::msgs::PosesStamped>("~/pose/info");
+  std::cout << "Waiting for gzclient pose subscriber..." << std::endl;
   while (!posePub->HasConnections())
   {
-    std::cout << "Waiting gzclient subscriber to pose." << std::endl;
     gazebo::common::Time::MSleep(500);
   }
+  std::cout << "... gzclient connected to pose." << std::endl;
 
   // visual ID to use for the bar. This will be the ID
   // which we can use to set (and keep enforcing) the position of

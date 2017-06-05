@@ -98,9 +98,10 @@ ClientGui::ClientGui()
   this->mirrorWorldSub =
     this->node->Subscribe(GET_TOPIC, &ClientGui::receiveWorldMsg, this);
 
-  std::cout<<"Waiting for connection to topic "<<SET_TOPIC<<std::endl;
+  std::cout << "ClientGUI: Waiting for connection to topic "
+            << SET_TOPIC << std::endl;
   this->mirrorWorldPub->WaitForConnection();
-  std::cout<<"Received."<<std::endl;
+  std::cout << "ClientGUI: Connection established." << std::endl;
 
   // Send the name request to the gazebo server
   gazebo::msgs::Any m;

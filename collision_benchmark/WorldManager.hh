@@ -518,8 +518,8 @@ class WorldManager
   /// collision states / contact points between them checked.
   public: void SetDynamicsEnabled(const bool flag)
   {
-   std::cout << "WorldManager received request to set dynamics "
-             << "enable to " << flag << std::endl;
+   // std::cout << "WorldManager received request to set dynamics "
+   //          << "enable to " << flag << std::endl;
    std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
    for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator
         it = this->worlds.begin();
