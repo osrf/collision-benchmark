@@ -15,6 +15,7 @@
  *
 */
 #include "CollidingShapesGui.hh"
+#include "CollidingShapesParams.hh"
 #include <sstream>
 #include <gazebo/msgs/msgs.hh>
 
@@ -22,6 +23,7 @@
 #include <QSlider>
 
 using collision_benchmark::test::CollidingShapesGui;
+using collision_benchmark::test::CollidingShapesParams;
 
 // Register this plugin with the simulator
 GZ_REGISTER_GUI_PLUGIN(CollidingShapesGui)
@@ -56,8 +58,9 @@ CollidingShapesGui::CollidingShapesGui()
   collidingShapesLayout->addWidget(buttonDec);
 
   slider = new QSlider(Qt::Horizontal);
-  slider->setMinimum(-100);
-  slider->setMaximum(100);
+  slider->setMinimum(0);
+  slider->setMaximum(CollidingShapesParams::MaxSliderVal);
+  slider->setValue(CollidingShapesParams::MaxSliderVal);
   slider->resize(300,20);
   connect(slider, SIGNAL(valueChanged(int)),
           this, SLOT(OnValueChanged(int)));
@@ -93,9 +96,12 @@ CollidingShapesGui::CollidingShapesGui()
   // Set up transportation system
   this->node = gazebo::transport::NodePtr(new gazebo::transport::Node());
   this->node->Init();
-  std::string TOPIC="collide_shapes_test/control";
-  this->pub =
-  this->node->Advertise<gazebo::msgs::Any>(TOPIC);
+  std::string pub_topic="collide_shapes_test/control";
+  this->pub = this->node->Advertise<gazebo::msgs::Any>(pub_topic);
+
+  std::string sub_topic="collide_shapes_test/feedback";
+  this->sub = this->node->Subscribe(sub_topic,
+                      &CollidingShapesGui::receiveFeedbackMsg, this);
 }
 
 /////////////////////////////////////////////////
@@ -191,3 +197,23 @@ void CollidingShapesGui::OnButtonDec()
   if (!slider) return;
   slider->setValue(slider->value() - 1);
 }
+
+
+/////////////////////////////////////////////////
+void CollidingShapesGui::receiveFeedbackMsg(ConstAnyPtr &_msg)
+{
+  // std::cout << "GUI FEEDBACK! "<<_msg->DebugString();
+  switch (_msg->type())
+  {
+    case gazebo::msgs::Any::INT32:
+      {
+        std::cout <<"GUI feedback: Moved shapes by " << _msg->int_value() << std::endl;
+        slider->setValue(slider->value() + _msg->int_value());
+        break;
+      }
+
+    default:
+      std::cerr << "Unsupported AnyMsg type" << std::endl;
+  }
+}
+

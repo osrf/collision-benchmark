@@ -15,6 +15,7 @@
  *
 */
 #include "CollidingShapesTestFramework.hh"
+#include "CollidingShapesParams.hh"
 #include <collision_benchmark/PrimitiveShape.hh>
 #include <collision_benchmark/GazeboModelLoader.hh>
 #include <collision_benchmark/GazeboWorldLoader.hh>
@@ -28,6 +29,7 @@
 #include <sys/wait.h>
 
 using collision_benchmark::test::CollidingShapesTestFramework;
+using collision_benchmark::test::CollidingShapesParams;
 
 using collision_benchmark::GazeboMultipleWorlds;
 using collision_benchmark::GazeboModelLoader;
@@ -38,7 +40,8 @@ using collision_benchmark::BasicState;
 
 /////////////////////////////////////////////////////////////////////////////
 CollidingShapesTestFramework::CollidingShapesTestFramework():
-  collisionAxis(0,1,0)
+  collisionAxis(0,1,0),
+  shapesOnAxisPos(CollidingShapesParams::MaxSliderVal)
 {
 }
 
@@ -110,14 +113,15 @@ bool CollidingShapesTestFramework::Run
     Shape::Ptr shape;
     if (shapeID == "sphere")
     {
-      float radius = 1;
-      shape.reset(PrimitiveShape::CreateSphere(radius));
+      shape.reset(PrimitiveShape::CreateSphere(1));
     }
     else if (shapeID == "cylinder")
     {
+      shape.reset(PrimitiveShape::CreateCylinder(1, 1));
     }
     else if (shapeID == "cube")
     {
+      shape.reset(PrimitiveShape::CreateBox(1, 1, 1));
     }
     else
     {
@@ -303,17 +307,22 @@ bool CollidingShapesTestFramework::Run
 
   // Subscribe to the GUI control
   ///////////////////////////////
-  std::string topic="collide_shapes_test/control";
+  std::string controlTopic="collide_shapes_test/control";
   gazebo::transport::NodePtr node
     = gazebo::transport::NodePtr(new gazebo::transport::Node());
   node->Init();
   gazebo::transport::SubscriberPtr controlSub =
-    node->Subscribe(topic, &CollidingShapesTestFramework::receiveControlMsg,
+    node->Subscribe(controlTopic,
+                    &CollidingShapesTestFramework::receiveControlMsg,
                     this);
+
+  std::string feedbackTopic="collide_shapes_test/feedback";
+  gazebo::transport::PublisherPtr feedbackPub =
+    node->Advertise<gazebo::msgs::Any>(feedbackTopic);
 
   // Run the world(s)
   ///////////////////////////////
-  bool waitForStart = true;
+  bool waitForStart = false;
   gzMultiWorld->Run(waitForStart, false);
 
   std::cout << "Wait until the simulation should be started..." << std::endl;
@@ -324,21 +333,41 @@ bool CollidingShapesTestFramework::Run
 
   std::cout << "Starting simulation." << std::endl;
 
+  double sliderStepSize = (cylLength / CollidingShapesParams::MaxSliderVal);
+  // Variable holding how much the shapes were previously moved at
+  // along the axis already via the controls.
+  int shapesOnAxisPrev = CollidingShapesParams::MaxSliderVal;
+
   // run the main loop
   while (gzMultiWorld->IsClientRunning())
   {
       // while collision is not found, move models towards each other
       bool allWorlds = false;
+      bool moveBoth = false;
       if (triggeredAutoCollide)
       {
-        AutoCollide(allWorlds);
+        double dist = AutoCollide(allWorlds, moveBoth);
+        int unitsMoved = dist / sliderStepSize;
+        /* std::cout << "Units moved during auto collide: "
+                  << unitsMoved << ". Current value is "
+                  << shapesOnAxisPrev << std::endl; */
+        shapesOnAxisPrev -= unitsMoved;
+        gazebo::msgs::Any m;
+        m.set_type(gazebo::msgs::Any::INT32);
+        m.set_int_value(-unitsMoved);
+        feedbackPub->Publish(m);
         triggeredAutoCollide = false;
       }
-      /* if (triggeredMove)
+      if (shapesOnAxisPos != shapesOnAxisPrev)
       {
-        const double stepSize = 0.01;
-        MoveModelsAlongAxis(stepSize);
-      }*/
+        /* std::cout << "Slider action: Moving shapes by "
+                  << (shapesOnAxisPrev - shapesOnAxisPos)
+                  << " steps." << std::endl;*/
+        MoveModelsAlongAxis((shapesOnAxisPrev - shapesOnAxisPos)
+                            * sliderStepSize, moveBoth);
+        shapesOnAxisPrev = shapesOnAxisPos;
+      }
+
       int numSteps = 1;
       worldManager->Update(numSteps);
   }
@@ -359,14 +388,34 @@ bool CollidingShapesTestFramework::Run
 /////////////////////////////////////////////////
 void CollidingShapesTestFramework::receiveControlMsg(ConstAnyPtr &_msg)
 {
-  std::cout << "Any msg: "<<_msg->DebugString();
-  /*std::string worldName=_msg->string_value();
-  emit TriggerNameChange(worldName);*/
+  // std::cout << "Any msg: "<<_msg->DebugString();
+  switch (_msg->type())
+  {
+    case gazebo::msgs::Any::BOOLEAN:
+      {
+        std::cout <<"Triggered auto collide." << std::endl;
+        triggeredAutoCollide = true;
+        break;
+      }
+    case gazebo::msgs::Any::INT32:
+      {
+        // std::cout <<"Moving shapes to " << _msg->int_value() << std::endl;
+        shapesOnAxisPos = _msg->int_value();
+        if (shapesOnAxisPos > CollidingShapesParams::MaxSliderVal)
+          shapesOnAxisPos = CollidingShapesParams::MaxSliderVal;
+        if (shapesOnAxisPos < 0) shapesOnAxisPos = 0;
+        break;
+      }
+
+    default:
+      std::cerr << "Unsupported AnyMsg type" << std::endl;
+  }
 }
 
 
 //////////////////////////////////////////////////////////////////////////////
-void CollidingShapesTestFramework::AutoCollide(bool allWorlds)
+double CollidingShapesTestFramework::AutoCollide(bool allWorlds,
+                                               bool moveBoth)
 {
   GzWorldManager::Ptr worldManager = gzMultiWorld->GetWorldManager();
   assert(worldManager);
@@ -384,7 +433,7 @@ void CollidingShapesTestFramework::AutoCollide(bool allWorlds)
   {
     gazebo::common::Time elapsed = timer.GetElapsed();
     // move the shapes towards each other in steps of this size
-    const double stepSize = 1e-04;
+    const double stepSize = 1e-03;
     if (moved > 0)
     {
       // slow down the movement if it's too fast.
@@ -398,11 +447,12 @@ void CollidingShapesTestFramework::AutoCollide(bool allWorlds)
         continue;
       }
     }
-    MoveModelsAlongAxis(stepSize);
+    MoveModelsAlongAxis(stepSize, moveBoth);
     moved += stepSize;
     int numSteps = 1;
     worldManager->Update(numSteps);
   }
+  return moved;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -440,14 +490,16 @@ bool CollidingShapesTestFramework::ModelsCollide(bool allWorlds)
 
 
 //////////////////////////////////////////////////////////////////////////////
-void CollidingShapesTestFramework::MoveModelsAlongAxis(const float moveDist)
+void CollidingShapesTestFramework::MoveModelsAlongAxis(const float moveDist,
+                                                       const bool moveBoth)
 {
   GzWorldManager::Ptr worldManager = gzMultiWorld->GetWorldManager();
   assert(worldManager);
   // get state of both models
   BasicState modelState1, modelState2;
   // get the states of the models as loaded in their original pose
-  if (GetBasicModelState(loadedModelNames[0], worldManager, modelState1) != 0)
+  if (moveBoth &&
+      (GetBasicModelState(loadedModelNames[0], worldManager, modelState1) != 0))
   {
     std::cerr << "Could not get BasicModelState." << std::endl;
     return;
@@ -457,17 +509,22 @@ void CollidingShapesTestFramework::MoveModelsAlongAxis(const float moveDist)
     std::cerr << "Could not get BasicModelState." << std::endl;
     return;
   }
-
   const ignition::math::Vector3d mv = collisionAxis * moveDist;
-  modelState1.SetPosition(modelState1.position.x + mv.X(),
-                          modelState1.position.y + mv.Y(),
-                          modelState1.position.z + mv.Z());
+
+  if (moveBoth)
+  {
+    modelState1.SetPosition(modelState1.position.x + mv.X(),
+                            modelState1.position.y + mv.Y(),
+                            modelState1.position.z + mv.Z());
+  }
+
   modelState2.SetPosition(modelState2.position.x - mv.X(),
                           modelState2.position.y - mv.Y(),
                           modelState2.position.z - mv.Z());
 
-  if ((worldManager->SetBasicModelState(loadedModelNames[0], modelState1)
-       != worldManager->GetNumWorlds()) ||
+  if ((moveBoth &&
+       (worldManager->SetBasicModelState(loadedModelNames[0], modelState1)
+        != worldManager->GetNumWorlds())) ||
       (worldManager->SetBasicModelState(loadedModelNames[1], modelState2)
        != worldManager->GetNumWorlds()))
   {

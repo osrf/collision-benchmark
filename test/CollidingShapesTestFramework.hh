@@ -116,12 +116,22 @@ class CollidingShapesTestFramework
   // \brief Helper function which moves models towards/away from each other
   // along the axis by distance \e moveDist.
   // \param[in] moveDist distance to move each model along axis
-  private: void MoveModelsAlongAxis(const float moveDist);
+  // \param[in] moveBoth if true, both models are moved towards each other.
+  //    If false, only model 2 is moved towards model 1.
+  private: void MoveModelsAlongAxis(const float moveDist,
+                                    const bool moveBoth = false);
 
   // \brief Moves models along collision axis until they collide
   // \param[in] allWorlds collision criteria is only met if all physics
   //    engines report collision between the objects
-  private: void AutoCollide(bool allWorlds);
+  // \param[in] moveBoth if true, both models are moved towards each other.
+  //    If false, only model 2 is moved towards model 1.
+  // \return the distance the shape(s) have moved along the axis.
+  //  If \e moveBoth was true, this is the distance that *both* shapes
+  //  have moved along the axis (the overall distance decreased between
+  //  the two objects will be twice this value). If \e moveBoth was false,
+  //  this is the distance model 2 has traveled.
+  private: double AutoCollide(bool allWorlds, bool moveBoth);
 
   // \brief Checks whether models collide
   // \param[in] allWorlds collision criteria is only met if all physics
@@ -141,6 +151,13 @@ class CollidingShapesTestFramework
 
   // \brief is true when a signal is received to auto-collide objects
   private: std::atomic<bool> triggeredAutoCollide;
+
+  // \brief position of the shapes along the axis.
+  // 0 is when objects are moved as far as the axis allowed towards each
+  // other, collision_benchmark::test::CollidingShapesParams::MaxSliderVal
+  // is as far apart as axis allowed (considering the original object pose,
+  // without having moved the objects via gclient).
+  private: std::atomic<int> shapesOnAxisPos;
 
   // \brief Axis to use for collision.
   // Can be unit x, y or z axis

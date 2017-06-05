@@ -102,6 +102,7 @@ target_link_libraries(multiple_worlds_server collision_benchmark)
 QT5_WRAP_CPP(CollidingShapesGui_MOC test/CollidingShapesGui.hh)
 add_library(collision_benchmark_test_gui SHARED
     test/CollidingShapesGui.cc
+    test/CollidingShapesParams.cc
 )
 add_dependencies(tests collision_benchmark_test_gui)
 
@@ -115,7 +116,8 @@ set(TEST_LIB_SRCS
     test/TestUtils.cc
     test/MultipleWorldsTestFramework.cc
     test/StaticTestFramework.cc
-    test/CollidingShapesTestFramework.cc)
+    test/CollidingShapesTestFramework.cc
+    test/CollidingShapesParams.cc)
 
 add_library(collision_benchmark_test EXCLUDE_FROM_ALL ${TEST_LIB_SRCS})
 target_link_libraries(collision_benchmark_test

@@ -33,11 +33,17 @@ namespace test
 /**
  * Creates a GUI with a slider to move the two objects of
  * CollidingShapesTestFramework towards or apart from each other.
- * Also provides a button to save the configuration.
+ * Also provides buttons to auto-collide and to save the configuration.
  *
  * Communication with the server works via gazebo::Any messages.
- * An integer indicates the change of the slider, a string gives the
- * filename to save the configuration to.
+ *
+ * Publication: An integer indicates the slider position (0..MaxSliderVal),
+ * a boolean indicates the auto-collide has been triggered, and a string
+ * gives the filename to save the configuration to.
+ *
+ * Subscription: An integer can be sent to indicate how much the shapes
+ * have been moved along the collision axis (given in step sizes of the
+ * slider bar, 0..MaxSliderVal).
  *
  * \author Jennifer Buehler
  * \date May 2017
@@ -69,11 +75,19 @@ class GAZEBO_VISIBLE CollidingShapesGui : public gazebo::GUIPlugin
 
   protected: bool eventFilter(QObject *obj, QEvent *event);
 
+  /// \brief receives feedback from the test
+  private: void receiveFeedbackMsg(ConstAnyPtr &_msg);
+
+  // \brief max value for the slider axis
+  public: static const int MaxSliderVal;
+
   /// \brief Node used to establish communication with gzserver.
   private: gazebo::transport::NodePtr node;
 
   /// \brief Publisher for the events
   private: gazebo::transport::PublisherPtr pub;
+  /// \brief Subscriber for feedback
+  private: gazebo::transport::SubscriberPtr sub;
 
   /// \brief the slider object
   private: QSlider * slider;
