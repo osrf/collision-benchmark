@@ -433,6 +433,11 @@ bool CollidingShapesTestFramework::RunImpl
   // along the axis already via the controls.
   int shapesOnAxisPrev = CollidingShapesParams::MaxSliderVal;
 
+  // In a variable, remember the value which model 2 was moved by either
+  // AutoCollide or by the sliding axis. This value will not be considered when
+  // saving the configuration.
+  float model2MovedAlongAxis = 0;
+
   // run the main loop
   while (gzMultiWorld->IsClientRunning())
   {
@@ -445,6 +450,7 @@ bool CollidingShapesTestFramework::RunImpl
       if (triggeredAutoCollide)
       {
         double dist = AutoCollide(allWorlds, moveBoth);
+        model2MovedAlongAxis += -dist;
         int unitsMoved = dist / sliderStepSize;
         /* std::cout << "Units moved during auto collide: "
                   << unitsMoved << ". Current value is "
@@ -464,11 +470,9 @@ bool CollidingShapesTestFramework::RunImpl
         std::lock_guard<std::mutex> lock(shapesOnAxisPosMtx);
         if (shapesOnAxisPos != shapesOnAxisPrev)
         {
-          /*std::cout << "Slider action: Moving shapes by "
-                    << (shapesOnAxisPrev - shapesOnAxisPos)
-                    << " steps." << std::endl;*/
-          MoveModelsAlongAxis((shapesOnAxisPrev - shapesOnAxisPos)
-                              * sliderStepSize, moveBoth);
+          float moveDist = (shapesOnAxisPrev - shapesOnAxisPos)*sliderStepSize;
+          MoveModelsAlongAxis(moveDist, moveBoth);
+          model2MovedAlongAxis += -moveDist;
           shapesOnAxisPrev = shapesOnAxisPos;
         }
       }
@@ -477,19 +481,20 @@ bool CollidingShapesTestFramework::RunImpl
         if (!triggeredSaveConfig.empty())
         {
           std::lock_guard<std::mutex> lock(shapesOnAxisPosMtx);
-          // Get amount that  model 2 has been moved along the collision axis
-          // with the slider - this will not count for the configuration.
+          // Amount that model 2 has been moved along the collision axis
+          // with the slider or AutoCollide - this will not count for the
+          // configuration.
           // (NOTE: presuming moveBoth is false, otherwise we also have
           // to pass something for model 1)
-          double relMove = (CollidingShapesParams::MaxSliderVal
-                            - shapesOnAxisPos) * sliderStepSize;
+          /*double movedBySliderSteps = (CollidingShapesParams::MaxSliderVal
+                                         - shapesOnAxisPos) * sliderStepSize;*/
           double model1Slide = 0;
           // model 2 has moved as we displaced it in the beginning, and
           // adding onto it the moves via the shapes axis (AutoCollide also
           // has an effect on the value of the shape axis).
-          double model2Slide = moveM2Distance - relMove;
+          double model2Slide = -moveM2Distance - model2MovedAlongAxis;
           SaveConfiguration(triggeredSaveConfig, model1Slide,
-                            -model2Slide);
+                            model2Slide);
           triggeredSaveConfig = "";
         }
       }
@@ -535,7 +540,6 @@ CollidingShapesTestFramework::UpdateConfiguration(const double model1Slide,
     std::cerr << "Could not get BasicModelState." << std::endl;
     return nullptr;
   }
-  // std::cout << " Model state 2: " << modelState2 << std::endl;
 
   // the movement that model 1 has been moved via the collision axis
   const ignition::math::Vector3d mv1 = collisionAxis * model1Slide;
@@ -578,12 +582,11 @@ void CollidingShapesTestFramework::SaveConfiguration(const std::string& file,
     std::cerr << "Could not get configuration. " << std::endl;
     return;
   }
-
-/*  std::cout << "Model states to save (slides: "
+  /*std::cout << "Model states to save (slides: "
             << model1Slide << ", " << model2Slide << "): " << std::endl
             << writeConf->modelState1 << std::endl
-            << writeConf->modelState2 << std::endl;*/
-
+            << writeConf->modelState2 << std::endl;
+  */
   std::cout << "Saving configuration to " << file << std::endl;
   boost::archive::text_oarchive oa(ofs);
   oa << *writeConf;

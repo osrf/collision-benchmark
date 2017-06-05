@@ -157,7 +157,8 @@ class CollidingShapesTestFramework
                    BasicState& state);
 
   // \brief Helper function which moves models towards/away from each other
-  // along the axis by distance \e moveDist.
+  // along the axis by distance \e moveDist. Model 1 will move at \e moveDist,
+  // model 2 will move the opposite direction at \e -moveDist.
   // \param[in] moveDist distance to move each model along axis
   // \param[in] moveBoth if true, both models are moved towards each other.
   //    If false, only model 2 is moved towards model 1.
@@ -173,7 +174,8 @@ class CollidingShapesTestFramework
   //  If \e moveBoth was true, this is the distance that *both* shapes
   //  have moved along the axis (the overall distance decreased between
   //  the two objects will be twice this value). If \e moveBoth was false,
-  //  this is the distance model 2 has traveled.
+  //  this is the distance model 2 has traveled. For model 2, the distance
+  //  moved will be the negative of the returned value.
   private: double AutoCollide(bool allWorlds, bool moveBoth);
 
   // \brief Checks whether models collide
