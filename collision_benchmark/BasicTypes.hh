@@ -60,7 +60,7 @@ class Quaternion: public Vector3
 {
   // helper struct to allow external boost serialization
   public: struct access;
-  public: Quaternion(double _x=0, double _y=0, double _z=0, double _w=0):
+  public: Quaternion(double _x=0, double _y=0, double _z=0, double _w=1):
           Vector3(_x,_y,_z), w(_w) {}
   public: Quaternion(const Quaternion& o):
           Vector3(o), w(o.w) {}

@@ -74,6 +74,27 @@ class CollidingShapesTestFramework
                    const std::vector<std::string>& unitShapes,
                    const std::vector<std::string>& sdfModels);
 
+  // \brief Runs the test framework with the physics engines \e physicsEngines
+  // and using the configuration saved in the configuration file \e configFile
+  // in a previous run.
+  //
+  // If the configuration was saved on another system, and there are any
+  // file paths for specifying the models, this will not currently work.
+  // If the models are given with names and the models can be found in the
+  // current systems GAZEBO_MODEL_PATHS, it will work.
+  //
+  // This is a blocking call. It returns when the test window (gzclient) was
+  // closed.
+  //
+  // \return true on successful run, false if the test could not be started
+  //        due to an error.
+  public: bool Run(const std::vector<std::string>& physicsEngines,
+                   const std::string configFile);
+
+  // \brief implementation of public Run() methods
+  // Requires variable \e configuration to be set.
+  private: bool RunImpl(const std::vector<std::string>& physicsEngines);
+
   // \brief Handles the collision bar visual in gzclient.
   // This will add a visual cylinder of given radius and length (visual
   // is oriented along z axis) to the gzclient scene.

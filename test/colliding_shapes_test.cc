@@ -26,6 +26,7 @@ int main(int argc, char **argv)
   std::vector<std::string> selectedEngines;
   std::vector<std::string> unitShapes;
   std::vector<std::string> sdfModels;
+  std::string configFile;
 
   // Read command line parameters
   // ----------------------
@@ -47,6 +48,9 @@ int main(int argc, char **argv)
       std::string(std::string("Model specification, can be either the ") +
       std::string("name of a model in the gazebo model paths, or a ") +
       std::string("path to a SDF file")).c_str())
+    ("config,c",
+      po::value<std::string>(&configFile),
+      "load from configuration file")
     ;
 
   po::options_description desc_hidden("Positional options");
@@ -112,10 +116,17 @@ int main(int argc, char **argv)
     }
   }
 */
-
   collision_benchmark::test::CollidingShapesTestFramework csTest;
-  bool success = csTest.Run(selectedEngines, unitShapes, sdfModels);
-
+  bool success = false;
+  if (!configFile.empty())
+  {
+    std::cout << "Loading from configuration file " << configFile << std::endl;
+    success = csTest.Run(selectedEngines, configFile);
+  }
+  else
+  {
+    success = csTest.Run(selectedEngines, unitShapes, sdfModels);
+  }
   std::cout << "Bye, bye." << std::endl;
   return success ? 0 : 1;
 }

@@ -39,11 +39,13 @@ class CollidingShapesConfiguration
   public: typedef std::shared_ptr<CollidingShapesConfiguration> Ptr;
   public: typedef std::shared_ptr<const CollidingShapesConfiguration> ConstPtr;
 
-  // public: CollidingShapesConfiguration() {}
+  public: CollidingShapesConfiguration() {}
   public: CollidingShapesConfiguration(const std::vector<std::string>& _models,
                         const std::vector<std::string>& _shapes,
-                        const collision_benchmark::BasicState& _modelState1,
-                        const collision_benchmark::BasicState& _modelState2):
+                        const collision_benchmark::BasicState& _modelState1 =
+                              collision_benchmark::BasicState(),
+                        const collision_benchmark::BasicState& _modelState2 =
+                              collision_benchmark::BasicState()):
     models(_models),
     shapes(_shapes),
     modelState1(_modelState1),

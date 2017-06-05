@@ -81,6 +81,44 @@ bool CollidingShapesTestFramework::Run
     return false;
   }
 
+  // create configuration adn add the model references
+  configuration.reset(new CollidingShapesConfiguration(sdfModels, unitShapes));
+  return RunImpl(physicsEngines);
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+bool CollidingShapesTestFramework::Run
+    (const std::vector<std::string>& physicsEngines,
+     const std::string configFile)
+{
+  std::ifstream ifs(configFile);
+  if (!ifs.is_open())
+  {
+    std::cerr << "Cannot read configFile " << configFile << std::endl;
+    return false;
+  }
+  CollidingShapesConfiguration readConf;
+  boost::archive::text_iarchive ia(ifs);
+  ia >> readConf;
+  // archive and stream are closed when destructors are called
+
+  std::cout << "Model states to load: " << std::endl
+            << readConf.modelState1 << std::endl
+            << readConf.modelState2 << std::endl;
+
+  // create configuration adn add the model references
+  configuration.reset(new CollidingShapesConfiguration(readConf));
+  return RunImpl(physicsEngines);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+bool CollidingShapesTestFramework::RunImpl
+    (const std::vector<std::string>& physicsEngines)
+{
+  assert(configuration);
+  assert(configuration->models.size() + configuration->shapes.size() == 2);
+
   // Initialize server
   ///////////////////////////////
 
@@ -110,8 +148,9 @@ bool CollidingShapesTestFramework::Run
   // load primitive shapes
   typedef GzWorldManager::ModelLoadResult ModelLoadResult;
   int modelNum = 0;
-  for (std::vector<std::string>::const_iterator it = unitShapes.begin();
-       it != unitShapes.end(); ++it, ++modelNum)
+  for (std::vector<std::string>::const_iterator
+       it = configuration->shapes.begin();
+       it != configuration->shapes.end(); ++it, ++modelNum)
   {
     const std::string& shapeID = *it;
     Shape::Ptr shape;
@@ -145,8 +184,9 @@ bool CollidingShapesTestFramework::Run
   }
 
   // load models from SDF
-  for (std::vector<std::string>::const_iterator it = sdfModels.begin();
-       it != sdfModels.end(); ++it, ++modelNum)
+  for (std::vector<std::string>::const_iterator
+       it = configuration->models.begin();
+       it != configuration->models.end(); ++it, ++modelNum)
   {
     const std::string& modelResource = *it;
     std::string modelSDF =
@@ -203,7 +243,7 @@ bool CollidingShapesTestFramework::Run
   }
 
 
-  // position models so they're not intersecting.
+  // position models
   ///////////////////////////////
 
   // First, get the AABB's of the two models.
@@ -255,7 +295,6 @@ bool CollidingShapesTestFramework::Run
   const float aabb1LenOnAxis = (max1-min1).Dot(collisionAxis);
   const float aabb2LenOnAxis = (max2-min2).Dot(collisionAxis);
 
-
   // distance between both AABBs in their orignal pose
   double aabbDist = min2.Dot(collisionAxis) - max1.Dot(collisionAxis);
 
@@ -264,8 +303,6 @@ bool CollidingShapesTestFramework::Run
   double distFact = 0.2;
   double desiredDistance = std::max(aabb1LenOnAxis*distFact,
                                     aabb2LenOnAxis*distFact);
-
-
 
   // the distance that model 2 has to be moved along the collision axis
   double moveM2Distance = desiredDistance - aabbDist;
@@ -279,6 +316,8 @@ bool CollidingShapesTestFramework::Run
   newModelPos2.z += moveM2AlongAxis.Z();
   modelState2.SetPosition(newModelPos2);
   worldManager->SetBasicModelState(loadedModelNames[1], modelState2);
+
+
 
   // Set collision bar: starting at origin of Model 1,
   // along the chosen axis, and ending at origin of Model 2.
@@ -310,6 +349,56 @@ bool CollidingShapesTestFramework::Run
                           collBarPose, cylRadius, collAxisLength,
                           gzMultiWorld->GetMirrorName());
 
+
+  // If the configuration has a valid pose, we need move the models
+  // according to it. This will be done if the configuration has been
+  // loaded from a file.
+  // The pose given in the configuration file is relative to the
+  // pose the model has when it has been placed at the origin.
+  if (configuration->modelState1.PosEnabled()
+      || configuration->modelState1.RotEnabled())
+  {
+    ignition::math::Matrix4d poseCurr =
+      collision_benchmark::GetMatrix<double>(modelState1.position,
+                                             modelState1.rotation);
+    ignition::math::Matrix4d poseConfig =
+      collision_benchmark::GetMatrix<double>
+        (configuration->modelState1.position,
+         configuration->modelState1.rotation);
+
+    ignition::math::Matrix4d transformedPose = poseCurr * poseConfig;
+    //ignition::math::Vector3d newPos = transformedPose.Translation();
+    //ignition::math::Quaterniond newRot = transformedPose.Rotation();
+    collision_benchmark::Vector3 newPos
+      (collision_benchmark::Conv(transformedPose.Translation()));
+    collision_benchmark::Quaternion newRot
+      (collision_benchmark::Conv(transformedPose.Rotation()));
+    modelState1.position = newPos;
+    modelState1.rotation = newRot;
+    worldManager->SetBasicModelState(loadedModelNames[0], modelState1);
+  }
+  if (configuration->modelState2.PosEnabled()
+      || configuration->modelState2.RotEnabled())
+  {
+    ignition::math::Matrix4d poseCurr =
+      collision_benchmark::GetMatrix<double>(modelState2.position,
+                                             modelState2.rotation);
+    ignition::math::Matrix4d poseConfig =
+      collision_benchmark::GetMatrix<double>
+        (configuration->modelState2.position,
+         configuration->modelState2.rotation);
+
+    ignition::math::Matrix4d transformedPose = poseCurr * poseConfig;
+    //ignition::math::Vector3d newPos = transformedPose.Translation();
+    //ignition::math::Quaterniond newRot = transformedPose.Rotation();
+    collision_benchmark::Vector3 newPos
+      (collision_benchmark::Conv(transformedPose.Translation()));
+    collision_benchmark::Quaternion newRot
+      (collision_benchmark::Conv(transformedPose.Rotation()));
+    modelState2.position = newPos;
+    modelState2.rotation = newRot;
+    worldManager->SetBasicModelState(loadedModelNames[1], modelState2);
+  }
 
   // Subscribe to the GUI control
   ///////////////////////////////
@@ -469,9 +558,6 @@ CollidingShapesTestFramework::UpdateConfiguration(const double model1Slide,
   // because models originally were at the origin, the model states
   // now represent how much they have been moved by the user.
 
-  /* std::cout << "Model states to save (slides: "
-            << model1Slide << ", " << model2Slide << "): " << std::endl
-            << modelState1 << std::endl << modelState2 << std::endl;*/
   configuration->modelState1 = modelState1;
   configuration->modelState2 = modelState2;
   return CollidingShapesConfiguration::Ptr
@@ -496,6 +582,13 @@ void CollidingShapesTestFramework::SaveConfiguration(const std::string& file,
     std::cerr << "Could not get configuration. " << std::endl;
     return;
   }
+
+/*  std::cout << "Model states to save (slides: "
+            << model1Slide << ", " << model2Slide << "): " << std::endl
+            << writeConf->modelState1 << std::endl
+            << writeConf->modelState2 << std::endl;*/
+
+  std::cout << "Saving configuration to " << file << std::endl;
   boost::archive::text_oarchive oa(ofs);
   oa << *writeConf;
   // archive and stream are closed when destructors are called
