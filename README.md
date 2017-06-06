@@ -271,10 +271,6 @@ still close to each other).
 Because this test uses two objects, we can refer to the test worlds as the
 *"two objects world"*.
 
-A two-objects-world is loaded multiple times: either multiple times with
-different physics engines, or multiple times with different representations
-of the objects (e.g. primitive *vs.* mesh), or both.
-
 The test iterates through all AABB intersection states and moves the objects
 accordingly with the AABB, so all worlds are in the same state. It
 then compares the output of the worlds.
@@ -283,6 +279,15 @@ If the worlds disagree about the collision state, a failure is triggered.
 ![Static test](images/Static-test-spheres.png)
 *Image: An example where the engines disagree. Bullet detects a collision, but ODE doesnt'.*
 
+*Info:* The two-objects-world is loaded multiple times, because states 
+of different worlds need to be compared. The multiple worlds loaded can
+use the same, or different physics engines. Option (1): load the same
+world multiple times with different physics engines, or Option(2): load
+the world multiple times, each time with a different representation
+of the objects (e.g. primitive *vs.* mesh) or Option (3): a combination of both.
+
+**Running the tests**
+
 The static tests can be run interactively or automated.
 In interactive mode, the test will stop at each failure so you can inspect
 it with gzclient. The default is automated mode, in which the failures are
@@ -290,7 +295,7 @@ printed and the test then contiues.
 
 The test can also be set to save all the failure cases to *.world* files, which
 can be opened for inspection at a later point.
-The default is to not write any files.
+However the default is to not write any files.
 
 To run the test:
 
@@ -317,16 +322,19 @@ gzclient --g libcollision_benchmark_gui.so
 ```
 
 You should see the start state of the test. Before you start the test,
-you may want to enable the displaying of contacts
+you may want to **enable the displaying of contacts**
 (``View -> Contacts``), because once the test stops due to failure, it will be
-paused. And in paused state, enabling the contacts displaying will only show
-the contacts once the worlds are advanced again -  so you won't see the contacts
-until the next test failure.
-It will also be helpful to switch on wireframe rendering (``View -> Wireframe``)
+paused (in paused state, enabling the contacts displaying will only show
+the contacts once the worlds are advanced again, so you won't see the contacts
+until the next test failure).    
+It will also be helpful to **switch on wireframe rendering**
+(``View -> Wireframe``)
 to see the contacts better.
 
-To start the test, hit ``[Enter]`` in the terminal running the test and watch
-the test unfold. If it stops due to a failure, it will prompt you to hit
+When you are ready, to start the test,
+hit ``[Enter]`` in the terminal running the test and watch
+the test unfold.    
+If the test it stops due to a failure, it will prompt you to hit
 ``[Enter]`` again to continue. Before you continue, you may switch between
 the worlds in gzclient and inspect the results. Some information will also
 have been printed in the terminal about the test failure details.
@@ -338,6 +346,7 @@ failed. The tests also don't use a ground floor, which means the objects will
 be falling in free space.
 You will also need to add ``<your-output-path>`` to the ``GAZEBO_RESOURCE_PATH``
 in order to be able to display models which contain meshes.
+
 
 
 ### The "two colliding shapes" test framework
