@@ -17,11 +17,7 @@
 
 - colliding_shapes_test bullet ode -m beer -m coke_can: bullet detects collision too early
 
-# Issues to address
-
-
-- AABB: PhysicsWorld returns AABB in model coordinate frame. This has to be fixed up in the static test still.
-  It doesn't matter if all objects are added with identity orientation, but it does matter if they are rotated.
+# Issues to address (may require PRs to gazebo)
 
 - After setting the world to a state, and before advancing the world, the states should be completely equal even if dynamics is
   disabled - currently the acceleration has to be skipped in the comparison. See also transfer_world_state tutorial.
@@ -38,6 +34,9 @@
   dart/constraint/ConstraintSolver to set FCLCollisionDetector::PRIMITIVE) in dart/collision/fcl/FclCollisionDetector
   (see call to setPrimitiveShapeType() in .cpp file line 73). Right now it's not recommended because of
   [issue 106](https://github.com/flexible-collision-library/fcl/issues/106)
+
+
+# Improvements which can still be made
 
 - The mirror world is still not perfect, it is a bit weird with forwarding information such as iterations and time.
 
@@ -61,13 +60,10 @@
 - multiple_worlds_server.cc: Can only interrupt with Ctrl+c and then it's
  not shut down nicely. Find a better way to do this.
 
-
-
 - Use collision_benchmark::GetConsistentAABB() (in test/TestUtils.hh)
   which checks that all AABBs are the same in both worlds. Separate tests
   still need to be designed using this function with a number of
-  complex models
-
+  complex models.
 
 # References
 

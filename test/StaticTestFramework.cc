@@ -214,6 +214,18 @@ void StaticTestFramework::AABBTestWorldsAgreement(const std::string& modelName1,
 
   // set models to their initial pose
 
+  // First, place models at the origin in default orientation
+  // (in case they were loaded form SDF they may have a pose different
+  // to the origin, but here we want to start them at the origin).
+  BasicState originPose;
+  originPose.SetPosition(Vector3(0,0,0));
+  originPose.SetRotation(Quaternion(0,0,0,1));
+  int cnt1 = worldManager->SetBasicModelState(modelName1, originPose);
+  ASSERT_EQ(cnt1, numWorlds) << "All worlds should have been updated";
+  int cnt2 = worldManager->SetBasicModelState(modelName2, originPose);
+  ASSERT_EQ(cnt2, numWorlds) << "All worlds should have been updated";
+
+  // now, get the model AABBs and displace model 2 relative to model 1
   collision_benchmark::GzAABB aabb1, aabb2;
   ASSERT_TRUE(GetAABBs(modelName1, modelName2, bbTol, aabb1, aabb2));
 

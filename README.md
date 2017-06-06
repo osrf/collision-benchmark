@@ -237,8 +237,19 @@ To run all tests, type
 
 ``make test``
 
-or to run only a specific test, use the test executable directly and
-select the test with gtest parameter ``--gtest_filter``:
+Running all the tests will also run the static tests (see below) which
+has a lot of failures. 
+To run only a specific test instead, use the test executable directly by
+running the executable:
+
+``<the-test-executable>``
+
+e.g. 
+
+``<your-build-dir>/world_interface_test``.
+
+To run only a specific test within a test set,
+you may run the test with gtest parameter ``--gtest_filter``:
 
 ``<test executable> --gtest_filter=*<pattern in test name>*``
 
@@ -262,6 +273,9 @@ to the physics. However contact points between objects are still computed.
 The static tests are therefore suitable for testing collision and
 contact properties.
 
+The static tests make use of the **gtest framework** in order to support
+fully automated testing mode.
+
 The main method of testing implemented so far is the **"AABB intersection test"**
 in which two objects axis-aligned bounding boxes are intersected in many
 possible ways that they can intersect.
@@ -271,9 +285,8 @@ still close to each other).
 Because this test uses two objects, we can refer to the test worlds as the
 *"two objects world"*.
 
-The test iterates through all AABB intersection states and moves the objects
-accordingly with the AABB, so all worlds are in the same state. It
-then compares the output of the worlds.
+The test iterates through all AABB intersection states and sets
+all worlds to the same state. It then compares the output of the worlds.
 If the worlds disagree about the collision state, a failure is triggered.
 
 ![Static test](images/Static-test-spheres.png)
@@ -282,7 +295,7 @@ If the worlds disagree about the collision state, a failure is triggered.
 *Info:* The two-objects-world is loaded multiple times, because states 
 of different worlds need to be compared. The multiple worlds loaded can
 use the same, or different physics engines. Option (1): load the same
-world multiple times with different physics engines, or Option(2): load
+world multiple times with different physics engines, or Option (2): load
 the world multiple times, each time with a different representation
 of the objects (e.g. primitive *vs.* mesh) or Option (3): a combination of both.
 
@@ -323,9 +336,9 @@ gzclient --g libcollision_benchmark_gui.so
 
 You should see the start state of the test. Before you start the test,
 you may want to **enable the displaying of contacts**
-(``View -> Contacts``), because once the test stops due to failure, it will be
-paused (in paused state, enabling the contacts displaying will only show
-the contacts once the worlds are advanced again, so you won't see the contacts
+(``View -> Contacts``), because once the test stops due to failure, the
+simulation will be paused (and the contacts will only show once
+the worlds are advanced again, so you won't see the contacts
 until the next test failure).    
 It will also be helpful to **switch on wireframe rendering**
 (``View -> Wireframe``)
@@ -333,21 +346,23 @@ to see the contacts better.
 
 When you are ready, to start the test,
 hit ``[Enter]`` in the terminal running the test and watch
-the test unfold.    
+the test unfold.     
 If the test it stops due to a failure, it will prompt you to hit
-``[Enter]`` again to continue. Before you continue, you may switch between
-the worlds in gzclient and inspect the results. Some information will also
-have been printed in the terminal about the test failure details.
+``[Enter]`` again to continue.     
+Before you continue, you may want to switch between
+the worlds in gzclient and inspect the results and find the reason of failure.
+Some information will also have been printed in the terminal about
+the test failure details.
 
-**Reminder:** If you wish to display the test results which were saved to file
-in gazebo later, don't forget to start gazebo in paused mode, as you probably
-would like the world to be displayed in the state it was in when the test
-failed. The tests also don't use a ground floor, which means the objects will
-be falling in free space.
+**Reminder:** When you display the test results which were saved to file
+in gazebo later (ie. loading the saved *.world* file into gazebo directly),
+don't forget to start gazebo in paused mode. This will allow the world to be
+displayed in the state it was in when the test failed.    
+The tests also don't use a ground floor, which means the objects will
+be falling in free space if you start gazebo with physics engine enabled and
+in unpaused mode.    
 You will also need to add ``<your-output-path>`` to the ``GAZEBO_RESOURCE_PATH``
 in order to be able to display models which contain meshes.
-
-
 
 ### The "two colliding shapes" test framework
 
