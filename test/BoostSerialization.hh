@@ -17,16 +17,15 @@
 #ifndef COLLISION_BENCHMARK_TEST_SERIALIZATION_H
 #define COLLISION_BENCHMARK_TEST_SERIALIZATION_H
 
-#include "CollidingShapesConfiguration.hh"
-
 #include <collision_benchmark/BoostSerialization.hh>
 #include <boost/serialization/vector.hpp>
+
+#include "CollidingShapesConfiguration.hh"
 
 namespace collision_benchmark
 {
 namespace test
 {
-
 struct CollidingShapesConfiguration::access
 {
   template<class Archive>
@@ -56,7 +55,7 @@ namespace serialization
       ::access::serialize(ar, conf, version);
   }
 
-} // namespace serialization
-} // namespace boost
+}  // namespace serialization
+}  // namespace boost
 
 #endif  // COLLISION_BENCHMARK_TEST_SERIALIZATION_H

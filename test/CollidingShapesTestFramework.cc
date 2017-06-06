@@ -14,9 +14,6 @@
  * limitations under the License.
  *
 */
-#include "CollidingShapesTestFramework.hh"
-#include "CollidingShapesParams.hh"
-#include "BoostSerialization.hh"
 #include <collision_benchmark/PrimitiveShape.hh>
 #include <collision_benchmark/GazeboModelLoader.hh>
 #include <collision_benchmark/GazeboWorldLoader.hh>
@@ -30,6 +27,10 @@
 
 #include <fstream>
 
+#include "CollidingShapesTestFramework.hh"
+#include "CollidingShapesParams.hh"
+#include "BoostSerialization.hh"
+
 using collision_benchmark::test::CollidingShapesTestFramework;
 using collision_benchmark::test::CollidingShapesParams;
 using collision_benchmark::test::CollidingShapesConfiguration;
@@ -42,10 +43,10 @@ using collision_benchmark::GazeboMultipleWorlds;
 using collision_benchmark::BasicState;
 
 /////////////////////////////////////////////////////////////////////////////
-CollidingShapesTestFramework::CollidingShapesTestFramework():
-  collisionAxis(0, 1, 0),
-  triggeredAutoCollide(false),
-  shapesOnAxisPos(CollidingShapesParams::MaxSliderVal)
+CollidingShapesTestFramework::CollidingShapesTestFramework()
+  : collisionAxis(0, 1, 0),
+    triggeredAutoCollide(false),
+    shapesOnAxisPos(CollidingShapesParams::MaxSliderVal)
 {
 }
 
@@ -58,9 +59,12 @@ bool CollidingShapesTestFramework::Run
      const bool modelsGapIsFactor)
 {
   static const double axEp = 1e-06;
-  if (!collision_benchmark::EqualVectors(collisionAxis, Vector3(1, 0, 0), axEp) &&
-      !collision_benchmark::EqualVectors(collisionAxis, Vector3(0, 1, 0), axEp) &&
-      !collision_benchmark::EqualVectors(collisionAxis, Vector3(0, 0, 1), axEp))
+  if (!collision_benchmark::EqualVectors(collisionAxis,
+                                         Vector3(1, 0, 0), axEp) &&
+      !collision_benchmark::EqualVectors(collisionAxis,
+                                         Vector3(0, 1, 0), axEp) &&
+      !collision_benchmark::EqualVectors(collisionAxis,
+                                         Vector3(0, 0, 1), axEp))
   {
     std::cerr << "At this point, the only collision axes supported are x, y "
               << "or z axis. Is " << collisionAxis << std::endl;
@@ -132,7 +136,7 @@ bool CollidingShapesTestFramework::RunImpl
   bool loadMirror = true;
   // important to be true so contacts are calculated for all worlds,
   // not only the displayed one!
-  bool enforceContactCalc=true;
+  bool enforceContactCalc = true;
   // control via mirror has to be allowed so we can move around models
   // relative to collision bar.
   bool allowControlViaMirror = true;
@@ -508,9 +512,7 @@ bool CollidingShapesTestFramework::RunImpl
 
   // end the thread to handle the collision bar
   running = false;
-  //std::cout << "Joining thread" << std::endl;
   t.join();
-
   // std::cout << "Finished running CollidingShapesTestFramework." << std::endl;
   return true;
 }
@@ -718,8 +720,8 @@ int CollidingShapesTestFramework::GetAABB(const std::string &modelName,
             const GazeboMultipleWorlds::GzWorldManager::Ptr &worldManager,
             Vector3& min, Vector3& max, bool &inLocalFrame)
 {
-  std::vector<GazeboMultipleWorlds::GzWorldManager
-              ::PhysicsWorldModelInterfacePtr>
+  std::vector< GazeboMultipleWorlds::GzWorldManager
+              ::PhysicsWorldModelInterfacePtr >
     worlds = worldManager->GetModelPhysicsWorlds();
 
   if (worlds.empty()) return -2;
@@ -742,8 +744,8 @@ int CollidingShapesTestFramework::GetBasicModelState
      const GazeboMultipleWorlds::GzWorldManager::Ptr &worldManager,
      BasicState &state)
 {
-  std::vector<GazeboMultipleWorlds::GzWorldManager
-              ::PhysicsWorldModelInterfacePtr>
+  std::vector< GazeboMultipleWorlds::GzWorldManager
+              ::PhysicsWorldModelInterfacePtr >
     worlds = worldManager->GetModelPhysicsWorlds();
 
   if (worlds.empty()) return -2;
@@ -810,7 +812,7 @@ void CollidingShapesTestFramework::CollisionBarHandler
   collision_benchmark::Shape::Ptr shape
     (collision_benchmark::PrimitiveShape::CreateCylinder(cylinderRadius,
                                                          cylinderLength));
-  sdf::ElementPtr shapeGeom=shape->GetShapeSDF();
+  sdf::ElementPtr shapeGeom = shape->GetShapeSDF();
   sdf::ElementPtr visualSDF(new sdf::Element());
   visualSDF->SetName("visual");
   visualSDF->AddAttribute("name", "string", "visual", true, "visual name");

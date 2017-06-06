@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2012-2016 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -126,7 +126,6 @@ namespace collision_benchmark
     str << "]";
     return str.str();
   }
-
 }
 
 #endif  // COLLISION_BENCHMARK_TEST_TESTUTILS_H

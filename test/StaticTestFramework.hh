@@ -24,8 +24,9 @@
 #include <string>
 #include <vector>
 
-class StaticTestFramework : public MultipleWorldsTestFramework {
-protected:
+class StaticTestFramework : public MultipleWorldsTestFramework
+{
+ protected:
   typedef GzWorldManager::PhysicsWorldContactInterfaceT::ContactInfo
             GzContactInfo;
   typedef GzContactInfo::Ptr GzContactInfoPtr;
@@ -140,8 +141,7 @@ protected:
                 const std::string &outputBasePath = "",
                 const std::string &outputSubdir = "");
 
-private:
-
+ private:
   // checks that AABB of model 1 and 2 are the same in all worlds and
   // returns the two AABBs
   // \param bbTol tolerance for comparison of bounding box sizes. The min/max
@@ -152,7 +152,6 @@ private:
                 const double bbTol,
                 collision_benchmark::GzAABB &m1,
                 collision_benchmark::GzAABB &m2);
-
 };
 
 #endif  // COLLISION_BENCHMARK_TEST_STATICTESTFRAMEWORK_H

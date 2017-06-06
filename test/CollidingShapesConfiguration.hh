@@ -20,12 +20,13 @@
 #include <collision_benchmark/BasicTypes.hh>
 
 #include <memory>
+#include <vector>
+#include <string>
 
 namespace collision_benchmark
 {
 namespace test
 {
-
 /**
  * \brief Details of one saved configuration for CollideShapesTestFramework test
  * \author Jennifer Buehler
