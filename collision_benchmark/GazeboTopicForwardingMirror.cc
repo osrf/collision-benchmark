@@ -153,8 +153,8 @@ GazeboTopicForwardingMirror::GazeboTopicForwardingMirror
 void GazeboTopicForwardingMirror::RegisterNamespace
       (const std::string& wldName) const
 {
-  std::cout << "Registering gazebo namespace "
-            << wldName << " for mirror world."<<std::endl;
+  std::cout << "Registering gazebo namespace '"
+            << wldName << "' for the mirror world."<<std::endl;
 
   std::list<std::string> topicNames;
   gazebo::transport::TopicManager::Instance()->GetTopicNamespaces(topicNames);
@@ -165,8 +165,6 @@ void GazeboTopicForwardingMirror::RegisterNamespace
     str<<"means gzclient is not going to connect with mirror world!"<<std::endl;
     gzwarn<<str.str();
   }
-  std::cout<<"Registering mirror world name "
-           <<wldName<<" as topic"<<std::endl;
   gazebo::transport::TopicManager::Instance()->RegisterTopicNamespace(wldName);
 
   // Wait for namespaces to make sure the mirror world name has arrived.
@@ -209,7 +207,7 @@ GazeboTopicForwardingMirror::~GazeboTopicForwardingMirror()
 
 void GazeboTopicForwardingMirror::Init()
 {
-  std::cout<<"Initializing GazeboTopicForwardingMirror."<<std::endl;
+  // std::cout<<"Initializing GazeboTopicForwardingMirror."<<std::endl;
 
   // initialize topic block printers (for user information printing)
   ////////////////////////////////////////////////
@@ -345,7 +343,7 @@ void GazeboTopicForwardingMirror::Init()
   ////////////////////////////////////////////////
   this->requestPub = this->node->Advertise<gazebo::msgs::Request>("~/request");
   this->modelPub = this->node->Advertise<gazebo::msgs::Model>("~/model/info");
-  std::cout<<"GazeboTopicForwardingMirror initialized."<<std::endl;
+  // std::cout<<"GazeboTopicForwardingMirror initialized."<<std::endl;
   this->initialized = true;
 }
 
@@ -355,7 +353,7 @@ void GazeboTopicForwardingMirror::ConnectOriginalWorld
 {
   if (!this->initialized) Init();
 
-  std::cout<<"Mirror is connecting to world '"<<origWorldName<<"'"<<std::endl;
+  // std::cout<<"Mirror is connecting to world '"<<origWorldName<<"'"<<std::endl;
 
   // connect services
   assert(this->origServiceFwd);
@@ -496,7 +494,7 @@ void GazeboTopicForwardingMirror::NotifyOriginalWorldChange
     }
   }
 
-  std::cout<<"Connecting the new world "<<_newWorld->GetName()<<std::endl;
+  // std::cout<<"Connecting the new world "<<_newWorld->GetName()<<std::endl;
   ConnectOriginalWorld(_newWorld->GetName());
 }
 

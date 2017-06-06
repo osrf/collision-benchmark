@@ -19,6 +19,8 @@ all physics engines coming with Gazebo are supported.
 1. [Installation](#installation)
 1. [Simulating multiple parallel worlds](#simulating-multiple-parallel-worlds)
 1. [Physics engine testing](#physics-engine-testing)
+    - [Static tests](#the-static-tests)
+    - [The "two colliding shapes" test](#the-two-colliding-shapes-test-framework)
 1. [Short introduction to the API](#short-introduction-to-the-api)
 
 ## Installation
@@ -127,6 +129,12 @@ Make sure *libcollision_benchmark_gui.so* is in the *GAZEBO_PLUGIN_PATH*.
 You will see the world with the engine with the name which comes first
 in lexicographical order.
 
+
+![Multiple worlds](images/Multiple-worlds-rubble.png)
+
+*Image: Differences in the rubble world in bullet and ODE at the
+same time of simulation*
+
 You can switch between the physics engines with the GUI control panel displayed on the top left.
 Between the buttons, the name of the currently displayed world is shown, which should contain the physics
 engine in the name.
@@ -229,8 +237,19 @@ To run all tests, type
 
 ``make test``
 
-or to run only a specific test, use the test executable directly and
-select the test with gtest parameter ``--gtest_filter``:
+Running all the tests will also run the static tests (see below) which
+has a lot of failures. 
+To run only a specific test instead, use the test executable directly by
+running the executable:
+
+``<the-test-executable>``
+
+e.g. 
+
+``<your-build-dir>/world_interface_test``.
+
+To run only a specific test within a test set,
+you may run the test with gtest parameter ``--gtest_filter``:
 
 ``<test executable> --gtest_filter=*<pattern in test name>*``
 
@@ -254,8 +273,11 @@ to the physics. However contact points between objects are still computed.
 The static tests are therefore suitable for testing collision and
 contact properties.
 
-The main method of testing implemented so far is the "AABB intersection test"
-in which two object's axis-aligned bounding boxes are intersected in many
+The static tests make use of the **gtest framework** in order to support
+fully automated testing mode.
+
+The main method of testing implemented so far is the **"AABB intersection test"**
+in which two objects axis-aligned bounding boxes are intersected in many
 possible ways that they can intersect.
 This generally leads to many states in which the objects are
 colliding, and also states in which they are not (but in which they are
@@ -263,14 +285,21 @@ still close to each other).
 Because this test uses two objects, we can refer to the test worlds as the
 *"two objects world"*.
 
-A two-objects-world is loaded multiple times: either multiple times with
-different physics engines, or multiple times with different representations
-of the objects (e.g. primitive *vs.* mesh), or both.
-
-The test iterates through all AABB intersection states and moves the objects
-accordingly with the AABB, so all worlds are in the same state. It
-then compares the output of the worlds.
+The test iterates through all AABB intersection states and sets
+all worlds to the same state. It then compares the output of the worlds.
 If the worlds disagree about the collision state, a failure is triggered.
+
+![Static test](images/Static-test-spheres.png)
+*Image: An example where the engines disagree. Bullet detects a collision, but ODE doesnt'.*
+
+*Info:* The two-objects-world is loaded multiple times, because states 
+of different worlds need to be compared. The multiple worlds loaded can
+use the same, or different physics engines. Option (1): load the same
+world multiple times with different physics engines, or Option (2): load
+the world multiple times, each time with a different representation
+of the objects (e.g. primitive *vs.* mesh) or Option (3): a combination of both.
+
+**Running the tests**
 
 The static tests can be run interactively or automated.
 In interactive mode, the test will stop at each failure so you can inspect
@@ -279,7 +308,7 @@ printed and the test then contiues.
 
 The test can also be set to save all the failure cases to *.world* files, which
 can be opened for inspection at a later point.
-The default is to not write any files.
+However the default is to not write any files.
 
 To run the test:
 
@@ -306,27 +335,169 @@ gzclient --g libcollision_benchmark_gui.so
 ```
 
 You should see the start state of the test. Before you start the test,
-you may want to enable the displaying of contacts
-(``View -> Contacts``), because once the test stops due to failure, it will be
-paused. And in paused state, enabling the contacts displaying will only show
-the contacts once the worlds are advanced again -  so you won't see the contacts
-until the next test failure.
-It will also be helpful to switch on wireframe rendering (``View -> Wireframe``)
+you may want to **enable the displaying of contacts**
+(``View -> Contacts``), because once the test stops due to failure, the
+simulation will be paused (and the contacts will only show once
+the worlds are advanced again, so you won't see the contacts
+until the next test failure).    
+It will also be helpful to **switch on wireframe rendering**
+(``View -> Wireframe``)
 to see the contacts better.
 
-To start the test, hit ``[Enter]`` in the terminal running the test and watch
-the test unfold. If it stops due to a failure, it will prompt you to hit
-``[Enter]`` again to continue. Before you continue, you may switch between
-the worlds in gzclient and inspect the results. Some information will also
-have been printed in the terminal about the test failure details.
+When you are ready, to start the test,
+hit ``[Enter]`` in the terminal running the test and watch
+the test unfold.     
+If the test it stops due to a failure, it will prompt you to hit
+``[Enter]`` again to continue.     
+Before you continue, you may want to switch between
+the worlds in gzclient and inspect the results and find the reason of failure.
+Some information will also have been printed in the terminal about
+the test failure details.
 
-**Reminder:** If you wish to display the test results which were saved to file
-in gazebo later, don't forget to start gazebo in paused mode, as you probably
-would like the world to be displayed in the state it was in when the test
-failed. The tests also don't use a ground floor, which means the objects will
-be falling in free space.
+**Reminder:** When you display the test results which were saved to file
+in gazebo later (ie. loading the saved *.world* file into gazebo directly),
+don't forget to start gazebo in paused mode. This will allow the world to be
+displayed in the state it was in when the test failed.    
+The tests also don't use a ground floor, which means the objects will
+be falling in free space if you start gazebo with physics engine enabled and
+in unpaused mode.    
 You will also need to add ``<your-output-path>`` to the ``GAZEBO_RESOURCE_PATH``
 in order to be able to display models which contain meshes.
+
+### The "two colliding shapes" test framework
+
+Sometimes we need to see how contact points move when two colliding shapes
+are moved just a little bit. Ideally, the contact points should be quite stable
+in similar configurations of two colliding objects. But this may not always
+be the case ("jumping contact points"). For testing and debugging cases in
+which such contact point jumps happen, it is useful to have
+a visual interface in which the shapes can be moved a small distance,
+in the exact same way, over and over again around the point where the
+contact jump happens.
+For this purpose, the "two colliding shapes" test was developed.
+
+This test only works with the Gazebo engines and uses the Gazebo client for
+visualization.
+
+Note that the dynamics engine is disabled, just as in the static tests, because
+we want to obsever the contact points and not have the models react to
+the collision.
+
+**How the test works**
+
+Two shapes are loaded, one at each end of a "collision bar". The collision
+bar is the axis along which the objects will be moved to test the collision.
+A **slider** can be used to move the objects step-wise towards and apart from each
+other along the collision axis.
+An **"Auto-collide"** function will move the objects along the collision
+bar until at least one of the physics engines used for testing reports a
+collision between the objects. 
+
+![Two shapes test](images/Two-shapes-test-cans.png)
+
+The models' **pose can be changed** relative to the collision axis in order
+to find critical collision configurations which happen when the models collide.
+To change the pose of the models, the Gazebo client transformation tools
+can be used.
+
+A **configuration can be saved** an loaded again at a later point (to load,
+use the command line argument ``-c <config-file>``).
+The saved configuration will *not* save the amount the models were
+moved via the axis slider or the auto-collide function, but only the amount
+they were moved around by the user (via the Gazebo client transformation tools).
+Before saving a configuration, it is advised to separate the models to the
+maximum extent using the slider, to get a feeling of which configuration
+will be saved. The configuration saved is the one at which the models are
+separated to the full extent via the collision axis slider.
+
+To load models, the test can use:
+
+- SDF files which contain the model
+- The name of the model (it has to be findable in ``GAZEBO_MODEL_PATH``)
+- Unit shapes: Box, cylinder and sphere
+
+However, only exactly two shapes are supported, regardless what type.
+
+**Starting the test**
+
+To start the test (which is part of the cmake ``tests`` target):
+
+```
+collide_test <list of physics engines> -m <Model-1> -m <Model-2>``
+```
+
+the ``-m`` parameter specifies the model, either using *model names* or
+*a file path* to the model SDF file.
+Note that file paths have the limitation that when you save the configuration,
+and try to load the confiuration on another system, it is not supported yet,
+because the absolute path will be saved.
+
+Alternatively, to load a shape (unit sphere, box or cylinder),
+use the ``-s`` parameter instead:
+
+```
+collide_test <list of physics engines> -m <Model-1> -s <shape-name>``
+```
+
+where ``<shape-name>`` can be *sphere, cylinder* or *cube*.
+
+You can specify the models in any order, the only limitation is that it has
+to be exactly two models, regradless whether they are unit shapes or
+models.
+
+The test will bring up Gazebo with the models you specified placed along
+the collision axis.
+It will use the "multiple worlds server" described earlier, each world
+using one of the physics engines you specified.
+You can switch between the worlds and see how the different engines interpret
+the collision situation.
+
+![Two shapes test](images/Two-shapes-dumpster-diff.png)
+*Image: Difference between bullet and ODE*
+
+*Example*
+
+``collide_test ode bullet -m coke_can -m beer``
+
+``collide_test ode bullet -m dumpster -s sphere``
+
+You may want to set the wireframe view an enable contacts display in
+Gazebo.
+
+Try the "AutoCollide" function and the slider, then switch between the worlds
+to see how they differ in their contact point calculation.
+
+Try to move the shapes around with the Gazebo transformation
+tools (top toolbar).
+
+Note that the **collision axis cannot be moved**. It is not a model in the
+world, it is only displayed as a helping visualization.
+
+Things to try out:
+
+- Using the slider
+- Using the "AutoCollide" function
+- Using the Gazebo client transform tools to change the models pose, then try
+  slider and AutoCollide again
+- Switch between worlds to see the differences
+- Saving a configuration in which the model poses have been changed with the
+  Gazebo transform tools.
+
+**More details**
+
+More details about how the implementation unfolds the test configuration:
+
+1. The two models are loaded and placed *at the origin* (which means
+   poses which they may have in the SDF files are ignored).
+2. The two models are separated along the axis, such that their AABBs do not
+   intersect. Model 2 is moved away from model 1 along the collision axis.
+3. The slider or the "Auto Collide" function can be used to slide
+   model 2 along the axis towards/away from model 1.
+4. The models' pose can be changed and also saved to the configuration.
+
+You can find the main part of the implementation in
+[test/CollidingShapesTestFramework.hh](test/CollidingShapesTestFramework.hh).
+
 
 ## Short introduction to the API
 

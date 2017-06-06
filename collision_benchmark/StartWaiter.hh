@@ -56,14 +56,25 @@ class StartWaiter
     while (!unpaused && !keypressed)
     {
       gazebo::common::Time::MSleep(100);
-      if (unpausedCallback && unpausedCallback())
+      bool triggered = false;
+      for (std::vector<std::function<bool(void)>>::iterator
+           it = unpausedCallbacks.begin(); it != unpausedCallbacks.end(); ++it)
+      {
+        std::function<bool(void)> func = *it;
+        if (func && func())
+        {
+          triggered = true;
+          break;
+        }
+      }
+      if (triggered)
         break;
     }
     delete t;
   }
 
   // callback to trigger the pause state to \e pause.
-  // WaitForUnpause() is going to be idling until this callback
+  // One condition of WaitForUnpause() to stop waiting is when this callback
   // is called with \e pause being true.
   public: void PauseCallback(bool pause)
   {
@@ -71,12 +82,12 @@ class StartWaiter
     unpaused = !pause;
   }
 
-  // this callback can be used to additionally determine whether there
+  // Additional callbacks can be used to additionally determine whether there
   // has been an 'unpause'.
   // \param fct returns true if unpaused
-  public: void SetUnpausedCallback(const std::function<bool(void)>& fct)
+  public: void AddUnpausedCallback(const std::function<bool(void)>& fct)
   {
-    unpausedCallback = fct;
+    unpausedCallbacks.push_back(fct);
   }
 
   // waits until enter has been pressed and sets keypressed to true
@@ -89,7 +100,7 @@ class StartWaiter
   // test is paused or not
   private: std::atomic<bool> unpaused;
   private: std::atomic<bool> keypressed;
-  private: std::function<bool(void)> unpausedCallback;
+  private: std::vector<std::function<bool(void)>> unpausedCallbacks;
 };
 
 }

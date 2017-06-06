@@ -12,6 +12,7 @@ include(${PROJECT_SOURCE_DIR}/cmake/SearchForStuff.cmake)
 
 set(collision_benchmark_HEADERS
   collision_benchmark/boost_std_conversion.hh
+  collision_benchmark/BoostSerialization.hh
   collision_benchmark/ClientGui.hh
   collision_benchmark/ContactInfo.hh
   collision_benchmark/ControlServer.hh
@@ -26,6 +27,8 @@ set(collision_benchmark_HEADERS
   collision_benchmark/GazeboWorldLoader.hh
   collision_benchmark/GazeboWorldState.hh
   collision_benchmark/Helpers.hh
+  collision_benchmark/MathHelpers.hh
+  collision_benchmark/MathHelpers-inl.hh
   collision_benchmark/MirrorWorld.hh
   collision_benchmark/PhysicsWorld.hh
   collision_benchmark/PrimitiveShape.hh
@@ -53,13 +56,6 @@ add_library(collision_benchmark SHARED
   collision_benchmark/Shape.cc
   collision_benchmark/TypeHelper.cc
 )
- 
-# when using a different folder for the header file, must to
-# QT5_WRAP_CPP despite of the AUTOMOC=ON, or it won't generate the MOC
-QT5_WRAP_CPP(ClientGui_MOC collision_benchmark/ClientGui.hh)
-add_library(collision_benchmark_gui SHARED
-    collision_benchmark/ClientGui.cc
-)
 
 # expand the dependencies_* variables for the include directories and libraries
 set(dependencies_INCLUDE_DIRS
@@ -69,6 +65,13 @@ set(dependencies_INCLUDE_DIRS
 include_directories(${dependencies_INCLUDE_DIRS})
 link_directories(${dependencies_LIBRARY_DIRS})
 
+# when using a different folder for the header file, must do
+# QT5_WRAP_CPP despite of the AUTOMOC=ON, or it won't generate the MOC
+QT5_WRAP_CPP(ClientGui_MOC collision_benchmark/ClientGui.hh)
+add_library(collision_benchmark_gui SHARED
+    collision_benchmark/ClientGui.cc
+)
+
 list(APPEND CMAKE_CXX_FLAGS "${GAZEBO_CXX_FLAGS}")
 
 add_custom_target(tests)
@@ -76,8 +79,6 @@ add_custom_target(tests)
 add_executable(multiple_worlds_server
   collision_benchmark/multiple_worlds_server.cc)
 
-add_executable(collide_test
-  collision_benchmark/collide_test.cc)
 
 target_link_libraries(collision_benchmark
   ${dependencies_LIBRARIES})
@@ -86,9 +87,24 @@ target_link_libraries(collision_benchmark_gui
   ${dependencies_LIBRARIES})
 
 target_link_libraries(multiple_worlds_server collision_benchmark)
-target_link_libraries(collide_test collision_benchmark)
 
+#############################################
 # testing
+#############################################
+
+# Compile the GUI library for the "colliding shapes test".
+# When using a different folder for the header file, must to
+# QT5_WRAP_CPP despite of the AUTOMOC=ON, or it won't generate the MOC
+# -----------------------------------------
+QT5_WRAP_CPP(CollidingShapesGui_MOC test/CollidingShapesGui.hh)
+add_library(collision_benchmark_test_gui SHARED
+    test/CollidingShapesGui.cc
+    test/CollidingShapesParams.cc
+)
+add_dependencies(tests collision_benchmark_test_gui)
+
+# compile testing libraries and executables
+# -----------------------------------------
 enable_testing()
 find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
@@ -96,13 +112,21 @@ include_directories(${GTEST_INCLUDE_DIRS})
 set(TEST_LIB_SRCS
     test/TestUtils.cc
     test/MultipleWorldsTestFramework.cc
-    test/StaticTestFramework.cc)
+    test/StaticTestFramework.cc
+    test/CollidingShapesTestFramework.cc
+    test/CollidingShapesParams.cc)
 
 add_library(collision_benchmark_test EXCLUDE_FROM_ALL ${TEST_LIB_SRCS})
 target_link_libraries(collision_benchmark_test
   collision_benchmark ${GTEST_BOTH_LIBRARIES})
 add_test(MultipleWorldsTest collision_benchmark_test)
 add_dependencies(tests collision_benchmark_test)
+
+add_executable(colliding_shapes_test
+  test/colliding_shapes_test.cc)
+target_link_libraries(colliding_shapes_test collision_benchmark
+                                            collision_benchmark_test)
+add_dependencies(tests colliding_shapes_test)
 
 add_executable(multiple_worlds_test EXCLUDE_FROM_ALL test/MultipleWorlds_TEST.cc)
 target_link_libraries(multiple_worlds_test
@@ -160,6 +184,5 @@ install (FILES ${test_WORLDS}
   DESTINATION ${CMAKE_INSTALL_PREFIX}/share/test_worlds)
 
 install (TARGETS collision_benchmark multiple_worlds_server 
-                 collide_test 
   LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
   RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)

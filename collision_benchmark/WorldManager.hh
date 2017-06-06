@@ -518,8 +518,8 @@ class WorldManager
   /// collision states / contact points between them checked.
   public: void SetDynamicsEnabled(const bool flag)
   {
-   std::cout << "WorldManager received request to set dynamics "
-             << "enable to " << flag << std::endl;
+   // std::cout << "WorldManager received request to set dynamics "
+   //          << "enable to " << flag << std::endl;
    std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
    for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator
         it = this->worlds.begin();
@@ -629,16 +629,16 @@ class WorldManager
 
   private: void NotifyUpdate(const int _numSteps)
   {
-    std::cout << "WorldManager Received UPDATE command with "
-              << _numSteps << " steps. " << std::endl;
+//    std::cout << "WorldManager Received UPDATE command with "
+//              << _numSteps << " steps. " << std::endl;
     Update(_numSteps, true);
   }
 
   private: void NotifyModelStateChange(const ModelID  &_id,
                                    const BasicState &_state)
   {
-     std::cout << "WorldManager received STATE CHANGE command "
-               << "for model " << _id << ": " << _state << std::endl;
+//     std::cout << "WorldManager received STATE CHANGE command "
+//               << "for model " << _id << ": " << _state << std::endl;
      // std::vector<bool> retVals =
        CallOnAllWorldsWithModel <bool, const ModelID&, const BasicState&>
         (&Self::SetBasicModelStateCB, _id, _state);

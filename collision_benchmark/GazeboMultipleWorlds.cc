@@ -48,13 +48,21 @@ using collision_benchmark::MultipleWorldsServer;
 using collision_benchmark::GazeboMultipleWorldsServer;
 using collision_benchmark::StartWaiter;
 
+const std::string GazeboMultipleWorlds::MirrorName = "mirror";
+
+GazeboMultipleWorlds::GazeboMultipleWorlds():
+  started(false)
+{
+}
+
 GazeboMultipleWorlds::~GazeboMultipleWorlds()
 {
   if (IsClientRunning())
   {
     KillClient();
   }
-  // XXX TODO: abort server as well (interrupt Run() if it was called)
+  // XXX TODO: interrupt Run() if it was called in blocking mode
+  ShutdownServer();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -62,6 +70,7 @@ bool GazeboMultipleWorlds::Init(const bool loadMirror,
                                 const bool allowControlViaMirror,
                                 const bool enforceContactCalc)
 {
+  started = false;
   GzMultipleWorldsServer::WorldLoader_M loaders =
     collision_benchmark::GetSupportedGazeboWorldLoaders(enforceContactCalc);
 
@@ -80,7 +89,7 @@ bool GazeboMultipleWorlds::Init(const bool loadMirror,
   server->Start(argc, &argv);
 
   std::string mirrorName = "";
-  if (loadMirror) mirrorName = "mirror";
+  if (loadMirror) mirrorName = MirrorName;
 
   server->Init(mirrorName, allowControlViaMirror);
 
@@ -88,6 +97,12 @@ bool GazeboMultipleWorlds::Init(const bool loadMirror,
   if (!worldManager) return false;
 
   return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+bool GazeboMultipleWorlds::IsClientClosed()
+{
+  return !IsClientRunning();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -124,6 +139,7 @@ GazeboMultipleWorlds::GetWorldManager()
 
 ///////////////////////////////////////////////////////////////////////////////
 bool GazeboMultipleWorlds::Run(bool waitForStartSignal,
+                               bool blocking,
                                const std::function<void(int)>& loopCallback)
 
 {
@@ -143,12 +159,13 @@ bool GazeboMultipleWorlds::Run(bool waitForStartSignal,
   if (!worldManager) return false;
 
   // wait until the client is running before starting the simulation.
-  std::cout << "Waiting for client to come up... " << std::endl;
+  std::cout << "GazeboMultipleWorlds: Waiting for client to come up... "
+            << std::endl;
   while (!IsClientRunning())
   {
     gazebo::common::Time::MSleep(100);
   }
-  std::cout << "Client has started." << std::endl;
+  std::cout << "GazeboMultipleWorlds: ...client has connected." << std::endl;
 
   GzWorldManager::ControlServerPtr controlServer =
     worldManager->GetControlServer();
@@ -169,6 +186,11 @@ bool GazeboMultipleWorlds::Run(bool waitForStartSignal,
                                                      std::placeholders::_1));
     }
 
+    // closing the client also serves as an "unpause" signal, so that the
+    // thread stops waiting.
+    startWaiter.AddUnpausedCallback
+      (std::bind(&GazeboMultipleWorlds::IsClientClosed, this));
+
     worldManager->SetPaused(true);
 
     std::cout << "Press [Enter] to continue without gzclient or hit "
@@ -179,9 +201,22 @@ bool GazeboMultipleWorlds::Run(bool waitForStartSignal,
 
     worldManager->SetPaused(false);
   }
+  started = true;
 
-  std::cout << "Now starting to update worlds."<<std::endl;
+  if (!IsClientRunning())
+  {
+    std::cout << "Client was closed before simulation was started. "
+              << "Will not start simulation. " << std::endl;
+    return true;
+  }
+
+  // std::cout << "Now starting to update worlds."<<std::endl;
   int iter = 0;
+  worldManager->SetPaused(false);
+
+  // for non-blocking calls, don't do the simulation loop in here.
+  if (!blocking) return true;
+
   while(IsClientRunning())
   {
     int numSteps=1;
@@ -189,25 +224,52 @@ bool GazeboMultipleWorlds::Run(bool waitForStartSignal,
     if (loopCallback) loopCallback(iter);
     ++iter;
   }
-  server->Stop();
+  ShutdownServer();
+  return true;
+}
 
+
+///////////////////////////////////////////////////////////////////////////////
+bool GazeboMultipleWorlds::HasStarted() const
+{
+  return started;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void GazeboMultipleWorlds::ShutdownServer()
+{
+  if (!server) return;
+  server->Stop();
   // need to call server Fini() (or delete the server)
   // because if it's deleted after program exit
   // then it still will try to access static variables
   // which may have been deleted before.
   // server.reset();
   server->Fini();
-  return true;
 }
 
-
+///////////////////////////////////////////////////////////////////////////////
 bool GazeboMultipleWorlds::IsChild() const
 {
   return gzclient_pid == 0;
 }
+///////////////////////////////////////////////////////////////////////////////
 bool GazeboMultipleWorlds::IsParent() const
 {
   return gzclient_pid > 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// handler for SIGSEV to kill all child processes
+pid_t gPGid;
+void handler(int sig) {
+  if (sig == SIGSEGV)
+  {
+    std::cout << "Segmentation fault - caught SIGSEV and killing "
+              << "child process(es). " << __FILE__
+              << ", " << __LINE__ << std::endl;
+    kill(-gPGid, SIGTERM);     // kill the whole process group
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -215,19 +277,44 @@ bool GazeboMultipleWorlds::Load(const std::vector<std::string>& selectedEngines,
                                 bool physicsEnabled,
                                 bool loadMirror,
                                 bool enforceContactCalc,
-                                bool allowControlViaMirror)
+                                bool allowControlViaMirror,
+                                const std::vector<std::string>& additionalGuis
+                                )
 {
+  bool verbose = false;
+  setpgid(0, 0);       // Make new process group, if needed
+  gPGid = getpgid(0);
+  signal(SIGSEGV, handler);
+
   gzclient_pid = fork();
   if (gzclient_pid == 0)
   {
     // child process: Start gzclient with the multiple worlds plugin
-    char **argvClient = new char*[4];
+    char **argvClient = new char*[4 +
+                                  additionalGuis.size() * 2 +
+                                  verbose ? 1 : 0];
     // silly const cast to avoid compiler warning
     argvClient[0] = const_cast<char*>(static_cast<const char*>("gzclient"));
     argvClient[1] = const_cast<char*>(static_cast<const char*>("--g"));
     argvClient[2] = const_cast<char*>
                     (static_cast<const char*>("libcollision_benchmark_gui.so"));
-    argvClient[3] = static_cast<char*>(NULL);
+    int i = 3;
+    for (int g = 0; g < additionalGuis.size(); ++g)
+    {
+      argvClient[i] = const_cast<char*>(static_cast<const char*>("--g"));
+      ++i;
+      argvClient[i] = const_cast<char*>
+                      (static_cast<const char*>(additionalGuis[g].c_str()));
+      ++i;
+    }
+
+    if (verbose)
+    {
+      argvClient[i] = const_cast<char*>(static_cast<const char*>("--verbose"));
+      ++i;
+    }
+
+    argvClient[i] = static_cast<char*>(NULL);
 
     execvp(argvClient[0], argvClient);
     return true;
@@ -253,6 +340,5 @@ bool GazeboMultipleWorlds::Load(const std::vector<std::string>& selectedEngines,
   if (!worldManager) return false;
 
   worldManager->SetDynamicsEnabled(physicsEnabled);
-
   return true;
 }

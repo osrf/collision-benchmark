@@ -98,11 +98,12 @@ ClientGui::ClientGui()
   this->mirrorWorldSub =
     this->node->Subscribe(GET_TOPIC, &ClientGui::receiveWorldMsg, this);
 
-  std::cout<<"Waiting for connection to topic "<<SET_TOPIC<<std::endl;
+  std::cout << "ClientGUI: Waiting for connection to topic "
+            << SET_TOPIC << std::endl;
   this->mirrorWorldPub->WaitForConnection();
-  std::cout<<"Received."<<std::endl;
+  std::cout << "ClientGUI: Connection established." << std::endl;
 
-  // Send the model to the gazebo server
+  // Send the name request to the gazebo server
   gazebo::msgs::Any m;
   m.set_type(gazebo::msgs::Any::INT32);
   m.set_int_value(0); // Request world name
@@ -114,6 +115,7 @@ ClientGui::~ClientGui()
 {
 }
 
+/////////////////////////////////////////////////
 void ClientGui::receiveWorldMsg(ConstAnyPtr &_msg)
 {
   // std::cout << "Any msg: "<<_msg->DebugString();
@@ -121,6 +123,7 @@ void ClientGui::receiveWorldMsg(ConstAnyPtr &_msg)
   emit TriggerNameChange(worldName);
 }
 
+/////////////////////////////////////////////////
 void ClientGui::OnNameChange(const std::string& name)
 {
   labelName->setText(name.c_str());
@@ -131,7 +134,6 @@ void ClientGui::OnNameChange(const std::string& name)
 /////////////////////////////////////////////////
 void ClientGui::OnButtonNext()
 {
-  // Send the model to the gazebo server
   gazebo::msgs::Any m;
   m.set_type(gazebo::msgs::Any::INT32);
   m.set_int_value(1); // "Next" world
@@ -142,7 +144,6 @@ void ClientGui::OnButtonNext()
 /////////////////////////////////////////////////
 void ClientGui::OnButtonPrev()
 {
-  // Send the model to the gazebo server
   gazebo::msgs::Any m;
   m.set_type(gazebo::msgs::Any::INT32);
   m.set_int_value(-1); // "Prev" world
