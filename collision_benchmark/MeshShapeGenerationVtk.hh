@@ -71,9 +71,9 @@ vtkSmartPointer<vtkPolyData> makeConeVtk(const double radius,
                                          const unsigned int resolution,
                                          const double angle_deg,
                                          const bool capping,
-                                         const double dir_x=0,
-                                         const double dir_y=0,
-                                         const double dir_z=1);
+                                         const double dir_x = 0,
+                                         const double dir_y = 0,
+                                         const double dir_z = 1);
 /**
  * \param[in] innerRadius the inner radius
  * \param[in] outerRadius the outer radius
@@ -103,7 +103,7 @@ vtkSmartPointer<vtkPolyData> makeEllipsoidVtk(const double xRad,
  *    ring of the torus.
  * \param[in] crossRadius radius of the cross section of ring of the torus.
  * \param[in] uRes resolution in u-direction. Will create uRes-1 "circle
- *    sections", e.g. with uRes=4 it will be a triangle-shaped torus.
+ *    sections", e.g. with uRes = 4 it will be a triangle-shaped torus.
  * \param[in] vRes resolution in v-direction
  * \return the polygon data
  */

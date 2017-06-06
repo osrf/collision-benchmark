@@ -149,7 +149,7 @@ bool Run()
   // which is not great. Find a better way to do this.
   while(true)
   {
-    int numSteps=1;
+    int numSteps = 1;
     worldManager->Update(numSteps);
     LoopIter(iter);
     ++iter;
@@ -232,7 +232,7 @@ Only works when no engines are specified with -e.")
 
   // Initialize server
   bool loadMirror = true;
-  bool enforceContactCalc=false;
+  bool enforceContactCalc = false;
   bool allowControlViaMirror = true;
   Init(loadMirror, allowControlViaMirror, enforceContactCalc);
   assert(g_server);

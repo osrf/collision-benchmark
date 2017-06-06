@@ -156,7 +156,7 @@ class ControlServer
   protected: void NotifyPause(const bool _flag)
              {
                 std::vector<NotifyPauseFct>::iterator it;
-                for (it=pauseCallbacks.begin();
+                for (it = pauseCallbacks.begin();
                      it!=pauseCallbacks.end(); ++it)
                 {
                   (*it)(_flag);
@@ -170,7 +170,7 @@ class ControlServer
   protected: void NotifyUpdate(const int _numSteps)
              {
                 std::vector<NotifyUpdateFct>::iterator it;
-                for (it=updateCallbacks.begin();
+                for (it = updateCallbacks.begin();
                      it!=updateCallbacks.end(); ++it)
                 {
                   (*it)(_numSteps);
@@ -182,7 +182,7 @@ class ControlServer
   protected: void NotifyDynamicsEnable(const bool enable)
              {
                 std::vector<NotifyDynamicsEnableFct>::iterator it;
-                for (it=dynamicsEnableCallbacks.begin();
+                for (it = dynamicsEnableCallbacks.begin();
                      it!=dynamicsEnableCallbacks.end(); ++it)
                 {
                   (*it)(enable);
@@ -196,7 +196,7 @@ class ControlServer
                                 const float gravity_z)
              {
                 std::vector<NotifyGravityFct>::iterator it;
-                for (it=gravityCallbacks.begin();
+                for (it = gravityCallbacks.begin();
                      it!=gravityCallbacks.end(); ++it)
                 {
                   (*it)(gravity_x, gravity_y, gravity_z);
@@ -208,7 +208,7 @@ class ControlServer
                                       const BasicState &_state)
              {
                 typename std::vector<NotifySetModelStateFct>::iterator it;
-                for (it=modelStateCallbacks.begin();
+                for (it = modelStateCallbacks.begin();
                      it!=modelStateCallbacks.end(); ++it)
                 {
                   (*it)(_id,_state);
@@ -221,7 +221,7 @@ class ControlServer
                                      const BasicState &_state)
              {
                 typename std::vector<NotifySdfModelLoadFct>::iterator it;
-                for (it=modelLoadCallbacks.begin();
+                for (it = modelLoadCallbacks.begin();
                      it!=modelLoadCallbacks.end(); ++it)
                 {
                   (*it)(_sdf, _isString, _state);

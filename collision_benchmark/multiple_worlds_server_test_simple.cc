@@ -37,7 +37,7 @@ using collision_benchmark::GazeboPhysicsWorld;
  *        GazeboMirrorWorld::Sync() is called at each iteration
  */
 void RunWorlds(int iter, const std::vector<GazeboPhysicsWorld::Ptr>& worlds,
-               const MirrorWorld::Ptr &mirrorWorld=MirrorWorld::Ptr(NULL))
+               const MirrorWorld::Ptr &mirrorWorld = MirrorWorld::Ptr(NULL))
 {
   for (unsigned int i = 0; i < iter; ++i)
   {

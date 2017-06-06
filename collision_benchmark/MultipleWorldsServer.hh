@@ -79,7 +79,7 @@ class MultipleWorldsServer
   // Start the server. Starting of the server may accept
   // command line parameters depending on the implementation.
   // \return success of starting the server
-  public: virtual bool Start(int argc=0, const char** argv=NULL) = 0;
+  public: virtual bool Start(int argc = 0, const char** argv = NULL) = 0;
   public: virtual void Stop() = 0;
   public: virtual bool isRunning() const = 0;
 
@@ -126,7 +126,7 @@ class MultipleWorldsServer
       std::string engine = *it;
       std::stringstream _worldname;
       _worldname << namePrefix << "_engine_" << i << "_" << engine;
-      std::string worldname=_worldname.str();
+      std::string worldname = _worldname.str();
       if (Load(worldfile, engine, worldname) < 0)
       {
         std::cerr << "Could not load world " << worldfile << " with engine "

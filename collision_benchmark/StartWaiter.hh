@@ -94,7 +94,7 @@ class StartWaiter
   private: void WaitForEnter()
   {
     int key = getchar();
-    keypressed=true;
+    keypressed = true;
   }
 
   // test is paused or not

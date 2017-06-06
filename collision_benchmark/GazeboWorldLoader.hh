@@ -99,7 +99,7 @@ sdf::ElementPtr GetSDFElementFromString(const std::string &xmlString,
 ///   this->sensorsInitialized() will otherwise return false
 gazebo::physics::WorldPtr LoadWorldFromSDF(const sdf::ElementPtr &sdfRoot,
                                            const std::string &name="",
-                                           const bool forceSensorsInit=true);
+                                           const bool forceSensorsInit = true);
 
 /// loads a world from file
 /// \param name if not empty string, then this name is used to override
@@ -109,7 +109,7 @@ gazebo::physics::WorldPtr LoadWorldFromSDF(const sdf::ElementPtr &sdfRoot,
 gazebo::physics::WorldPtr
 LoadWorldFromFile(const std::string &worldfile,
                   const std::string &name="",
-                  const sdf::ElementPtr &overridePhysics=sdf::ElementPtr());
+                  const sdf::ElementPtr &overridePhysics = sdf::ElementPtr());
 
 /// loads a world from an SDF xml string
 /// \param name if not empty string, then this name is used to override
@@ -119,7 +119,7 @@ LoadWorldFromFile(const std::string &worldfile,
 gazebo::physics::WorldPtr
 LoadWorldFromSDFString(const std::string &xmlString,
                        const std::string &name="",
-                       const sdf::ElementPtr &overridePhys=sdf::ElementPtr());
+                       const sdf::ElementPtr &overridePhys = sdf::ElementPtr());
 
 /// loads a model from an SDF element
 /// \param name if not empty string, then this name is used to override
@@ -144,7 +144,7 @@ LoadModelFromSDFString(const std::string &sdfString,
 gazebo::physics::WorldPtr
 LoadWorld(const std::string &worldfile,
           const std::string &name="",
-          const sdf::ElementPtr &overridePhysics=sdf::ElementPtr());
+          const sdf::ElementPtr &overridePhysics = sdf::ElementPtr());
 
 /// Gets the ``<physics>`` element from the SDF given in \e filename.
 /// Must be under the root's ``<world>`` tag.

@@ -45,13 +45,12 @@ namespace collision_benchmark
  * \date February 2016
  */
 class GazeboTopicForwardingMirror:
-  public MirrorWorld,//<gazebo::physics::WorldState>
+  public MirrorWorld,
   public std::enable_shared_from_this<GazeboTopicForwardingMirror>
 {
     public: typedef std::shared_ptr<GazeboTopicForwardingMirror> Ptr;
     public: typedef std::shared_ptr<const GazeboTopicForwardingMirror> ConstPtr;
     public: typedef MirrorWorld Parent;
-    //public: typedef MirrorWorld<gazebo::physics::WorldState> Parent;
 
     // PhysicsEngineWorldInterface instantiated with Gazebo types.
     // Required to use GetWorld().
@@ -121,13 +120,6 @@ class GazeboTopicForwardingMirror:
 
     /// \brief topic forwarder for poseAnim messages.
     private: GazeboTopicForwarder<gazebo::msgs::PoseAnimation>::Ptr poseAnimFwd;
-
-  /*
-    // XXX TODO Get rid of this unless needed again. This has to be
-    // forwarded to ALL worlds.
-    /// \brief topic forwarder for physics messages.
-    private: GazeboTopicForwarder<gazebo::msgs::Physics>::Ptr physicsFwd;
-  */
 
     /// \brief Publisher for request messages to use for clients subscribed
     /// the the mirror world (e.g. visualization/gzclient).

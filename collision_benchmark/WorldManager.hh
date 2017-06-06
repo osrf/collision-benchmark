@@ -196,13 +196,13 @@ class WorldManager
      this->mirroredWorldIdx=-1;
      return;
    }
-   this->mirrorWorld=_mirrorWorld;
+   this->mirrorWorld = _mirrorWorld;
    {
      std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
      if (!this->worlds.empty())
      {
        this->mirrorWorld->SetOriginalWorld(worlds.front());
-       this->mirroredWorldIdx=0;
+       this->mirroredWorldIdx = 0;
      }
    }
   }
@@ -232,7 +232,7 @@ class WorldManager
     if (this->worlds.empty() && this->mirrorWorld)
     {
       this->mirrorWorld->SetOriginalWorld(_world);
-      this->mirroredWorldIdx=0;
+      this->mirroredWorldIdx = 0;
     }
     this->worlds.push_back(_world);
     return this->worlds.size()-1;
@@ -245,14 +245,14 @@ class WorldManager
       return false;
 
     // std::cout<<"Getting world at idx "<<_index<<std::endl;
-    PhysicsWorldBaseInterface::Ptr world=GetWorld(_index);
+    PhysicsWorldBaseInterface::Ptr world = GetWorld(_index);
     if (!world)
     {
       gzerr<<"Cannot get world in WorldManager::SetMirroredWorld()\n";
       return false;
     }
     this->mirrorWorld->SetOriginalWorld(world);
-    this->mirroredWorldIdx=_index;
+    this->mirroredWorldIdx = _index;
     return true;
   }
 
@@ -504,7 +504,7 @@ class WorldManager
   {
    std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
    for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator
-        it=this->worlds.begin();
+        it = this->worlds.begin();
         it != this->worlds.end(); ++it)
    {
      PhysicsWorldBaseInterface::Ptr w=*it;
@@ -532,7 +532,7 @@ class WorldManager
 
   /// Calls PhysicsWorld::Update(iter,force) on all worlds and subsequently
   /// calls MirrorWorld::Sync() and MirrorWorld::Update().
-  public: void Update(int iter=1, bool force=false)
+  public: void Update(int iter = 1, bool force = false)
   {
    // we cannot just lock the worldMutex with a lock here, because
    // calling Update() may trigger the call of callbacks in this
@@ -542,9 +542,9 @@ class WorldManager
    // the callback functions of this class. Only block the worlds
    // vector while absolutey necessary.
    this->worldsMutex.lock();
-   int numWorlds=this->worlds.size();
+   int numWorlds = this->worlds.size();
    this->worldsMutex.unlock();
-   for (int i=0; i< numWorlds; ++i)
+   for (int i = 0; i< numWorlds; ++i)
    {
      PhysicsWorldBaseInterface::Ptr world;
      {
@@ -552,10 +552,10 @@ class WorldManager
        std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
        // update vector size in case more worlds were
        // added asynchronously
-       numWorlds=this->worlds.size();
+       numWorlds = this->worlds.size();
        // break loop if size of worlds has decreased
        if (i >= numWorlds) break;
-       world=worlds[i];
+       world = worlds[i];
      }
      world->Update(iter, force);
    }
@@ -699,14 +699,14 @@ class WorldManager
        // Switch to previous world
        std::cout<<"WorldManager: Switching to prev world"<<std::endl;
        if (mirroredWorldIdx > 0) --mirroredWorldIdx;
-       else mirroredWorldIdx=worlds.size()-1; // go back to last world
+       else mirroredWorldIdx = worlds.size()-1; // go back to last world
      }
      else if (ctrl > 0)
      {
        // Switch to next world
        std::cout<<"WorldManager: Switching to next world"<<std::endl;
        if (mirroredWorldIdx < (worlds.size()-1)) ++mirroredWorldIdx;
-       else mirroredWorldIdx=0; // go back to first world
+       else mirroredWorldIdx = 0; // go back to first world
      }
 
      if (mirroredWorldIdx == oldMirrorIdx)

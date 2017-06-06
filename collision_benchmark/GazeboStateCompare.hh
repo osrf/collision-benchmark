@@ -34,21 +34,21 @@ struct GazeboStateCompare
   // the Equal() functions.
   struct Tolerances
   {
-    static Tolerances CreateDefault(float accuracy=1e-03)
+    static Tolerances CreateDefault(float accuracy = 1e-03)
     {
       Tolerances t;
-      t.Position=accuracy;
-      t.Orientation=accuracy;
-      t.Force=accuracy;
-      t.Torque=accuracy;
-      t.Scale=accuracy;
-      t.Velocity=accuracy;
-      t.VelocityOrientation=accuracy;
-      t.Acceleration=accuracy;
-      t.AccelerationOrientation=accuracy;
-      t.JointAngle=accuracy;
-      t.CheckLinkCollisionStates=true;
-      t.CheckDynamics=true;
+      t.Position = accuracy;
+      t.Orientation = accuracy;
+      t.Force = accuracy;
+      t.Torque = accuracy;
+      t.Scale = accuracy;
+      t.Velocity = accuracy;
+      t.VelocityOrientation = accuracy;
+      t.Acceleration = accuracy;
+      t.AccelerationOrientation = accuracy;
+      t.JointAngle = accuracy;
+      t.CheckLinkCollisionStates = true;
+      t.CheckDynamics = true;
       return t;
     }
 
@@ -87,20 +87,20 @@ struct GazeboStateCompare
 
   static bool Equal(const gazebo::physics::WorldState &s1,
                     const gazebo::physics::WorldState &s2,
-                    const Tolerances &tolerance=Tolerances::Default,
-                    const bool checkLights=true);
+                    const Tolerances &tolerance = Tolerances::Default,
+                    const bool checkLights = true);
   static bool Equal(const gazebo::physics::ModelState &s1,
                     const gazebo::physics::ModelState &s2,
-                    const Tolerances &tolerance=Tolerances::Default);
+                    const Tolerances &tolerance = Tolerances::Default);
   static bool Equal(const gazebo::physics::LightState &s1,
                     const gazebo::physics::LightState &s2,
-                    const Tolerances &tolerance=Tolerances::Default);
+                    const Tolerances &tolerance = Tolerances::Default);
   static bool Equal(const gazebo::physics::LinkState &s1,
                     const gazebo::physics::LinkState &s2,
-                    const Tolerances &tolerance=Tolerances::Default);
+                    const Tolerances &tolerance = Tolerances::Default);
   static bool Equal(const gazebo::physics::JointState &s1,
                     const gazebo::physics::JointState &s2,
-                    const Tolerances &tolerance=Tolerances::Default);
+                    const Tolerances &tolerance = Tolerances::Default);
 
   //  \param orientationTolerance orientation is compared with the Euler
   //         angles instead of with Quaternions, so this is the angular

@@ -74,7 +74,7 @@ class GazeboMultipleWorlds
   public: bool Load(const std::vector<std::string>& selectedEngines,
                     bool physicsEnabled = true,
                     bool loadMirror = true,
-                    bool enforceContactCalc=false,
+                    bool enforceContactCalc = false,
                     bool allowControlViaMirror = true,
                     const std::vector<std::string>& additionalGuis
                       = std::vector<std::string>());

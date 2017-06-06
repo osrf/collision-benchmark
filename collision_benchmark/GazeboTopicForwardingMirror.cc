@@ -211,7 +211,7 @@ void GazeboTopicForwardingMirror::Init()
 
   // initialize topic block printers (for user information printing)
   ////////////////////////////////////////////////
-  bool verbose=true;  // later replace by global static variable or so
+  bool verbose = true;  // later replace by global static variable or so
   if (verbose)
   {
     static const std::string printPrefix="GazeboTopicForwardingMirror";
@@ -291,7 +291,7 @@ void GazeboTopicForwardingMirror::Init()
 
   // initialize topic forwarders
   ////////////////////////////////////////////////
-  int verboseLevel=0;
+  int verboseLevel = 0;
   try
   {
     this->statFwd.reset(new GazeboTopicForwarder<gazebo::msgs::WorldStatistics>
@@ -362,7 +362,7 @@ void GazeboTopicForwardingMirror::ConnectOriginalWorld
                                 RequestMessageFilter::Instance(),
                                 this->node);
   // connect topic forwarders
-  bool latch=false;
+  bool latch = false;
   assert(this->statFwd);
   this->statFwd->ForwardFrom("/gazebo/"+origWorldName+"/world_stats",
                              this->node, latch);

@@ -51,7 +51,7 @@ class Shape
   public: virtual ~Shape(){}
 
   public: inline Type GetType() const { return type; }
-  public: inline void SetPose(const Pose3& p) { pose=p; }
+  public: inline void SetPose(const Pose3& p) { pose = p; }
   public: inline const Pose3& GetPose() const { return pose; }
   public: inline Pose3& GetPose() { return pose; }
 
@@ -85,7 +85,7 @@ class Shape
   /// \param useFullPath use the absolute path in the URI instead of the
   ///   relative path only starting from \e resourceSubDir.
   public: virtual sdf::ElementPtr
-                  GetShapeSDF(bool detailed=true,
+                  GetShapeSDF(bool detailed = true,
                               const std::string &resourceDir = "/tmp/",
                               const std::string &resourceSubDir = "",
                               const bool useFullPath = false) const = 0;

@@ -49,7 +49,7 @@ std::set<std::string> collision_benchmark::GetSupportedPhysicsEngines()
   std::vector<std::string> engines =
       {"ode" BULLET_SUPPORT SIMBODY_SUPPORT DART_SUPPORT};
   std::cout<<"Supported engines: "<<std::endl;
-  for (int i=0; i<engines.size(); ++i)
+  for (int i = 0; i<engines.size(); ++i)
     std::cout<<engines[i]<<std::endl;*/
 
   return engines;
@@ -79,7 +79,7 @@ collision_benchmark::getPhysicsSettingsSdfFor
     collision_benchmark::GetSupportedPhysicsEngines();
 
   for (std::vector<std::string>::const_iterator
-       eit=engines.begin(); eit!=engines.end(); ++eit)
+       eit = engines.begin(); eit!=engines.end(); ++eit)
   {
     std::string e=*eit;
     if (!supported_engines.count(e)) continue;

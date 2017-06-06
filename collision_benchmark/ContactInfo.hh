@@ -136,7 +136,7 @@ class ContactInfo
   public: bool minDepth(double &min) const
   {
     if (contacts.empty()) return false;
-    min=std::numeric_limits<double>::max();
+    min = std::numeric_limits<double>::max();
     for (typename std::vector<Contact>::const_iterator
          cit = contacts.begin(); cit != contacts.end(); ++cit)
     {
@@ -150,7 +150,7 @@ class ContactInfo
   public: bool maxDepth(double &max) const
   {
     if (contacts.empty()) return false;
-    max=std::numeric_limits<double>::min();
+    max = std::numeric_limits<double>::min();
     for (typename std::vector<Contact>::const_iterator
          cit = contacts.begin(); cit != contacts.end(); ++cit)
     {

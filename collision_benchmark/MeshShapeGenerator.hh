@@ -17,7 +17,7 @@ namespace collision_benchmark
  * \author Jennifer Buehler
  * \date March 2017
  */
-template<typename VertexPrecision_=float>
+template<typename VertexPrecision_ = float>
 class MeshShapeGenerator
 {
   public: typedef VertexPrecision_ VertexPrecision;
@@ -96,9 +96,9 @@ class MeshShapeGenerator
                                            const unsigned int resolution,
                                            const double angle_deg,
                                            const bool capping,
-                                           const double dir_x=0,
-                                           const double dir_y=0,
-                                           const double dir_z=1) const = 0;
+                                           const double dir_x = 0,
+                                           const double dir_y = 0,
+                                           const double dir_z = 1) const = 0;
   /**
    * \brief Makes a disk.
    * \param[in] innerRadius the inner radius
@@ -131,7 +131,7 @@ class MeshShapeGenerator
    *    ring of the torus.
    * \param[in] crossRadius radius of the cross section of ring of the torus.
    * \param[in] uRes resolution in u-direction. Will create uRes-1 "circle
-   *    sections", e.g. with uRes=4 it will be a triangle-shaped torus.
+   *    sections", e.g. with uRes = 4 it will be a triangle-shaped torus.
    * \param[in] vRes resolution in v-direction
    * \return the triangle mesh data
    */

@@ -11,7 +11,7 @@ namespace collision_benchmark
  * \author Jennifer Buehler
  * \date March 2017
  */
-template<typename VertexPrecision_=float>
+template<typename VertexPrecision_ = float>
 class MeshShapeGeneratorVtk:
   public MeshShapeGenerator<VertexPrecision_>
 {
@@ -48,9 +48,9 @@ class MeshShapeGeneratorVtk:
                                           const unsigned int resolution,
                                           const double angle_deg,
                                           const bool capping,
-                                          const double dir_x=0,
-                                          const double dir_y=0,
-                                          const double dir_z=1) const;
+                                          const double dir_x = 0,
+                                          const double dir_y = 0,
+                                          const double dir_z = 1) const;
 
   public: virtual TriMeshDataPtr MakeDisk(const double innerRadius,
                                           const double outerRadius,

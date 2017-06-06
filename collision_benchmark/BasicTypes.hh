@@ -40,7 +40,7 @@ class Vector3
   // helper struct to allow external boost serialization
   public: struct access;
 
-  public: Vector3(double _x=0, double _y=0, double _z=0):
+  public: Vector3(double _x = 0, double _y = 0, double _z = 0):
     x(_x), y(_y), z(_z) {}
   public: Vector3(const Vector3& o):
     x(o.x), y(o.y), z(o.z) {}
@@ -60,7 +60,7 @@ class Quaternion: public Vector3
 {
   // helper struct to allow external boost serialization
   public: struct access;
-  public: Quaternion(double _x=0, double _y=0, double _z=0, double _w=1):
+  public: Quaternion(double _x = 0, double _y = 0, double _z = 0, double _w = 1):
           Vector3(_x,_y,_z), w(_w) {}
   public: Quaternion(const Quaternion &o):
           Vector3(o), w(o.w) {}
@@ -86,9 +86,9 @@ class BasicState
   // helper struct to allow external boost serialization
   public: struct access;
   // constructor which enables only fields which are not NULL
-  public: BasicState(const Vector3 *_position=NULL,
-                     const Quaternion *_rotation=NULL,
-                     const Vector3 *_scale=NULL):
+  public: BasicState(const Vector3 *_position = NULL,
+                     const Quaternion *_rotation = NULL,
+                     const Vector3 *_scale = NULL):
     position(_position ? *_position : Vector3(0,0,0)),
     rotation(_rotation ? *_rotation : Quaternion(0,0,0,0)),
     scale(_scale ? *_scale : Vector3(1,1,1)),
@@ -105,8 +105,8 @@ class BasicState
 
   public: void SetPosition(double x, double y, double z)
           {
-            position=Vector3(x,y,z);
-            posEnabled=true;
+            position = Vector3(x,y,z);
+            posEnabled = true;
           }
   public: void SetPosition(const Vector3 &_pos)
           {
@@ -114,8 +114,8 @@ class BasicState
           }
   public: void SetRotation(double x, double y, double z, double w)
           {
-            rotation=Quaternion(x,y,z,w);
-            rotEnabled=true;
+            rotation = Quaternion(x,y,z,w);
+            rotEnabled = true;
           }
   public: void SetRotation(const Quaternion &_q)
           {
@@ -124,8 +124,8 @@ class BasicState
 
   public: void SetScale(double x, double y, double z)
           {
-            scale=Vector3(x,y,z);
-            scaleEnabled=true;
+            scale = Vector3(x,y,z);
+            scaleEnabled = true;
           }
   public: void SetScale(const Vector3 &_scale)
           {

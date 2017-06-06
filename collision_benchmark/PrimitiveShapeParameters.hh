@@ -66,7 +66,7 @@ class PrimitiveShapeParameters
 /**
  * All primitives which have only a radius
  */
-template<typename Float=double>
+template<typename Float = double>
 class RadiusParameter: public PrimitiveShapeParameters
 {
   public: typedef PrimitiveShapeParameters Super;
@@ -85,7 +85,7 @@ class RadiusParameter: public PrimitiveShapeParameters
   {
     if (type!=RADIUS)
       THROW_EXCEPTION("RadiusParameter does hot have the type "<<type);
-    radius=val;
+    radius = val;
   }
   public: virtual Ptr Clone() const
   {
@@ -99,7 +99,7 @@ class RadiusParameter: public PrimitiveShapeParameters
  * \brief All primitives which have a radius and another value
  * such as a value or height
  */
-template<typename Float=double>
+template<typename Float = double>
 class RadiusAndValueParameter: public RadiusParameter<Float>
 {
   private: typedef RadiusParameter<Float> Super;
@@ -124,7 +124,7 @@ class RadiusAndValueParameter: public RadiusParameter<Float>
     if (type!=Super::RADIUS && type!=Super::LENGTH)
       THROW_EXCEPTION("RadiusAndValueParameter does hot have the type "<<type);
     if (type==Super::RADIUS) Super::Set(type, val);
-    else value=val;
+    else value = val;
   }
   public: virtual typename Super::Ptr Clone() const
   {
@@ -139,7 +139,7 @@ class RadiusAndValueParameter: public RadiusParameter<Float>
 /**
  * For all primitives which have parameters related to 3 dimensions (x,y,z)
  */
-template<typename Float=double>
+template<typename Float = double>
 class Dim3Parameter: public PrimitiveShapeParameters
 {
   private: typedef PrimitiveShapeParameters Super;
@@ -177,15 +177,15 @@ class Dim3Parameter: public PrimitiveShapeParameters
   {
     if (type==DIMX)
     {
-      x=val;
+      x = val;
     }
     else if (type==DIMY)
     {
-      y=val;
+      y = val;
     }
     else if (type==DIMZ)
     {
-      z=val;
+      z = val;
     }
     else
     {
@@ -204,7 +204,7 @@ class Dim3Parameter: public PrimitiveShapeParameters
  * For all primitives which have parameters related to 3 values which are not
  * to be interpreted as dimensions (x,y,z). Example: A normal
  */
-template<typename Float=double>
+template<typename Float = double>
 class Val3Parameter: public PrimitiveShapeParameters
 {
   private: typedef PrimitiveShapeParameters Super;
@@ -242,15 +242,15 @@ class Val3Parameter: public PrimitiveShapeParameters
   {
     if (type==VALX)
     {
-      x=val;
+      x = val;
     }
     else if (type==VALY)
     {
-      y=val;
+      y = val;
     }
     else if (type==VALZ)
     {
-      z=val;
+      z = val;
     }
     else
     {
@@ -271,7 +271,7 @@ class Val3Parameter: public PrimitiveShapeParameters
  * Plane parameters using VALX/VALY/VALZ for the normal and LENGTH
  * for the distance from the origin.
  */
-template<typename Float=double>
+template<typename Float = double>
 class PlaneParameter: public Val3Parameter<double>
 {
   private: typedef Val3Parameter<double> Super;
@@ -297,7 +297,7 @@ class PlaneParameter: public Val3Parameter<double>
                            const double &val)
   {
     if (type==LENGTH)
-      distance=val;
+      distance = val;
     Super::Set(type,val);
   }
   public: virtual typename Super::Ptr Clone() const
@@ -312,7 +312,7 @@ class PlaneParameter: public Val3Parameter<double>
  * \brief Like PlaneParameter, but uses bounds for the plane
  * in each direction via the DIMX and DIMY fields.
  */
-template<typename Float=double>
+template<typename Float = double>
 class BoundedPlaneParameter: public PlaneParameter<double>
 {
   private: typedef PlaneParameter<double> Super;
@@ -347,15 +347,15 @@ class BoundedPlaneParameter: public PlaneParameter<double>
   {
     if (type==DIMX)
     {
-      xDim=val;
+      xDim = val;
     }
     else if (type==DIMY)
     {
-      yDim=val;
+      yDim = val;
     }
     else if (type==DIMZ)
     {
-      yDim=val;
+      yDim = val;
     }
     Super::Set(type,val);
   }

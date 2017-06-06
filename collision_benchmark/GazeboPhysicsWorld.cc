@@ -331,7 +331,7 @@ GazeboPhysicsWorld::AddModelFromFile(const std::string &filename,
   sdf::ElementPtr sdfRoot =
     collision_benchmark::GetSDFElementFromFile(filename, "model", modelname);
   ModelLoadResult ret;
-  ret.opResult=FAILED;
+  ret.opResult = FAILED;
   if (!sdfRoot)
   {
     std::cerr<< " Could not get SDF for model in "<<filename<<std::endl;
@@ -347,10 +347,10 @@ GazeboPhysicsWorld::AddModelFromString(const std::string &str,
                                        const std::string &modelname)
 {
   ModelLoadResult ret;
-  ret.opResult=FAILED;
+  ret.opResult = FAILED;
 
-  std::string useStr=str;
-  int checkSDF=collision_benchmark::isProperSDFString(useStr);
+  std::string useStr = str;
+  int checkSDF = collision_benchmark::isProperSDFString(useStr);
   if (checkSDF<0)
   {
     if (checkSDF==-2)
@@ -387,11 +387,11 @@ GazeboPhysicsWorld::AddModelFromSDF(const sdf::ElementPtr &sdf,
   ModelLoadResult ret;
   if (!model)
   {
-    ret.opResult=FAILED;
+    ret.opResult = FAILED;
     return ret;
   }
-  ret.opResult=SUCCESS;
-  ret.modelID=model->GetName();
+  ret.opResult = SUCCESS;
+  ret.modelID = model->GetName();
   return ret;
 }
 
@@ -418,7 +418,7 @@ GazeboPhysicsWorld::AddModelFromShape(const std::string &modelname,
                                       const Shape::Ptr &collShape)
 {
   ModelLoadResult ret;
-  ret.opResult=FAILED;
+  ret.opResult = FAILED;
 
   if (modelname.empty())
   {
@@ -432,7 +432,7 @@ GazeboPhysicsWorld::AddModelFromShape(const std::string &modelname,
   root->SetName("model");
   root->AddAttribute("name", "string", modelname, true, "model name");
 
-  sdf::ElementPtr pose=shape->GetPoseSDF();
+  sdf::ElementPtr pose = shape->GetPoseSDF();
   root->InsertElement(pose);
 
   sdf::ElementPtr link(new sdf::Element());
@@ -456,7 +456,7 @@ GazeboPhysicsWorld::AddModelFromShape(const std::string &modelname,
     gazebo::common::SystemPaths::Instance()->AddGazeboPaths(outputPath);
   }
 
-  sdf::ElementPtr shapeGeom=shape->GetShapeSDF(true, outputPath, outputSubdir);
+  sdf::ElementPtr shapeGeom = shape->GetShapeSDF(true, outputPath, outputSubdir);
   sdf::ElementPtr visual(new sdf::Element());
   visual->SetName("visual");
   visual->AddAttribute("name", "string", "visual", true, "visual name");
@@ -474,7 +474,7 @@ GazeboPhysicsWorld::AddModelFromShape(const std::string &modelname,
     if (shape->SupportLowRes())
       shapeColl = shape->GetShapeSDF(false, outputPath, outputSubdir);
     else
-      shapeColl=shapeGeom;
+      shapeColl = shapeGeom;
   }
 
   if (!shapeColl)
@@ -498,9 +498,9 @@ GazeboPhysicsWorld::GetAllModelIDs() const
 {
   std::vector<GazeboPhysicsWorld::ModelID> names;
   int numModels = world->ModelCount();
-  for (int i=0; i<numModels; ++i)
+  for (int i = 0; i<numModels; ++i)
   {
-    gazebo::physics::ModelPtr m=world->ModelByIndex(i);
+    gazebo::physics::ModelPtr m = world->ModelByIndex(i);
     names.push_back(m->GetName());
   }
   return names;
@@ -508,14 +508,14 @@ GazeboPhysicsWorld::GetAllModelIDs() const
 
 int GazeboPhysicsWorld::GetIntegerModelID(const ModelID &id) const
 {
-  gazebo::physics::ModelPtr m=world->ModelByName(id);
+  gazebo::physics::ModelPtr m = world->ModelByName(id);
   if (!m) return -1;
   return m->GetId();
 }
 
 bool GazeboPhysicsWorld::RemoveModel(const ModelID &id)
 {
-  gazebo::physics::ModelPtr m=world->ModelByName(id);
+  gazebo::physics::ModelPtr m = world->ModelByName(id);
   if (!m) return false;
   world->RemoveModel(m);
   return true;
@@ -549,7 +549,7 @@ GazeboPhysicsWorld::SetWorldState(const WorldState &state, bool isDiff)
   gazebo::physics::WorldState _currentState(world);
   GazeboStateCompare::Tolerances t =
     GazeboStateCompare::Tolerances::CreateDefault(1e-03);
-  if (!world->PhysicsEnabled()) t.CheckDynamics=false;
+  if (!world->PhysicsEnabled()) t.CheckDynamics = false;
   if (!GazeboStateCompare::Equal(_currentState, state, t))
   {
     std::cerr<<"Target state was not set as supposed to!!"<<std::endl;
@@ -563,7 +563,7 @@ GazeboPhysicsWorld::SetWorldState(const WorldState &state, bool isDiff)
 bool GazeboPhysicsWorld::SetBasicModelState(const ModelID  &_id,
                                             const BasicState &_state)
 {
-  gazebo::physics::ModelPtr m=world->ModelByName(_id);
+  gazebo::physics::ModelPtr m = world->ModelByName(_id);
   if (!m)
   {
     std::cerr << "World "<<GetName()<<": Model " << _id
@@ -596,7 +596,7 @@ bool GazeboPhysicsWorld::SetBasicModelState(const ModelID  &_id,
 bool GazeboPhysicsWorld::GetBasicModelState(const ModelID  &_id,
                                             BasicState &_state)
 {
-  gazebo::physics::ModelPtr m=world->ModelByName(_id);
+  gazebo::physics::ModelPtr m = world->ModelByName(_id);
   if (!m)
   {
     std::cerr << "World " << GetName() << ": Model " << _id
@@ -644,7 +644,7 @@ void GazeboPhysicsWorld::Update(int steps, bool force)
   // Step(), or first pause the world.
   if (!world->IsPaused())
   {
-    static bool printOnce=true;
+    static bool printOnce = true;
     if (printOnce)
     {
       std::cout<<"DEBUG WARNING: The Gazebo world is not paused. "
@@ -652,7 +652,7 @@ void GazeboPhysicsWorld::Update(int steps, bool force)
         <<"paused mode and rely on manually doint the updates "
         <<"instead of letting the gazebo world update "
         <<"itself continuously."<<std::endl;
-      printOnce=false;
+      printOnce = false;
     }
     world->SetPaused(true);
   }
@@ -725,8 +725,8 @@ GetContactInfoHelper(const gazebo::physics::WorldPtr &world,
     GZ_ASSERT(c->collision2->GetModel(), "Model of collision2 must be set");
     GZ_ASSERT(c->collision2->GetLink(), "Link of collision2 must be set");
 
-    std::string m1Name=c->collision1->GetModel()->GetName();
-    std::string m2Name=c->collision2->GetModel()->GetName();
+    std::string m1Name = c->collision1->GetModel()->GetName();
+    std::string m2Name = c->collision2->GetModel()->GetName();
 
     if (m1)
     {
@@ -761,7 +761,7 @@ GetContactInfoHelper(const gazebo::physics::WorldPtr &world,
       cInfo(new GazeboPhysicsWorld::ContactInfo
             (m1Name, c->collision1->GetLink()->GetName(),
              m2Name, c->collision2->GetLink()->GetName()));
-    for (int i=0; i < c->count; ++i)
+    for (int i = 0; i < c->count; ++i)
     {
       if (c->depths[i] < 0)
       {
@@ -817,7 +817,7 @@ GetNativeContactsHelper(const gazebo::physics::WorldPtr &world,
   const std::vector<gazebo::physics::Contact*>& contacts =
     contactManager->GetContacts();
   for (std::vector<gazebo::physics::Contact*>::const_iterator
-       it=contacts.begin(); it!=contacts.end(); ++it)
+       it = contacts.begin(); it!=contacts.end(); ++it)
   {
       gazebo::physics::Contact * c=*it;
       GZ_ASSERT(c->collision1->GetModel(), "Model of collision1 must be set");
@@ -825,8 +825,8 @@ GetNativeContactsHelper(const gazebo::physics::WorldPtr &world,
       GZ_ASSERT(c->collision2->GetModel(), "Model of collision2 must be set");
       GZ_ASSERT(c->collision2->GetLink(), "Link of collision2 must be set");
 
-      std::string m1Name=c->collision1->GetModel()->GetName();
-      std::string m2Name=c->collision2->GetModel()->GetName();
+      std::string m1Name = c->collision1->GetModel()->GetName();
+      std::string m2Name = c->collision2->GetModel()->GetName();
 
       if (m1)
       {
@@ -897,7 +897,7 @@ void GazeboPhysicsWorld::OnContact(ConstContactsPtr &_msg)
 
 void GazeboPhysicsWorld::SetEnforceContactsComputation(bool flag)
 {
-  enforceContactComputation=flag;
+  enforceContactComputation = flag;
 #ifndef CONTACTS_ENFORCABLE
   if (enforceContactComputation)
   {
@@ -936,7 +936,7 @@ GazeboPhysicsWorld::WorldPtr GazeboPhysicsWorld::GetWorld() const
 GazeboPhysicsWorld::ModelPtr
 GazeboPhysicsWorld::GetModel(const ModelID &model) const
 {
-  gazebo::physics::ModelPtr m=world->ModelByName(model);
+  gazebo::physics::ModelPtr m = world->ModelByName(model);
   return collision_benchmark::to_std_ptr<gazebo::physics::Model>(m);
 }
 
@@ -945,7 +945,7 @@ bool GazeboPhysicsWorld::GetAABB(const ModelID &id,
                                  Vector3& min, Vector3& max,
                                  bool &inLocalFrame) const
 {
-  gazebo::physics::ModelPtr m=world->ModelByName(id);
+  gazebo::physics::ModelPtr m = world->ModelByName(id);
   if (!m) return false;
   ignition::math::Box box = m->BoundingBox();
   min = Vector3(box.Min().X(), box.Min().Y(), box.Min().Z());

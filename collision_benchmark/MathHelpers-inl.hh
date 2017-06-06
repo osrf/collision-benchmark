@@ -170,9 +170,9 @@ void collision_benchmark::UpdateAABB
 
     newMin = ignition::math::Vector3<Float>(FLT_MAX, FLT_MAX, FLT_MAX);
     newMax = -newMin;
-    for (int x=0; x<2; ++x)
-      for (int y=0; y<2; ++y)
-        for (int z=0; z<2; ++z)
+    for (int x = 0; x<2; ++x)
+      for (int y = 0; y<2; ++y)
+        for (int z = 0; z<2; ++z)
         {
           ignition::math::Vector3<Float> v(xCoords[x], yCoords[y], zCoords[z]);
           v = transform * v;
@@ -188,13 +188,13 @@ void collision_benchmark::UpdateAABB
     // by Ericson, Vol 1, chapter 4.2.6, p. 86, function UpdateAABB
 
     // for all 3 axes
-    for (int i=0; i < 3; ++i)
+    for (int i = 0; i < 3; ++i)
     {
       // Start by adding in translation
       SetIdx(i, transform(i,3), newMin);
       SetIdx(i, transform(i,3), newMax);
       // form extent by summing smaller and larger terms respectively
-      for (int j=0; j < 3; ++j)
+      for (int j = 0; j < 3; ++j)
       {
         Float e = transform(i,j) * initialMin[j];
         Float f = transform(i,j) * initialMax[j];

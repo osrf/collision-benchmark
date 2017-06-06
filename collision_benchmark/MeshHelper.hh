@@ -57,7 +57,7 @@ aiMaterial * GetDefaultMaterial()
   return mat;
 }
 
-template<typename Float=float>
+template<typename Float = float>
 aiScene *
 CreateTrimeshScene(const typename
                    collision_benchmark::MeshData<Float, 3>::ConstPtr &meshData)
@@ -70,7 +70,7 @@ CreateTrimeshScene(const typename
   assimpScene->mMeshes[0] = assimpMesh;
   aiNode * rootNode = new aiNode();
   rootNode->mName.Set("Root");
-  rootNode->mNumMeshes=1;
+  rootNode->mNumMeshes = 1;
   rootNode->mMeshes = new unsigned int[1];
   rootNode->mMeshes[0] = 0;
   assimpScene->mRootNode = rootNode;
@@ -95,8 +95,8 @@ CreateTrimeshScene(const typename
   typedef typename MeshDataT::Vertex Vertex;
   typedef typename MeshDataT::Face Face;
 
-  const std::vector<Vertex>& vertices=meshData->GetVertices();
-  const std::vector<Face>& faces=meshData->GetFaces();
+  const std::vector<Vertex>& vertices = meshData->GetVertices();
+  const std::vector<Face>& faces = meshData->GetFaces();
 
   for (unsigned int i = 0; i < numVertices; ++i)
   {
@@ -136,7 +136,7 @@ CreateTrimeshScene(const typename
  *        supported by assimp (e.g. "dae", "stl", "obj")
  * \param meshData the mesh data to be written
  */
-template<typename Float=float>
+template<typename Float = float>
 bool WriteTrimesh(const std::string &filename,
                   const std::string &outformat,
                   const typename collision_benchmark::MeshData

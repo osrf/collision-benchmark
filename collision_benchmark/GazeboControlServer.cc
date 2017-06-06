@@ -307,17 +307,17 @@ void GazeboControlServer::OnFactory
   (const boost::shared_ptr<gazebo::msgs::Factory const> &_msg)
 {
   std::string sdf;
-  bool isString=true;
+  bool isString = true;
 
   if (_msg->has_sdf() && !_msg->sdf().empty())
   {
-    sdf=_msg->sdf();
+    sdf = _msg->sdf();
   }
   else if (_msg->has_sdf_filename() &&
           !_msg->sdf_filename().empty())
   {
-    sdf=_msg->sdf();
-    isString=false;
+    sdf = _msg->sdf();
+    isString = false;
   }
   else if (_msg->has_clone_model_name())
   {
@@ -360,7 +360,7 @@ void GazeboControlServer::WorldSelectClientCallback(ConstAnyPtr &_msg)
       <<_msg->DebugString()<<std::endl;
     return;
   }
-  int ctrl=_msg->int_value();
+  int ctrl = _msg->int_value();
   std::string worldName = this->CallSelectWorld(ctrl);
   if (!worldName.empty())
     this->SendWorldName(worldName);

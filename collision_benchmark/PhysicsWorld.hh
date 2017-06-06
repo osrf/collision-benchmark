@@ -75,7 +75,7 @@ class PhysicsWorldBaseInterface
   ///   but it will only have an effect for this calling thread
   ///   (if other threads try to call this with force set to false
   ///   the world will not update for the call from the other thread).
-  public: virtual void Update(int steps=1, bool force=false) = 0;
+  public: virtual void Update(int steps = 1, bool force = false) = 0;
 
   /// Pauses or "freezes" the world simulation in the current state.
   /// If the world is paused, any calls of Update() will have no effect.
@@ -208,7 +208,7 @@ class PhysicsWorldStateInterface
   ///         for whichever reason.
   /// \retval FAILED Failure for other reasons than \e NOT_SUPPORTED
   public: virtual OpResult SetWorldState(const WorldState &state,
-                                         bool isDiff=false) = 0;
+                                         bool isDiff = false) = 0;
 };
 
 /**

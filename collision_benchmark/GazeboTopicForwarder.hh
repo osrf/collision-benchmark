@@ -78,8 +78,8 @@ class GazeboTopicForwarder
   // \brief Constructor
   // \param _filter filters out all messages to which the filter applies
   //      and does not republish them. If NULL, does not filter any messages.
- public: GazeboTopicForwarder(const MessageFilterConstPtr _filter=nullptr,
-                              const bool _verbose=false):
+ public: GazeboTopicForwarder(const MessageFilterConstPtr _filter = nullptr,
+                              const bool _verbose = false):
           msgFilter(_filter),
           verbose(_verbose)
           {
@@ -96,8 +96,8 @@ class GazeboTopicForwarder
                               const gazebo::transport::NodePtr &_node,
                               unsigned int _pubQueueLimit = 1000,
                               double _pubHzRate = 0,
-                              const MessageFilterConstPtr _filter=nullptr,
-                              const bool _verbose=false):
+                              const MessageFilterConstPtr _filter = nullptr,
+                              const bool _verbose = false):
           msgFilter(_filter),
           verbose(_verbose)
           {
@@ -114,7 +114,7 @@ class GazeboTopicForwarder
   public: void Forward(const std::string &_from,
                        const std::string &_to,
                        const gazebo::transport::NodePtr &_node,
-                       const bool _subLatching=true,
+                       const bool _subLatching = true,
                        unsigned int _pubQueueLimit = 1000,
                        double _pubHzRate = 0)
           {
@@ -130,7 +130,7 @@ class GazeboTopicForwarder
   // \param _node the node to use for creating the subscriber
   public: void ForwardFrom(const std::string &_from,
                             const gazebo::transport::NodePtr &_node,
-                            const bool _subLatching=true)
+                            const bool _subLatching = true)
           {
             // std::cout<<"Subscribing to topic "<<_from<<"."<<std::endl;
 
@@ -290,7 +290,7 @@ class GazeboServiceForwarder
   //      (0=fastest possible)
  public: GazeboServiceForwarder(unsigned int _pubQueueLimit = 1000,
                                 double _pubHzRate = 0,
-                                const bool _verbose=false):
+                                const bool _verbose = false):
           pubQueueLimit(_pubQueueLimit),
           pubHzRate(_pubHzRate),
           verbose(_verbose)
@@ -307,7 +307,7 @@ class GazeboServiceForwarder
                                 const std::string &_responseSourceTopic,
                                 unsigned int _pubQueueLimit = 1000,
                                 double _pubHzRate = 0,
-                                const bool _verbose=false):
+                                const bool _verbose = false):
           requestSourceTopic(_requestSourceTopic),
           responseSourceTopic(_responseSourceTopic),
           pubQueueLimit(_pubQueueLimit),
@@ -336,7 +336,7 @@ class GazeboServiceForwarder
   // \param latching if true, the last arrived request will also be considered
   public: void BufferRequests(const std::string &_requestSourceTopic,
                               const gazebo::transport::NodePtr &_node,
-                              const bool latching=true)
+                              const bool latching = true)
           {
             std::lock_guard<std::mutex> lock(bufferedRequestsMutex);
             if (this->bufferedRequestsSub)
@@ -388,10 +388,10 @@ class GazeboServiceForwarder
             // first, forward all requests which have arrived before we
             // called this and stop the buffering.
             StopBufferRequests(_requestDestTopic, _node, _requestFilter);
-            requestSourceTopic=_requestSourceTopic;
-            responseSourceTopic=_responseSourceTopic;
-            requestDestTopic=_requestDestTopic;
-            responseDestTopic=_responseDestTopic;
+            requestSourceTopic = _requestSourceTopic;
+            responseSourceTopic = _responseSourceTopic;
+            requestDestTopic = _requestDestTopic;
+            responseDestTopic = _responseDestTopic;
             if (reqFwd) reqFwd->DisconnectSubscriber();
             if (resFwd) resFwd->DisconnectSubscriber();
             reqFwd.reset(new RequestForwarder(_requestDestTopic, _node,
@@ -400,7 +400,7 @@ class GazeboServiceForwarder
             resFwd.reset(new ResponseForwarder(_responseSourceTopic, _node,
                                                pubQueueLimit, pubHzRate,
                                                nullptr, verbose));
-            bool latching=false;
+            bool latching = false;
             reqFwd->ForwardFrom(_requestSourceTopic, _node, latching);
             resFwd->ForwardFrom(_responseDestTopic, _node, latching);
           }
@@ -419,7 +419,7 @@ class GazeboServiceForwarder
              std::lock_guard<std::mutex> lock(bufferedRequestsMutex);
              while (!this->bufferedRequests.empty())
              {
-               RequestConstPtr msg=this->bufferedRequests.front();
+               RequestConstPtr msg = this->bufferedRequests.front();
                this->bufferedRequests.pop_front();
 
                assert(msg);
@@ -534,7 +534,7 @@ class GazeboTopicBlockPrinter:
   public: GazeboTopicBlockPrinter(const std::string &_printPrefix,
                                   const std::string &_topic,
                                   const gazebo::transport::NodePtr &_node,
-                                  const MessageFilterConstPtr _filter=nullptr):
+                                  const MessageFilterConstPtr _filter = nullptr):
           printPrefix(_printPrefix),
           msgFilter(_filter)
           {
@@ -550,7 +550,7 @@ class GazeboTopicBlockPrinter:
 
   private: void Init(const std::string &_topic,
                      const gazebo::transport::NodePtr &_node,
-                     const bool _subLatching=false)
+                     const bool _subLatching = false)
           {
             if (this->sub)
               this->sub->Unsubscribe();

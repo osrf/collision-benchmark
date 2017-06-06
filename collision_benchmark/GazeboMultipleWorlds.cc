@@ -219,7 +219,7 @@ bool GazeboMultipleWorlds::Run(bool waitForStartSignal,
 
   while(IsClientRunning())
   {
-    int numSteps=1;
+    int numSteps = 1;
     worldManager->Update(numSteps);
     if (loopCallback) loopCallback(iter);
     ++iter;

@@ -88,7 +88,7 @@ class GazeboPhysicsWorld:
   // \param enforceContactComputation by default, contacts in Gazebo are only
   //  computed if there is at least one subscriber to the contacts topic.
   //  Use this flag to enforce contacts computation in any case.
-  public: GazeboPhysicsWorld(bool enforceContactComputation=false);
+  public: GazeboPhysicsWorld(bool enforceContactComputation = false);
   public: GazeboPhysicsWorld(const GazeboPhysicsWorld &w){}
   public: virtual ~GazeboPhysicsWorld();
 
@@ -126,7 +126,7 @@ class GazeboPhysicsWorld:
   public: virtual ModelLoadResult
                   AddModelFromShape(const std::string &modelname,
                                     const Shape::Ptr &shape,
-                                    const Shape::Ptr &collShape=Shape::Ptr());
+                                    const Shape::Ptr &collShape = Shape::Ptr());
 
   public: virtual std::vector<ModelID> GetAllModelIDs() const;
   public: virtual int GetIntegerModelID(const ModelID &id) const;
@@ -145,7 +145,7 @@ class GazeboPhysicsWorld:
 
   public: virtual OpResult SetWorldState(const WorldState &state, bool isDiff);
 
-  public: virtual void Update(int steps=1, bool force=false);
+  public: virtual void Update(int steps = 1, bool force = false);
 
   public: virtual void SetPaused(bool flag);
 

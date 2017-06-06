@@ -25,7 +25,7 @@ GZ_REGISTER_GUI_PLUGIN(ClientGui)
 
 
 QSize maxHeightAddWidth(const QSize &s1, const QSize &s2,
-                        float wFact=1, float hFact=1.0)
+                        float wFact = 1, float hFact = 1.0)
 {
   return QSize((s1.width() + s2.width())*wFact,
                std::max(s1.height(), s2.height())*hFact);
@@ -119,7 +119,7 @@ ClientGui::~ClientGui()
 void ClientGui::receiveWorldMsg(ConstAnyPtr &_msg)
 {
   // std::cout << "Any msg: "<<_msg->DebugString();
-  std::string worldName=_msg->string_value();
+  std::string worldName = _msg->string_value();
   emit TriggerNameChange(worldName);
 }
 

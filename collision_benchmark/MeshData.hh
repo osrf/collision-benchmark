@@ -35,7 +35,7 @@ namespace collision_benchmark
  * \author Jennifer Buehler
  * \date December 2016
  */
-template<typename VertexPrecision_=float, int FaceSize=3>
+template<typename VertexPrecision_ = float, int FaceSize = 3>
 class MeshData
 {
   static_assert(FaceSize >= 3, "FaceSize must be at least 3");
