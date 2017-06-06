@@ -1,17 +1,5 @@
 # Questions for discussion
 
-- Problem solved: **Iterations** are not counted globally if World::RunBlocking is called with steps!=0. Is this intended?
-  In this case if we control the world update process from outside (repeated runBlocking calls) we can't really use
-  iterations...
-
-- Problem which was solved but needs later looking into to improve, because it's kind of a hack:
-  **Rubble world sometimes doesn't load up the rubbles**, especially noticable if several worlds loaded. Tracked down to 
-  World::Step():  LoadPlugins() not called because SensorsInitialized() return false for some worlds.
-  However SensorManager::Update is never called - in fact World::dataPtr::sensorsInitialized ***is not initialized in constructor***,
-  and it's set randomly to true or false. If always set to false, rubble world will never work!
-  Actually sensors::run_once(true) can be called, which is done from Server::Run(), but we don't use this.
-  We need to manually hack this by calling ``World::_SetSensorsInitialized(true);`` in GazeboWorldLoader.cc
-
 - ODE does not compute contact points between static objects, while bullet does.
   Do we inted this? Example: Load up two-shapes test with cafe_table and bookshelf.
 
@@ -20,12 +8,15 @@
 # Issues to address (may require PRs to gazebo)
 
 - After setting the world to a state, and before advancing the world, the states should be completely equal even if dynamics is
-  disabled - currently the acceleration has to be skipped in the comparison. See also transfer_world_state tutorial.
+  disabled - currently the **acceleration has to be skipped** in the comparison.
+  See also transfer_world_state tutorial. This would require a PR to Gazebo.
 
-- **gzclient sometimes get stuck**. See the tutorial transfer_world_state: Sometimes the world updates only slowly to the rubble state. This is an issue which should
+- **gzclient sometimes get stuck**. See the tutorial transfer_world_state:
+  Sometimes the world updates only slowly to the rubble state. This is an issue which should
   be examined with Gazebo soon. The state comparison test in the tutorial code ensures that the states are in fact
   equal, but there must be a delay in communicating this to gzclient.
-  UPDATE: Maybe this has been fixed? Could be related to [PR 2657](https://bitbucket.org/osrf/gazebo/pull-requests/2657), check again if this is still happening.
+  UPDATE: Maybe this has been fixed already, it hasn't happened in a while.
+  Could be related to [PR 2657](https://bitbucket.org/osrf/gazebo/pull-requests/2657), check again if this is still happening.
   See also:
       - https://bitbucket.org/osrf/gazebo/issues/821/apparent-transport-race-condition-on
       - Or: https://bitbucket.org/osrf/gazebo/issues/681
@@ -35,6 +26,13 @@
   (see call to setPrimitiveShapeType() in .cpp file line 73). Right now it's not recommended because of
   [issue 106](https://github.com/flexible-collision-library/fcl/issues/106)
 
+- Problem which was solved but needs later looking into to improve, because it's kind of a hack:
+  **Rubble world sometimes doesn't load up the rubbles**, especially noticable if several worlds loaded. Tracked down to 
+  World::Step(): LoadPlugins() not called because SensorsInitialized() return false for some worlds.
+  However SensorManager::Update is never called - in fact World::dataPtr::sensorsInitialized ***is not initialized in constructor***,
+  and it's set randomly to true or false. If always set to false, rubble world will never work!
+  Actually sensors::run_once(true) can be called, which is done from Server::Run(), but we don't use this.
+  We need to manually hack this by calling ``World::_SetSensorsInitialized(true);`` in GazeboWorldLoader.cc
 
 # Improvements which can still be made
 
