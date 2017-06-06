@@ -54,9 +54,9 @@ void collision_benchmark::getTriangleSoup
   for(vtkIdType i = 0; i < tridata->GetNumberOfPoints(); i++)
   {
     // This is identical to:
-    // tridata->GetPoints()->GetPoint(i,p);
+    // tridata->GetPoints()->GetPoint(i, p);
     double p[3];
-    tridata->GetPoint(i,p);
+    tridata->GetPoint(i, p);
     vPoint point;
     point.x = p[0];
     point.y = p[1];

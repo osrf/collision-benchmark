@@ -52,7 +52,7 @@ aiMaterial * GetDefaultMaterial()
   mat->AddProperty(&m, 1, AI_MATKEY_SHADING_MODEL);
 
   if (srcMat.name.length)
-      mat->AddProperty(&srcMat.name,AI_MATKEY_NAME);
+      mat->AddProperty(&srcMat.name, AI_MATKEY_NAME);
   */
   return mat;
 }

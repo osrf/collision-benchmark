@@ -51,7 +51,7 @@ class Vector3
             _o << "[" << _v.x << ", " << _v.y << ", " << _v.z << "]";
             return _o;
           }
-  public: double x,y,z;
+  public: double x, y, z;
 };
 
 // simple quaternion data with no functionality,
@@ -61,7 +61,7 @@ class Quaternion: public Vector3
   // helper struct to allow external boost serialization
   public: struct access;
   public: Quaternion(double _x = 0, double _y = 0, double _z = 0, double _w = 1):
-          Vector3(_x,_y,_z), w(_w) {}
+          Vector3(_x, _y, _z), w(_w) {}
   public: Quaternion(const Quaternion &o):
           Vector3(o), w(o.w) {}
 
@@ -105,7 +105,7 @@ class BasicState
 
   public: void SetPosition(double x, double y, double z)
           {
-            position = Vector3(x,y,z);
+            position = Vector3(x, y, z);
             posEnabled = true;
           }
   public: void SetPosition(const Vector3 &_pos)
@@ -114,7 +114,7 @@ class BasicState
           }
   public: void SetRotation(double x, double y, double z, double w)
           {
-            rotation = Quaternion(x,y,z,w);
+            rotation = Quaternion(x, y, z, w);
             rotEnabled = true;
           }
   public: void SetRotation(const Quaternion &_q)
@@ -124,7 +124,7 @@ class BasicState
 
   public: void SetScale(double x, double y, double z)
           {
-            scale = Vector3(x,y,z);
+            scale = Vector3(x, y, z);
             scaleEnabled = true;
           }
   public: void SetScale(const Vector3 &_scale)

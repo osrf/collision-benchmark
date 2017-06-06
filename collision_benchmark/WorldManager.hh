@@ -530,7 +530,7 @@ class WorldManager
    }
   }
 
-  /// Calls PhysicsWorld::Update(iter,force) on all worlds and subsequently
+  /// Calls PhysicsWorld::Update(iter, force) on all worlds and subsequently
   /// calls MirrorWorld::Sync() and MirrorWorld::Update().
   public: void Update(int iter = 1, bool force = false)
   {

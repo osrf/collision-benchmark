@@ -279,12 +279,12 @@ void GazeboTopicForwardingMirror::Init()
 
     GazeboTopicBlockPrinterInterface::Ptr worldControlBlock
       (new GazeboTopicBlockPrinter<gazebo::msgs::WorldControl>
-            (printPrefix, "~/world_control",this->node));
+            (printPrefix, "~/world_control", this->node));
     this->blockPrinters.push_back(worldControlBlock);
 
     GazeboTopicBlockPrinterInterface::Ptr userCmdBlock
       (new GazeboTopicBlockPrinter<gazebo::msgs::UserCmd>
-            (printPrefix, "~/user_cmd",this->node));
+            (printPrefix, "~/user_cmd", this->node));
     this->blockPrinters.push_back(userCmdBlock);
   }
 

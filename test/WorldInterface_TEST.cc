@@ -95,7 +95,7 @@ TEST_F(WorldInterfaceTest, TransferWorldState)
 
 TEST_F(WorldInterfaceTest, WorldManager)
 {
-  std::map<std::string,std::string> physicsEngines
+  std::map<std::string, std::string> physicsEngines
     = collision_benchmark::getPhysicsSettingsSdfForAllEngines();
   std::string worldfile = "../test_worlds/cube.world";
 
@@ -106,7 +106,7 @@ TEST_F(WorldInterfaceTest, WorldManager)
   // and add it to the world manager
   GzWorldManager worldManager;
   int i=1;
-  for (std::map<std::string,std::string>::iterator it = physicsEngines.begin();
+  for (std::map<std::string, std::string>::iterator it = physicsEngines.begin();
        it!=physicsEngines.end(); ++it, ++i)
   {
     std::string engine = it->first;
@@ -171,7 +171,7 @@ TEST_F(WorldInterfaceTest, GazeboModelLoading)
 
   // create a world with a cube
   GzPhysicsWorld::Ptr world (new GazeboPhysicsWorld(false));
-  ASSERT_EQ(world->LoadFromFile(worldfile),collision_benchmark::SUCCESS)
+  ASSERT_EQ(world->LoadFromFile(worldfile), collision_benchmark::SUCCESS)
     << " Could not load world";
 
   ASSERT_NE(world.get(), nullptr)
@@ -186,7 +186,7 @@ TEST_F(WorldInterfaceTest, GazeboModelLoading)
   // PhysicsWorld::AddModel* functions
   std::string forcedModelName = "test-sphere";
   GzPhysicsWorld::ModelLoadResult res =
-    world->AddModelFromFile("../test_worlds/sphere.sdf",forcedModelName);
+    world->AddModelFromFile("../test_worlds/sphere.sdf", forcedModelName);
   ASSERT_EQ(res.opResult, collision_benchmark::SUCCESS)
     << " Could not add extra model to world";
   ASSERT_EQ(res.modelID, forcedModelName)
@@ -219,7 +219,7 @@ TEST_F(WorldInterfaceTest, GazeboModelLoading)
     </model>");
   std::string forcedModelName2 = "test-cube";
   GzPhysicsWorld::ModelLoadResult res2 =
-    world->AddModelFromString(sdfStr,forcedModelName2);
+    world->AddModelFromString(sdfStr, forcedModelName2);
   ASSERT_EQ(res2.opResult, collision_benchmark::SUCCESS)
     << " Could not add extra model to world";
   ASSERT_EQ(res2.modelID, forcedModelName2)
@@ -235,7 +235,7 @@ TEST_F(WorldInterfaceTest, GazeboModelLoading)
   //Shape::Ptr shape(PrimitiveShape::CreateSphere(2));
   //Shape::Ptr shape(PrimitiveShape::CreateCylinder(1,3));
   //Shape::Ptr shape(PrimitiveShape::CreatePlane
-  //                  (Shape::Vector3(1,0,0),Shape::Vector2(10,10)));
+  //                  (Shape::Vector3(1,0,0), Shape::Vector2(10,10)));
 
   // create simple mesh
   SimpleTriMeshShape::MeshDataPtr meshData(new SimpleTriMeshShape::MeshDataT());
@@ -276,7 +276,7 @@ TEST_F(WorldInterfaceTest, GazeboWorldSaving)
 
   // create the world
   GzPhysicsWorld::Ptr world (new GazeboPhysicsWorld(false));
-  ASSERT_EQ(world->LoadFromFile(worldfile),collision_benchmark::SUCCESS)
+  ASSERT_EQ(world->LoadFromFile(worldfile), collision_benchmark::SUCCESS)
     << " Could not load world";
   ASSERT_NE(world.get(), nullptr)
     << "Error loading world " << worldfile << std::endl;
@@ -360,7 +360,7 @@ TEST_F(WorldInterfaceTest, GazeboContacts)
   // and add it to the world manager
   bool enforceContactComp=true;
   GzPhysicsWorld::Ptr world (new GazeboPhysicsWorld(enforceContactComp));
-  ASSERT_EQ(world->LoadFromFile(worldfile),collision_benchmark::SUCCESS)
+  ASSERT_EQ(world->LoadFromFile(worldfile), collision_benchmark::SUCCESS)
     << " Could not load empty world";
 
   // Add another cube which should fall on the ground in only very few iterations

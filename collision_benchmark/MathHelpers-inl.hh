@@ -106,9 +106,9 @@ bool
 collision_benchmark::EqualVectors(const ignition::math::Vector3d &v1,
                   const ignition::math::Vector3d &v2, const double &t)
 {
-  return EqualFloats(v1.X(),v2.X(),t)
-      && EqualFloats(v1.Y(),v2.Y(),t)
-      && EqualFloats(v1.Z(),v2.Z(),t);
+  return EqualFloats(v1.X(), v2.X(), t)
+      && EqualFloats(v1.Y(), v2.Y(), t)
+      && EqualFloats(v1.Z(), v2.Z(), t);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -117,9 +117,9 @@ bool
 collision_benchmark::EqualVectors(const ignition::math::Vector3<Float>& v1,
                   const ignition::math::Vector3<Float>& v2, const double &t)
 {
-  return EqualFloats(v1.X(),v2.X(),t)
-      && EqualFloats(v1.Y(),v2.Y(),t)
-      && EqualFloats(v1.Z(),v2.Z(),t);
+  return EqualFloats(v1.X(), v2.X(), t)
+      && EqualFloats(v1.Y(), v2.Y(), t)
+      && EqualFloats(v1.Z(), v2.Z(), t);
 }
 
 // Helper function for ignition::math::Vector3.
@@ -191,13 +191,13 @@ void collision_benchmark::UpdateAABB
     for (int i = 0; i < 3; ++i)
     {
       // Start by adding in translation
-      SetIdx(i, transform(i,3), newMin);
-      SetIdx(i, transform(i,3), newMax);
+      SetIdx(i, transform(i, 3), newMin);
+      SetIdx(i, transform(i, 3), newMax);
       // form extent by summing smaller and larger terms respectively
       for (int j = 0; j < 3; ++j)
       {
-        Float e = transform(i,j) * initialMin[j];
-        Float f = transform(i,j) * initialMax[j];
+        Float e = transform(i, j) * initialMin[j];
+        Float f = transform(i, j) * initialMax[j];
         if (e < f)
         {
           SetIdx(i, newMin[i] + e, newMin);

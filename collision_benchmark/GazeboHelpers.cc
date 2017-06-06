@@ -70,7 +70,7 @@ std::string collision_benchmark::getPhysicsSettingsSdfFor(const std::string &e)
 }
 
 /////////////////////////////////////////////////
-std::map<std::string,std::string>
+std::map<std::string, std::string>
 collision_benchmark::getPhysicsSettingsSdfFor
   (const std::vector<std::string>& engines)
 {
@@ -96,12 +96,12 @@ collision_benchmark::getPhysicsSettingsSdfFor
 }
 
 /////////////////////////////////////////////////
-std::map<std::string,std::string>
+std::map<std::string, std::string>
 collision_benchmark::getPhysicsSettingsSdfForAllEngines()
 {
   std::set<std::string> enginesSet =
     collision_benchmark::GetSupportedPhysicsEngines();
-  std::vector<std::string> enginesVector(enginesSet.begin(),enginesSet.end());
+  std::vector<std::string> enginesVector(enginesSet.begin(), enginesSet.end());
   return getPhysicsSettingsSdfFor(enginesVector);
 }
 

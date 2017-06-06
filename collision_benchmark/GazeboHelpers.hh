@@ -47,7 +47,7 @@ std::set<std::string> GetSupportedPhysicsEngines();
  * GAZEBO_RESOURCE_PATH
  * \param engines can contain "ode", "bullet", "dart", "simbody"
  */
-std::map<std::string,std::string>
+std::map<std::string, std::string>
 getPhysicsSettingsSdfFor(const std::vector<std::string>& engines);
 
 /**
@@ -65,7 +65,7 @@ std::string getPhysicsSettingsSdfFor(const std::string &engine);
  * Calls getPhysicsSettingsSdfFor() with all supported
  * engines as returned from GetSupportedPhysicsEngines().
  */
-std::map<std::string,std::string> getPhysicsSettingsSdfForAllEngines();
+std::map<std::string, std::string> getPhysicsSettingsSdfForAllEngines();
 
 
 /**

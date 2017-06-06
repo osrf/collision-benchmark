@@ -114,7 +114,7 @@ vtkSmartPointer<vtkPolyData> makeTorusVtk(const double ringRadius,
 // Simple helper for a point
 struct vPoint
 {
-  double x,y,z;
+  double x, y, z;
 };
 
 // Simple helper for a triangle index set

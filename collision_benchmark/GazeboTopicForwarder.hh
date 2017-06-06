@@ -101,7 +101,7 @@ class GazeboTopicForwarder
           msgFilter(_filter),
           verbose(_verbose)
           {
-            ForwardTo(_to,_node,_pubQueueLimit,_pubHzRate);
+            ForwardTo(_to, _node, _pubQueueLimit, _pubHzRate);
           }
   public: virtual ~GazeboTopicForwarder(){}
 
@@ -538,7 +538,7 @@ class GazeboTopicBlockPrinter:
           printPrefix(_printPrefix),
           msgFilter(_filter)
           {
-            Init(_topic,_node, false);
+            Init(_topic, _node, false);
           }
   public: virtual ~GazeboTopicBlockPrinter(){}
 

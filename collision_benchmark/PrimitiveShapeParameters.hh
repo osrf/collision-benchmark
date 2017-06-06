@@ -137,7 +137,7 @@ class RadiusAndValueParameter: public RadiusParameter<Float>
 
 
 /**
- * For all primitives which have parameters related to 3 dimensions (x,y,z)
+ * For all primitives which have parameters related to 3 dimensions (x, y, z)
  */
 template<typename Float = double>
 class Dim3Parameter: public PrimitiveShapeParameters
@@ -194,7 +194,7 @@ class Dim3Parameter: public PrimitiveShapeParameters
   }
   public: virtual typename Super::Ptr Clone() const
   {
-    return typename Super::Ptr(new Dim3Parameter(x,y,z));
+    return typename Super::Ptr(new Dim3Parameter(x, y, z));
   }
 
   protected: Float x, y, z;
@@ -202,7 +202,7 @@ class Dim3Parameter: public PrimitiveShapeParameters
 
 /**
  * For all primitives which have parameters related to 3 values which are not
- * to be interpreted as dimensions (x,y,z). Example: A normal
+ * to be interpreted as dimensions (x, y, z). Example: A normal
  */
 template<typename Float = double>
 class Val3Parameter: public PrimitiveShapeParameters
@@ -259,7 +259,7 @@ class Val3Parameter: public PrimitiveShapeParameters
   }
   public: virtual typename Super::Ptr Clone() const
   {
-    return typename Super::Ptr(new Val3Parameter(x,y,z));
+    return typename Super::Ptr(new Val3Parameter(x, y, z));
   }
 
   protected: Float x, y, z;
@@ -278,7 +278,7 @@ class PlaneParameter: public Val3Parameter<double>
   public: explicit PlaneParameter(const Float &x,
                                   const Float &y,
                                   const Float &z, const Float &dist):
-    Super(x,y,z),
+    Super(x, y, z),
     distance(dist)
   {}
   public: PlaneParameter(const PlaneParameter &o):
@@ -298,11 +298,11 @@ class PlaneParameter: public Val3Parameter<double>
   {
     if (type==LENGTH)
       distance = val;
-    Super::Set(type,val);
+    Super::Set(type, val);
   }
   public: virtual typename Super::Ptr Clone() const
   {
-    return typename Super::Ptr(new PlaneParameter(x,y,z, distance));
+    return typename Super::Ptr(new PlaneParameter(x, y, z, distance));
   }
   protected: Float distance;
 };
@@ -357,7 +357,7 @@ class BoundedPlaneParameter: public PlaneParameter<double>
     {
       yDim = val;
     }
-    Super::Set(type,val);
+    Super::Set(type, val);
   }
   public: virtual typename Super::Ptr Clone() const
   {

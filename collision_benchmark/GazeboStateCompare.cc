@@ -454,8 +454,8 @@ bool GazeboStateCompare::Equal(const gazebo::physics::JointState &s1,
     if (!EqualFloats(*iter1, *iter2, tolerances.JointAngle))
     {
 #ifdef DEBUG
-      std::cout << "JointState " << i<<" not equal: "
-                << *iter1<<", "<<*iter2<<std::endl;
+      std::cout << "JointState " << i << " not equal: "
+                << *iter1 << ", "<< *iter2 << std::endl;
 #endif
       return false;
     }
