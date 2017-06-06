@@ -14,6 +14,11 @@
  * limitations under the License.
  *
  */
+
+/*
+ * \author Jennifer Buehler
+ * \date March 2017
+ */
 #ifndef COLLISIONBENCHMARK_WORLDLOADER_
 #define COLLISIONBENCHMARK_WORLDLOADER_
 
@@ -21,10 +26,11 @@
 
 #include <gazebo/gazebo.hh>
 #include <vector>
+#include <string>
+#include <map>
 
 namespace collision_benchmark
 {
-
 /**
  * \brief Implementation of WorldLoader for all the physics engines in Gazebo.
  * \author Jennifer Buehler
@@ -61,7 +67,6 @@ class GazeboWorldLoader: public WorldLoader
   // physics setting in SDF format
   private: sdf::ElementPtr physics;
   private: bool alwaysCalcContacts;
-
 };
 
 

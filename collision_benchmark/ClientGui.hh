@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 #ifndef COLLISION_BENCHMARK_CLIENTGUI_H
 #define COLLISION_BENCHMARK_CLIENTGUI_H
 
@@ -24,6 +24,8 @@
 # include <gazebo/transport/transport.hh>
 # include <gazebo/gui/gui.hh>
 #endif
+
+#include <string>
 
 namespace collision_benchmark
 {
@@ -64,6 +66,7 @@ namespace collision_benchmark
     /// in order to be handled by the Qt event loop. Connect this signal
     /// to OnNameChange.
     signals: void TriggerNameChange(const std::string &n);
+
     /// Slot for TriggerNameChange.
     private slots: void OnNameChange(const std::string &n);
 

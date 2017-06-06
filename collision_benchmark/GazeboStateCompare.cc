@@ -79,7 +79,7 @@ bool GazeboStateCompare::Equal(const WorldState &s1, const WorldState &s2,
       {
 #ifdef DEBUG
         std::cout << "Insertion not equal: " << std::endl
-                  << *iter_str1<<std::endl<<*iter_str2<<std::endl;
+                  << *iter_str1 << std::endl << *iter_str2 << std::endl;
 #endif
         return false;
       }
@@ -97,7 +97,7 @@ bool GazeboStateCompare::Equal(const WorldState &s1, const WorldState &s2,
       {
 #ifdef DEBUG
         std::cout << "Deletion not equal: " << std::endl
-                 <<*iter_str1<<std::endl<<*iter_str2<<std::endl;
+                 << *iter_str1 << std::endl << *iter_str2 << std::endl;
 #endif
         return false;
       }
@@ -234,7 +234,8 @@ bool GazeboStateCompare::Equal(const gazebo::physics::ModelState &s1,
       if (iter_lnk1->first != iter_lnk2->first)
       {
 #ifdef DEBUG
-    std::cout << "Poses not equal: " << s1.Pose() << ", " << s2.Pose() << std::endl;
+    std::cout << "Poses not equal: " << s1.Pose() << ", "
+              << s2.Pose() << std::endl;
 #endif
         return false;
       }
@@ -364,7 +365,8 @@ bool GazeboStateCompare::Equal(const gazebo::physics::LinkState &s1,
   if (!Equal(s1.Pose(), s2.Pose(), tolerances.Position, tolerances.Orientation))
   {
 #ifdef DEBUG
-    std::cout << "Poses not equal: " << s1.Pose() << ", " << s2.Pose() << std::endl;
+    std::cout << "Poses not equal: " << s1.Pose() << ", "
+              << s2.Pose() << std::endl;
 #endif
     return false;
   }
@@ -406,7 +408,7 @@ bool GazeboStateCompare::Equal(const gazebo::physics::LinkState &s1,
   {
     ignition::math::Vector3d q1(s1.Wrench().Rot().Euler());
     ignition::math::Vector3d q2(s2.Wrench().Rot().Euler());
-    if (!EqualVectors(q1,q2, tolerances.Torque))
+    if (!EqualVectors(q1, q2, tolerances.Torque))
     {
 #ifdef DEBUG
       std::cout << "Torque not equal: " << s1.Wrench().Rot().Euler()

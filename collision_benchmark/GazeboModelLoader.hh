@@ -22,9 +22,10 @@
 #include <boost/filesystem.hpp>
 #include <tinyxml.h>
 
+#include <string>
+
 namespace collision_benchmark
 {
-
 /**
  * \brief Helper to load a model of a given name from the gazebo model paths.
  *
@@ -109,7 +110,5 @@ class GazeboModelLoader
     return sdfFilename;
   }
 };  // class GazeboModelLoader
-
-} // namespace
-
+}  // namespace
 #endif  // COLLISION_BENCHMARK_GAZEBOMODELLOADER_H

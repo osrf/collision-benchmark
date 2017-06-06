@@ -79,7 +79,7 @@ PrimitiveShape::GetShapeSDF(bool detailed,
   geometry->InsertElement(geomChild);
   sdf::ElementPtr geomElem(new sdf::Element());
   geomChild->InsertElement(geomElem);
-  switch(GetType())
+  switch (GetType())
   {
     case BOX:
     {

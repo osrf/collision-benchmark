@@ -25,10 +25,12 @@
 #include <collision_benchmark/ControlServer.hh>
 
 #include <memory>
+#include <string>
+#include <vector>
+#include <map>
 
 namespace collision_benchmark
 {
-
 /**
  * \brief Server which can be used to run one or more world with
  * multiple physics engines.
@@ -225,8 +227,6 @@ class MultipleWorldsServer
   protected: WorldLoader::ConstPtr universalLoader;
 
   protected: WorldManagerPtr worldManager;
-};  // class MultpleWorldsServer
-
+};  // class MultipleWorldsServer
 }  // namespace
-
 #endif  // COLLISION_BENCHMARK_MULTIPLEWORLDSSERVER_H

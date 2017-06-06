@@ -32,7 +32,6 @@
 
 namespace collision_benchmark
 {
-
 // simple 3D vector data with no functionality,
 // just for portability of data
 class Vector3
@@ -60,15 +59,17 @@ class Quaternion: public Vector3
 {
   // helper struct to allow external boost serialization
   public: struct access;
-  public: Quaternion(double _x = 0, double _y = 0, double _z = 0, double _w = 1):
-          Vector3(_x, _y, _z), w(_w) {}
-  public: Quaternion(const Quaternion &o):
-          Vector3(o), w(o.w) {}
+  public: Quaternion(double _x = 0, double _y = 0,
+                     double _z = 0, double _w = 1)
+          : Vector3(_x, _y, _z), w(_w) {}
+  public: Quaternion(const Quaternion &o)
+          : Vector3(o), w(o.w) {}
 
   public: friend std::ostream&
           operator << (std::ostream &_o, const Quaternion &_q)
           {
-            _o << "[" << _q.x << ", " << _q.y << ", " << _q.z << ", " << _q.w << "]";
+            _o << "[" << _q.x << ", " << _q.y << ", " << _q.z
+               << ", " << _q.w << "]";
             return _o;
           }
   public: double w;
@@ -88,20 +89,20 @@ class BasicState
   // constructor which enables only fields which are not NULL
   public: BasicState(const Vector3 *_position = NULL,
                      const Quaternion *_rotation = NULL,
-                     const Vector3 *_scale = NULL):
-    position(_position ? *_position : Vector3(0,0,0)),
-    rotation(_rotation ? *_rotation : Quaternion(0,0,0,0)),
-    scale(_scale ? *_scale : Vector3(1,1,1)),
-    posEnabled(_position ? true : false),
-    rotEnabled(_rotation ? true : false),
-    scaleEnabled(_scale ? true : false) {}
-  public: BasicState(const BasicState &o):
-    position(o.position),
-    rotation(o.rotation),
-    scale(o.scale),
-    posEnabled(o.posEnabled),
-    rotEnabled(o.rotEnabled),
-    scaleEnabled(o.scaleEnabled) {}
+                     const Vector3 *_scale = NULL)
+    : position(_position ? *_position : Vector3(0, 0, 0)),
+      rotation(_rotation ? *_rotation : Quaternion(0, 0, 0, 0)),
+      scale(_scale ? *_scale : Vector3(1, 1, 1)),
+      posEnabled(_position ? true : false),
+      rotEnabled(_rotation ? true : false),
+      scaleEnabled(_scale ? true : false) {}
+  public: BasicState(const BasicState &o)
+    : position(o.position),
+      rotation(o.rotation),
+      scale(o.scale),
+      posEnabled(o.posEnabled),
+      rotEnabled(o.rotEnabled),
+      scaleEnabled(o.scaleEnabled) {}
 
   public: void SetPosition(double x, double y, double z)
           {
