@@ -48,7 +48,7 @@ then
   CPPLINT_FILES="$CHECK_FILES"
   QUICK_TMP=`mktemp -t asdfXXXXXXXXXX`
 else
-  CHECK_DIRS="./collision_benchmark ./test"
+  CHECK_DIRS="./collision_benchmark ./test ./tutorials"
   if [ $CPPCHECK_LT_157 -eq 1 ]; then
     # cppcheck is older than 1.57, so don't check header files (issue #907)
     CPPCHECK_FILES=`find $CHECK_DIRS -name "*.cc" | grep -v test_fixture/gtest`
