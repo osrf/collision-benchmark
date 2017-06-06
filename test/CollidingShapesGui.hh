@@ -29,7 +29,6 @@ namespace collision_benchmark
 {
 namespace test
 {
-
 /**
  * Creates a GUI with a slider to move the two objects of
  * CollidingShapesTestFramework towards or apart from each other.

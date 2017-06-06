@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2012-2016 Open Source Robotics Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 #include <test/StaticTestFramework.hh>
 
 #include <collision_benchmark/PrimitiveShape.hh>
@@ -96,15 +112,13 @@ void StaticTestFramework::LoadOneEngine(const std::string &engine,
   {
     std::stringstream _worldname;
     _worldname << "world_" << i << "_" << engine;
-    std::string worldname=_worldname.str();
+    std::string worldname = _worldname.str();
     mServer->Load(worldfile, engine, worldname);
   }
   int numWorldsInMgrNew = worldManager->GetNumWorlds();
   ASSERT_EQ(numWorldsInMgrNew, numWorldsInMgr + numWorlds)
     << "Could not load up world " << numWorlds << " times.";
 }
-
-
 
 ////////////////////////////////////////////////////////////////
 void StaticTestFramework::LoadShape(const Shape::Ptr &shape,
@@ -218,8 +232,8 @@ void StaticTestFramework::AABBTestWorldsAgreement(const std::string &modelName1,
   // (in case they were loaded form SDF they may have a pose different
   // to the origin, but here we want to start them at the origin).
   BasicState originPose;
-  originPose.SetPosition(Vector3(0,0,0));
-  originPose.SetRotation(Quaternion(0,0,0,1));
+  originPose.SetPosition(Vector3(0, 0, 0));
+  originPose.SetRotation(Quaternion(0, 0, 0, 1));
   int cnt1 = worldManager->SetBasicModelState(modelName1, originPose);
   ASSERT_EQ(cnt1, numWorlds) << "All worlds should have been updated";
   int cnt2 = worldManager->SetBasicModelState(modelName2, originPose);
@@ -229,8 +243,10 @@ void StaticTestFramework::AABBTestWorldsAgreement(const std::string &modelName1,
   collision_benchmark::GzAABB aabb1, aabb2;
   ASSERT_TRUE(GetAABBs(modelName1, modelName2, bbTol, aabb1, aabb2));
 
-  // std::cout << "Got AABB 1: " <<  aabb1.min << ", " << aabb1.max << std::endl;
-  // std::cout << "Got AABB 2: " <<  aabb2.min << ", " << aabb2.max << std::endl;
+  // std::cout << "Got AABB 1: " <<  aabb1.min << ", "
+  //           << aabb1.max << std::endl;
+  // std::cout << "Got AABB 2: " <<  aabb2.min << ", "
+  //           << aabb2.max << std::endl;
 
   collision_benchmark::GzAABB grid = aabb1;
   grid.min -= aabb2.size() / 2;
@@ -276,7 +292,7 @@ void StaticTestFramework::AABBTestWorldsAgreement(const std::string &modelName1,
     cnt = worldManager->SetBasicModelState(modelName2, bstate2);
     ASSERT_EQ(cnt, numWorlds) << "All worlds should have been updated";
 
-    int numSteps=1;
+    int numSteps = 1;
     worldManager->Update(numSteps);
     if (msSleep > 0) gazebo::common::Time::MSleep(msSleep);
 
@@ -319,10 +335,10 @@ void StaticTestFramework::AABBTestWorldsAgreement(const std::string &modelName1,
     size_t total = colliding.size() + notColliding.size();
 
     ASSERT_EQ(numWorlds, total) << "All worlds must have voted";
-    ASSERT_GT(total, 0 ) << "This should have been caught before";
+    ASSERT_GT(total, 0) << "This should have been caught before";
 
-    double negative = notColliding.size() / (double) total;
-    double positive= colliding.size() / (double) total;
+    double negative = notColliding.size() / static_cast<double>(total);
+    double positive= colliding.size() / static_cast<double>(total);
 
     if (((positive > negative) && (positive < minAgree)) ||
         ((positive <= negative) && (negative < minAgree)))

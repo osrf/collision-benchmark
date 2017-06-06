@@ -23,6 +23,8 @@
 #include <thread>
 #include <mutex>
 #include <atomic>
+#include <string>
+#include <vector>
 #include <unistd.h>
 #include <sys/wait.h>
 
@@ -32,7 +34,6 @@ namespace collision_benchmark
 {
 namespace test
 {
-
 /**
  * \brief Test framework for colliding two shapes along an axis.
  *
