@@ -353,7 +353,7 @@ GazeboPhysicsWorld::AddModelFromString(const std::string &str,
   int checkSDF = collision_benchmark::isProperSDFString(useStr);
   if (checkSDF<0)
   {
-    if (checkSDF==-2)
+    if (checkSDF == -2)
     {
       collision_benchmark::wrapSDF(useStr);
     }
@@ -456,7 +456,8 @@ GazeboPhysicsWorld::AddModelFromShape(const std::string &modelname,
     gazebo::common::SystemPaths::Instance()->AddGazeboPaths(outputPath);
   }
 
-  sdf::ElementPtr shapeGeom = shape->GetShapeSDF(true, outputPath, outputSubdir);
+  sdf::ElementPtr shapeGeom =
+    shape->GetShapeSDF(true, outputPath, outputSubdir);
   sdf::ElementPtr visual(new sdf::Element());
   visual->SetName("visual");
   visual->AddAttribute("name", "string", "visual", true, "visual name");
@@ -498,7 +499,7 @@ GazeboPhysicsWorld::GetAllModelIDs() const
 {
   std::vector<GazeboPhysicsWorld::ModelID> names;
   int numModels = world->ModelCount();
-  for (int i = 0; i<numModels; ++i)
+  for (int i = 0; i < numModels; ++i)
   {
     gazebo::physics::ModelPtr m = world->ModelByIndex(i);
     names.push_back(m->GetName());
@@ -663,7 +664,7 @@ void GazeboPhysicsWorld::Update(int steps, bool force)
 #else
   // This method calls world->RunBlocking();
   gazebo::runWorld(world, steps);
-  // iterations is always 1 if it has been set with steps!=0
+  // iterations is always 1 if it has been set with steps != 0
   // in call above. Should fix this in Gazebo::World?
   // std::cout << "Iterations: " << world->Iterations() << std::endl;
 #endif
@@ -699,11 +700,11 @@ bool GazeboPhysicsWorld::SupportsContacts() const
 
 // helper function which can be used to get contact info of either
 // all models (m1 and m2 set to NULL), or for one model
-// (m1=NULL and m2=NULL) or for two models (m1!=NULL and m2!=NULL).
+// (m1 = NULL and m2 = NULL) or for two models (m1 != NULL and m2 != NULL).
 std::vector<GazeboPhysicsWorld::ContactInfoPtr>
 GetContactInfoHelper(const gazebo::physics::WorldPtr &world,
-                     const GazeboPhysicsWorld::ModelID * m1=NULL,
-                     const GazeboPhysicsWorld::ModelID * m2=NULL)
+                     const GazeboPhysicsWorld::ModelID * m1 = NULL,
+                     const GazeboPhysicsWorld::ModelID * m2 = NULL)
 {
   std::vector<GazeboPhysicsWorld::ContactInfoPtr> ret;
   const gazebo::physics::ContactManager* contactManager =
@@ -732,12 +733,12 @@ GetContactInfoHelper(const gazebo::physics::WorldPtr &world,
     {
       if (m2)
       { // m1Name and m2Name do not correspond to m1 and m2
-        if ((*m1!=m1Name || *m2!=m2Name) &&
-            (*m1!=m2Name || *m2!=m1Name)) continue;
+        if ((*m1 != m1Name || *m2 != m2Name) &&
+            (*m1 != m2Name || *m2 != m1Name)) continue;
       }
       else
       { // m1 has to be m1Name or m2Name to continue
-        if (*m1!=m1Name && *m1!=m2Name) continue;
+        if (*m1 != m1Name && *m1 != m2Name) continue;
       }
     }
 
@@ -799,15 +800,16 @@ GetContactInfoHelper(const gazebo::physics::WorldPtr &world,
 // deleter which does nothing, to be used for
 // std::shared_ptr with extreme caution!
 template<typename Type>
-void null_deleter(Type *){}
+void null_deleter(Type *)
+{}
 
 // helper function which can be used to get contact info of either
 // all models (m1 and m2 set to NULL), or for one model
-// (m1=NULL and m2=NULL) or for two models (m1!=NULL and m2!=NULL).
+// (m1 = NULL and m2 = NULL) or for two models (m1 != NULL and m2 != NULL).
 std::vector<GazeboPhysicsWorld::NativeContactPtr>
 GetNativeContactsHelper(const gazebo::physics::WorldPtr &world,
-                        const GazeboPhysicsWorld::ModelID * m1=NULL,
-                        const GazeboPhysicsWorld::ModelID * m2=NULL)
+                        const GazeboPhysicsWorld::ModelID * m1 = NULL,
+                        const GazeboPhysicsWorld::ModelID * m2 = NULL)
 {
   std::vector<GazeboPhysicsWorld::NativeContactPtr> ret;
 
@@ -817,7 +819,7 @@ GetNativeContactsHelper(const gazebo::physics::WorldPtr &world,
   const std::vector<gazebo::physics::Contact*>& contacts =
     contactManager->GetContacts();
   for (std::vector<gazebo::physics::Contact*>::const_iterator
-       it = contacts.begin(); it!=contacts.end(); ++it)
+       it = contacts.begin(); it != contacts.end(); ++it)
   {
       gazebo::physics::Contact * c=*it;
       GZ_ASSERT(c->collision1->GetModel(), "Model of collision1 must be set");
@@ -832,12 +834,12 @@ GetNativeContactsHelper(const gazebo::physics::WorldPtr &world,
       {
         if (m2)
         { // m1Name and m2Name do not correspond to m1 and m2
-          if ((*m1!=m1Name || *m2!=m2Name) &&
-              (*m1!=m2Name || *m2!=m1Name)) continue;
+          if ((*m1 != m1Name || *m2 != m2Name) &&
+              (*m1 != m2Name || *m2 != m1Name)) continue;
         }
         else
         { // m1 has to be m1Name or m2Name to continue
-          if (*m1!=m1Name && *m1!=m2Name) continue;
+          if (*m1 != m1Name && *m1 != m2Name) continue;
         }
       }
 

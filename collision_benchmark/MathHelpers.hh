@@ -24,7 +24,6 @@
 
 namespace collision_benchmark
 {
-
 template<typename Float>
 collision_benchmark::Vector3 Conv(const ignition::math::Vector3<Float>& v);
 

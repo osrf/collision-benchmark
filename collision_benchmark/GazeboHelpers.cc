@@ -51,7 +51,7 @@ std::set<std::string> collision_benchmark::GetSupportedPhysicsEngines()
   // XXX TODO: Should use same names as used
   // in Gazebo/SDF to select physics engines. Use this as soon
   // as there a constant/macro for it.
-  engines.insert("ode"); // ODE is always supported
+  engines.insert("ode");  // ODE is always supported
 #ifdef HAVE_BULLET
   engines.insert("bullet");
 #endif
@@ -79,13 +79,13 @@ std::set<std::string> collision_benchmark::GetSupportedPhysicsEngines()
 /////////////////////////////////////////////////
 std::string collision_benchmark::getPhysicsSettingsSdfFor(const std::string &e)
 {
-  if (e=="bullet")
+  if (e == "bullet")
     return "physics_settings/bullet_default.sdf";
-  else if (e=="dart")
+  else if (e == "dart")
     return "physics_settings/dart_default.sdf";
-  else if (e=="ode")
+  else if (e == "ode")
     return "physics_settings/ode_default.sdf";
-  else if (e=="simbody")
+  else if (e == "simbody")
     return "physics_settings/simbody_default.sdf";
   return "";
 }
@@ -100,7 +100,7 @@ collision_benchmark::getPhysicsSettingsSdfFor
     collision_benchmark::GetSupportedPhysicsEngines();
 
   for (std::vector<std::string>::const_iterator
-       eit = engines.begin(); eit!=engines.end(); ++eit)
+       eit = engines.begin(); eit != engines.end(); ++eit)
   {
     std::string e=*eit;
     if (!supported_engines.count(e)) continue;
@@ -176,20 +176,17 @@ int collision_benchmark::isProperSDFString(const std::string &string,
   TiXmlElement *elem = xmlDoc.FirstChildElement("sdf");
   if (!elem)
   {
-    //std::cout << "No outer SDF tag" << std::endl;
     return -2;
   }
 
   if (!elem->Attribute("version"))
   {
-    //std::cout<< "SDF Tag has no SDF version" << std::endl;
     return -1;
   }
 
   if (version)
   {
     *version = elem->Attribute("version");
-    // std::cout << "SDF version "<<*version << std::endl;
   }
 
   return 0;

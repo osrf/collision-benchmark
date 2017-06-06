@@ -26,7 +26,6 @@
 
 namespace collision_benchmark
 {
-
 /**
  * \brief A simple Shape which is implements the MESH type for triangle meshes.
  * Textures are not supported.
@@ -70,7 +69,7 @@ class SimpleTriMeshShape: public Shape
             Shape(o),
             data(o.data) {}
 
-  public: virtual ~SimpleTriMeshShape(){}
+  public: virtual ~SimpleTriMeshShape() {}
 
   // Documentation inherited from parent class
   public: virtual sdf::ElementPtr

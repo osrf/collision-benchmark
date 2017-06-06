@@ -176,15 +176,15 @@ int main(int argc, char **argv)
   // Declare the supported options.
   po::options_description desc("Allowed options");
   desc.add_options()
-    ("help, h", "Produce help message")
-    ("engines, e",
+    ("help,h", "Produce help message")
+    ("engines,e",
       po::value<std::vector<std::string> >(&selectedEngines)->multitoken(),
       descEngines.str().c_str())
-    ("keep-name, k", "keep the names of the worlds as specified in the files. \
+    ("keep-name,k", "keep the names of the worlds as specified in the files. \
 Only works when no engines are specified with -e.");
   po::options_description desc_hidden("Positional options");
   desc_hidden.add_options()
-    ("worlds, w",
+    ("worlds,w",
       po::value<std::vector<std::string> >(&worldFiles)->multitoken(),
       "World file(s).");
 
