@@ -129,6 +129,9 @@ Make sure *libcollision_benchmark_gui.so* is in the *GAZEBO_PLUGIN_PATH*.
 You will see the world with the engine with the name which comes first
 in lexicographical order.
 
+
+![Multiple worlds](images/Multiple-worlds-rubble.png)
+
 You can switch between the physics engines with the GUI control panel displayed on the top left.
 Between the buttons, the name of the currently displayed world is shown, which should contain the physics
 engine in the name.
@@ -415,7 +418,14 @@ using one of the physics engines you specified.
 You can switch between the worlds and see how the different engines interpret
 the collision situation.
 
-![Two shapes test](images/Two-shapes-dumpster-diff.png "Image: Difference between bullet and ODE")
+![Two shapes test](images/Two-shapes-dumpster-diff.png)
+*Image: Difference between bullet and ODE*
+
+*Example*
+
+``collide_test ode bullet -m coke_can -m beer``
+
+``collide_test ode bullet -m dumpster -s sphere``
 
 You may want to set the wireframe view an enable contacts display in
 Gazebo.
@@ -423,14 +433,11 @@ Gazebo.
 Try the "AutoCollide" function and the slider, then switch between the worlds
 to see how they differ in their contact point calculation.
 
-Note that the collision axis cannot be moved. It is not a model in the world,
-it is only displayed as a helping visualization.
+Try to move the shapes around with the Gazebo transformation
+tools (top toolbar).
 
-*Example*
-
-``collide_test ode bullet -m coke_can -m beer``
-
-``collide_test ode bullet -m dumpster -s sphere``
+Note that the **collision axis cannot be moved**. It is not a model in the
+world, it is only displayed as a helping visualization.
 
 Things to try out:
 
