@@ -47,10 +47,10 @@ class GazeboControlServer:
   public: typedef std::shared_ptr<const GazeboControlServer> ConstPtr;
 
   /// Constructor.
-  public:  GazeboControlServer(const std::string& _worldName="default");
+  public:  GazeboControlServer(const std::string &_worldName="default");
 
   // prohibit copy constructor
-  private: GazeboControlServer(const GazeboControlServer& o){}
+  private: GazeboControlServer(const GazeboControlServer &o){}
   public:  ~GazeboControlServer();
 
   private: void Init(const std::string &_worldName);
@@ -74,7 +74,7 @@ class GazeboControlServer:
   /// Will send back the current world name with \e wldIdxCtrlPublisher.
   private:  void WorldSelectClientCallback(ConstAnyPtr &_msg);
   /// sends the name of a word via \e wldIdxCtrlPublisher
-  private: void SendWorldName(const std::string& name);
+  private: void SendWorldName(const std::string &name);
 
   /// \brief Transportation node, initialized with world name
   private: gazebo::transport::NodePtr node;

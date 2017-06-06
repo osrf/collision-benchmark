@@ -126,7 +126,7 @@ class WorldStatMsgFilter:
 };
 
 GazeboTopicForwardingMirror::GazeboTopicForwardingMirror
-    (const std::string& worldname):
+    (const std::string &worldname):
       worldName(worldname),
       initialized(false)
 {
@@ -151,7 +151,7 @@ GazeboTopicForwardingMirror::GazeboTopicForwardingMirror
 }
 
 void GazeboTopicForwardingMirror::RegisterNamespace
-      (const std::string& wldName) const
+      (const std::string &wldName) const
 {
   std::cout << "Registering gazebo namespace '"
             << wldName << "' for the mirror world."<<std::endl;
@@ -300,7 +300,7 @@ void GazeboTopicForwardingMirror::Init()
                           (new WorldStatMsgFilter(shared_from_this())),
                          verboseLevel>2));
   }
-  catch(std::bad_weak_ptr& e)
+  catch(std::bad_weak_ptr &e)
   {
     THROW_EXCEPTION("Can only initialize GazeboTopicForwarder \
                     if there is already a shared pointer for it");

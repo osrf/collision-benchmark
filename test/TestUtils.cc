@@ -32,7 +32,7 @@ void WaitForEnterImpl()
 }
 
 ////////////////////////////////////////////////////////////////
-void collision_benchmark::UpdateUntilEnter(GzWorldManager::Ptr& worlds)
+void collision_benchmark::UpdateUntilEnter(GzWorldManager::Ptr &worlds)
 {
   g_keypressed = false;
   std::thread * t = new std::thread(WaitForEnterImpl);
@@ -45,10 +45,10 @@ void collision_benchmark::UpdateUntilEnter(GzWorldManager::Ptr& worlds)
 }
 
 ////////////////////////////////////////////////////////////////
-bool collision_benchmark::GetConsistentAABB(const std::string& modelName,
-                                  const GzWorldManager::Ptr& worldManager,
+bool collision_benchmark::GetConsistentAABB(const std::string &modelName,
+                                  const GzWorldManager::Ptr &worldManager,
                                   const double bbTol,
-                                  GzAABB& mAABB)
+                                  GzAABB &mAABB)
 {
   std::vector<GzWorldManager::PhysicsWorldModelInterfacePtr>
     worlds = worldManager->GetModelPhysicsWorlds();
@@ -84,7 +84,7 @@ bool collision_benchmark::GetConsistentAABB(const std::string& modelName,
   GzAABB lastAABB;
   for (itAABB = aabbs.begin();  itAABB != aabbs.end(); ++itAABB)
   {
-    const GzAABB& aabb = *itAABB;
+    const GzAABB &aabb = *itAABB;
     if (itAABB != aabbs.begin())
     {
       if (!aabb.min.Equal(lastAABB.min, bbTol) ||
@@ -106,10 +106,10 @@ bool collision_benchmark::GetConsistentAABB(const std::string& modelName,
 
 ////////////////////////////////////////////////////////////////
 std::vector<collision_benchmark::GzContactInfoPtr>
-collision_benchmark::GetContactInfo(const std::string& modelName1,
-                                    const std::string& modelName2,
-                                    const std::string& worldName,
-                                    const GzWorldManager::Ptr& worldManager)
+collision_benchmark::GetContactInfo(const std::string &modelName1,
+                                    const std::string &modelName2,
+                                    const std::string &worldName,
+                                    const GzWorldManager::Ptr &worldManager)
 {
   std::vector<GzContactInfoPtr> ret;
 
@@ -124,12 +124,12 @@ collision_benchmark::GetContactInfo(const std::string& modelName1,
 
 
 ////////////////////////////////////////////////////////////////
-bool collision_benchmark::CollisionState(const std::string& modelName1,
-                                       const std::string& modelName2,
-                                       const GzWorldManager::Ptr& worldManager,
+bool collision_benchmark::CollisionState(const std::string &modelName1,
+                                       const std::string &modelName2,
+                                       const GzWorldManager::Ptr &worldManager,
                                        std::vector<std::string>& colliding,
                                        std::vector<std::string>& notColliding,
-                                       double& maxDepth)
+                                       double &maxDepth)
 {
   colliding.clear();
   notColliding.clear();

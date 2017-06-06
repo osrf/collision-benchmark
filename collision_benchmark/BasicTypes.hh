@@ -46,7 +46,7 @@ class Vector3
     x(o.x), y(o.y), z(o.z) {}
 
   public: friend std::ostream&
-          operator<<(std::ostream& _o, const Vector3& _v)
+          operator<<(std::ostream &_o, const Vector3& _v)
           {
             _o<<"["<<_v.x<<", "<<_v.y<<", "<<_v.z<<"]";
             return _o;
@@ -62,11 +62,11 @@ class Quaternion: public Vector3
   public: struct access;
   public: Quaternion(double _x=0, double _y=0, double _z=0, double _w=1):
           Vector3(_x,_y,_z), w(_w) {}
-  public: Quaternion(const Quaternion& o):
+  public: Quaternion(const Quaternion &o):
           Vector3(o), w(o.w) {}
 
   public: friend std::ostream&
-          operator<<(std::ostream& _o, const Quaternion& _q)
+          operator<<(std::ostream &_o, const Quaternion &_q)
           {
             _o<<"["<<_q.x<<", "<<_q.y<<", "<<_q.z<<", "<<_q.w<<"]";
             return _o;
@@ -95,7 +95,7 @@ class BasicState
     posEnabled(_position ? true : false),
     rotEnabled(_rotation ? true : false),
     scaleEnabled(_scale ? true : false) {}
-  public: BasicState(const BasicState& o):
+  public: BasicState(const BasicState &o):
     position(o.position),
     rotation(o.rotation),
     scale(o.scale),
@@ -133,7 +133,7 @@ class BasicState
           }
 
   public: friend std::ostream&
-          operator<<(std::ostream& _o, const BasicState& _s)
+          operator<<(std::ostream &_o, const BasicState &_s)
           {
             if (_s.posEnabled) _o<<"Position: "<<_s.position<<" ";
             if (_s.rotEnabled) _o<<"Rotation: "<<_s.rotation<<" ";

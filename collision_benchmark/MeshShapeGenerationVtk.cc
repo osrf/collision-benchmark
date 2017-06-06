@@ -90,14 +90,14 @@ void printTriangleSoup
   for (std::vector<collision_benchmark::vPoint>::const_iterator
        it = points.begin(); it != points.end(); ++it)
   {
-    const collision_benchmark::vPoint& p = *it;
+    const collision_benchmark::vPoint &p = *it;
     std::cout << "Point " << p.x << ", " << p.y << ", " << p.z << std::endl;
   }
 
   for (std::vector<collision_benchmark::vTriIdx>::const_iterator
        it = faces.begin(); it != faces.end(); ++it)
   {
-    const collision_benchmark::vTriIdx& f = *it;
+    const collision_benchmark::vTriIdx &f = *it;
     std::cout << "Face " << f.v1 << ", " << f.v2 << ", " << f.v3 << std::endl;
   }
 }

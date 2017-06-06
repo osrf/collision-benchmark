@@ -37,7 +37,7 @@ class GazeboWorldLoader: public WorldLoader
   // \param _engine the name of the physics engine
   // \param _alwaysCalcContacts constructor parameter for
   //        GazeboPhysicsWorld
-  public: GazeboWorldLoader(const std::string& _engine,
+  public: GazeboWorldLoader(const std::string &_engine,
                             const bool _alwaysCalcContacts = true);
 
   // Creates a universal loader that loads up the world specified in
@@ -47,16 +47,16 @@ class GazeboWorldLoader: public WorldLoader
   public: GazeboWorldLoader(const bool _alwaysCalcContacts = true);
 
   public: virtual PhysicsWorldBaseInterface::Ptr
-          LoadFromSDF(const sdf::ElementPtr& sdf,
-                      const std::string& worldname="") const;
+          LoadFromSDF(const sdf::ElementPtr &sdf,
+                      const std::string &worldname="") const;
 
   public: virtual PhysicsWorldBaseInterface::Ptr
-          LoadFromFile(const std::string& filename,
-                       const std::string& worldname="") const;
+          LoadFromFile(const std::string &filename,
+                       const std::string &worldname="") const;
 
   public: virtual PhysicsWorldBaseInterface::Ptr
-          LoadFromString(const std::string& str,
-                         const std::string& worldname="") const;
+          LoadFromString(const std::string &str,
+                         const std::string &worldname="") const;
 
   // physics setting in SDF format
   private: sdf::ElementPtr physics;
@@ -70,18 +70,18 @@ class GazeboWorldLoader: public WorldLoader
 /// and replaces the name with \e name (if not empty)
 /// The element name \e elemName must be at the root of the SDF.
 /// Only the first occurence is returned.
-sdf::ElementPtr GetSDFElementFromFile(const std::string& filename,
-                                      const std::string& elemName,
-                                      const std::string& name="");
+sdf::ElementPtr GetSDFElementFromFile(const std::string &filename,
+                                      const std::string &elemName,
+                                      const std::string &name="");
 
 /// returns the SDF root of the element with name \e elemName,
 /// reading it from an xml string \e xmlString,
 /// and replaces the name with \e name (if not empty)
 /// The element name \e elemName must be at the root of the SDF.
 /// Only the first occurence is returned.
-sdf::ElementPtr GetSDFElementFromString(const std::string& xmlString,
-                                        const std::string& elemName,
-                                        const std::string& name="");
+sdf::ElementPtr GetSDFElementFromString(const std::string &xmlString,
+                                        const std::string &elemName,
+                                        const std::string &name="");
 
 /// loads a world given a SDF element
 /// \param name if not empty string, then this name is used to override the
@@ -97,8 +97,8 @@ sdf::ElementPtr GetSDFElementFromString(const std::string& xmlString,
 ///   current world, physics::get_world();
 ///   See also gazebo::Server::Run(), and World::Step() where
 ///   this->sensorsInitialized() will otherwise return false
-gazebo::physics::WorldPtr LoadWorldFromSDF(const sdf::ElementPtr& sdfRoot,
-                                           const std::string& name="",
+gazebo::physics::WorldPtr LoadWorldFromSDF(const sdf::ElementPtr &sdfRoot,
+                                           const std::string &name="",
                                            const bool forceSensorsInit=true);
 
 /// loads a world from file
@@ -107,9 +107,9 @@ gazebo::physics::WorldPtr LoadWorldFromSDF(const sdf::ElementPtr& sdfRoot,
 /// \param overridePhysics if not NULL, this SDF is used to override the
 ///        physics in the SDF \e worldfile.
 gazebo::physics::WorldPtr
-LoadWorldFromFile(const std::string& worldfile,
-                  const std::string& name="",
-                  const sdf::ElementPtr& overridePhysics=sdf::ElementPtr());
+LoadWorldFromFile(const std::string &worldfile,
+                  const std::string &name="",
+                  const sdf::ElementPtr &overridePhysics=sdf::ElementPtr());
 
 /// loads a world from an SDF xml string
 /// \param name if not empty string, then this name is used to override
@@ -117,51 +117,51 @@ LoadWorldFromFile(const std::string& worldfile,
 /// \param overridePhys if not NULL, this SDF is used to override the
 ///        physics in the SDF \e worldfile.
 gazebo::physics::WorldPtr
-LoadWorldFromSDFString(const std::string& xmlString,
-                       const std::string& name="",
-                       const sdf::ElementPtr& overridePhys=sdf::ElementPtr());
+LoadWorldFromSDFString(const std::string &xmlString,
+                       const std::string &name="",
+                       const sdf::ElementPtr &overridePhys=sdf::ElementPtr());
 
 /// loads a model from an SDF element
 /// \param name if not empty string, then this name is used to override
 ///       the name in \e sdfRoot, which will change \e sdfRoot itself
 /// \param world the world into which the model is to be loaded
 gazebo::physics::ModelPtr
-LoadModelFromSDF(const sdf::ElementPtr& sdfRoot,
-                 const gazebo::physics::WorldPtr& world,
-                 const std::string& name);
+LoadModelFromSDF(const sdf::ElementPtr &sdfRoot,
+                 const gazebo::physics::WorldPtr &world,
+                 const std::string &name);
 
 /// loads a model from an SDF XML string
 /// \param name if not empty string, then this name is used to override the
 ///       name in \e sdfRoot, which will change \e sdfRoot itself
 /// \param world the world into which the model is to be loaded
 gazebo::physics::ModelPtr
-LoadModelFromSDFString(const std::string& sdfString,
-                       const gazebo::physics::WorldPtr& world,
-                       const std::string& name);
+LoadModelFromSDFString(const std::string &sdfString,
+                       const gazebo::physics::WorldPtr &world,
+                       const std::string &name);
 
 /// Like LoadWorldFromFile(), but does additional error checking and waiting
 /// for the namespace to be loaded
 gazebo::physics::WorldPtr
-LoadWorld(const std::string& worldfile,
-          const std::string& name="",
-          const sdf::ElementPtr& overridePhysics=sdf::ElementPtr());
+LoadWorld(const std::string &worldfile,
+          const std::string &name="",
+          const sdf::ElementPtr &overridePhysics=sdf::ElementPtr());
 
 /// Gets the ``<physics>`` element from the SDF given in \e filename.
 /// Must be under the root's ``<world>`` tag.
-sdf::ElementPtr GetPhysicsFromSDF(const std::string& filename);
+sdf::ElementPtr GetPhysicsFromSDF(const std::string &filename);
 
 class Worldfile
 {
-  public: Worldfile(const std::string& filename_,
-                    const std::string& worldname_):
+  public: Worldfile(const std::string &filename_,
+                    const std::string &worldname_):
             filename(filename_),
             worldname(worldname_) {}
 
-  public: Worldfile(const Worldfile& o):
+  public: Worldfile(const Worldfile &o):
             filename(o.filename),
             worldname(o.worldname) {}
 
-  public: friend bool operator<(const Worldfile& w1, const Worldfile& w2)
+  public: friend bool operator<(const Worldfile &w1, const Worldfile &w2)
           {
             return w1.filename < w2.filename ||
                    (w1.filename == w2.filename && w1.worldname < w2.worldname);

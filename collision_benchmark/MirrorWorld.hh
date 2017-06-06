@@ -62,7 +62,7 @@ class MirrorWorld
   public:  ~MirrorWorld(){}
 
   /// Sets the original world to be mirrored by this MirrorWorld
-  public:  void SetOriginalWorld(const OriginalWorldPtr& _originalWorld)
+  public:  void SetOriginalWorld(const OriginalWorldPtr &_originalWorld)
            {
              NotifyOriginalWorldChange(_originalWorld);
              // DEVELOPER MEMO for Gazebo implementation:

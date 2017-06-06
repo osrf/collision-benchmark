@@ -45,8 +45,8 @@ class GazeboMultipleWorldsServer:
                               GazeboPhysicsWorldTypes::Vector3,
                               GazeboPhysicsWorldTypes::Wrench> Super;
 
-  public: GazeboMultipleWorldsServer(const WorldLoader_M& _worldLoaders,
-                               const WorldLoader::ConstPtr& _universalLoader =
+  public: GazeboMultipleWorldsServer(const WorldLoader_M &_worldLoaders,
+                               const WorldLoader::ConstPtr &_universalLoader =
                                   nullptr):
           Super(_worldLoaders, _universalLoader),
           running(false) {}
@@ -55,7 +55,7 @@ class GazeboMultipleWorldsServer:
   public: virtual void Stop();
   public: virtual bool isRunning() const;
   protected: virtual WorldManagerPtr
-             createWorldManager(const std::string& mirror_name = "",
+             createWorldManager(const std::string &mirror_name = "",
                                 const bool allowMirrorControl = false);
   private: std::atomic<bool> running;
 };  // class GazeboMultipleWorldsServer

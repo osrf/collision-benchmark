@@ -30,8 +30,8 @@
 namespace collision_benchmark
 {
 
-std::string SetOrReplaceFileExtension(const std::string& in,
-                                      const std::string& ext)
+std::string SetOrReplaceFileExtension(const std::string &in,
+                                      const std::string &ext)
 {
   boost::filesystem::path p(in);
   boost::filesystem::path swapped = p.replace_extension(ext);
@@ -60,7 +60,7 @@ aiMaterial * GetDefaultMaterial()
 template<typename Float=float>
 aiScene *
 CreateTrimeshScene(const typename
-                   collision_benchmark::MeshData<Float, 3>::ConstPtr& meshData)
+                   collision_benchmark::MeshData<Float, 3>::ConstPtr &meshData)
 {
   // Create new aiScene (aiMesh)
   aiScene *assimpScene = new aiScene;
@@ -137,10 +137,10 @@ CreateTrimeshScene(const typename
  * \param meshData the mesh data to be written
  */
 template<typename Float=float>
-bool WriteTrimesh(const std::string& filename,
-                  const std::string& outformat,
+bool WriteTrimesh(const std::string &filename,
+                  const std::string &outformat,
                   const typename collision_benchmark::MeshData
-                                 <Float, 3>::ConstPtr& meshData)
+                                 <Float, 3>::ConstPtr &meshData)
 {
   aiScene * scene = CreateTrimeshScene(meshData);
   if (!scene)

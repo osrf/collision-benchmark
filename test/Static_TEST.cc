@@ -41,7 +41,7 @@ class StaticTestWithParam:
 
 //////////////////////////////////////////////////////////////////////////////
 // Helper to create a simple shape out of two triangles
-Shape::Ptr GetSimpleTestTriangle(const std::string& modelName)
+Shape::Ptr GetSimpleTestTriangle(const std::string &modelName)
 {
   std::string modelName1 = "model1";
   // create simple mesh for testing

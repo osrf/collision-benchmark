@@ -72,7 +72,7 @@ void GazeboMultipleWorldsServer::Stop()
 /////////////////////////////////////////////////////////////////////
 GazeboMultipleWorldsServer::WorldManagerPtr
 GazeboMultipleWorldsServer::createWorldManager
-    (const std::string& mirror_name,
+    (const std::string &mirror_name,
      const bool allowMirrorControl)
 {
   MirrorWorld::Ptr mirror;

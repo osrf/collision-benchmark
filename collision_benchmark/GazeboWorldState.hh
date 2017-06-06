@@ -27,8 +27,8 @@ namespace collision_benchmark
 /**
  * Sets the \e world to the state \e targetState
  */
-void SetWorldState(gazebo::physics::WorldPtr& world,
-                   const gazebo::physics::WorldState& targetState);
+void SetWorldState(gazebo::physics::WorldPtr &world,
+                   const gazebo::physics::WorldState &targetState);
 
 /**
  * Print the world state. Can be used for testing.

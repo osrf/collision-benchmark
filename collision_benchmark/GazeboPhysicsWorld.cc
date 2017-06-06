@@ -54,7 +54,7 @@ bool GazeboPhysicsWorld::SupportsSDF() const
 }
 
 bool GazeboPhysicsWorld::WaitForNamespace
-      (const gazebo::physics::WorldPtr& gzworld, float maxWait, float waitSleep)
+      (const gazebo::physics::WorldPtr &gzworld, float maxWait, float waitSleep)
 {
   std::string worldNamespace = gzworld->Name();
 
@@ -73,8 +73,8 @@ bool GazeboPhysicsWorld::WaitForNamespace
 
 
 collision_benchmark::OpResult
-GazeboPhysicsWorld::LoadFromSDF(const sdf::ElementPtr& sdf,
-                                const std::string& worldname)
+GazeboPhysicsWorld::LoadFromSDF(const sdf::ElementPtr &sdf,
+                                const std::string &worldname)
 {
   gazebo::physics::WorldPtr gzworld =
     collision_benchmark::LoadWorldFromSDF(sdf, worldname);
@@ -92,8 +92,8 @@ GazeboPhysicsWorld::LoadFromSDF(const sdf::ElementPtr& sdf,
 }
 
 collision_benchmark::OpResult
-GazeboPhysicsWorld::LoadFromFile(const std::string& filename,
-                                 const std::string& worldname)
+GazeboPhysicsWorld::LoadFromFile(const std::string &filename,
+                                 const std::string &worldname)
 {
   gazebo::physics::WorldPtr gzworld =
     collision_benchmark::LoadWorldFromFile(filename, worldname);
@@ -111,8 +111,8 @@ GazeboPhysicsWorld::LoadFromFile(const std::string& filename,
 }
 
 collision_benchmark::OpResult
-GazeboPhysicsWorld::LoadFromString(const std::string& str,
-                                   const std::string& worldname)
+GazeboPhysicsWorld::LoadFromString(const std::string &str,
+                                   const std::string &worldname)
 {
   gazebo::physics::WorldPtr gzworld =
     collision_benchmark::LoadWorldFromSDFString(str, worldname);
@@ -130,10 +130,10 @@ GazeboPhysicsWorld::LoadFromString(const std::string& str,
 
 }
 
-bool CopyAllResourcesHelper(const sdf::ElementPtr& elem,
+bool CopyAllResourcesHelper(const sdf::ElementPtr &elem,
                             const std::list<std::string>& parentElemNames,
-                            const std::string& destinationBase,
-                            const std::string& destinationSubdir)
+                            const std::string &destinationBase,
+                            const std::string &destinationSubdir)
 {
   if (!elem) return false;
   for (std::list<std::string>::const_iterator it = parentElemNames.begin();
@@ -232,10 +232,10 @@ bool CopyAllResourcesHelper(const sdf::ElementPtr& elem,
   return true;
 }
 
-bool GazeboPhysicsWorld::CopyAllModelResources(const sdf::ElementPtr& elem,
+bool GazeboPhysicsWorld::CopyAllModelResources(const sdf::ElementPtr &elem,
                                 const std::list<std::string>& parentElemNames,
-                                const std::string& destinationBase,
-                                const std::string& destinationSubdir)
+                                const std::string &destinationBase,
+                                const std::string &destinationSubdir)
 {
   // replace the resources for all models...
   for (sdf::ElementPtr modelElem = elem->GetElement("model"); modelElem;
@@ -266,9 +266,9 @@ bool GazeboPhysicsWorld::CopyAllModelResources(const sdf::ElementPtr& elem,
   return true;
 }
 
-bool GazeboPhysicsWorld::SaveToFile(const std::string& filename,
-                                    const std::string& resourceDir,
-                                    const std::string& resourceSubdir)
+bool GazeboPhysicsWorld::SaveToFile(const std::string &filename,
+                                    const std::string &resourceDir,
+                                    const std::string &resourceSubdir)
 {
   if (!world) return false;
 
@@ -325,8 +325,8 @@ bool GazeboPhysicsWorld::SaveToFile(const std::string& filename,
 }
 
 GazeboPhysicsWorld::ModelLoadResult
-GazeboPhysicsWorld::AddModelFromFile(const std::string& filename,
-                                     const std::string& modelname)
+GazeboPhysicsWorld::AddModelFromFile(const std::string &filename,
+                                     const std::string &modelname)
 {
   sdf::ElementPtr sdfRoot =
     collision_benchmark::GetSDFElementFromFile(filename, "model", modelname);
@@ -343,8 +343,8 @@ GazeboPhysicsWorld::AddModelFromFile(const std::string& filename,
 }
 
 GazeboPhysicsWorld::ModelLoadResult
-GazeboPhysicsWorld::AddModelFromString(const std::string& str,
-                                       const std::string& modelname)
+GazeboPhysicsWorld::AddModelFromString(const std::string &str,
+                                       const std::string &modelname)
 {
   ModelLoadResult ret;
   ret.opResult=FAILED;
@@ -379,8 +379,8 @@ GazeboPhysicsWorld::AddModelFromString(const std::string& str,
 }
 
 GazeboPhysicsWorld::ModelLoadResult
-GazeboPhysicsWorld::AddModelFromSDF(const sdf::ElementPtr& sdf,
-                                    const std::string& modelname)
+GazeboPhysicsWorld::AddModelFromSDF(const sdf::ElementPtr &sdf,
+                                    const std::string &modelname)
 {
   gazebo::physics::ModelPtr model =
     collision_benchmark::LoadModelFromSDF(sdf, world, modelname);
@@ -401,7 +401,7 @@ bool GazeboPhysicsWorld::SupportsShapes() const
 }
 
 std::string
-GazeboPhysicsWorld::GetMeshOutputPath(std::string& outputSubdir) const
+GazeboPhysicsWorld::GetMeshOutputPath(std::string &outputSubdir) const
 {
   std::string outputPath =
     (boost::filesystem::path(gazebo::common::SystemPaths::Instance()->TmpPath())
@@ -413,9 +413,9 @@ GazeboPhysicsWorld::GetMeshOutputPath(std::string& outputSubdir) const
 
 
 GazeboPhysicsWorld::ModelLoadResult
-GazeboPhysicsWorld::AddModelFromShape(const std::string& modelname,
-                                      const Shape::Ptr& shape,
-                                      const Shape::Ptr& collShape)
+GazeboPhysicsWorld::AddModelFromShape(const std::string &modelname,
+                                      const Shape::Ptr &shape,
+                                      const Shape::Ptr &collShape)
 {
   ModelLoadResult ret;
   ret.opResult=FAILED;
@@ -506,14 +506,14 @@ GazeboPhysicsWorld::GetAllModelIDs() const
   return names;
 }
 
-int GazeboPhysicsWorld::GetIntegerModelID(const ModelID& id) const
+int GazeboPhysicsWorld::GetIntegerModelID(const ModelID &id) const
 {
   gazebo::physics::ModelPtr m=world->ModelByName(id);
   if (!m) return -1;
   return m->GetId();
 }
 
-bool GazeboPhysicsWorld::RemoveModel(const ModelID& id)
+bool GazeboPhysicsWorld::RemoveModel(const ModelID &id)
 {
   gazebo::physics::ModelPtr m=world->ModelByName(id);
   if (!m) return false;
@@ -533,7 +533,7 @@ GazeboPhysicsWorld::WorldState GazeboPhysicsWorld::GetWorldState() const
 }
 
 GazeboPhysicsWorld::WorldState
-GazeboPhysicsWorld::GetWorldStateDiff(const WorldState& other) const
+GazeboPhysicsWorld::GetWorldStateDiff(const WorldState &other) const
 {
   gazebo::physics::WorldState diffState = other - GetWorldState();
   // std::cout << "Diff state: " << std::endl << diffState << std::endl;
@@ -541,7 +541,7 @@ GazeboPhysicsWorld::GetWorldStateDiff(const WorldState& other) const
 }
 
 collision_benchmark::OpResult
-GazeboPhysicsWorld::SetWorldState(const WorldState& state, bool isDiff)
+GazeboPhysicsWorld::SetWorldState(const WorldState &state, bool isDiff)
 {
   collision_benchmark::SetWorldState(world, state);
 
@@ -701,7 +701,7 @@ bool GazeboPhysicsWorld::SupportsContacts() const
 // all models (m1 and m2 set to NULL), or for one model
 // (m1=NULL and m2=NULL) or for two models (m1!=NULL and m2!=NULL).
 std::vector<GazeboPhysicsWorld::ContactInfoPtr>
-GetContactInfoHelper(const gazebo::physics::WorldPtr& world,
+GetContactInfoHelper(const gazebo::physics::WorldPtr &world,
                      const GazeboPhysicsWorld::ModelID * m1=NULL,
                      const GazeboPhysicsWorld::ModelID * m2=NULL)
 {
@@ -805,7 +805,7 @@ void null_deleter(Type *){}
 // all models (m1 and m2 set to NULL), or for one model
 // (m1=NULL and m2=NULL) or for two models (m1!=NULL and m2!=NULL).
 std::vector<GazeboPhysicsWorld::NativeContactPtr>
-GetNativeContactsHelper(const gazebo::physics::WorldPtr& world,
+GetNativeContactsHelper(const gazebo::physics::WorldPtr &world,
                         const GazeboPhysicsWorld::ModelID * m1=NULL,
                         const GazeboPhysicsWorld::ModelID * m2=NULL)
 {
@@ -864,7 +864,7 @@ GazeboPhysicsWorld::GetContactInfo() const
 }
 
 std::vector<GazeboPhysicsWorld::ContactInfoPtr>
-GazeboPhysicsWorld::GetContactInfo(const ModelID& m1, const ModelID& m2) const
+GazeboPhysicsWorld::GetContactInfo(const ModelID &m1, const ModelID &m2) const
 {
   return GetContactInfoHelper(world, &m1, &m2);
 }
@@ -876,8 +876,8 @@ GazeboPhysicsWorld::GetNativeContacts() const
 }
 
 std::vector<GazeboPhysicsWorld::NativeContactPtr>
-GazeboPhysicsWorld::GetNativeContacts(const ModelID& m1,
-                                      const ModelID& m2) const
+GazeboPhysicsWorld::GetNativeContacts(const ModelID &m1,
+                                      const ModelID &m2) const
 {
   return GetNativeContactsHelper(world, &m1, &m2);
 }
@@ -920,7 +920,7 @@ void GazeboPhysicsWorld::SetEnforceContactsComputation(bool flag)
 }
 
 collision_benchmark::RefResult
-GazeboPhysicsWorld::SetWorld(const WorldPtr& _world)
+GazeboPhysicsWorld::SetWorld(const WorldPtr &_world)
 {
   world = collision_benchmark::to_boost_ptr<World>(_world);
   SetEnforceContactsComputation(enforceContactComputation);
@@ -934,16 +934,16 @@ GazeboPhysicsWorld::WorldPtr GazeboPhysicsWorld::GetWorld() const
 }
 
 GazeboPhysicsWorld::ModelPtr
-GazeboPhysicsWorld::GetModel(const ModelID& model) const
+GazeboPhysicsWorld::GetModel(const ModelID &model) const
 {
   gazebo::physics::ModelPtr m=world->ModelByName(model);
   return collision_benchmark::to_std_ptr<gazebo::physics::Model>(m);
 }
 
 
-bool GazeboPhysicsWorld::GetAABB(const ModelID& id,
+bool GazeboPhysicsWorld::GetAABB(const ModelID &id,
                                  Vector3& min, Vector3& max,
-                                 bool& inLocalFrame) const
+                                 bool &inLocalFrame) const
 {
   gazebo::physics::ModelPtr m=world->ModelByName(id);
   if (!m) return false;

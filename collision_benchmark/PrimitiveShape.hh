@@ -43,12 +43,12 @@ class PrimitiveShape: public Shape
   public: typedef std::shared_ptr<PrimitiveShape> Ptr;
   public: typedef std::shared_ptr<const PrimitiveShape> ConstPtr;
 
-  private: PrimitiveShape(const Type& type,
-                          const PrimitiveShapeParameters::Ptr& params_):
+  private: PrimitiveShape(const Type &type,
+                          const PrimitiveShapeParameters::Ptr &params_):
             Shape(type),
             params(params_) {}
 
-  public: PrimitiveShape(const PrimitiveShape& o):
+  public: PrimitiveShape(const PrimitiveShape &o):
             Shape(o),
             params(o.params) {}
 
@@ -84,8 +84,8 @@ class PrimitiveShape: public Shape
   // Documentation inherited from parent class
   public: virtual sdf::ElementPtr
                   GetShapeSDF(bool detailed=true,
-                              const std::string& resourceDir = "/tmp/",
-                              const std::string& resourceSubDir = "",
+                              const std::string &resourceDir = "/tmp/",
+                              const std::string &resourceSubDir = "",
                               const bool useFullPath = false) const;
 
   private: PrimitiveShapeParameters::Ptr params;

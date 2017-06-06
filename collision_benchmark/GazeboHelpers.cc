@@ -7,7 +7,7 @@
 #include <tinyxml.h>
 
 /////////////////////////////////////////////////
-void collision_benchmark::ClearModels(gazebo::physics::WorldPtr& world)
+void collision_benchmark::ClearModels(gazebo::physics::WorldPtr &world)
 {
   bool pauseState = world->IsPaused();
   world->SetPaused(true);
@@ -56,7 +56,7 @@ std::set<std::string> collision_benchmark::GetSupportedPhysicsEngines()
 }
 
 /////////////////////////////////////////////////
-std::string collision_benchmark::getPhysicsSettingsSdfFor(const std::string& e)
+std::string collision_benchmark::getPhysicsSettingsSdfFor(const std::string &e)
 {
   if (e=="bullet")
     return "physics_settings/bullet_default.sdf";
@@ -108,7 +108,7 @@ collision_benchmark::getPhysicsSettingsSdfForAllEngines()
 
 
 /////////////////////////////////////////////////
-int collision_benchmark::isProperSDFFile(const std::string& filename,
+int collision_benchmark::isProperSDFFile(const std::string &filename,
                                          std::string * version)
 {
   TiXmlDocument xmlDoc;
@@ -142,7 +142,7 @@ int collision_benchmark::isProperSDFFile(const std::string& filename,
 }
 
 /////////////////////////////////////////////////
-int collision_benchmark::isProperSDFString(const std::string& string,
+int collision_benchmark::isProperSDFString(const std::string &string,
                                            std::string * version)
 {
   TiXmlDocument xmlDoc;
@@ -175,7 +175,7 @@ int collision_benchmark::isProperSDFString(const std::string& string,
 }
 
 
-void collision_benchmark::wrapSDF(std::string& sdf)
+void collision_benchmark::wrapSDF(std::string &sdf)
 {
   std::stringstream mod;
   mod << "<sdf version='1.6'>" << sdf << "</sdf>";

@@ -52,7 +52,7 @@ collision_benchmark::Conv(const ignition::math::Quaternion<Float>& v)
 //////////////////////////////////////////////////////////////////////////////
 template<typename Float>
 ignition::math::Quaternion<Float>
-collision_benchmark::ConvIgn(const collision_benchmark::Quaternion& v)
+collision_benchmark::ConvIgn(const collision_benchmark::Quaternion &v)
 {
   return ignition::math::Quaternion<Float>(v.w, v.x, v.y, v.z);
 }
@@ -70,7 +70,7 @@ collision_benchmark::ConvIgn(const ignition::math::Quaternion<Float>& q)
 template<typename Float>
 ignition::math::Matrix4<Float>
 collision_benchmark::GetMatrix(const collision_benchmark::Vector3& p,
-                                       const collision_benchmark::Quaternion& q)
+                                       const collision_benchmark::Quaternion &q)
 {
   ignition::math::Vector3<Float> pos(ConvIgn<Float>(p));
   ignition::math::Quaternion<Float> quat(ConvIgn<Float>(q));
@@ -96,15 +96,15 @@ collision_benchmark::GetMatrix(const ignition::math::Vector3<Float>& pos,
 template<typename Float1, typename Float2>
 bool
 collision_benchmark::EqualFloats(const Float1& f1, const Float2& f2,
-                                 const double& t)
+                                 const double &t)
 {
   return fabs(f1-f2) < t;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 bool
-collision_benchmark::EqualVectors(const ignition::math::Vector3d& v1,
-                  const ignition::math::Vector3d& v2, const double& t)
+collision_benchmark::EqualVectors(const ignition::math::Vector3d &v1,
+                  const ignition::math::Vector3d &v2, const double &t)
 {
   return EqualFloats(v1.X(),v2.X(),t)
       && EqualFloats(v1.Y(),v2.Y(),t)
@@ -115,7 +115,7 @@ collision_benchmark::EqualVectors(const ignition::math::Vector3d& v1,
 template<typename Float>
 bool
 collision_benchmark::EqualVectors(const ignition::math::Vector3<Float>& v1,
-                  const ignition::math::Vector3<Float>& v2, const double& t)
+                  const ignition::math::Vector3<Float>& v2, const double &t)
 {
   return EqualFloats(v1.X(),v2.X(),t)
       && EqualFloats(v1.Y(),v2.Y(),t)

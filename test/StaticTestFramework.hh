@@ -57,7 +57,7 @@ protected:
   //
   // Throws gtest assertions so needs to be called from top-level
   // test function (nested function calls will not work correctly)
-  void InitOneEngine(const std::string& engine,
+  void InitOneEngine(const std::string &engine,
                      const unsigned int numWorlds);
 
 
@@ -69,7 +69,7 @@ protected:
   //
   // Throws gtest assertions so needs to be called from top-level
   // test function (nested function calls will not work correctly)
-  void LoadOneEngine(const std::string& engine,
+  void LoadOneEngine(const std::string &engine,
                      const unsigned int numWorlds);
 
   // \brief Loads a shape into *all* worlds.
@@ -78,8 +78,8 @@ protected:
   //
   // Throws gtest assertions so needs to be called from top-level
   // test function (nested function calls will not work correctly)
-  void LoadShape(const collision_benchmark::Shape::Ptr& shape,
-                 const std::string& modelName);
+  void LoadShape(const collision_benchmark::Shape::Ptr &shape,
+                 const std::string &modelName);
 
 
   // \brief Loads a shape into the worlds at the given index \e worldIdx.
@@ -88,8 +88,8 @@ protected:
   //
   // Throws gtest assertions so needs to be called from top-level
   // test function (nested function calls will not work correctly)
-  void LoadShape(const collision_benchmark::Shape::Ptr& shape,
-                 const std::string& modelName,
+  void LoadShape(const collision_benchmark::Shape::Ptr &shape,
+                 const std::string &modelName,
                  const unsigned int worldIdx);
 
   // Two models, which must already have been loaded, are moved relative to
@@ -130,15 +130,15 @@ protected:
   // \param outputSubdir subdirectory of \e outputBasePath where the result
   //    files will be written to. Resource references use this relative path.
   //    If \e outputBasePath is emtpy, this parameter will have no effect.
-  void AABBTestWorldsAgreement(const std::string& modelName1,
-                const std::string& modelName2,
+  void AABBTestWorldsAgreement(const std::string &modelName1,
+                const std::string &modelName2,
                 const float cellSizeFactor = 0.1,
                 const double minAgree = 0.999,
                 const double bbTol = 5e-02,
                 const double zeroDepthTol = 5e-02,
                 const bool interactive = false,
-                const std::string& outputBasePath = "",
-                const std::string& outputSubdir = "");
+                const std::string &outputBasePath = "",
+                const std::string &outputSubdir = "");
 
 private:
 
@@ -147,11 +147,11 @@ private:
   // \param bbTol tolerance for comparison of bounding box sizes. The min/max
   //    coordinates (per x,y,z) are allowed to vary by this much in the worlds.
   // \return true if worlds are consistent, falsle otherwise
-  bool GetAABBs(const std::string& modelName1,
-                const std::string& modelName2,
+  bool GetAABBs(const std::string &modelName1,
+                const std::string &modelName2,
                 const double bbTol,
-                collision_benchmark::GzAABB& m1,
-                collision_benchmark::GzAABB& m2);
+                collision_benchmark::GzAABB &m1,
+                collision_benchmark::GzAABB &m2);
 
 };
 

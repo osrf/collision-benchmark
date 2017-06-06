@@ -26,14 +26,14 @@ class Contact
   public: Contact(){}
   public: Contact(const Vector3& position_,
                   const Vector3& normal_,
-                  const Wrench& wrench_,
+                  const Wrench &wrench_,
                   const double depth_):
         position(position_),
         normal(normal_),
         wrench(wrench_),
         depth(depth_) {}
 
-  public: Contact(const Contact& c):
+  public: Contact(const Contact &c):
         position(c.position),
         normal(c.normal),
         wrench(c.wrench),
@@ -41,7 +41,7 @@ class Contact
 
   public: virtual ~Contact() {}
 
-  public: friend std::ostream& operator<<(std::ostream& o, const Self& c)
+  public: friend std::ostream &operator<<(std::ostream &o, const Self &c)
   {
     o << "{";
     // o <<"Position: " << c.position << " ";
@@ -100,10 +100,10 @@ class ContactInfo
   /// constructor which automatically swaps model1 and model2
   /// if necessary according to their lexicographicall order
   /// (model1 before model2)
-  public: ContactInfo(const ModelID& model1_,
-                      const ModelPartID& modelPart1_,
-                      const ModelID& model2_,
-                      const ModelPartID& modelPart2_)
+  public: ContactInfo(const ModelID &model1_,
+                      const ModelPartID &modelPart1_,
+                      const ModelID &model2_,
+                      const ModelPartID &modelPart2_)
   {
     if (model1_ < model2_)
     {
@@ -120,7 +120,7 @@ class ContactInfo
       modelPart2 =  modelPart1_;
     }
   }
-  public: ContactInfo(const ContactInfo& c):
+  public: ContactInfo(const ContactInfo &c):
         contacts(c.contacts),
         model1(c.model1),
         modelPart1(c.modelPart1),
@@ -133,34 +133,34 @@ class ContactInfo
 
   // returns minimum depth amongst all contacts in \e min.
   // \return false if contacts are empty
-  public: bool minDepth(double& min) const
+  public: bool minDepth(double &min) const
   {
     if (contacts.empty()) return false;
     min=std::numeric_limits<double>::max();
     for (typename std::vector<Contact>::const_iterator
          cit = contacts.begin(); cit != contacts.end(); ++cit)
     {
-      const Contact& c = *cit;
+      const Contact &c = *cit;
       if (c.depth < min) min = c.depth;
     }
     return true;
   }
   // returns maximum depth amongst all contacts in \e max.
   // \return false if contacts are empty
-  public: bool maxDepth(double& max) const
+  public: bool maxDepth(double &max) const
   {
     if (contacts.empty()) return false;
     max=std::numeric_limits<double>::min();
     for (typename std::vector<Contact>::const_iterator
          cit = contacts.begin(); cit != contacts.end(); ++cit)
     {
-      const Contact& c = *cit;
+      const Contact &c = *cit;
       if (c.depth > max) max = c.depth;
     }
     return true;
   }
 
-  public: friend std::ostream& operator<<(std::ostream& o, const Self& c)
+  public: friend std::ostream &operator<<(std::ostream &o, const Self &c)
   {
     o << "(Model1: "<<c.model1<<"/"<<c.modelPart1<<". Model2: "
       << c.model2<<"/"<<c.modelPart2;

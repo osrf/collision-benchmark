@@ -24,8 +24,8 @@ const std::string SimpleTriMeshShape::MESH_EXT="stl";
 
 sdf::ElementPtr
 SimpleTriMeshShape::GetShapeSDF(bool detailed,
-                                const std::string& resourceDir,
-                                const std::string& resourceSubDir,
+                                const std::string &resourceDir,
+                                const std::string &resourceSubDir,
                                 const bool useFullPath) const
 {
   if (resourceDir.empty() && resourceSubDir.empty())

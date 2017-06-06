@@ -342,7 +342,7 @@ void GazeboControlServer::OnFactory
   NotifySdfModelLoad(sdf, isString, state);
 }
 
-void GazeboControlServer::SendWorldName(const std::string& name)
+void GazeboControlServer::SendWorldName(const std::string &name)
 {
   gazebo::msgs::Any m;
   m.set_type(gazebo::msgs::Any::STRING);

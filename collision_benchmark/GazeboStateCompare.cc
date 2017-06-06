@@ -23,8 +23,8 @@ const GazeboStateCompare::Tolerances GazeboStateCompare::Tolerances::Default
         = GazeboStateCompare::Tolerances::CreateDefault();
 
 
-bool GazeboStateCompare::Equal(const WorldState& s1, const WorldState& s2,
-                               const Tolerances& tolerances,
+bool GazeboStateCompare::Equal(const WorldState &s1, const WorldState &s2,
+                               const Tolerances &tolerances,
                                const bool checkLights)
 {
   if (s1.Insertions().size()!=s2.Insertions().size() ||
@@ -165,9 +165,9 @@ bool GazeboStateCompare::Equal(const WorldState& s1, const WorldState& s2,
   return true;
 }
 
-bool GazeboStateCompare::Equal(const gazebo::physics::ModelState& s1,
-                               const gazebo::physics::ModelState& s2,
-                               const Tolerances& tolerances)
+bool GazeboStateCompare::Equal(const gazebo::physics::ModelState &s1,
+                               const gazebo::physics::ModelState &s2,
+                               const Tolerances &tolerances)
 {
   if (s1.GetName() != s2.GetName())
   {
@@ -311,9 +311,9 @@ bool GazeboStateCompare::Equal(const gazebo::physics::ModelState& s1,
   return true;
 }
 
-bool GazeboStateCompare::Equal(const gazebo::physics::LightState& s1,
-                               const gazebo::physics::LightState& s2,
-                               const Tolerances& tolerances)
+bool GazeboStateCompare::Equal(const gazebo::physics::LightState &s1,
+                               const gazebo::physics::LightState &s2,
+                               const Tolerances &tolerances)
 {
   ignition::math::Vector3d q1(s1.Pose().Rot().Euler());
   ignition::math::Vector3d q2(s2.Pose().Rot().Euler());
@@ -322,9 +322,9 @@ bool GazeboStateCompare::Equal(const gazebo::physics::LightState& s1,
          EqualVectors(q1, q2, tolerances.Orientation);
 }
 
-bool GazeboStateCompare::Equal(const gazebo::physics::LinkState& s1,
-                               const gazebo::physics::LinkState& s2,
-                               const Tolerances& tolerances)
+bool GazeboStateCompare::Equal(const gazebo::physics::LinkState &s1,
+                               const gazebo::physics::LinkState &s2,
+                               const Tolerances &tolerances)
 {
   if (s1.GetName() != s2.GetName())
   {
@@ -406,8 +406,8 @@ bool GazeboStateCompare::Equal(const gazebo::physics::LinkState& s1,
        iter2 != s2.GetCollisionStates().end();
        ++iter1, ++iter2)
   {
-    const CollisionState& c1=*iter1;
-    const CollisionState& c2=*iter2;
+    const CollisionState &c1=*iter1;
+    const CollisionState &c2=*iter2;
     if (c1.GetName() != c2.GetName())
     {
 #ifdef DEBUG
@@ -430,9 +430,9 @@ bool GazeboStateCompare::Equal(const gazebo::physics::LinkState& s1,
   return true;
 }
 
-bool GazeboStateCompare::Equal(const gazebo::physics::JointState& s1,
-                               const gazebo::physics::JointState& s2,
-                               const Tolerances& tolerances)
+bool GazeboStateCompare::Equal(const gazebo::physics::JointState &s1,
+                               const gazebo::physics::JointState &s2,
+                               const Tolerances &tolerances)
 {
   if (s1.GetName() != s2.GetName())
   {
@@ -464,10 +464,10 @@ bool GazeboStateCompare::Equal(const gazebo::physics::JointState& s1,
   return true;
 }
 
-bool GazeboStateCompare::Equal(const ignition::math::Pose3d& p1,
-                               const ignition::math::Pose3d& p2,
-                               const double& positionTolerance,
-                               const double& orientationTolerance)
+bool GazeboStateCompare::Equal(const ignition::math::Pose3d &p1,
+                               const ignition::math::Pose3d &p2,
+                               const double &positionTolerance,
+                               const double &orientationTolerance)
 {
   ignition::math::Vector3d q1(p1.Rot().Euler());
   ignition::math::Vector3d q2(p2.Rot().Euler());

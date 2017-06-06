@@ -69,8 +69,8 @@ class MultipleWorldsServer
   // \param _universalLoader a loader which will automatically choose the
   //    engine to load from the world file given upon loading. nullptr if
   //    no such loader specified.
-  public: MultipleWorldsServer(const WorldLoader_M& _worldLoaders,
-                               const WorldLoader::ConstPtr& _universalLoader =
+  public: MultipleWorldsServer(const WorldLoader_M &_worldLoaders,
+                               const WorldLoader::ConstPtr &_universalLoader =
                                      nullptr):
           worldLoaders(_worldLoaders),
           universalLoader(_universalLoader) {}
@@ -90,7 +90,7 @@ class MultipleWorldsServer
   // \param allowMirrorControl if true, the mirror world will be allowed to
   //        serve as control world to control all underlying worlds, while
   //        it is mirroring one at a time.
-  public: void Init(const std::string& mirror_name = "mirror",
+  public: void Init(const std::string &mirror_name = "mirror",
                    const bool allowMirrorControl = false)
   {
     worldManager = createWorldManager(mirror_name, allowMirrorControl);
@@ -112,9 +112,9 @@ class MultipleWorldsServer
   //  using this prefix to the name. This is required because multiple
   //  worlds loaded from the same world file cannot have the same name.
   // \return number of engines which were successfully loaded
-  public: int Load(const std::string& worldfile,
+  public: int Load(const std::string &worldfile,
                    const std::vector<std::string>& engines,
-                   const std::string& namePrefix = "world")
+                   const std::string &namePrefix = "world")
   {
     assert(worldManager);
     assert(!namePrefix.empty());
@@ -149,9 +149,9 @@ class MultipleWorldsServer
   // \retval -1 no world loader exists for this engine
   // \retval -2 world with this engine name cannot be loaded
   // \retval -3 world with this name already exists
-  public: int Load(const std::string& worldfile,
-                   const std::string& engine,
-                   const std::string& worldname = "")
+  public: int Load(const std::string &worldfile,
+                   const std::string &engine,
+                   const std::string &worldname = "")
   {
     assert(worldManager);
     WorldLoader_M::iterator wlIt = worldLoaders.find(engine);
@@ -187,8 +187,8 @@ class MultipleWorldsServer
   //    engine from the file
   // \retval -2 if the loader failed to the world
   // \retval -3 world with this name already exists
-  public: int AutoLoad(const std::string& worldfile,
-                   const std::string& worldname = "")
+  public: int AutoLoad(const std::string &worldfile,
+                   const std::string &worldname = "")
   {
     assert(worldManager);
     if (!universalLoader) return -1;
@@ -214,7 +214,7 @@ class MultipleWorldsServer
   //        serve as control world to control all underlying worlds, while
   //        it is mirroring one at a time.
   protected: virtual WorldManagerPtr
-             createWorldManager(const std::string& mirror_name = "",
+             createWorldManager(const std::string &mirror_name = "",
                                 const bool allowMirrorControl = false) = 0;
 
   // world loaders for all the physics engines.

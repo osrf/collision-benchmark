@@ -63,7 +63,7 @@ void StaticTestFramework::InitMultipleEngines
 }
 
 ////////////////////////////////////////////////////////////////
-void StaticTestFramework::InitOneEngine(const std::string& engine,
+void StaticTestFramework::InitOneEngine(const std::string &engine,
                                         const unsigned int numWorlds)
 {
   Init();
@@ -80,7 +80,7 @@ void StaticTestFramework::InitOneEngine(const std::string& engine,
 }
 
 ////////////////////////////////////////////////////////////////
-void StaticTestFramework::LoadOneEngine(const std::string& engine,
+void StaticTestFramework::LoadOneEngine(const std::string &engine,
                                         const unsigned int numWorlds)
 {
   GzMultipleWorldsServer::Ptr mServer = GetServer();
@@ -107,8 +107,8 @@ void StaticTestFramework::LoadOneEngine(const std::string& engine,
 
 
 ////////////////////////////////////////////////////////////////
-void StaticTestFramework::LoadShape(const Shape::Ptr& shape,
-                                    const std::string& modelName)
+void StaticTestFramework::LoadShape(const Shape::Ptr &shape,
+                                    const std::string &modelName)
 {
   GzMultipleWorldsServer::Ptr mServer = GetServer();
   ASSERT_NE(mServer.get(), nullptr) << "Could not create and start server";
@@ -127,7 +127,7 @@ void StaticTestFramework::LoadShape(const Shape::Ptr& shape,
   for (std::vector<ModelLoadResult>::iterator it = res.begin();
        it != res.end(); ++it)
   {
-    const ModelLoadResult& mlRes=*it;
+    const ModelLoadResult &mlRes=*it;
     ASSERT_EQ(mlRes.opResult, collision_benchmark::SUCCESS)
       << "Could not load model";
     ASSERT_EQ(mlRes.modelID, modelName)
@@ -136,8 +136,8 @@ void StaticTestFramework::LoadShape(const Shape::Ptr& shape,
 }
 
 ////////////////////////////////////////////////////////////////
-void StaticTestFramework::LoadShape(const Shape::Ptr& shape,
-                                    const std::string& modelName,
+void StaticTestFramework::LoadShape(const Shape::Ptr &shape,
+                                    const std::string &modelName,
                                     const unsigned int worldIdx)
 {
   GzMultipleWorldsServer::Ptr mServer = GetServer();
@@ -170,11 +170,11 @@ void StaticTestFramework::LoadShape(const Shape::Ptr& shape,
 
 
 ////////////////////////////////////////////////////////////////
-bool StaticTestFramework::GetAABBs(const std::string& modelName1,
-                                   const std::string& modelName2,
+bool StaticTestFramework::GetAABBs(const std::string &modelName1,
+                                   const std::string &modelName2,
                                    const double bbTol,
-                                   collision_benchmark::GzAABB& m1,
-                                   collision_benchmark::GzAABB& m2)
+                                   collision_benchmark::GzAABB &m1,
+                                   collision_benchmark::GzAABB &m2)
 {
   GzMultipleWorldsServer::Ptr mServer = GetServer();
   if (!mServer) return false;
@@ -190,15 +190,15 @@ bool StaticTestFramework::GetAABBs(const std::string& modelName1,
 
 
 ////////////////////////////////////////////////////////////////
-void StaticTestFramework::AABBTestWorldsAgreement(const std::string& modelName1,
-                                   const std::string& modelName2,
+void StaticTestFramework::AABBTestWorldsAgreement(const std::string &modelName1,
+                                   const std::string &modelName2,
                                    const float cellSizeFactor,
                                    const double minAgree,
                                    const double bbTol,
                                    const double zeroDepthTol,
                                    const bool interactive,
-                                   const std::string& outputBasePath,
-                                   const std::string& outputSubdir)
+                                   const std::string &outputBasePath,
+                                   const std::string &outputSubdir)
 {
   ASSERT_GT(cellSizeFactor, 1e-07) << "Cell size factor too small";
 

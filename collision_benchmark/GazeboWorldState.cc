@@ -31,12 +31,12 @@
  * \param models new models added in \e state2
  * \param models new lights added in \e state2
  */
-void GetNewEntities(const gazebo::physics::WorldState& _state1,
-          const gazebo::physics::WorldState& _state2,
+void GetNewEntities(const gazebo::physics::WorldState &_state1,
+          const gazebo::physics::WorldState &_state2,
           std::vector<gazebo::physics::ModelState>& models,
           std::vector<gazebo::physics::LightState>& lights)
 {
-  const gazebo::physics::ModelState_M& _modelStates1 = _state1.GetModelStates();
+  const gazebo::physics::ModelState_M &_modelStates1 = _state1.GetModelStates();
   for (gazebo::physics::ModelState_M::const_iterator iter =
         _modelStates1.begin(); iter != _modelStates1.end(); ++iter)
   {
@@ -46,7 +46,7 @@ void GetNewEntities(const gazebo::physics::WorldState& _state1,
     }
   }
 
-  const gazebo::physics::LightState_M& _lightStates1 = _state1.LightStates();
+  const gazebo::physics::LightState_M &_lightStates1 = _state1.LightStates();
   for (const auto & light : _lightStates1)
   {
     if (!_state2.HasLightState(light.second.GetName()))
@@ -56,8 +56,8 @@ void GetNewEntities(const gazebo::physics::WorldState& _state1,
   }
 }
 
-/*void collision_benchmark::AddDiffWorldState(gazebo::physics::WorldPtr& world,
-                                  const gazebo::physics::WorldState& diffState)
+/*void collision_benchmark::AddDiffWorldState(gazebo::physics::WorldPtr &world,
+                                  const gazebo::physics::WorldState &diffState)
 {
   bool pauseState = world->IsPaused();
   world->SetPaused(true);
@@ -73,8 +73,8 @@ void GetNewEntities(const gazebo::physics::WorldState& _state1,
 // XXX TODO REMOVE: Flags for testing
 #define FORCE_TARGET_TIME_VALUES
 // #define DEBUGWORLDSTATE
-void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr& world,
-                               const gazebo::physics::WorldState& targetState)
+void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr &world,
+                               const gazebo::physics::WorldState &targetState)
 {
   bool pauseState = world->IsPaused();
   world->SetPaused(true);

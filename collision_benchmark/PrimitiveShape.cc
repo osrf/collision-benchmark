@@ -64,8 +64,8 @@ PrimitiveShape * PrimitiveShape::CreatePlane(double nx, double ny, double nz,
 
 sdf::ElementPtr
 PrimitiveShape::GetShapeSDF(bool detailed,
-                            const std::string& resourceDir,
-                            const std::string& resourceSubDir,
+                            const std::string &resourceDir,
+                            const std::string &resourceSubDir,
                             const bool useFullPath) const
 {
   sdf::ElementPtr geometry(new sdf::Element());

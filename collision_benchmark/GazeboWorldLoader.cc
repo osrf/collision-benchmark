@@ -33,8 +33,8 @@ using collision_benchmark::GazeboWorldLoader;
 using collision_benchmark::GazeboPhysicsWorld;
 
 // generates a world name consisting of \e baseName and \e engineName
-std::string generateWorldName(const std::string& baseName,
-                              const std::string& engineName)
+std::string generateWorldName(const std::string &baseName,
+                              const std::string &engineName)
 {
   std::stringstream _worldname;
   _worldname << baseName << "_" << engineName;
@@ -42,7 +42,7 @@ std::string generateWorldName(const std::string& baseName,
   return worldname;
 }
 
-GazeboWorldLoader::GazeboWorldLoader(const std::string& _engine,
+GazeboWorldLoader::GazeboWorldLoader(const std::string &_engine,
                                      const bool _alwaysCalcContacts):
           WorldLoader(_engine),
           alwaysCalcContacts(_alwaysCalcContacts)
@@ -71,8 +71,8 @@ GazeboWorldLoader::GazeboWorldLoader(const bool _alwaysCalcContacts):
 }
 
 PhysicsWorldBaseInterface::Ptr
-GazeboWorldLoader::LoadFromSDF(const sdf::ElementPtr& sdf,
-                               const std::string& worldname) const
+GazeboWorldLoader::LoadFromSDF(const sdf::ElementPtr &sdf,
+                               const std::string &worldname) const
 {
   THROW_EXCEPTION("TODO: Implement GazeboWorldLoader::LoadFromSDF");
 /*  std::cout << "Loading world from SDF with physics engine '"
@@ -98,8 +98,8 @@ GazeboWorldLoader::LoadFromSDF(const sdf::ElementPtr& sdf,
 }
 
 PhysicsWorldBaseInterface::Ptr
-GazeboWorldLoader::LoadFromFile(const std::string& worldfile,
-                                const std::string& worldname) const
+GazeboWorldLoader::LoadFromFile(const std::string &worldfile,
+                                const std::string &worldname) const
 {
   std::cout << "Loading world " << worldfile << " with physics engine '"
             << EngineName() << "' (named as '"
@@ -122,8 +122,8 @@ GazeboWorldLoader::LoadFromFile(const std::string& worldfile,
 
 
 PhysicsWorldBaseInterface::Ptr
-GazeboWorldLoader::LoadFromString(const std::string& str,
-                                  const std::string& worldname) const
+GazeboWorldLoader::LoadFromString(const std::string &str,
+                                  const std::string &worldname) const
 {
   std::cout << "Loading world form string, with physics engine '"
             << EngineName() << "' (named as '"
@@ -219,9 +219,9 @@ bool collision_benchmark::WaitForNamespace(std::string worldNamespace,
 }
 
 sdf::ElementPtr
-collision_benchmark::GetSDFElementFromFile(const std::string& filename,
-                                           const std::string& elemName,
-                                           const std::string& name)
+collision_benchmark::GetSDFElementFromFile(const std::string &filename,
+                                           const std::string &elemName,
+                                           const std::string &name)
 {
   sdf::ElementPtr sdfRoot;
 
@@ -239,7 +239,7 @@ collision_benchmark::GetSDFElementFromFile(const std::string& filename,
   {
    fullFile = gazebo::common::find_file(filename);
   }
-  catch (gazebo::common::Exception& e)
+  catch (gazebo::common::Exception &e)
   {
     std::cerr << "File "<<filename<<" not found. "
               << e.GetErrorStr() << std::endl;
@@ -284,9 +284,9 @@ collision_benchmark::GetSDFElementFromFile(const std::string& filename,
 }
 
 sdf::ElementPtr
-collision_benchmark::GetSDFElementFromString(const std::string& xmlString,
-                                             const std::string& elemName,
-                                             const std::string& name)
+collision_benchmark::GetSDFElementFromString(const std::string &xmlString,
+                                             const std::string &elemName,
+                                             const std::string &name)
 {
   sdf::ElementPtr sdfRoot;
 
@@ -319,7 +319,7 @@ collision_benchmark::GetSDFElementFromString(const std::string& xmlString,
 }
 
 sdf::ElementPtr
-collision_benchmark::GetPhysicsFromSDF(const std::string& filename)
+collision_benchmark::GetPhysicsFromSDF(const std::string &filename)
 {
   sdf::ElementPtr sdfRoot;
 
@@ -362,8 +362,8 @@ collision_benchmark::GetPhysicsFromSDF(const std::string& filename)
 }
 
 gazebo::physics::WorldPtr
-collision_benchmark::LoadWorldFromSDF(const sdf::ElementPtr& sdfRoot,
-                                      const std::string& name,
+collision_benchmark::LoadWorldFromSDF(const sdf::ElementPtr &sdfRoot,
+                                      const std::string &name,
                                       const bool forceSensorsInit)
 {
   if (sdfRoot->GetName() != "world")
@@ -422,7 +422,7 @@ collision_benchmark::LoadWorldFromSDF(const sdf::ElementPtr& sdfRoot,
     // the sensors of the current world, physics::get_world();
     if (forceSensorsInit) world->_SetSensorsInitialized(true);
   }
-  catch (gazebo::common::Exception& e)
+  catch (gazebo::common::Exception &e)
   {
     std::cerr << " Exception ocurred when loading world. "
               << e.GetErrorStr() << std::endl;
@@ -435,9 +435,9 @@ collision_benchmark::LoadWorldFromSDF(const sdf::ElementPtr& sdfRoot,
 }
 
 gazebo::physics::ModelPtr
-collision_benchmark::LoadModelFromSDF(const sdf::ElementPtr& sdfRoot,
-                                      const gazebo::physics::WorldPtr& world,
-                                      const std::string& name)
+collision_benchmark::LoadModelFromSDF(const sdf::ElementPtr &sdfRoot,
+                                      const gazebo::physics::WorldPtr &world,
+                                      const std::string &name)
 {
   GZ_ASSERT(world, "Can't load a model without a world");
 
@@ -500,9 +500,9 @@ collision_benchmark::LoadModelFromSDF(const sdf::ElementPtr& sdfRoot,
 }
 
 gazebo::physics::ModelPtr
-collision_benchmark::LoadModelFromSDFString(const std::string& sdfString,
-                                            const gazebo::physics::WorldPtr& w,
-                                            const std::string& name)
+collision_benchmark::LoadModelFromSDFString(const std::string &sdfString,
+                                            const gazebo::physics::WorldPtr &w,
+                                            const std::string &name)
 {
   GZ_ASSERT(w, "Can't load a model without a w");
 
@@ -520,8 +520,8 @@ collision_benchmark::LoadModelFromSDFString(const std::string& sdfString,
 gazebo::physics::WorldPtr
 LoadWorld_helper(const std::string &str,
                  const bool isFile,
-                 const std::string& name,
-                 const sdf::ElementPtr& overridePhysics)
+                 const std::string &name,
+                 const sdf::ElementPtr &overridePhysics)
 {
   gazebo::physics::WorldPtr world;
   sdf::ElementPtr sdfRoot;
@@ -534,7 +534,7 @@ LoadWorld_helper(const std::string &str,
       sdfRoot =
         collision_benchmark::GetSDFElementFromString(str, "world", name);
   }
-  catch (gazebo::common::Exception& e)
+  catch (gazebo::common::Exception &e)
   {
     std::cerr << " Exception ocurred when loading world. "
               << e.GetErrorStr() << std::endl;
@@ -572,8 +572,8 @@ LoadWorld_helper(const std::string &str,
 
 gazebo::physics::WorldPtr
 collision_benchmark::LoadWorldFromFile(const std::string &worldfile,
-                                       const std::string& name,
-                                       const sdf::ElementPtr& overridePhysics)
+                                       const std::string &name,
+                                       const sdf::ElementPtr &overridePhysics)
 {
   /* std::cout << "Loading world from file " << worldfile;
   if (!name.empty()) std::cout << " (to be named '" << name << "')";
@@ -583,8 +583,8 @@ collision_benchmark::LoadWorldFromFile(const std::string &worldfile,
 
 gazebo::physics::WorldPtr
 collision_benchmark::LoadWorldFromSDFString(const std::string &xmlStr,
-                                            const std::string& name,
-                                            const sdf::ElementPtr& overridePhys)
+                                            const std::string &name,
+                                            const sdf::ElementPtr &overridePhys)
 {
   std::cout << "Loading world XML string. ";
   if (!name.empty()) std::cout << " (to be named '" << name << "')";
@@ -594,9 +594,9 @@ collision_benchmark::LoadWorldFromSDFString(const std::string &xmlStr,
 
 
 gazebo::physics::WorldPtr
-collision_benchmark::LoadWorld(const std::string& worldfile,
-                               const std::string& name,
-                               const sdf::ElementPtr& overridePhysics)
+collision_benchmark::LoadWorld(const std::string &worldfile,
+                               const std::string &name,
+                               const sdf::ElementPtr &overridePhysics)
 {
   gazebo::physics::WorldPtr world
     = LoadWorldFromFile(worldfile, name, overridePhysics);
@@ -660,7 +660,7 @@ collision_benchmark::GetSupportedGazeboWorldLoaders
         WorldLoader::ConstPtr(new GazeboWorldLoader(engine,
                                                     enforceContactCalc));
     }
-    catch (collision_benchmark::Exception& e)
+    catch (collision_benchmark::Exception &e)
     {
       std::cerr << "Could not add support for engine "
                 <<engine << ": " << e.what() << std::endl;

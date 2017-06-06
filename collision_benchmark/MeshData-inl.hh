@@ -5,7 +5,7 @@
 template<typename VP, int FS>
 void collision_benchmark::MeshData<VP, FS>::Perturb(const double min,
                                                     const double max,
-                                                    const Vertex& center)
+                                                    const Vertex &center)
 {
   static std::random_device r;
   static std::default_random_engine randEngine(r());
@@ -16,7 +16,7 @@ void collision_benchmark::MeshData<VP, FS>::Perturb(const double min,
   for (typename std::vector<Vertex>::iterator it = verts.begin();
        it != verts.end(); ++it)
   {
-    Vertex& v = *it;
+    Vertex &v = *it;
     Vertex diff = v - center;
     diff.Normalize();
     double randDisplace = dist(randEngine);
@@ -27,8 +27,8 @@ void collision_benchmark::MeshData<VP, FS>::Perturb(const double min,
 template<typename VP, int FS>
 void collision_benchmark::MeshData<VP, FS>::Perturb(const double min,
                                                     const double max,
-                                                    const Vertex& center,
-                                                    const Vertex& dir)
+                                                    const Vertex &center,
+                                                    const Vertex &dir)
 {
   assert(dir.Length() > 1e-04);
 
@@ -45,7 +45,7 @@ void collision_benchmark::MeshData<VP, FS>::Perturb(const double min,
   for (typename std::vector<Vertex>::iterator it = verts.begin();
        it != verts.end(); ++it)
   {
-    Vertex& v = *it;
+    Vertex &v = *it;
 
     // determine move direction which is orthogonal to the given line
     Vertex fromCenter = v - center;

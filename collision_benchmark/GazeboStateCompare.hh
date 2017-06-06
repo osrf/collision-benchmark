@@ -85,30 +85,30 @@ struct GazeboStateCompare
   };
 
 
-  static bool Equal(const gazebo::physics::WorldState& s1,
-                    const gazebo::physics::WorldState& s2,
-                    const Tolerances& tolerance=Tolerances::Default,
+  static bool Equal(const gazebo::physics::WorldState &s1,
+                    const gazebo::physics::WorldState &s2,
+                    const Tolerances &tolerance=Tolerances::Default,
                     const bool checkLights=true);
-  static bool Equal(const gazebo::physics::ModelState& s1,
-                    const gazebo::physics::ModelState& s2,
-                    const Tolerances& tolerance=Tolerances::Default);
-  static bool Equal(const gazebo::physics::LightState& s1,
-                    const gazebo::physics::LightState& s2,
-                    const Tolerances& tolerance=Tolerances::Default);
-  static bool Equal(const gazebo::physics::LinkState& s1,
-                    const gazebo::physics::LinkState& s2,
-                    const Tolerances& tolerance=Tolerances::Default);
-  static bool Equal(const gazebo::physics::JointState& s1,
-                    const gazebo::physics::JointState& s2,
-                    const Tolerances& tolerance=Tolerances::Default);
+  static bool Equal(const gazebo::physics::ModelState &s1,
+                    const gazebo::physics::ModelState &s2,
+                    const Tolerances &tolerance=Tolerances::Default);
+  static bool Equal(const gazebo::physics::LightState &s1,
+                    const gazebo::physics::LightState &s2,
+                    const Tolerances &tolerance=Tolerances::Default);
+  static bool Equal(const gazebo::physics::LinkState &s1,
+                    const gazebo::physics::LinkState &s2,
+                    const Tolerances &tolerance=Tolerances::Default);
+  static bool Equal(const gazebo::physics::JointState &s1,
+                    const gazebo::physics::JointState &s2,
+                    const Tolerances &tolerance=Tolerances::Default);
 
   //  \param orientationTolerance orientation is compared with the Euler
   //         angles instead of with Quaternions, so this is the angular
   //         tolerance (radians).
-  static bool Equal(const ignition::math::Pose3d& p1,
-                    const ignition::math::Pose3d& p2,
-                    const double& positionTolerance,
-                    const double& orientationTolerance);
+  static bool Equal(const ignition::math::Pose3d &p1,
+                    const ignition::math::Pose3d &p2,
+                    const double &positionTolerance,
+                    const double &orientationTolerance);
 };
 
 }

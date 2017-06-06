@@ -24,7 +24,7 @@ using collision_benchmark::ClientGui;
 GZ_REGISTER_GUI_PLUGIN(ClientGui)
 
 
-QSize maxHeightAddWidth(const QSize& s1, const QSize& s2,
+QSize maxHeightAddWidth(const QSize &s1, const QSize &s2,
                         float wFact=1, float hFact=1.0)
 {
   return QSize((s1.width() + s2.width())*wFact,
@@ -124,7 +124,7 @@ void ClientGui::receiveWorldMsg(ConstAnyPtr &_msg)
 }
 
 /////////////////////////////////////////////////
-void ClientGui::OnNameChange(const std::string& name)
+void ClientGui::OnNameChange(const std::string &name)
 {
   labelName->setText(name.c_str());
   QSize totalSize = maxHeightAddWidth(labelName->sizeHint(), minSize, 1.1);

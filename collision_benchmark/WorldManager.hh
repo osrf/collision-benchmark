@@ -185,7 +185,7 @@ class WorldManager
   ///       the original). Does not need to be set to any world yet, will
   ///       automatically be set to mirror the first world added with
   ///       AddPhysicsWorld.
-  public: void SetMirrorWorld(const MirrorWorldPtr& _mirrorWorld)
+  public: void SetMirrorWorld(const MirrorWorldPtr &_mirrorWorld)
   {
    if (!_mirrorWorld)
    {
@@ -221,7 +221,7 @@ class WorldManager
   /// \return positive int or zero on success (index this world
   ///         can be accessed at). Negative if a world with this name
   ///         already exists.
-  public: int AddPhysicsWorld(const PhysicsWorldBaseInterface::Ptr& _world)
+  public: int AddPhysicsWorld(const PhysicsWorldBaseInterface::Ptr &_world)
   {
     std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
     if (GetWorld(_world->GetName()))
@@ -277,7 +277,7 @@ class WorldManager
     return this->worlds.at(_index);
   }
 
-  public: PhysicsWorldBaseInterface::Ptr GetWorld(const std::string& name) const
+  public: PhysicsWorldBaseInterface::Ptr GetWorld(const std::string &name) const
   {
      std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
      for (std::vector<PhysicsWorldBaseInterface::Ptr>::const_iterator
@@ -396,8 +396,8 @@ class WorldManager
   ///   the model name will be the same in all
   ///   worlds, as it is defined in the file or given in \e modelname.
   public: std::vector<ModelLoadResult>
-                  AddModelFromFile(const std::string& filename,
-                                   const std::string& modelname="")
+                  AddModelFromFile(const std::string &filename,
+                                   const std::string &modelname="")
   {
     return CallOnAllWorldsWithModel
       <ModelLoadResult, const std::string&, const std::string&>
@@ -411,8 +411,8 @@ class WorldManager
   ///   the model name will be the same in all
   ///   worlds, as it is defined in \e str or given in \e modelname.
   public: std::vector<ModelLoadResult>
-                  AddModelFromString(const std::string& str,
-                                     const std::string& modelname="")
+                  AddModelFromString(const std::string &str,
+                                     const std::string &modelname="")
   {
     return CallOnAllWorldsWithModel
       <ModelLoadResult, const std::string&, const std::string&>
@@ -426,8 +426,8 @@ class WorldManager
   ///   the model name will be the same in all
   ///   worlds, as it is defined in \e sdf or given in \e modelname.
   public: std::vector<ModelLoadResult>
-                  AddModelFromSDF(const sdf::ElementPtr& sdf,
-                                  const std::string& modelname="")
+                  AddModelFromSDF(const sdf::ElementPtr &sdf,
+                                  const std::string &modelname="")
   {
     return CallOnAllWorldsWithModel
       <ModelLoadResult, const sdf::ElementPtr&, const std::string&>
@@ -441,9 +441,9 @@ class WorldManager
   ///   the model name will be the same in all
   ///   worlds, as it is defined in \e modelname.
   public: std::vector<ModelLoadResult>
-          AddModelFromShape(const std::string& modelname,
-                            const Shape::Ptr& shape,
-                            const Shape::Ptr& collShape = Shape::Ptr())
+          AddModelFromShape(const std::string &modelname,
+                            const Shape::Ptr &shape,
+                            const Shape::Ptr &collShape = Shape::Ptr())
   {
     return CallOnAllWorldsWithModel
       <ModelLoadResult, const std::string&,
@@ -454,8 +454,8 @@ class WorldManager
   /// Calls PhysicsWorldModelInterface::SetBasicModelState on
   /// all worlds. Assumes that all worlds use the same model name.
   /// \return number of worlds in which the state was successfully set.
-  public: int SetBasicModelState(const ModelID& id,
-                                 const BasicState& state)
+  public: int SetBasicModelState(const ModelID &id,
+                                 const BasicState &state)
   {
     std::vector<bool> ret = CallOnAllWorldsWithModel
       <bool, const ModelID&, const BasicState&>
@@ -472,7 +472,7 @@ class WorldManager
   // Convenience method which casts the world \e w to a
   // PhysicsWorldStateInterface with the given state
   public: static PhysicsWorldStateInterfacePtr
-           ToWorldWithState(const PhysicsWorldBaseInterface::Ptr& w)
+           ToWorldWithState(const PhysicsWorldBaseInterface::Ptr &w)
   {
    return std::dynamic_pointer_cast<PhysicsWorldStateInterfaceT>(w);
   }
@@ -480,7 +480,7 @@ class WorldManager
   // Convenience method which casts the world \e w to a
   // PhysicsWorldModelInterface
   public: static PhysicsWorldModelInterfacePtr
-          ToWorldWithModel(const PhysicsWorldBaseInterface::Ptr& w)
+          ToWorldWithModel(const PhysicsWorldBaseInterface::Ptr &w)
   {
    return std::dynamic_pointer_cast <PhysicsWorldModelInterfaceT>(w);
   }
@@ -488,14 +488,14 @@ class WorldManager
   // Convenience method which casts the world \e w to a
   // PhysicsWorldContactInterface
   public: static PhysicsWorldContactInterfacePtr
-          ToWorldWithContact(const PhysicsWorldBaseInterface::Ptr& w)
+          ToWorldWithContact(const PhysicsWorldBaseInterface::Ptr &w)
   {
    return std::dynamic_pointer_cast<PhysicsWorldContactInterfaceT>(w);
   }
 
    // Convenience method which casts the world \e w to a PhysicsWorld
   public: static PhysicsWorldPtr
-          ToPhysicsWorld(const PhysicsWorldBaseInterface::Ptr& w)
+          ToPhysicsWorld(const PhysicsWorldBaseInterface::Ptr &w)
   {
    return std::dynamic_pointer_cast<PhysicsWorldT>(w);
   }
@@ -586,10 +586,10 @@ class WorldManager
   // \param[in] copyResources if true, all resources (such as mesh files)
   //    will be copied to ``directory/subDirectory``
   // \return number of failures
-  public: int SaveAllWorlds(const std::string& directory = "",
-                            const std::string& subDirectory = "",
-                            const std::string& prefix = "",
-                            const std::string& ext = "world",
+  public: int SaveAllWorlds(const std::string &directory = "",
+                            const std::string &subDirectory = "",
+                            const std::string &prefix = "",
+                            const std::string &ext = "world",
                             const bool copyResources = true)
   {
     int fail = 0;
@@ -645,7 +645,7 @@ class WorldManager
   }
 
 
-  private: void NotifySdfModelLoad(const std::string& _sdf,
+  private: void NotifySdfModelLoad(const std::string &_sdf,
                                   const bool _isString,
                                   const BasicState &_state)
   {
@@ -742,9 +742,9 @@ class WorldManager
 
   // Helper callback to call AddModelFromFile on the world
   private: static ModelLoadResult
-                  AddModelFromFileCB(PhysicsWorldModelInterfaceT& w,
-                                     const std::string& filename,
-                                     const std::string& modelname="")
+                  AddModelFromFileCB(PhysicsWorldModelInterfaceT &w,
+                                     const std::string &filename,
+                                     const std::string &modelname="")
   {
     return w.AddModelFromFile(filename, modelname);
   }
@@ -752,9 +752,9 @@ class WorldManager
 
   // Helper callback to call AddModelFromString on the world
   private: static ModelLoadResult
-                  AddModelFromStringCB(PhysicsWorldModelInterfaceT& w,
-                                       const std::string& str,
-                                       const std::string& modelname="")
+                  AddModelFromStringCB(PhysicsWorldModelInterfaceT &w,
+                                       const std::string &str,
+                                       const std::string &modelname="")
   {
     return w.AddModelFromString(str, modelname);
   }
@@ -762,9 +762,9 @@ class WorldManager
 
   // Helper callback to call AddModelFromSDF on the world
   private: static ModelLoadResult
-                  AddModelFromSdfCB(PhysicsWorldModelInterfaceT& w,
-                                    const sdf::ElementPtr& sdf,
-                                    const std::string& modelname="")
+                  AddModelFromSdfCB(PhysicsWorldModelInterfaceT &w,
+                                    const sdf::ElementPtr &sdf,
+                                    const std::string &modelname="")
   {
     return w.AddModelFromSDF(sdf, modelname);
   }
@@ -773,19 +773,19 @@ class WorldManager
 
   // Helper callback to call AddModelFromShape on the world
   private: static ModelLoadResult
-                  AddModelFromShapeCB(PhysicsWorldModelInterfaceT& w,
-                                      const std::string& modelname,
-                                      const Shape::Ptr& shape,
-                                      const Shape::Ptr& collShape)
+                  AddModelFromShapeCB(PhysicsWorldModelInterfaceT &w,
+                                      const std::string &modelname,
+                                      const Shape::Ptr &shape,
+                                      const Shape::Ptr &collShape)
   {
     return w.AddModelFromShape(modelname, shape, collShape);
   }
 
   // Helper callback to call SetBasicModelState on the world
   private: static bool SetBasicModelStateCB
-              (PhysicsWorldModelInterfaceT& w,
+              (PhysicsWorldModelInterfaceT &w,
                const ModelID&id,
-               const BasicState& state)
+               const BasicState &state)
   {
     return w.SetBasicModelState(id, state);
   }

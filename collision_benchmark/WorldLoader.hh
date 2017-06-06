@@ -36,23 +36,23 @@ class WorldLoader
   // \param _engine name of the engine which will be used for the created
   //    worlds. If empty, this loader is to be considered universal and will
   //    load worlds with the physics engine specified in the file/SDF.
-  public: WorldLoader(const std::string& _engine):
+  public: WorldLoader(const std::string &_engine):
           engine(_engine) {}
 
   // \sa PhysicsWorldBaseInterface::LoadFromSDF
   public: virtual PhysicsWorldBaseInterface::Ptr
-          LoadFromSDF(const sdf::ElementPtr& sdf,
-                      const std::string& worldname="") const = 0;
+          LoadFromSDF(const sdf::ElementPtr &sdf,
+                      const std::string &worldname="") const = 0;
 
   // \sa PhysicsWorldBaseInterface::LoadFromFile
   public: virtual PhysicsWorldBaseInterface::Ptr
-          LoadFromFile(const std::string& filename,
-                       const std::string& worldname="") const = 0;
+          LoadFromFile(const std::string &filename,
+                       const std::string &worldname="") const = 0;
 
   // \sa PhysicsWorldBaseInterface::LoadFromString
   public: virtual PhysicsWorldBaseInterface::Ptr
-          LoadFromString(const std::string& str,
-                         const std::string& worldname="") const = 0;
+          LoadFromString(const std::string &str,
+                         const std::string &worldname="") const = 0;
 
   public: std::string EngineName() const { return engine; }
   private: std::string engine;

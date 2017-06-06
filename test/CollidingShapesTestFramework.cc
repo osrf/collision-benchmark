@@ -159,7 +159,7 @@ bool CollidingShapesTestFramework::RunImpl
        it = configuration->shapes.begin();
        it != configuration->shapes.end(); ++it, ++modelNum)
   {
-    const std::string& shapeID = *it;
+    const std::string &shapeID = *it;
     Shape::Ptr shape;
     if (shapeID == "sphere")
     {
@@ -195,7 +195,7 @@ bool CollidingShapesTestFramework::RunImpl
        it = configuration->models.begin();
        it != configuration->models.end(); ++it, ++modelNum)
   {
-    const std::string& modelResource = *it;
+    const std::string &modelResource = *it;
     std::string modelSDF =
       GazeboModelLoader::GetModelSdfFilename(modelResource);
     std::string modelName = "model_" + std::to_string(modelNum);
@@ -565,7 +565,7 @@ CollidingShapesTestFramework::UpdateConfiguration(const double model1Slide,
 }
 
 /////////////////////////////////////////////////
-void CollidingShapesTestFramework::SaveConfiguration(const std::string& file,
+void CollidingShapesTestFramework::SaveConfiguration(const std::string &file,
                                         const double model1Slide,
                                         const double model2Slide)
 {
@@ -714,9 +714,9 @@ void CollidingShapesTestFramework::MoveModelsAlongAxis(const float moveDist,
 }
 
 //////////////////////////////////////////////////////////////////////////////
-int CollidingShapesTestFramework::GetAABB(const std::string& modelName,
-            const GazeboMultipleWorlds::GzWorldManager::Ptr& worldManager,
-            Vector3& min, Vector3& max, bool& inLocalFrame)
+int CollidingShapesTestFramework::GetAABB(const std::string &modelName,
+            const GazeboMultipleWorlds::GzWorldManager::Ptr &worldManager,
+            Vector3& min, Vector3& max, bool &inLocalFrame)
 {
   std::vector<GazeboMultipleWorlds::GzWorldManager
               ::PhysicsWorldModelInterfacePtr>
@@ -738,9 +738,9 @@ int CollidingShapesTestFramework::GetAABB(const std::string& modelName,
 
 //////////////////////////////////////////////////////////////////////////////
 int CollidingShapesTestFramework::GetBasicModelState
-    (const std::string& modelName,
-     const GazeboMultipleWorlds::GzWorldManager::Ptr& worldManager,
-     BasicState& state)
+    (const std::string &modelName,
+     const GazeboMultipleWorlds::GzWorldManager::Ptr &worldManager,
+     BasicState &state)
 {
   std::vector<GazeboMultipleWorlds::GzWorldManager
               ::PhysicsWorldModelInterfacePtr>
@@ -762,10 +762,10 @@ int CollidingShapesTestFramework::GetBasicModelState
 
 /////////////////////////////////////////////////////////////////////////////
 void CollidingShapesTestFramework::CollisionBarHandler
-        (const ignition::math::Pose3d& collBarPose,
+        (const ignition::math::Pose3d &collBarPose,
          const float cylinderRadius,
          const float cylinderLength,
-         const std::string& mirrorName)
+         const std::string &mirrorName)
 {
   // make a model publisher which will publish the bar to gzclient
   gazebo::transport::NodePtr node =

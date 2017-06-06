@@ -84,7 +84,7 @@ class ControlServer
 
   /// Constructor.
   public:  ControlServer() {}
-  public: ControlServer(const ControlServer& o):
+  public: ControlServer(const ControlServer &o):
           pauseCallbacks(o.pauseCallbacks),
           updateCallbacks(o.updateCallbacks),
           modelStateCallbacks(o.modelStateCallbacks),
@@ -204,7 +204,7 @@ class ControlServer
              }
 
   // must be called by subclasses when the model is to be changed
-  protected: void NotifySetModelState(const ModelID& _id,
+  protected: void NotifySetModelState(const ModelID &_id,
                                       const BasicState &_state)
              {
                 typename std::vector<NotifySetModelStateFct>::iterator it;
@@ -216,7 +216,7 @@ class ControlServer
              }
 
   // must be called by subclasses when the model is to be changed
-  protected: void NotifySdfModelLoad(const std::string& _sdf,
+  protected: void NotifySdfModelLoad(const std::string &_sdf,
                                      const bool _isString,
                                      const BasicState &_state)
              {

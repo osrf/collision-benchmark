@@ -174,8 +174,8 @@ class GazeboTopicForwarder
   // \param _node the node to use for creating the publisher
   // \param _pubQueueLimit limit of the queue for the re-publisher
   // \param _pubHzRate update rate for publisher (0=fastest possible)
-  public: void ForwardTo(const std::string& _to,
-                     const gazebo::transport::NodePtr& _node,
+  public: void ForwardTo(const std::string &_to,
+                     const gazebo::transport::NodePtr &_node,
                      unsigned int _pubQueueLimit = 1000,
                      double _pubHzRate = 0)
            {
@@ -383,7 +383,7 @@ class GazeboServiceForwarder
                         const std::string &_requestDestTopic,
                         const std::string &_responseDestTopic,
                         const RequestMessageFilterConstPtr &_requestFilter,
-                        const gazebo::transport::NodePtr& _node)
+                        const gazebo::transport::NodePtr &_node)
           {
             // first, forward all requests which have arrived before we
             // called this and stop the buffering.

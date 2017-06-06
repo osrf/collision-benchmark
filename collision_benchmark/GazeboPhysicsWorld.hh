@@ -89,61 +89,61 @@ class GazeboPhysicsWorld:
   //  computed if there is at least one subscriber to the contacts topic.
   //  Use this flag to enforce contacts computation in any case.
   public: GazeboPhysicsWorld(bool enforceContactComputation=false);
-  public: GazeboPhysicsWorld(const GazeboPhysicsWorld& w){}
+  public: GazeboPhysicsWorld(const GazeboPhysicsWorld &w){}
   public: virtual ~GazeboPhysicsWorld();
 
   public: virtual bool SupportsSDF() const;
 
-  public: virtual OpResult LoadFromSDF(const sdf::ElementPtr& sdf,
-                                       const std::string& worldname="");
+  public: virtual OpResult LoadFromSDF(const sdf::ElementPtr &sdf,
+                                       const std::string &worldname="");
 
-  public: virtual OpResult LoadFromFile(const std::string& filename,
-                                        const std::string& worldname="");
+  public: virtual OpResult LoadFromFile(const std::string &filename,
+                                        const std::string &worldname="");
 
-  public: virtual OpResult LoadFromString(const std::string& str,
-                                          const std::string& worldname="");
+  public: virtual OpResult LoadFromString(const std::string &str,
+                                          const std::string &worldname="");
 
-  public: virtual bool SaveToFile(const std::string& filename,
-                                  const std::string& resourceDir = "",
-                                  const std::string& resourceSubdir = "");
-
-  public: virtual ModelLoadResult
-                    AddModelFromFile(const std::string& filename,
-                                     const std::string& modelname="");
+  public: virtual bool SaveToFile(const std::string &filename,
+                                  const std::string &resourceDir = "",
+                                  const std::string &resourceSubdir = "");
 
   public: virtual ModelLoadResult
-                    AddModelFromString(const std::string& str,
-                                       const std::string& modelname="");
+                    AddModelFromFile(const std::string &filename,
+                                     const std::string &modelname="");
 
   public: virtual ModelLoadResult
-                  AddModelFromSDF(const sdf::ElementPtr& sdf,
-                                  const std::string& modelname="");
+                    AddModelFromString(const std::string &str,
+                                       const std::string &modelname="");
+
+  public: virtual ModelLoadResult
+                  AddModelFromSDF(const sdf::ElementPtr &sdf,
+                                  const std::string &modelname="");
 
   public: virtual bool SupportsShapes() const;
 
   // The gazebo implementation needs to write mesh shapes to file. This method
   // will use the return value of GetMeshOutputPath() for this.
   public: virtual ModelLoadResult
-                  AddModelFromShape(const std::string& modelname,
-                                    const Shape::Ptr& shape,
-                                    const Shape::Ptr& collShape=Shape::Ptr());
+                  AddModelFromShape(const std::string &modelname,
+                                    const Shape::Ptr &shape,
+                                    const Shape::Ptr &collShape=Shape::Ptr());
 
   public: virtual std::vector<ModelID> GetAllModelIDs() const;
-  public: virtual int GetIntegerModelID(const ModelID& id) const;
+  public: virtual int GetIntegerModelID(const ModelID &id) const;
 
-  public: virtual bool RemoveModel(const ModelID& id);
+  public: virtual bool RemoveModel(const ModelID &id);
 
-  public: virtual bool GetAABB(const ModelID& id,
+  public: virtual bool GetAABB(const ModelID &id,
                                Vector3& min, Vector3& max,
-                               bool& inLocalFrame) const;
+                               bool &inLocalFrame) const;
 
   public: virtual void Clear();
 
   public: virtual WorldState GetWorldState() const;
 
-  public: virtual WorldState GetWorldStateDiff(const WorldState& other) const;
+  public: virtual WorldState GetWorldStateDiff(const WorldState &other) const;
 
-  public: virtual OpResult SetWorldState(const WorldState& state, bool isDiff);
+  public: virtual OpResult SetWorldState(const WorldState &state, bool isDiff);
 
   public: virtual void Update(int steps=1, bool force=false);
 
@@ -160,7 +160,7 @@ class GazeboPhysicsWorld:
   public: virtual std::vector<ContactInfoPtr> GetContactInfo() const;
 
   public: virtual std::vector<ContactInfoPtr>
-                  GetContactInfo(const ModelID& m1, const ModelID& m2) const;
+                  GetContactInfo(const ModelID &m1, const ModelID &m2) const;
 
   /// Current warning for Gazebo implementation: Returned shared pointers
   /// are flakey, they will be deleted as soon as
@@ -174,15 +174,15 @@ class GazeboPhysicsWorld:
   /// them. This will be resolved as soon as gazebo::physics::Contact
   /// instances are managed as shared poitners by Gazebo as well.
   public: virtual std::vector<NativeContactPtr>
-                  GetNativeContacts(const ModelID& m1, const ModelID& m2) const;
+                  GetNativeContacts(const ModelID &m1, const ModelID &m2) const;
 
   public: virtual bool IsAdaptor() const;
 
-  public: virtual RefResult SetWorld(const WorldPtr& world);
+  public: virtual RefResult SetWorld(const WorldPtr &world);
 
   public: virtual WorldPtr GetWorld() const;
 
-  public: virtual ModelPtr GetModel(const ModelID& model) const;
+  public: virtual ModelPtr GetModel(const ModelID &model) const;
 
   public: virtual PhysicsEnginePtr GetPhysicsEngine() const;
 
@@ -191,11 +191,11 @@ class GazeboPhysicsWorld:
   // See also constructor parameter.
   public: void SetEnforceContactsComputation(bool flag);
 
-  public: virtual bool SetBasicModelState(const ModelID& id,
-                                          const BasicState& state);
+  public: virtual bool SetBasicModelState(const ModelID &id,
+                                          const BasicState &state);
 
-  public: virtual bool GetBasicModelState(const ModelID& id,
-                                          BasicState& state);
+  public: virtual bool GetBasicModelState(const ModelID &id,
+                                          BasicState &state);
 
 
   // Returns the absolute path which is used to temporarily write mesh files to.
@@ -207,10 +207,10 @@ class GazeboPhysicsWorld:
   // \param[out] outputSubdir the subdirectory in the retured path which will
   //    contain the mesh file. This is the relative path which will appear in
   //    the URI of the resource in the SDF (the SDF won't use absolute paths).
-  public: std::string GetMeshOutputPath(std::string& outputSubdir) const;
+  public: std::string GetMeshOutputPath(std::string &outputSubdir) const;
 
   /// wait for the namespace of this world
-  private: bool WaitForNamespace(const gazebo::physics::WorldPtr& gzworld,
+  private: bool WaitForNamespace(const gazebo::physics::WorldPtr &gzworld,
                                  float maxWait, float waitSleep);
 
   // \brief called after a world has been loaded
@@ -227,10 +227,10 @@ class GazeboPhysicsWorld:
   // ``file://copied/my_models/mesh.stl``. So the new GAZEBO_RESOURCE_PATH
   // can be set to \e destinationBase and the resource will be found.
   // This is applied recursively to all ``<model>`` children of \e elem.
-  private: bool CopyAllModelResources(const sdf::ElementPtr& elem,
+  private: bool CopyAllModelResources(const sdf::ElementPtr &elem,
                                 const std::list<std::string>& parentElemNames,
-                                const std::string& destinationBase,
-                                const std::string& destinationSubdir);
+                                const std::string &destinationBase,
+                                const std::string &destinationSubdir);
 
   private: gazebo::physics::WorldPtr world;
   // by default, contacts in Gazebo are only computed if

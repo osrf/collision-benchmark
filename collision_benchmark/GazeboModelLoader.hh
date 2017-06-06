@@ -35,7 +35,7 @@ class GazeboModelLoader
 {
   //
   public: static std::string
-          GetModelSdfFilename(const std::string& modelNameOrFile)
+          GetModelSdfFilename(const std::string &modelNameOrFile)
   {
     // first, check if \e modelNameOrFile is a file
     boost::filesystem::path modelNamePath(modelNameOrFile);

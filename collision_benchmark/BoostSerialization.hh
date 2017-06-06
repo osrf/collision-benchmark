@@ -25,7 +25,7 @@ namespace collision_benchmark
 struct Vector3::access
 {
   template<class Archive>
-  static void serialize(Archive& ar, Vector3& v, const unsigned int version)
+  static void serialize(Archive &ar, Vector3& v, const unsigned int version)
   {
     ar & BOOST_SERIALIZATION_NVP(v.x);
     ar & BOOST_SERIALIZATION_NVP(v.y);
@@ -36,7 +36,7 @@ struct Vector3::access
 struct Quaternion::access
 {
   template<class Archive>
-  static void serialize(Archive& ar, Quaternion& q, const unsigned int version)
+  static void serialize(Archive &ar, Quaternion &q, const unsigned int version)
   {
     ar & BOOST_SERIALIZATION_NVP(q.x);
     ar & BOOST_SERIALIZATION_NVP(q.y);
@@ -48,7 +48,7 @@ struct Quaternion::access
 struct BasicState::access
 {
   template<class Archive>
-  static void serialize(Archive& ar, BasicState& b, const unsigned int version)
+  static void serialize(Archive &ar, BasicState &b, const unsigned int version)
   {
     ar & BOOST_SERIALIZATION_NVP(b.position);
     ar & BOOST_SERIALIZATION_NVP(b.rotation);
@@ -66,21 +66,21 @@ namespace boost
 namespace serialization
 {
   template<class Archive>
-  void serialize(Archive& ar, collision_benchmark::Vector3& b,
+  void serialize(Archive &ar, collision_benchmark::Vector3& b,
                  const unsigned int version)
   {
     collision_benchmark::Vector3::access::serialize(ar, b, version);
   }
 
   template<class Archive>
-  void serialize(Archive& ar, collision_benchmark::Quaternion& b,
+  void serialize(Archive &ar, collision_benchmark::Quaternion &b,
                  const unsigned int version)
   {
     collision_benchmark::Quaternion::access::serialize(ar, b, version);
   }
 
   template<class Archive>
-  void serialize(Archive& ar, collision_benchmark::BasicState& b,
+  void serialize(Archive &ar, collision_benchmark::BasicState &b,
                  const unsigned int version)
   {
     collision_benchmark::BasicState::access::serialize(ar, b, version);

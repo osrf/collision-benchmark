@@ -31,7 +31,7 @@ namespace collision_benchmark
 std::string Demangle(const char* name);
 
 template <typename T>
-std::string GetTypeName(const T& t)
+std::string GetTypeName(const T &t)
 {
     return Demangle(typeid(t).name());
 }

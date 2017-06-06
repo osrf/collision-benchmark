@@ -43,9 +43,9 @@ class Shape
   public: typedef ignition::math::Vector3<double> Vector3;
   public: typedef ignition::math::Vector2<double> Vector2;
 
-  public: Shape(const Type& type_):
+  public: Shape(const Type &type_):
           type(type_) {}
-  public: Shape(const Shape& o):
+  public: Shape(const Shape &o):
           type(o.type),
           pose(o.pose) {}
   public: virtual ~Shape(){}
@@ -86,8 +86,8 @@ class Shape
   ///   relative path only starting from \e resourceSubDir.
   public: virtual sdf::ElementPtr
                   GetShapeSDF(bool detailed=true,
-                              const std::string& resourceDir = "/tmp/",
-                              const std::string& resourceSubDir = "",
+                              const std::string &resourceDir = "/tmp/",
+                              const std::string &resourceSubDir = "",
                               const bool useFullPath = false) const = 0;
 
   /// returns true if GetShapeSDF() returns a different mesh with parameter

@@ -63,10 +63,10 @@ class GazeboTopicForwardingMirror:
                 gazebo::physics::World> GazeboPhysicsEngineWorld;
 
     /// Constructor.
-    public:  GazeboTopicForwardingMirror(const std::string& worldname
+    public:  GazeboTopicForwardingMirror(const std::string &worldname
                                           = "default");
     // prohibit copy constructor
-    private: GazeboTopicForwardingMirror(const GazeboTopicForwardingMirror& o){}
+    private: GazeboTopicForwardingMirror(const GazeboTopicForwardingMirror &o){}
     public:  ~GazeboTopicForwardingMirror();
 
     /// Documentation inherited
@@ -90,7 +90,7 @@ class GazeboTopicForwardingMirror:
     // registers the namespace and waits until this has been done.
     // Throws an exception if it didn't work after a maximum time
     // (current default is 10 seconds)
-    private: void RegisterNamespace(const std::string& worldname) const;
+    private: void RegisterNamespace(const std::string &worldname) const;
 
     /// \brief Transportation node.
     private: gazebo::transport::NodePtr node;

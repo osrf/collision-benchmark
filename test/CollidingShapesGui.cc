@@ -28,7 +28,7 @@ using collision_benchmark::test::CollidingShapesParams;
 // Register this plugin with the simulator
 GZ_REGISTER_GUI_PLUGIN(CollidingShapesGui)
 
-QSize maxHeightAddWidth(const QSize& s1, const QSize& s2,
+QSize maxHeightAddWidth(const QSize &s1, const QSize &s2,
                         float wFact=1, float hFact=1.0)
 {
   return QSize((s1.width() + s2.width())*wFact,

@@ -21,19 +21,19 @@ GetTriMeshFromVtkPoly(const vtkSmartPointer<vtkPolyData>& poly)
   collision_benchmark::getTriangleSoup(poly, vtkPoints, vtkFaces);
 
   TriMeshDataPtr ret(new TriMeshData());
-  TriMeshVerts_V& verts = ret->GetVertices();
+  TriMeshVerts_V &verts = ret->GetVertices();
   for (std::vector<collision_benchmark::vPoint>::const_iterator
        it = vtkPoints.begin(); it != vtkPoints.end(); ++it)
   {
-    const collision_benchmark::vPoint& p = *it;
+    const collision_benchmark::vPoint &p = *it;
     verts.push_back(typename TriMeshData::Vertex(p.x, p.y, p.z));
   }
 
-  TriMeshFaces_V& faces = ret->GetFaces();
+  TriMeshFaces_V &faces = ret->GetFaces();
   for (std::vector<collision_benchmark::vTriIdx>::const_iterator
        it = vtkFaces.begin(); it != vtkFaces.end(); ++it)
   {
-    const collision_benchmark::vTriIdx& f = *it;
+    const collision_benchmark::vTriIdx &f = *it;
     faces.push_back(typename TriMeshData::Face(f.v1, f.v2, f.v3));
   }
   return ret;
