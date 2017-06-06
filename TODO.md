@@ -36,7 +36,12 @@
 
 # Improvements which can still be made
 
-- The mirror world is still not perfect, it is a bit weird with forwarding information such as iterations and time.
+- Static tests fail for surface contacts when engines disagree. This
+  case should be handled as tolerance, but because the contact points don't
+  return the exact distance between the objects (and contact points very often
+  are not even on the surface of objects), another solution has to be found
+  to detect such "surface collisions" and not count them as actual collision
+  for the statics test.
 
 - Extension for [PR 2661](https://bitbucket.org/osrf/gazebo/pull-requests/2661): Add the function for all entities
   See also [this issue](https://bitbucket.org/osrf/gazebo/issues/2242/adding-method-to-physics-world-which)
@@ -62,6 +67,10 @@
   which checks that all AABBs are the same in both worlds. Separate tests
   still need to be designed using this function with a number of
   complex models.
+
+- Re-check (may have been resolved):
+  The mirror world is still not perfect, it is a bit weird with forwarding
+  information such as iterations and time.
 
 # References
 
