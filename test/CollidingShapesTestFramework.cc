@@ -284,7 +284,7 @@ bool CollidingShapesTestFramework::RunImpl
     // use default:
     // desired distance between models is \e distFact of the
     // larger AABBs on collisionAxis
-    double distFact = 0.2;
+    double distFact = 0.5;
     desiredDistance = std::max(aabb1LenOnAxis*distFact,
                                aabb2LenOnAxis*distFact);
   }

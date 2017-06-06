@@ -18,5 +18,5 @@
 
 using collision_benchmark::test::CollidingShapesParams;
 
-const int CollidingShapesParams::MaxSliderVal = 10;
+const int CollidingShapesParams::MaxSliderVal = 1000;
 

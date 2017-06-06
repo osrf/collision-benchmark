@@ -34,13 +34,52 @@ namespace test
 {
 
 /**
- * \brief Uses collision_benchmark::GazeboMultipleWorlds to load up a gazebo
+ * \brief Test framework for colliding two shapes along an axis.
+ *
+ * Uses collision_benchmark::GazeboMultipleWorlds to load up a Gazebo
  * server and client with multiple physics engines, and loads two shapes
  * into the world(s), one at each end of a "collision bar".
- * The shapes can be moved around relative to the collision bar, and will then
- * be made to collide along the direction of the bar. Step-wise moving the
- * objects towards and apart from each other can help to analyse how contact
- * points are moving when moving the two shapes relative to each other.
+
+ * Two shapes are loaded, one at each end of a "collision bar". The collision
+ * bar is the axis along which the objects will be moved to test the collision.
+ * A slider can be used to step-wise move the objects towards and apart from
+ * each other along the collision axis.
+ * An "Auto-collide" function will move the objects along the collision
+ * bar until at least one of the physics engines used for testing reports a
+ * collision between the objects.
+ *
+ * The models' pose relative to the collision axis can be changed in order to
+ * find critical collision configurations which happen when the models collide.
+ * To change the pose of the models, the Gazebo client transformation tools
+ * can be used.
+ *
+ * A configuration can then be saved an loaded again at a later point.
+ * The saved configuration will not save the amount the models were
+ * moved via the axis slider or the auto-collide function, but only the amount
+ * they were moved around by the user (with Gazebo client transformation tools).
+ * Before saving a configuration, it is advised to separate the models to the
+ * maximum extent using the slider, to get a feeling of which configuration
+ * will be saved. The configuration saved is the one at which models are
+ * separated to the full extent via the collision axis slider.
+ *
+ * To load models, the test can use:
+ * - SDF files which contain the model
+ * - The name of the model (it has to be findable in ``GAZEBO_MODEL_PATH``)
+ * - Unit shapes: Box, cylinder and sphere
+ * However, only exactly two shapes to be loaded are supported.
+ *
+ * Note that the collision axis cannot be moved. It is not a model in the world,
+ * it is only displayed as a helping visualization.
+ *
+ * More details about how the implementation unfolds the test configuration:
+ *
+ * 1. The two models are loaded and placed *at the origin* (which means
+ *    poses which they may have in the SDF files are ignored).
+ * 2. The two models are separated along the axis, such that their AABBs do not
+ *    intersect. Model 2 is moved away from model 1 along the collision axis.
+ * 3. The slider or the "Auto Collide" function can be used to slide
+ *    model 2 along the axis towards/away from model 1.
+ * 4. The models' pose can be changed and also saved to the configuration.
  *
  * \author Jennifer Buehler
  * \date May 2017

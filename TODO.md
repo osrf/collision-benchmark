@@ -12,7 +12,13 @@
   Actually sensors::run_once(true) can be called, which is done from Server::Run(), but we don't use this.
   We need to manually hack this by calling ``World::_SetSensorsInitialized(true);`` in GazeboWorldLoader.cc
 
+- ODE does not compute contact points between static objects, while bullet does.
+  Do we inted this? Example: Load up two-shapes test with cafe_table and bookshelf.
+
+- colliding_shapes_test bullet ode -m beer -m coke_can: bullet detects collision too early
+
 # Issues to address
+
 
 - AABB: PhysicsWorld returns AABB in model coordinate frame. This has to be fixed up in the static test still.
   It doesn't matter if all objects are added with identity orientation, but it does matter if they are rotated.
