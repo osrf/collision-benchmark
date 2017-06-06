@@ -36,6 +36,8 @@
 
 # Improvements which can still be made
 
+- Add more tutorials to the documentation
+
 - Static tests fail for surface contacts when engines disagree. This
   case should be handled as tolerance, but because the contact points don't
   return the exact distance between the objects (and contact points very often
