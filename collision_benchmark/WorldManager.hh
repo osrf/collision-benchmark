@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
-/* Desc: World adaptor mirroring another physics::World
+ */
+/*
  * Author: Jennifer Buehler
  * Date: December 2016
  */

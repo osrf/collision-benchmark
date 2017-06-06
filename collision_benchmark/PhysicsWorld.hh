@@ -16,6 +16,9 @@
  * limitations under the License.
  *
  */
+/*
+ * Author: Jennifer Buehler
+ */
 
 #include <collision_benchmark/ContactInfo.hh>
 #include <collision_benchmark/Shape.hh>

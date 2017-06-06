@@ -14,6 +14,9 @@
  * limitations under the License.
  *
  */
+/*
+ * Author: Jennifer Buehler
+ */
 #ifndef COLLISION_BENCHMARK_GAZEBOHELPERS_
 #define COLLISION_BENCHMARK_GAZEBOHELPERS_
 

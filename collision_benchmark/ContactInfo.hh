@@ -1,3 +1,24 @@
+/*
+ * Copyright (C) 2012-2016 Open Source Robotics Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+/*
+ * Author: Jennifer Buehler
+ * Date: October 2016
+ */
+
 #ifndef COLLISION_BENCHMARK_CONTACTINFO
 #define COLLISION_BENCHMARK_CONTACTINFO
 
@@ -8,7 +29,6 @@
 
 namespace collision_benchmark
 {
-
 /**
  * \brief Basic data for a contact point between two bodies
  * \author Jennifer Buehler
@@ -23,21 +43,21 @@ class Contact
   public: typedef std::shared_ptr<Self> Ptr;
   public: typedef std::shared_ptr<const Self> ConstPtr;
 
-  public: Contact(){}
+  public: Contact() {}
   public: Contact(const Vector3& position_,
                   const Vector3& normal_,
                   const Wrench &wrench_,
-                  const double depth_):
-        position(position_),
-        normal(normal_),
-        wrench(wrench_),
-        depth(depth_) {}
+                  const double depth_)
+        : position(position_),
+          normal(normal_),
+          wrench(wrench_),
+          depth(depth_) {}
 
-  public: Contact(const Contact &c):
-        position(c.position),
-        normal(c.normal),
-        wrench(c.wrench),
-        depth(c.depth) {}
+  public: Contact(const Contact &c)
+        : position(c.position),
+          normal(c.normal),
+          wrench(c.wrench),
+          depth(c.depth) {}
 
   public: virtual ~Contact() {}
 
@@ -96,7 +116,7 @@ class ContactInfo
   public: typedef std::shared_ptr<Self> Ptr;
   public: typedef std::shared_ptr<const Self> ConstPtr;
 
-  public: ContactInfo(){}
+  public: ContactInfo() {}
   /// constructor which automatically swaps model1 and model2
   /// if necessary according to their lexicographicall order
   /// (model1 before model2)
@@ -120,12 +140,12 @@ class ContactInfo
       modelPart2 =  modelPart1_;
     }
   }
-  public: ContactInfo(const ContactInfo &c):
-        contacts(c.contacts),
-        model1(c.model1),
-        modelPart1(c.modelPart1),
-        model2(c.model2),
-        modelPart2(c.modelpart2){}
+  public: ContactInfo(const ContactInfo &c)
+        : contacts(c.contacts),
+          model1(c.model1),
+          modelPart1(c.modelPart1),
+          model2(c.model2),
+          modelPart2(c.modelpart2) {}
   public: virtual ~ContactInfo() {}
 
   // checks for validity of the contact configuration
@@ -185,9 +205,7 @@ class ContactInfo
   // second model which is part of the contact
   public: ModelID model2;
   public: ModelPartID modelPart2;
-
 };
-
 }  // namespace
 
 #endif  // COLLISION_BENCHMARK_CONTACTINFO

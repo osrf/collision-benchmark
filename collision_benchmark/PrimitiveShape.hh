@@ -14,6 +14,9 @@
  * limitations under the License.
  *
  */
+/*
+ * Author: Jennifer Buehler
+ */
 
 #ifndef COLLISION_BENCHMARK_PRIMITIVESHAPE
 #define COLLISION_BENCHMARK_PRIMITIVESHAPE

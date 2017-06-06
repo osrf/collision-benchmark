@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
-/* Desc: World adaptor mirroring another physics::World
+ */
+/*
  * Author: Jennifer Buehler
  * Date: December 2016
  */
@@ -27,7 +27,6 @@
 
 namespace collision_benchmark
 {
-
 /**
  * \brief World which can be set to mirror a PhysicsWorld.
  *
@@ -45,21 +44,17 @@ namespace collision_benchmark
  * \author Jennifer Buehler
  * \date December 2016
  */
-//template<class WorldState_>
 class MirrorWorld
 {
-//  public: typedef WorldState_ WorldState;
-//  public: typedef MirrorWorld<WorldState> Self;
   public: typedef MirrorWorld Self;
   public: typedef std::shared_ptr<Self> Ptr;
   public: typedef std::shared_ptr<const Self> ConstPtr;
 
   // the original world type
-  //public: typedef PhysicsWorldStateInterface<WorldState> OriginalWorld;
   public: typedef PhysicsWorldBaseInterface OriginalWorld;
   public: typedef std::shared_ptr<OriginalWorld> OriginalWorldPtr;
 
-  public:  ~MirrorWorld(){}
+  public:  virtual ~MirrorWorld() {}
 
   /// Sets the original world to be mirrored by this MirrorWorld
   public:  void SetOriginalWorld(const OriginalWorldPtr &_originalWorld)
@@ -80,7 +75,7 @@ class MirrorWorld
              // Hence lock it only around the actual access to the local
              // variable.
              std::lock_guard<std::mutex> lock(originalWorldMutex);
-             originalWorld=_originalWorld;
+             originalWorld = _originalWorld;
            }
 
   /// Returns the original world which is mirrored by this class
@@ -91,7 +86,7 @@ class MirrorWorld
            }
 
   /// Synchronizes the world with the original
-  public:  virtual void Sync() =0 ;
+  public:  virtual void Sync() = 0;
 
   /// \return the name of the mirror world (not the original world).
   ///     Can be used by subclasses in case the mirror worlds are

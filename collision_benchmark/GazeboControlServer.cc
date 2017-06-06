@@ -39,7 +39,7 @@ BasicState GetBasicState(const gazebo::msgs::Factory &_msg)
     state.SetRotation(p.Rot().X(), p.Rot().Y(), p.Rot().Z(), p.Rot().W());
   }
 
-  state.SetScale(1,1,1);
+  state.SetScale(1, 1, 1);
 
   return state;
 }
@@ -170,7 +170,6 @@ void GazeboControlServer::Init(const std::string &_worldName)
   if (!this->wldIdxCtrlPublisher)
     this->wldIdxCtrlPublisher  =
       generalCtrlNode->Advertise<gazebo::msgs::Any>("mirror_world/get_world");
-
 }
 
 void GazeboControlServer::OnWorldControl

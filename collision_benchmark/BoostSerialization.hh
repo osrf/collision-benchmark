@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
+/*
+ * Author: Jennifer Buehler
+ */
 #ifndef COLLISION_BENCHMARK_SERIALIZATION_H
 #define COLLISION_BENCHMARK_SERIALIZATION_H
 
