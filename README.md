@@ -339,11 +339,14 @@ in similar configurations of two colliding objects. But this may not always
 be the case ("jumping contact points"). For testing and debugging cases in
 which such contact point jumps happen, it is useful to have
 a visual interface in which the shapes can be moved a small distance,
-the exact same way, over and over again around the point where the
-contact jump happens.    
-For this purpose, the "two colliding shapes" test was developed.    
+in the exact same way, over and over again around the point where the
+contact jump happens.
+For this purpose, the "two colliding shapes" test was developed.
+
 This test only works with the Gazebo engines and uses the Gazebo client for
 visualization.
+
+**How the test works**
 
 Two shapes are loaded, one at each end of a "collision bar". The collision
 bar is the axis along which the objects will be moved to test the collision.
@@ -352,6 +355,8 @@ other along the collision axis.
 An "Auto-collide" function will move the objects along the collision
 bar until at least one of the physics engines used for testing reports a
 collision between the objects. 
+
+![Two shapes test](images/Two-shapes-test-cans.png)
 
 The models' pose relative to the collision axis can be changed in order
 to find critical collision configurations which happen when the models collide.
@@ -374,6 +379,8 @@ To load models, the test can use:
 - Unit shapes: Box, cylinder and sphere
 
 However, only exactly two shapes to be loaded are supported.
+
+**Starting the test**
 
 To start the test (which is part of the cmake ``tests`` target):
 
@@ -413,7 +420,7 @@ to see how they differ in their contact point calculation.
 Note that the collision axis cannot be moved. It is not a model in the world,
 it is only displayed as a helping visualization.
 
-**Example**
+*Example*
 
 ``collide_test ode bullet -m coke_can -m beer``
 
