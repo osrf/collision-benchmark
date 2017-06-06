@@ -27,7 +27,6 @@
 
 namespace collision_benchmark
 {
-
 std::string Demangle(const char* name);
 
 template <typename T>
@@ -102,4 +101,4 @@ using IsBaseOfTemplate = decltype(IsBaseOfTemplateImpl<C>(std::declval<T*>()));
 
 }  // namespace
 
-#endif //COLLISION_BENCHMARK_TYPEHELPER_H
+#endif  // COLLISION_BENCHMARK_TYPEHELPER_H

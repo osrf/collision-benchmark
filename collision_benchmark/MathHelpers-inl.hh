@@ -14,7 +14,13 @@
  * limitations under the License.
  *
  */
+/*
+ * Author: Jennifer Buehler
+ * Date: 2017
+ */
+
 #include <collision_benchmark/MathHelpers.hh>
+#include <algorithm>
 
 //////////////////////////////////////////////////////////////////////////////
 template<typename Float>
@@ -133,7 +139,7 @@ void SetIdx(const int idx,
             ignition::math::Vector3<Float>& v)
 {
   uint32_t index = idx < 0 ? 0u : idx > 2 ? 2 : idx;
-  switch(index)
+  switch (index)
   {
     case 0:
       {
@@ -170,9 +176,9 @@ void collision_benchmark::UpdateAABB
 
     newMin = ignition::math::Vector3<Float>(FLT_MAX, FLT_MAX, FLT_MAX);
     newMax = -newMin;
-    for (int x = 0; x<2; ++x)
-      for (int y = 0; y<2; ++y)
-        for (int z = 0; z<2; ++z)
+    for (int x = 0; x < 2; ++x)
+      for (int y = 0; y < 2; ++y)
+        for (int z = 0; z < 2; ++z)
         {
           ignition::math::Vector3<Float> v(xCoords[x], yCoords[y], zCoords[z]);
           v = transform * v;

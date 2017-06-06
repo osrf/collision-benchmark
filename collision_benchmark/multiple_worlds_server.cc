@@ -24,7 +24,6 @@
 #include <collision_benchmark/GazeboPhysicsWorld.hh>
 #include <collision_benchmark/GazeboWorldState.hh>
 #include <collision_benchmark/GazeboTopicForwardingMirror.hh>
-#include <collision_benchmark/GazeboPhysicsWorld.hh>
 #include <collision_benchmark/boost_std_conversion.hh>
 #include <collision_benchmark/GazeboHelpers.hh>
 #include <collision_benchmark/WorldManager.hh>
@@ -115,7 +114,6 @@ bool Init(const bool loadMirror,
   return true;
 }
 
-
 // Runs the multiple worlds server
 bool Run()
 {
@@ -151,7 +149,7 @@ bool Run()
   int iter = 0;
   // TODO: at this point, we can only stop the program with Ctrl+C
   // which is not great. Find a better way to do this.
-  while(true)
+  while (true)
   {
     int numSteps = 1;
     worldManager->Update(numSteps);
@@ -161,7 +159,6 @@ bool Run()
   g_server->Stop();
   return true;
 }
-
 
 /////////////////////////////////////////////////
 int main(int argc, char **argv)
@@ -181,16 +178,15 @@ int main(int argc, char **argv)
   desc.add_options()
     ("help, h", "Produce help message")
     ("engines, e",
-      po::value<std::vector<std::string>>(&selectedEngines)->multitoken(),
+      po::value<std::vector<std::string> >(&selectedEngines)->multitoken(),
       descEngines.str().c_str())
     ("keep-name, k", "keep the names of the worlds as specified in the files. \
-Only works when no engines are specified with -e.")
-    ;
+Only works when no engines are specified with -e.");
   po::options_description desc_hidden("Positional options");
   desc_hidden.add_options()
-    ("worlds, w", po::value<std::vector<std::string>>(&worldFiles)->multitoken(),
-      "World file(s).")
-    ;
+    ("worlds, w",
+      po::value<std::vector<std::string> >(&worldFiles)->multitoken(),
+      "World file(s).");
 
   po::variables_map vm;
   po::positional_options_description p;
@@ -200,8 +196,8 @@ Only works when no engines are specified with -e.")
   po::options_description desc_composite;
   desc_composite.add(desc).add(desc_hidden);
 
-  po::command_line_parser parser{argc, argv};
-  parser.options(desc_composite).positional(p); // .allow_unregistered();
+  po::command_line_parser parser(argc, argv);
+  parser.options(desc_composite).positional(p);
   po::parsed_options parsedOpt = parser.run();
   po::store(parsedOpt, vm);
   po::notify(vm);
@@ -219,7 +215,7 @@ Only works when no engines are specified with -e.")
     for (std::vector<std::string>::iterator it = selectedEngines.begin();
          it != selectedEngines.end(); ++it)
     {
-      std::cout<<*it << std::endl;
+      std::cout << *it << std::endl;
     }
   }
   else

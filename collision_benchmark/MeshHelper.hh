@@ -26,10 +26,10 @@
 #include <boost/filesystem.hpp>
 
 #include <vector>
+#include <string>
 
 namespace collision_benchmark
 {
-
 std::string SetOrReplaceFileExtension(const std::string &in,
                                       const std::string &ext)
 {
@@ -40,10 +40,7 @@ std::string SetOrReplaceFileExtension(const std::string &in,
 
 aiMaterial * GetDefaultMaterial()
 {
-
   aiMaterial* mat = new aiMaterial();
-
-
   /*mat->AddProperty(&srcMat.diffuse,  1,AI_MATKEY_COLOR_DIFFUSE);
   mat->AddProperty(&srcMat.specular, 1,AI_MATKEY_COLOR_SPECULAR);
   mat->AddProperty(&srcMat.ambient,  1,AI_MATKEY_COLOR_AMBIENT);
@@ -157,7 +154,8 @@ bool WriteTrimesh(const std::string &filename,
       != AI_SUCCESS)
   {
     std::cerr << "Could not write " << fname << " in the format "
-             <<outformat << ". Error: " << exporter.GetErrorString() << std::endl;
+              << outformat << ". Error: " << exporter.GetErrorString()
+              << std::endl;
     return false;
   }
   delete scene;
