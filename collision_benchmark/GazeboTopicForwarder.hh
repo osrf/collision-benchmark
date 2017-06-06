@@ -78,8 +78,8 @@ class GazeboTopicForwarder
   // \brief Constructor
   // \param _filter filters out all messages to which the filter applies
   //      and does not republish them. If NULL, does not filter any messages.
- public: GazeboTopicForwarder(const MessageFilterConstPtr _filter = nullptr,
-                              const bool _verbose = false):
+  public: GazeboTopicForwarder(const MessageFilterConstPtr _filter = nullptr,
+                               const bool _verbose = false):
           msgFilter(_filter),
           verbose(_verbose)
           {
@@ -92,8 +92,8 @@ class GazeboTopicForwarder
   // \param _pubHzRate update rate for publisher (0=fastest possible)
   // \param _filter filters out all messages to which the filter applies
   //      and does not republish them. If NULL, does not filter any messages.
- public: GazeboTopicForwarder(const std::string &_to,
-                              const gazebo::transport::NodePtr &_node,
+  public: GazeboTopicForwarder(const std::string &_to,
+                               const gazebo::transport::NodePtr &_node,
                               unsigned int _pubQueueLimit = 1000,
                               double _pubHzRate = 0,
                               const MessageFilterConstPtr _filter = nullptr,
@@ -288,9 +288,9 @@ class GazeboServiceForwarder
   //      of messages to be published
   // \param _pubHzRate update rate for re-publisher of messages
   //      (0=fastest possible)
- public: GazeboServiceForwarder(unsigned int _pubQueueLimit = 1000,
-                                double _pubHzRate = 0,
-                                const bool _verbose = false):
+  public: GazeboServiceForwarder(unsigned int _pubQueueLimit = 1000,
+                                 double _pubHzRate = 0,
+                                 const bool _verbose = false):
           pubQueueLimit(_pubQueueLimit),
           pubHzRate(_pubHzRate),
           verbose(_verbose)
@@ -303,11 +303,11 @@ class GazeboServiceForwarder
   //      of messages to be published
   // \param _pubHzRate update rate for re-publisher of messages
   //      (0=fastest possible)
- public: GazeboServiceForwarder(const std::string &_requestSourceTopic,
-                                const std::string &_responseSourceTopic,
-                                unsigned int _pubQueueLimit = 1000,
-                                double _pubHzRate = 0,
-                                const bool _verbose = false):
+  public: GazeboServiceForwarder(const std::string &_requestSourceTopic,
+                                 const std::string &_responseSourceTopic,
+                                 unsigned int _pubQueueLimit = 1000,
+                                 double _pubHzRate = 0,
+                                 const bool _verbose = false):
           requestSourceTopic(_requestSourceTopic),
           responseSourceTopic(_responseSourceTopic),
           pubQueueLimit(_pubQueueLimit),

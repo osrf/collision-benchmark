@@ -152,7 +152,7 @@ void StaticTestFramework::LoadShape(const Shape::Ptr &shape,
   ASSERT_NE(world.get(), nullptr) << "No world at index " << worldIdx;
 
   GzWorldManager::PhysicsWorldModelInterfacePtr mWorld =
-   GzWorldManager::ToWorldWithModel(world);
+    GzWorldManager::ToWorldWithModel(world);
   ASSERT_NE(mWorld.get(), nullptr) << "Cast failure";
 
   // Load model

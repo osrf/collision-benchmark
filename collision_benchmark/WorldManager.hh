@@ -187,24 +187,24 @@ class WorldManager
   ///       AddPhysicsWorld.
   public: void SetMirrorWorld(const MirrorWorldPtr &_mirrorWorld)
   {
-   if (!_mirrorWorld)
-   {
-     if (this->mirrorWorld)
-     {
-       this->mirrorWorld.reset();
-     }
-     this->mirroredWorldIdx=-1;
-     return;
-   }
-   this->mirrorWorld = _mirrorWorld;
-   {
-     std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
-     if (!this->worlds.empty())
-     {
-       this->mirrorWorld->SetOriginalWorld(worlds.front());
-       this->mirroredWorldIdx = 0;
-     }
-   }
+    if (!_mirrorWorld)
+    {
+      if (this->mirrorWorld)
+      {
+        this->mirrorWorld.reset();
+      }
+      this->mirroredWorldIdx=-1;
+      return;
+    }
+    this->mirrorWorld = _mirrorWorld;
+    {
+      std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
+      if (!this->worlds.empty())
+      {
+        this->mirrorWorld->SetOriginalWorld(worlds.front());
+        this->mirroredWorldIdx = 0;
+      }
+    }
   }
 
   // MirrorWorldPtr GetMirrorWorld() { return this->mirrorWorld; }
@@ -474,7 +474,7 @@ class WorldManager
   public: static PhysicsWorldStateInterfacePtr
            ToWorldWithState(const PhysicsWorldBaseInterface::Ptr &w)
   {
-   return std::dynamic_pointer_cast<PhysicsWorldStateInterfaceT>(w);
+    return std::dynamic_pointer_cast<PhysicsWorldStateInterfaceT>(w);
   }
 
   // Convenience method which casts the world \e w to a
@@ -482,7 +482,7 @@ class WorldManager
   public: static PhysicsWorldModelInterfacePtr
           ToWorldWithModel(const PhysicsWorldBaseInterface::Ptr &w)
   {
-   return std::dynamic_pointer_cast <PhysicsWorldModelInterfaceT>(w);
+    return std::dynamic_pointer_cast <PhysicsWorldModelInterfaceT>(w);
   }
 
   // Convenience method which casts the world \e w to a
@@ -490,26 +490,26 @@ class WorldManager
   public: static PhysicsWorldContactInterfacePtr
           ToWorldWithContact(const PhysicsWorldBaseInterface::Ptr &w)
   {
-   return std::dynamic_pointer_cast<PhysicsWorldContactInterfaceT>(w);
+    return std::dynamic_pointer_cast<PhysicsWorldContactInterfaceT>(w);
   }
 
-   // Convenience method which casts the world \e w to a PhysicsWorld
+  // Convenience method which casts the world \e w to a PhysicsWorld
   public: static PhysicsWorldPtr
           ToPhysicsWorld(const PhysicsWorldBaseInterface::Ptr &w)
   {
-   return std::dynamic_pointer_cast<PhysicsWorldT>(w);
+    return std::dynamic_pointer_cast<PhysicsWorldT>(w);
   }
 
   public: void SetPaused(bool flag)
   {
-   std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
-   for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator
-        it = this->worlds.begin();
-        it != this->worlds.end(); ++it)
-   {
-     PhysicsWorldBaseInterface::Ptr w=*it;
-     w->SetPaused(flag);
-   }
+    std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
+    for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator
+         it = this->worlds.begin();
+         it != this->worlds.end(); ++it)
+    {
+      PhysicsWorldBaseInterface::Ptr w=*it;
+      w->SetPaused(flag);
+    }
   }
 
   /// \brief Set the dynamics engine to enabled or disabled.
@@ -518,56 +518,56 @@ class WorldManager
   /// collision states / contact points between them checked.
   public: void SetDynamicsEnabled(const bool flag)
   {
-   // std::cout << "WorldManager received request to set dynamics "
-   //          << "enable to " << flag << std::endl;
-   std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
-   for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator
-        it = this->worlds.begin();
-        it != this->worlds.end(); ++it)
-   {
-     PhysicsWorldBaseInterface::Ptr w=*it;
-     w->SetDynamicsEnabled(flag);
-   }
+    // std::cout << "WorldManager received request to set dynamics "
+    //          << "enable to " << flag << std::endl;
+    std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
+    for (std::vector<PhysicsWorldBaseInterface::Ptr>::iterator
+         it = this->worlds.begin();
+         it != this->worlds.end(); ++it)
+    {
+      PhysicsWorldBaseInterface::Ptr w=*it;
+      w->SetDynamicsEnabled(flag);
+    }
   }
 
   /// Calls PhysicsWorld::Update(iter, force) on all worlds and subsequently
   /// calls MirrorWorld::Sync() and MirrorWorld::Update().
   public: void Update(int iter = 1, bool force = false)
   {
-   // we cannot just lock the worldMutex with a lock here, because
-   // calling Update() may trigger the call of callbacks in this
-   // class, called by the ControlServer. ControlServer implementations
-   // may trigger the call of the callbacks from a different thread,
-   // therefore there will be a deadlock for accessing the worlds in
-   // the callback functions of this class. Only block the worlds
-   // vector while absolutey necessary.
-   this->worldsMutex.lock();
-   int numWorlds = this->worlds.size();
-   this->worldsMutex.unlock();
-   for (int i = 0; i< numWorlds; ++i)
-   {
-     PhysicsWorldBaseInterface::Ptr world;
-     {
-       // get the i'th world
-       std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
-       // update vector size in case more worlds were
-       // added asynchronously
-       numWorlds = this->worlds.size();
-       // break loop if size of worlds has decreased
-       if (i >= numWorlds) break;
-       world = worlds[i];
-     }
-     world->Update(iter, force);
-   }
-   if (this->mirrorWorld)
-   {
-     this->mirrorWorld->Sync();
-   }
+    // we cannot just lock the worldMutex with a lock here, because
+    // calling Update() may trigger the call of callbacks in this
+    // class, called by the ControlServer. ControlServer implementations
+    // may trigger the call of the callbacks from a different thread,
+    // therefore there will be a deadlock for accessing the worlds in
+    // the callback functions of this class. Only block the worlds
+    // vector while absolutey necessary.
+    this->worldsMutex.lock();
+    int numWorlds = this->worlds.size();
+    this->worldsMutex.unlock();
+    for (int i = 0; i< numWorlds; ++i)
+    {
+      PhysicsWorldBaseInterface::Ptr world;
+      {
+        // get the i'th world
+        std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
+        // update vector size in case more worlds were
+        // added asynchronously
+        numWorlds = this->worlds.size();
+        // break loop if size of worlds has decreased
+        if (i >= numWorlds) break;
+        world = worlds[i];
+      }
+      world->Update(iter, force);
+    }
+    if (this->mirrorWorld)
+    {
+      this->mirrorWorld->Sync();
+    }
   }
 
   public: ControlServerPtr GetControlServer()
   {
-   return controlServer;
+    return controlServer;
   }
 
   // Saves all worlds to files. The filenames will be written
@@ -737,7 +737,7 @@ class WorldManager
 
      // return the name of the new world
      return mirrorWorld->GetOriginalWorld()->GetName();
-   }
+  }
 
 
   // Helper callback to call AddModelFromFile on the world

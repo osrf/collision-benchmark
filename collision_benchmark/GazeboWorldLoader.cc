@@ -237,7 +237,7 @@ collision_benchmark::GetSDFElementFromFile(const std::string &filename,
   std::string fullFile;
   try
   {
-   fullFile = gazebo::common::find_file(filename);
+    fullFile = gazebo::common::find_file(filename);
   }
   catch (gazebo::common::Exception &e)
   {

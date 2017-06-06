@@ -43,7 +43,7 @@ using collision_benchmark::BasicState;
 
 /////////////////////////////////////////////////////////////////////////////
 CollidingShapesTestFramework::CollidingShapesTestFramework():
-  collisionAxis(0,1,0),
+  collisionAxis(0, 1, 0),
   triggeredAutoCollide(false),
   shapesOnAxisPos(CollidingShapesParams::MaxSliderVal)
 {
@@ -58,11 +58,11 @@ bool CollidingShapesTestFramework::Run
      const bool modelsGapIsFactor)
 {
   static const double axEp = 1e-06;
-  if (!collision_benchmark::EqualVectors(collisionAxis, Vector3(1,0,0), axEp) &&
-      !collision_benchmark::EqualVectors(collisionAxis, Vector3(0,1,0), axEp) &&
-      !collision_benchmark::EqualVectors(collisionAxis, Vector3(0,0,1), axEp))
+  if (!collision_benchmark::EqualVectors(collisionAxis, Vector3(1, 0, 0), axEp) &&
+      !collision_benchmark::EqualVectors(collisionAxis, Vector3(0, 1, 0), axEp) &&
+      !collision_benchmark::EqualVectors(collisionAxis, Vector3(0, 0, 1), axEp))
   {
-    std::cerr << "At this point, the only collision axes supported are x,y "
+    std::cerr << "At this point, the only collision axes supported are x, y "
               << "or z axis. Is " << collisionAxis << std::endl;
     return false;
   }
@@ -215,8 +215,8 @@ bool CollidingShapesTestFramework::RunImpl
   // make sure the models are at the origin first (ie. remove any pose
   // information they may have in the SDF).
   BasicState modelState1;
-  modelState1.SetPosition(0,0,0);
-  modelState1.SetRotation(0,0,0,1);
+  modelState1.SetPosition(0, 0, 0);
+  modelState1.SetRotation(0, 0, 0, 1);
   BasicState modelState2(modelState1);
   if ((worldManager->SetBasicModelState(loadedModelNames[0], modelState1)
        != worldManager->GetNumWorlds()) ||
@@ -331,7 +331,7 @@ bool CollidingShapesTestFramework::RunImpl
       ignition::math::Vector3d(collisionAxis.X(), collisionAxis.Y(),
                                collisionAxis.Z()) * collAxisLength/2;
   // axis of cylinder
-  const Vector3 zAxis(0,0,1);
+  const Vector3 zAxis(0, 0, 1);
   ignition::math::Quaterniond collBarQ;
   collBarQ.From2Axes(zAxis, collisionAxis);
   ignition::math::Pose3d collBarPose(collBarP, collBarQ);

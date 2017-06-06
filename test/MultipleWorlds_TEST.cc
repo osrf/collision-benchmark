@@ -26,9 +26,9 @@ LoadWorlds(const std::vector<std::string>& filenames)
 {
   // list of worlds to be loaded
   std::vector<collision_benchmark::Worldfile> worldsToLoad;
-  int i=0;
-  for (std::vector<std::string>::const_iterator it=filenames.begin();
-       it!=filenames.end(); ++it, ++i)
+  int i = 0;
+  for (std::vector<std::string>::const_iterator it = filenames.begin();
+       it != filenames.end(); ++it, ++i)
   {
     std::string worldfile = *it;
     std::stringstream worldname;
@@ -57,20 +57,20 @@ TEST_F(MultipleWorldsTest, UsesDifferentEngines)
     // XXX TODO add the empty_simbody.world file
     filenames.push_back("../test_worlds/empty_simbody.world");
 
-  std::vector<gazebo::physics::WorldPtr> worlds=LoadWorlds(filenames);
+  std::vector<gazebo::physics::WorldPtr> worlds = LoadWorlds(filenames);
 
   ASSERT_EQ(worlds.size(), filenames.size())
     << filenames.size() << "  Worlds must have been loaded";
 
-  std::set<std::string>::iterator eit=engines.begin();
-  for (std::vector<gazebo::physics::WorldPtr>::iterator it=worlds.begin();
-       it!=worlds.end(); ++it, ++eit)
+  std::set<std::string>::iterator eit = engines.begin();
+  for (std::vector<gazebo::physics::WorldPtr>::iterator it = worlds.begin();
+       it != worlds.end(); ++it, ++eit)
   {
     ASSERT_NE(it->get(),nullptr) << " World NULL pointer returned";
     ASSERT_NE((*it)->Physics().get(), nullptr)
       << " World PhysicsEngine cannot be NULL";
     ASSERT_EQ((*it)->Physics()->GetType(), *eit)
-      << "Engine must be '"<<*eit
+      << "Engine must be '" << *eit
       <<"', is " << (*it)->Physics()->GetType();
   }
 }
@@ -96,7 +96,7 @@ TEST_F(MultipleWorldsTest, UsesDifferentEnginesOverride)
   int i = 0;
   std::vector<gazebo::physics::WorldPtr> worlds;
   for (std::vector<std::string>::const_iterator it = physics_filenames.begin();
-       it!=physics_filenames.end(); ++it, ++i)
+       it != physics_filenames.end(); ++it, ++i)
   {
     std::string physicsfile = *it;
     std::string worldfile = "worlds/rubble.world";
@@ -120,15 +120,15 @@ TEST_F(MultipleWorldsTest, UsesDifferentEnginesOverride)
   ASSERT_EQ(worlds.size(), physics_filenames.size())
     << physics_filenames.size() << "  Worlds must have been loaded";
 
-  std::set<std::string>::iterator eit=engines.begin();
-  for (std::vector<gazebo::physics::WorldPtr>::iterator it=worlds.begin();
-       it!=worlds.end(); ++it, ++eit)
+  std::set<std::string>::iterator eit = engines.begin();
+  for (std::vector<gazebo::physics::WorldPtr>::iterator it = worlds.begin();
+       it != worlds.end(); ++it, ++eit)
   {
     std::cout << "Engine used: " << (*it)->Physics()->GetType() << std::endl;
     ASSERT_NE(it->get(),nullptr) << " World NULL pointer returned";
     ASSERT_NE((*it)->Physics().get(), nullptr)
       << " World PhysicsEngine cannot be NULL";
-    ASSERT_EQ((*it)->Physics()->GetType(), *eit) << "Engine must be '"<<*eit
+    ASSERT_EQ((*it)->Physics()->GetType(), *eit) << "Engine must be '" << *eit
       <<"', is " << (*it)->Physics()->GetType();
   }
 }

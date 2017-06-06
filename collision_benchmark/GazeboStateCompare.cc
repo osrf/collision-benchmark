@@ -27,10 +27,10 @@ bool GazeboStateCompare::Equal(const WorldState &s1, const WorldState &s2,
                                const Tolerances &tolerances,
                                const bool checkLights)
 {
-  if (s1.Insertions().size()!=s2.Insertions().size() ||
-      s1.Deletions().size()!=s2.Deletions().size() ||
-      s1.GetModelStates().size()!=s2.GetModelStates().size() ||
-      s1.LightStates().size()!=s2.LightStates().size())
+  if (s1.Insertions().size() != s2.Insertions().size() ||
+      s1.Deletions().size() != s2.Deletions().size() ||
+      s1.GetModelStates().size() != s2.GetModelStates().size() ||
+      s1.LightStates().size() != s2.LightStates().size())
   {
 #ifdef DEBUG
     std::cout << "State sizes not equal" << std::endl;

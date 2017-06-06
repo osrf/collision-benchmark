@@ -81,10 +81,10 @@ TEST_F(WorldInterfaceTest, TransferWorldState)
   GzPhysicsWorldStateInterface::Ptr world1(gzWorld1);
   GzPhysicsWorldStateInterface::Ptr world2(gzWorld2);
 
-  int numIters=3000;
+  int numIters = 3000;
   std::cout << "Doing " << numIters << " iterations on the rubble world and "
             << "set the second world to the same state" << std::endl;
-  for (int i=0; i<numIters; ++i)
+  for (int i = 0; i<numIters; ++i)
   {
     gazebo::physics::WorldState target = world2->GetWorldState();
     collision_benchmark::OpResult setStateRet
@@ -96,7 +96,7 @@ TEST_F(WorldInterfaceTest, TransferWorldState)
       GazeboStateCompare::Tolerances::CreateDefault(1e-03);
 
     // don't check dynamics because we disable physics engine in gzWorld1
-    t.CheckDynamics=false;
+    t.CheckDynamics = false;
 
     ASSERT_EQ(GazeboStateCompare::Equal(newState, target, t), true)
       <<"Target state was not set as supposed to!! ";
@@ -121,7 +121,7 @@ TEST_F(WorldInterfaceTest, WorldManager)
   // create one world per physics engine and load it with the cube world,
   // and add it to the world manager
   GzWorldManager worldManager;
-  int i=1;
+  int i = 1;
   for (std::map<std::string, std::string>::iterator it = physicsEngines.begin();
        it!=physicsEngines.end(); ++it, ++i)
   {
@@ -130,7 +130,7 @@ TEST_F(WorldInterfaceTest, WorldManager)
 
     std::stringstream _worldname;
     _worldname << "world_" << i << "_" << engine;
-    std::string worldname=_worldname.str();
+    std::string worldname = _worldname.str();
 
     std::cout << "Loading with physics engine " << engine
               << " (named as '" << worldname << "')" << std::endl;
@@ -160,7 +160,7 @@ TEST_F(WorldInterfaceTest, WorldManager)
 
   // All worlds should have a cube named "box",
   // and only two models (ground and cube).
-  for (int i=0; i<worldManager.GetNumWorlds(); ++i)
+  for (int i = 0; i<worldManager.GetNumWorlds(); ++i)
   {
     PhysicsWorldBaseInterface::Ptr world = worldManager.GetWorld(i);
     GzPhysicsWorldStateInterface::Ptr sWorld =
@@ -247,27 +247,27 @@ TEST_F(WorldInterfaceTest, GazeboModelLoading)
 
   // Add another model via the Shape load function
   std::string forcedModelName3 = "test-shape";
-  //Shape::Ptr shape(PrimitiveShape::CreateBox(2, 2,2));
+  //Shape::Ptr shape(PrimitiveShape::CreateBox(2, 2, 2));
   //Shape::Ptr shape(PrimitiveShape::CreateSphere(2));
   //Shape::Ptr shape(PrimitiveShape::CreateCylinder(1, 3));
   //Shape::Ptr shape(PrimitiveShape::CreatePlane
-  //                  (Shape::Vector3(1, 0,0), Shape::Vector2(10, 10)));
+  //                  (Shape::Vector3(1, 0, 0), Shape::Vector2(10, 10)));
 
   // create simple mesh
   SimpleTriMeshShape::MeshDataPtr meshData(new SimpleTriMeshShape::MeshDataT());
   typedef SimpleTriMeshShape::Vertex Vertex;
   typedef SimpleTriMeshShape::Face Face;
-  std::vector<Vertex>& vertices=meshData->GetVertices();
-  std::vector<Face>& triangles=meshData->GetFaces();
-  vertices.push_back(Vertex(-1, 0,0));
-  vertices.push_back(Vertex(0, 0,-1));
-  vertices.push_back(Vertex(1, 0,0));
-  vertices.push_back(Vertex(0, 1,0));
-  triangles.push_back(Face(0, 1,2));
-  triangles.push_back(Face(0, 2,3));
+  std::vector<Vertex>& vertices = meshData->GetVertices();
+  std::vector<Face>& triangles = meshData->GetFaces();
+  vertices.push_back(Vertex(-1, 0, 0));
+  vertices.push_back(Vertex(0, 0, -1));
+  vertices.push_back(Vertex(1, 0, 0));
+  vertices.push_back(Vertex(0, 1, 0));
+  triangles.push_back(Face(0, 1, 2));
+  triangles.push_back(Face(0, 2, 3));
   Shape::Ptr shape(new SimpleTriMeshShape(meshData, "test_mesh"));
 
-  shape->SetPose(Shape::Pose3(2, 2,2, 0,0, 0));
+  shape->SetPose(Shape::Pose3(2, 2, 2, 0, 0, 0));
   std::cout << "Adding model from shape.." << std::endl;
   GzPhysicsWorld::ModelLoadResult res3 =
     world->AddModelFromShape(forcedModelName3, shape, shape);
@@ -304,17 +304,17 @@ TEST_F(WorldInterfaceTest, GazeboWorldSaving)
   SimpleTriMeshShape::MeshDataPtr meshData(new SimpleTriMeshShape::MeshDataT());
   typedef SimpleTriMeshShape::Vertex Vertex;
   typedef SimpleTriMeshShape::Face Face;
-  std::vector<Vertex>& vertices=meshData->GetVertices();
-  std::vector<Face>& triangles=meshData->GetFaces();
-  vertices.push_back(Vertex(-1, 0,0));
-  vertices.push_back(Vertex(0, 0,-1));
-  vertices.push_back(Vertex(1, 0,0));
-  vertices.push_back(Vertex(0, 1,0));
-  triangles.push_back(Face(0, 1,2));
-  triangles.push_back(Face(0, 2,3));
+  std::vector<Vertex>& vertices = meshData->GetVertices();
+  std::vector<Face>& triangles = meshData->GetFaces();
+  vertices.push_back(Vertex(-1, 0, 0));
+  vertices.push_back(Vertex(0, 0, -1));
+  vertices.push_back(Vertex(1, 0, 0));
+  vertices.push_back(Vertex(0, 1, 0));
+  triangles.push_back(Face(0, 1, 2));
+  triangles.push_back(Face(0, 2, 3));
   Shape::Ptr shape(new SimpleTriMeshShape(meshData, "test_mesh"));
 
-  shape->SetPose(Shape::Pose3(2, 2,2, 0,0, 0));
+  shape->SetPose(Shape::Pose3(2, 2, 2, 0, 0, 0));
   std::cout << "Adding model from shape.." << std::endl;
   GzPhysicsWorld::ModelLoadResult res
     = world->AddModelFromShape(shapeName, shape, shape);
@@ -335,7 +335,8 @@ TEST_F(WorldInterfaceTest, GazeboWorldSaving)
   std::string resourceDir = testDir.string() + "/models";
   std::string resourceSubdir = "resources";
   std::cout << "Saving world to " << filename << " and resources to "
-   << "'" << resourceDir << "', subdir '" << resourceSubdir << "'" << std::endl;
+            << "'" << resourceDir << "', subdir '"
+            << resourceSubdir << "'" << std::endl;
 
   ASSERT_EQ(world->SaveToFile(filename, resourceDir, resourceSubdir), true)
     << "Could not save world to file";
@@ -374,7 +375,7 @@ TEST_F(WorldInterfaceTest, GazeboContacts)
 
   // create one world per physics engine and load it with the cube world,
   // and add it to the world manager
-  bool enforceContactComp=true;
+  bool enforceContactComp = true;
   GzPhysicsWorld::Ptr world (new GazeboPhysicsWorld(enforceContactComp));
   ASSERT_EQ(world->LoadFromFile(worldfile), collision_benchmark::SUCCESS)
     << " Could not load empty world";
