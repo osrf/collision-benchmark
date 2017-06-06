@@ -73,11 +73,11 @@ bool CollidingShapesTestFramework::Run
     std::cerr << "Specified shapes: " << std::endl;
     for (std::vector<std::string>::const_iterator it = unitShapes.begin();
          it != unitShapes.end(); ++it)
-      std::cout<<" " << *it<<std::endl;
+      std::cout << " " << *it << std::endl;
     std::cerr << "Models: " << std::endl;
     for (std::vector<std::string>::const_iterator it = sdfModels.begin();
          it != sdfModels.end(); ++it)
-      std::cout<<" " << *it<<std::endl;
+      std::cout << " " << *it << std::endl;
     std::cout << "which makes a total of " << (unitShapes.size() +
                  sdfModels.size()) << " models. " << std::endl;
     return false;
@@ -891,7 +891,7 @@ void CollidingShapesTestFramework::CollisionBarHandler
 /////////////////////////////////////////////////
 void CollidingShapesTestFramework::receiveControlMsg(ConstAnyPtr &_msg)
 {
-  // std::cout << "Any msg: "<<_msg->DebugString();
+  // std::cout << "Any msg: " << _msg->DebugString();
   switch (_msg->type())
   {
     case gazebo::msgs::Any::BOOLEAN:

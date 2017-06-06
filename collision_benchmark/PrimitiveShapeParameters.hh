@@ -78,13 +78,13 @@ class RadiusParameter: public PrimitiveShapeParameters
   public: virtual double Get(const Super::ParameterType &type)
   {
     if (type!=RADIUS)
-      THROW_EXCEPTION("RadiusParameter does hot have the type "<<type);
+      THROW_EXCEPTION("RadiusParameter does hot have the type " << type);
     return radius;
   }
   public: virtual void Set(const Super::ParameterType &type, const double &val)
   {
     if (type!=RADIUS)
-      THROW_EXCEPTION("RadiusParameter does hot have the type "<<type);
+      THROW_EXCEPTION("RadiusParameter does hot have the type " << type);
     radius = val;
   }
   public: virtual Ptr Clone() const
@@ -114,7 +114,7 @@ class RadiusAndValueParameter: public RadiusParameter<Float>
   public: virtual double Get(const typename Super::ParameterType &type)
   {
     if (type!=Super::RADIUS && type!=Super::LENGTH)
-      THROW_EXCEPTION("RadiusAndValueParameter does hot have the type "<<type);
+      THROW_EXCEPTION("RadiusAndValueParameter does hot have the type " << type);
     if (type==Super::RADIUS) return Super::Get(type);
     return value;
   }
@@ -122,7 +122,7 @@ class RadiusAndValueParameter: public RadiusParameter<Float>
                            const double &val)
   {
     if (type!=Super::RADIUS && type!=Super::LENGTH)
-      THROW_EXCEPTION("RadiusAndValueParameter does hot have the type "<<type);
+      THROW_EXCEPTION("RadiusAndValueParameter does hot have the type " << type);
     if (type==Super::RADIUS) Super::Set(type, val);
     else value = val;
   }
@@ -170,7 +170,7 @@ class Dim3Parameter: public PrimitiveShapeParameters
     {
       return z;
     }
-    THROW_EXCEPTION("Dim3Parameter does hot have the type "<<type);
+    THROW_EXCEPTION("Dim3Parameter does hot have the type " << type);
   }
   public: virtual void Set(const typename Super::ParameterType &type,
                            const double &val)
@@ -189,7 +189,7 @@ class Dim3Parameter: public PrimitiveShapeParameters
     }
     else
     {
-      THROW_EXCEPTION("Dim3Parameter does hot have the type "<<type);
+      THROW_EXCEPTION("Dim3Parameter does hot have the type " << type);
     }
   }
   public: virtual typename Super::Ptr Clone() const
@@ -235,7 +235,7 @@ class Val3Parameter: public PrimitiveShapeParameters
     {
       return z;
     }
-    THROW_EXCEPTION("Val3Parameter does hot have the type "<<type);
+    THROW_EXCEPTION("Val3Parameter does hot have the type " << type);
   }
   public: virtual void Set(const typename Super::ParameterType &type,
                            const double &val)
@@ -254,7 +254,7 @@ class Val3Parameter: public PrimitiveShapeParameters
     }
     else
     {
-      THROW_EXCEPTION("Val3Parameter does hot have the type "<<type);
+      THROW_EXCEPTION("Val3Parameter does hot have the type " << type);
     }
   }
   public: virtual typename Super::Ptr Clone() const

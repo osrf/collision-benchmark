@@ -66,8 +66,8 @@ TEST_F(WorldInterfaceTest, TransferWorldState)
   GzPhysicsWorldStateInterface::Ptr world2(gzWorld2);
 
   int numIters=3000;
-  std::cout << "Doing "<<numIters<<" iterations on the rubble world and "
-            << "set the second world to the same state"<<std::endl;
+  std::cout << "Doing " << numIters << " iterations on the rubble world and "
+            << "set the second world to the same state" << std::endl;
   for (int i=0; i<numIters; ++i)
   {
     gazebo::physics::WorldState target = world2->GetWorldState();
@@ -84,9 +84,9 @@ TEST_F(WorldInterfaceTest, TransferWorldState)
 
     ASSERT_EQ(GazeboStateCompare::Equal(newState, target, t), true)
       <<"Target state was not set as supposed to!! ";
-/*      <<std::endl<<std::endl<<newState<<std::endl<<std::endl<<target
-      <<std::endl<<std::endl
-      <<"Diff: "<<std::endl
+/*      <<std::endl << std::endl << newState << std::endl << std::endl << target
+      <<std::endl << std::endl
+      <<"Diff: " << std::endl
       <<target - world1->GetWorldState();*/
     gzWorld1->Update(1);
     gzWorld2->Update(1);
@@ -119,13 +119,13 @@ TEST_F(WorldInterfaceTest, WorldManager)
     std::cout << "Loading with physics engine " << engine
               << " (named as '" << worldname << "')" << std::endl;
 
-    std::cout<<"Loading physics from " << physicsSDF << std::endl;
+    std::cout << "Loading physics from " << physicsSDF << std::endl;
     sdf::ElementPtr physics = collision_benchmark::GetPhysicsFromSDF(physicsSDF);
     ASSERT_NE(physics.get(), nullptr)
       << "Could not get phyiscs engine from " << physicsSDF << std::endl;
 
-    // std::cout<<"Physics: "<<physics->ToString("")<<std::endl;
-    std::cout<<"Loading world from "<<worldfile<<std::endl;
+    // std::cout << "Physics: " << physics->ToString("") << std::endl;
+    std::cout << "Loading world from " << worldfile << std::endl;
     gazebo::physics::WorldPtr gzworld =
       collision_benchmark::LoadWorldFromFile(worldfile, worldname, physics);
 
@@ -154,7 +154,7 @@ TEST_F(WorldInterfaceTest, WorldManager)
     ASSERT_EQ(state.GetModelStates().size(), 2)
       << "World " << world->GetName() << " should have only two models.";
     ASSERT_NE(state.HasModelState("box"), false)
-      << "World "<<world->GetName()<<" has no model named 'box'";
+      << "World " << world->GetName() << " has no model named 'box'";
   }
 }
 
@@ -252,7 +252,7 @@ TEST_F(WorldInterfaceTest, GazeboModelLoading)
   Shape::Ptr shape(new SimpleTriMeshShape(meshData, "test_mesh"));
 
   shape->SetPose(Shape::Pose3(2,2,2,0,0,0));
-  std::cout<<"Adding model from shape.."<<std::endl;
+  std::cout << "Adding model from shape.." << std::endl;
   GzPhysicsWorld::ModelLoadResult res3 =
     world->AddModelFromShape(forcedModelName3, shape, shape);
   ASSERT_EQ(res3.opResult, collision_benchmark::SUCCESS)
@@ -262,7 +262,7 @@ TEST_F(WorldInterfaceTest, GazeboModelLoading)
     << " but is " << res3.modelID;
   state = world->GetWorldState();
   ASSERT_EQ(state.GetModelStates().size(), 5)
-    << "World "<<world->GetName()<<" should have 5 models.";
+    << "World " << world->GetName() << " should have 5 models.";
 }
 
 /**
@@ -299,7 +299,7 @@ TEST_F(WorldInterfaceTest, GazeboWorldSaving)
   Shape::Ptr shape(new SimpleTriMeshShape(meshData, "test_mesh"));
 
   shape->SetPose(Shape::Pose3(2,2,2,0,0,0));
-  std::cout<<"Adding model from shape.."<<std::endl;
+  std::cout << "Adding model from shape.." << std::endl;
   GzPhysicsWorld::ModelLoadResult res
     = world->AddModelFromShape(shapeName, shape, shape);
   ASSERT_EQ(res.opResult, collision_benchmark::SUCCESS)
@@ -402,7 +402,7 @@ TEST_F(WorldInterfaceTest, GazeboContacts)
     {
       std::cout << "World has " << contacts1.size()
                 << " pair of colliding models." << std::endl;
-      for (auto c: contacts1) std::cout<<*c<<std::endl;
+      for (auto c: contacts1) std::cout<<*c << std::endl;
       break;
     }
   }

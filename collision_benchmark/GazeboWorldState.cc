@@ -143,7 +143,7 @@ void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr &world,
   for (const auto & model : models)
   {
 #ifdef DEBUGWORLDSTATE
-    std::cout<<"New model: "<<model.GetName()<<std::endl;
+    std::cout << "New model: " << model.GetName() << std::endl;
 #endif
     gazebo::physics::ModelPtr m = world->ModelByName(model.GetName());
     if (!m)
@@ -157,7 +157,7 @@ void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr &world,
   for (const auto & light : lights)
   {
 #ifdef DEBUGWORLDSTATE
-    std::cout<<"New light: "<<light.GetName()<<std::endl;
+    std::cout << "New light: " << light.GetName() << std::endl;
 #endif
     gazebo::physics::LightPtr l = world->LightByName(light.GetName());
     if (!l)

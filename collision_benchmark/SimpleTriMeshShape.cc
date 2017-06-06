@@ -31,7 +31,7 @@ SimpleTriMeshShape::GetShapeSDF(bool detailed,
   if (resourceDir.empty() && resourceSubDir.empty())
   {
     std::cerr << "Resource directory to write mesh data to is empty, "
-              << "so cannot create SDF for mesh."<<std::endl;
+              << "so cannot create SDF for mesh." << std::endl;
     return sdf::ElementPtr();
   }
 
@@ -71,7 +71,7 @@ SimpleTriMeshShape::GetShapeSDF(bool detailed,
 
   if (!collision_benchmark::WriteTrimesh(fullname, MESH_EXT, data))
   {
-    std::cerr<<"Could not write mesh data!"<<std::endl;
+    std::cerr << "Could not write mesh data!" << std::endl;
     return sdf::ElementPtr();
   }
 

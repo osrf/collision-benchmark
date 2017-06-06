@@ -48,9 +48,9 @@ std::set<std::string> collision_benchmark::GetSupportedPhysicsEngines()
   or with #include <gazebo/test/helper_physics_generator.hh>
   std::vector<std::string> engines =
       {"ode" BULLET_SUPPORT SIMBODY_SUPPORT DART_SUPPORT};
-  std::cout<<"Supported engines: "<<std::endl;
+  std::cout << "Supported engines: " << std::endl;
   for (int i = 0; i<engines.size(); ++i)
-    std::cout<<engines[i]<<std::endl;*/
+    std::cout << engines[i]<<std::endl;*/
 
   return engines;
 }
@@ -114,28 +114,28 @@ int collision_benchmark::isProperSDFFile(const std::string &filename,
   TiXmlDocument xmlDoc;
   if (!xmlDoc.LoadFile(filename))
   {
-    // std::cout << "Could not read file "<<filename
-    //           << " so cannot check if SDF needs conversion"<<std::endl;
+    // std::cout << "Could not read file " << filename
+    //           << " so cannot check if SDF needs conversion" << std::endl;
     return -3;
   }
 
   TiXmlElement *elem = xmlDoc.FirstChildElement("sdf");
   if (!elem)
   {
-    // std::cout<<"No outer SDF tag"<<std::endl;
+    // std::cout << "No outer SDF tag" << std::endl;
     return -2;
   }
 
   if (!elem->Attribute("version"))
   {
-    // std::cout<< "SDF Tag has no SDF version"<<std::endl;
+    // std::cout<< "SDF Tag has no SDF version" << std::endl;
     return -1;
   }
 
   if (version)
   {
     *version = elem->Attribute("version");
-    // std::cout<<"SDF version "<<*version<<std::endl;
+    // std::cout << "SDF version "<<*version << std::endl;
   }
 
   return 0;
@@ -155,20 +155,20 @@ int collision_benchmark::isProperSDFString(const std::string &string,
   TiXmlElement *elem = xmlDoc.FirstChildElement("sdf");
   if (!elem)
   {
-    //std::cout<<"No outer SDF tag"<<std::endl;
+    //std::cout << "No outer SDF tag" << std::endl;
     return -2;
   }
 
   if (!elem->Attribute("version"))
   {
-    //std::cout<< "SDF Tag has no SDF version"<<std::endl;
+    //std::cout<< "SDF Tag has no SDF version" << std::endl;
     return -1;
   }
 
   if (version)
   {
     *version = elem->Attribute("version");
-    // std::cout<<"SDF version "<<*version<<std::endl;
+    // std::cout << "SDF version "<<*version << std::endl;
   }
 
   return 0;

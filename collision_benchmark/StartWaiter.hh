@@ -78,7 +78,7 @@ class StartWaiter
   // is called with \e pause being true.
   public: void PauseCallback(bool pause)
   {
-    //std::cout<<"############ Pause callback: "<<pause<<std::endl;
+    //std::cout << "############ Pause callback: " << pause << std::endl;
     unpaused = !pause;
   }
 

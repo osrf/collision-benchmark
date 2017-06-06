@@ -8,7 +8,7 @@
 #define THROW_EXCEPTION(stream) \
 { \
     std::stringstream str; \
-    str<<stream<< ": "<<__FILE__<<", "<<__LINE__; \
+    str << stream<< ": " << __FILE__ << ", " << __LINE__; \
     throw collision_benchmark::Exception(str.str()); \
 }
 

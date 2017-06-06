@@ -118,7 +118,7 @@ ClientGui::~ClientGui()
 /////////////////////////////////////////////////
 void ClientGui::receiveWorldMsg(ConstAnyPtr &_msg)
 {
-  // std::cout << "Any msg: "<<_msg->DebugString();
+  // std::cout << "Any msg: " << _msg->DebugString();
   std::string worldName = _msg->string_value();
   emit TriggerNameChange(worldName);
 }

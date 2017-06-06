@@ -47,9 +47,9 @@ void RunWorlds(int iter, const std::vector<GazeboPhysicsWorld::Ptr>& worlds,
          w = worlds.begin(); w != worlds.end(); ++w)
     {
       GazeboPhysicsWorld::Ptr world = *w;
-      // std::cout << "Running "<<steps<<" steps for world "i
-      //           << world->GetName()<<", physics engine: "
-      //           << world->GetWorld()->Physics()->GetType()<<std::endl;
+      // std::cout << "Running " << steps << " steps for world "i
+      //           << world->GetName() << ", physics engine: "
+      //           << world->GetWorld()->Physics()->GetType() << std::endl;
       world->Update(1);
     }
 
@@ -68,7 +68,7 @@ bool PlayTest(int argc, char **argv)
   if (argc < 3)
   {
     std::cerr << "Usage: " << argv[0] << " <number iterations> "
-              << "<list of world filenames>"<<std::endl;
+              << "<list of world filenames>" << std::endl;
     return false;
   }
 
@@ -96,7 +96,7 @@ bool PlayTest(int argc, char **argv)
 
   if(!mirrorWorld)
   {
-    std::cerr<<"Could not load mirror world."<<std::endl;
+    std::cerr << "Could not load mirror world." << std::endl;
     return false;
   }
 
@@ -132,7 +132,7 @@ bool PlayTest(int argc, char **argv)
   }
 
   std::cout << "Now start gzclient if you would like to view the test. "
-            << "Press [Enter] to continue."<<std::endl;
+            << "Press [Enter] to continue." << std::endl;
   getchar();
 
   // Go through all worlds, mirroring each for the given number of iterations.

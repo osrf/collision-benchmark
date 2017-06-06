@@ -242,7 +242,7 @@ void CollidingShapesGui::OnButtonDec()
 /////////////////////////////////////////////////
 void CollidingShapesGui::receiveFeedbackMsg(ConstAnyPtr &_msg)
 {
-  // std::cout << "GUI FEEDBACK! "<<_msg->DebugString();
+  // std::cout << "GUI FEEDBACK! " << _msg->DebugString();
   switch (_msg->type())
   {
     case gazebo::msgs::Any::INT32:

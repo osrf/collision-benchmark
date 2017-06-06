@@ -41,7 +41,7 @@ class Contact
 
   public: virtual ~Contact() {}
 
-  public: friend std::ostream &operator<<(std::ostream &o, const Self &c)
+  public: friend std::ostream &operator << (std::ostream &o, const Self &c)
   {
     o << "{";
     // o <<"Position: " << c.position << " ";
@@ -160,10 +160,10 @@ class ContactInfo
     return true;
   }
 
-  public: friend std::ostream &operator<<(std::ostream &o, const Self &c)
+  public: friend std::ostream &operator << (std::ostream &o, const Self &c)
   {
-    o << "(Model1: "<<c.model1<<"/"<<c.modelPart1<<". Model2: "
-      << c.model2<<"/"<<c.modelPart2;
+    o << "(Model1: " << c.model1<<"/" << c.modelPart1<<". Model2: "
+      << c.model2<<"/" << c.modelPart2;
     o << "; Contacts: ";
     for (typename std::vector<Contact>::const_iterator it = c.contacts.begin();
          it != c.contacts.end(); ++it)

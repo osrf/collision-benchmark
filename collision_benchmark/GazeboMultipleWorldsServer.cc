@@ -52,7 +52,7 @@ bool GazeboMultipleWorldsServer::Start(int argc, const char** argv)
   }
   catch (...)
   {
-    std::cerr<<"Could not setup server"<<std::endl;
+    std::cerr << "Could not setup server" << std::endl;
     return false;
   }
   running = true;

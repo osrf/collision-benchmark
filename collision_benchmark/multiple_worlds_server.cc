@@ -133,17 +133,17 @@ bool Run()
   worldManager->SetPaused(true);
 
   std::cout << "Now start gzclient if you would like "
-            << "to view the worlds: "<<std::endl;
+            << "to view the worlds: " << std::endl;
   std::cout << "gzclient --g libcollision_benchmark_gui.so" << std::endl;
   std::cout << "Press [Enter] to continue without gzclient or hit "
-            << "the play button in gzclient."<<std::endl;
+            << "the play button in gzclient." << std::endl;
 
   // wait until either the [Play] button has been clicked, or [Enter] pressed.
   startWaiter.WaitForUnpause();
 
   worldManager->SetPaused(false);
 
-  std::cout << "Now starting to update worlds."<<std::endl;
+  std::cout << "Now starting to update worlds." << std::endl;
   int iter = 0;
   // TODO: at this point, we can only stop the program with Ctrl+C
   // which is not great. Find a better way to do this.
@@ -215,7 +215,7 @@ Only works when no engines are specified with -e.")
     for (std::vector<std::string>::iterator it = selectedEngines.begin();
          it != selectedEngines.end(); ++it)
     {
-      std::cout<<*it<<std::endl;
+      std::cout<<*it << std::endl;
     }
   }
   else
@@ -244,7 +244,7 @@ Only works when no engines are specified with -e.")
        it != worldFiles.end(); ++it, ++i)
   {
     std::string worldfile = *it;
-    std::cout<<"Loading world " << worldfile <<std::endl;
+    std::cout << "Loading world " << worldfile <<std::endl;
 
     std::string worldPrefix;
     if (!selectedEngines.empty() || !vm.count("keep-name"))

@@ -244,11 +244,11 @@ class WorldManager
     if (_index < 0 ||  _index >= this->worlds.size())
       return false;
 
-    // std::cout<<"Getting world at idx "<<_index<<std::endl;
+    // std::cout << "Getting world at idx " << _index << std::endl;
     PhysicsWorldBaseInterface::Ptr world = GetWorld(_index);
     if (!world)
     {
-      gzerr<<"Cannot get world in WorldManager::SetMirroredWorld()\n";
+      gzerr << "Cannot get world in WorldManager::SetMirroredWorld()\n";
       return false;
     }
     this->mirrorWorld->SetOriginalWorld(world);
@@ -320,11 +320,11 @@ class WorldManager
        PhysicsWorldModelInterfacePtr w = ToWorldWithModel(*it);
        if (!w)
        {
-         std::cerr<<"Cannot cast world " << i << " to "
+         std::cerr << "Cannot cast world " << i << " to "
                   << "interface PhysicsWorldModelInterface<"
                   << GetTypeName<ModelID>()
-                  << ", "<<GetTypeName<ModelPartID>()
-                  << ", "<<GetTypeName<Vector3>()<<">" << std::endl;
+                  << ", " << GetTypeName<ModelPartID>()
+                  << ", " << GetTypeName<Vector3>() << ">" << std::endl;
        }
        ret.push_back(w);
      }
@@ -349,12 +349,12 @@ class WorldManager
          w = ToWorldWithContact(*it);
        if (!w)
        {
-         std::cerr<<"Cannot cast world " << i << " to "
+         std::cerr << "Cannot cast world " << i << " to "
                   << "interface PhysicsWorldContactInterface<"
-                  << ", "<<GetTypeName<ModelID>()
-                  << ", "<<GetTypeName<ModelPartID>()
-                  << ", "<<GetTypeName<Vector3>()
-                  << ", "<<GetTypeName<Wrench>()<<">" << std::endl;
+                  << ", " << GetTypeName<ModelID>()
+                  << ", " << GetTypeName<ModelPartID>()
+                  << ", " << GetTypeName<Vector3>()
+                  << ", " << GetTypeName<Wrench>() << ">" << std::endl;
        }
        ret.push_back(w);
      }
@@ -377,13 +377,13 @@ class WorldManager
        PhysicsWorldPtr w = ToPhysicsWorld(*it);
        if (!w)
        {
-         std::cerr<<"Cannot cast world " << i << " to "
+         std::cerr << "Cannot cast world " << i << " to "
                   << "interface PhysicsWorld<"
                   << GetTypeName<WorldState>()
-                  << ", "<<GetTypeName<ModelID>()
-                  << ", "<<GetTypeName<ModelPartID>()
-                  << ", "<<GetTypeName<Vector3>()
-                  << ", "<<GetTypeName<Wrench>()<<">" << std::endl;
+                  << ", " << GetTypeName<ModelID>()
+                  << ", " << GetTypeName<ModelPartID>()
+                  << ", " << GetTypeName<Vector3>()
+                  << ", " << GetTypeName<Wrench>() << ">" << std::endl;
        }
        ret.push_back(w);
      }
@@ -663,7 +663,7 @@ class WorldManager
          THROW_EXCEPTION("Only support worlds which have the "
                          << "interface PhysicsWorldModelInterface<"
                          << GetTypeName<ModelID>()
-                         << ", "<<GetTypeName<ModelPartID>()<<">");
+                         << ", " << GetTypeName<ModelPartID>() << ">");
        }
 
        if (_isString)
@@ -689,7 +689,7 @@ class WorldManager
      std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
        if (worlds.empty())
        {
-         std::cerr<<"There are no worlds to be mirrored." << std::endl;
+         std::cerr << "There are no worlds to be mirrored." << std::endl;
          return "";
        }
 
@@ -697,14 +697,14 @@ class WorldManager
      if (ctrl < 0)
      {
        // Switch to previous world
-       std::cout<<"WorldManager: Switching to prev world"<<std::endl;
+       std::cout << "WorldManager: Switching to prev world" << std::endl;
        if (mirroredWorldIdx > 0) --mirroredWorldIdx;
        else mirroredWorldIdx = worlds.size()-1; // go back to last world
      }
      else if (ctrl > 0)
      {
        // Switch to next world
-       std::cout<<"WorldManager: Switching to next world"<<std::endl;
+       std::cout << "WorldManager: Switching to next world" << std::endl;
        if (mirroredWorldIdx < (worlds.size()-1)) ++mirroredWorldIdx;
        else mirroredWorldIdx = 0; // go back to first world
      }
@@ -713,7 +713,7 @@ class WorldManager
      {
        if (!mirrorWorld->GetOriginalWorld())
        {
-         std::cerr<<"Mirror world has no original world set, "
+         std::cerr << "Mirror world has no original world set, "
                   <<"cannot return name." << std::endl;
          return "";
        }
@@ -730,7 +730,7 @@ class WorldManager
 
      if (!mirrorWorld->GetOriginalWorld())
      {
-       std::cerr<<"Mirror world has no original world set, "
+       std::cerr << "Mirror world has no original world set, "
                 <<"cannot return name." << std::endl;
        return "";
      }
@@ -810,7 +810,7 @@ class WorldManager
          THROW_EXCEPTION("Only support worlds which have the "
                          << "interface PhysicsWorldModelInterface<"
                          << GetTypeName<ModelID>()
-                         << ", "<<GetTypeName<ModelPartID>()<<">");
+                         << ", " << GetTypeName<ModelPartID>() << ">");
        }
        RetVal r = callback(*w, std::forward<Params>(params)...);
        ret.push_back(r);

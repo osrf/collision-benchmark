@@ -334,7 +334,7 @@ GazeboPhysicsWorld::AddModelFromFile(const std::string &filename,
   ret.opResult = FAILED;
   if (!sdfRoot)
   {
-    std::cerr<< " Could not get SDF for model in "<<filename<<std::endl;
+    std::cerr<< " Could not get SDF for model in " << filename << std::endl;
     return ret;
   }
 
@@ -359,8 +359,8 @@ GazeboPhysicsWorld::AddModelFromString(const std::string &str,
     }
     else
     {
-      std::cerr<<"SDF is not proper so cannot load model from the string. "
-               <<"Value: "<<checkSDF<<std::endl;
+      std::cerr << "SDF is not proper so cannot load model from the string. "
+               <<"Value: " << checkSDF << std::endl;
       return ret;
     }
   }
@@ -369,7 +369,7 @@ GazeboPhysicsWorld::AddModelFromString(const std::string &str,
     collision_benchmark::GetSDFElementFromString(useStr, "model", modelname);
   if (!sdfRoot)
   {
-    std::cerr<< " Could not get SDF for model."<<std::endl;
+    std::cerr<< " Could not get SDF for model." << std::endl;
     return ret;
   }
 
@@ -552,7 +552,7 @@ GazeboPhysicsWorld::SetWorldState(const WorldState &state, bool isDiff)
   if (!world->PhysicsEnabled()) t.CheckDynamics = false;
   if (!GazeboStateCompare::Equal(_currentState, state, t))
   {
-    std::cerr<<"Target state was not set as supposed to!!"<<std::endl;
+    std::cerr << "Target state was not set as supposed to!!" << std::endl;
   }
 #endif
 
@@ -566,7 +566,7 @@ bool GazeboPhysicsWorld::SetBasicModelState(const ModelID  &_id,
   gazebo::physics::ModelPtr m = world->ModelByName(_id);
   if (!m)
   {
-    std::cerr << "World "<<GetName()<<": Model " << _id
+    std::cerr << "World " << GetName() << ": Model " << _id
               << " could not be found" << std::endl;
     return false;
   }
@@ -579,7 +579,7 @@ bool GazeboPhysicsWorld::SetBasicModelState(const ModelID  &_id,
                                           _state.rotation.y,
                                           _state.rotation.z);
 
-  // std::cout<<"Setting world state "<<_state<<std::endl;
+  // std::cout << "Setting world state " << _state << std::endl;
 
   m->SetWorldPose(pose);
 
@@ -632,9 +632,9 @@ void GazeboPhysicsWorld::PostWorldLoaded()
 
 void GazeboPhysicsWorld::Update(int steps, bool force)
 {
-  // std::cout<<"Running "<<steps<<" steps for world "
-  //          <<world->Name()<<", physics engine: "
-  //          <<world->Physics()->GetType()<<std::endl;
+  // std::cout << "Running " << steps << " steps for world "
+  //          <<world->Name() << ", physics engine: "
+  //          <<world->Physics()->GetType() << std::endl;
 #ifdef NEW_WORLDRUN_SOLUTION
   if (!force && IsPaused()) return;
 
@@ -647,11 +647,11 @@ void GazeboPhysicsWorld::Update(int steps, bool force)
     static bool printOnce = true;
     if (printOnce)
     {
-      std::cout<<"DEBUG WARNING: The Gazebo world is not paused. "
+      std::cout << "DEBUG WARNING: The Gazebo world is not paused. "
         <<"In GazeboPhysicsWorld::Update(), we operate it in "
         <<"paused mode and rely on manually doint the updates "
         <<"instead of letting the gazebo world update "
-        <<"itself continuously."<<std::endl;
+        <<"itself continuously." << std::endl;
       printOnce = false;
     }
     world->SetPaused(true);
@@ -665,7 +665,7 @@ void GazeboPhysicsWorld::Update(int steps, bool force)
   gazebo::runWorld(world, steps);
   // iterations is always 1 if it has been set with steps!=0
   // in call above. Should fix this in Gazebo::World?
-  // std::cout<<"Iterations: "<<world->Iterations()<<std::endl;
+  // std::cout << "Iterations: " << world->Iterations() << std::endl;
 #endif
 }
 
@@ -711,7 +711,7 @@ GetContactInfoHelper(const gazebo::physics::WorldPtr &world,
   GZ_ASSERT(contactManager, "Contact manager has to be set");
   const std::vector<gazebo::physics::Contact*>& contacts =
     contactManager->GetContacts();
-  // std::cout<<"World has "<<contacts.size()<<"contacts."<<std::endl;
+  // std::cout << "World has " << contacts.size() << "contacts." << std::endl;
   for (int cIdx = 0; cIdx < contactManager->GetContactCount(); ++cIdx)
   {
     if (cIdx >= contacts.size())
@@ -891,7 +891,7 @@ bool GazeboPhysicsWorld::IsAdaptor() const
 #ifndef CONTACTS_ENFORCABLE
 void GazeboPhysicsWorld::OnContact(ConstContactsPtr &_msg)
 {
-//  std::cout<<"DEBUG: Got contact!"<<std::endl;
+//  std::cout << "DEBUG: Got contact!" << std::endl;
 }
 #endif
 

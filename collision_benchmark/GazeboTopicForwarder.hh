@@ -132,13 +132,13 @@ class GazeboTopicForwarder
                             const gazebo::transport::NodePtr &_node,
                             const bool _subLatching = true)
           {
-            // std::cout<<"Subscribing to topic "<<_from<<"."<<std::endl;
+            // std::cout << "Subscribing to topic " << _from << "." << std::endl;
 
             std::lock_guard<std::mutex> lock(transportMutex);
 
             if (!this->pub)
             {
-              gzwarn<<"Publisher is not initialized, should call \
+              gzwarn << "Publisher is not initialized, should call \
                 GazeboTopicForwarder::ForwardTo first!\n";
             }
 
@@ -154,11 +154,11 @@ class GazeboTopicForwarder
             if (this->verbose)
             {
               std::cout << "Forwarding messages (verbose: "
-                        << (verbose ? "true" : "false")<<") of type "
-                        << GetTypeName<Msg>()<<" from topic "
-                        << _from<<" to topic ";
-              if (this->pub) std::cout<<this->pub->GetTopic()<<std::endl;
-              else std::cout<<"<none>"<<std::endl;
+                        << (verbose ? "true" : "false") << ") of type "
+                        << GetTypeName<Msg>() << " from topic "
+                        << _from << " to topic ";
+              if (this->pub) std::cout << this->pub->GetTopic() << std::endl;
+              else std::cout << "<none>" << std::endl;
             }
           }
 
@@ -179,8 +179,8 @@ class GazeboTopicForwarder
                      unsigned int _pubQueueLimit = 1000,
                      double _pubHzRate = 0)
            {
-             // std::cout<<"Forwarding messages of type "
-             //         <<GetTypeName<Msg>()<<" to topic "<<_to<<std::endl;
+             // std::cout << "Forwarding messages of type "
+             //         <<GetTypeName<Msg>() << " to topic " << _to << std::endl;
              try
              {
                std::lock_guard<std::mutex> lock(transportMutex);
@@ -199,7 +199,7 @@ class GazeboTopicForwarder
     assert(_msg);
 
     if (this->verbose)
-      std::cout<<"Debug: Got message of type "<<GetTypeName<Msg>()<<std::endl;
+      std::cout << "Debug: Got message of type " << GetTypeName<Msg>() << std::endl;
 
     std::lock_guard<std::mutex> lock(transportMutex);
     if (!this->sub) THROW_EXCEPTION("Inconsistency: Subscriber is NULL, "
@@ -207,10 +207,10 @@ class GazeboTopicForwarder
 
     if (this->verbose)
     {
-      std::cout<<" - on topic "<<this->sub->GetTopic();
-      if (this->pub) std::cout<<" forwarded to topic "<<this->pub->GetTopic();
-      else std::cout<<" <null>";
-      std::cout<<std::endl;
+      std::cout << " - on topic " << this->sub->GetTopic();
+      if (this->pub) std::cout << " forwarded to topic " << this->pub->GetTopic();
+      else std::cout << " <null>";
+      std::cout << std::endl;
     }
 
     if (!this->pub)
@@ -225,8 +225,8 @@ class GazeboTopicForwarder
     if (!msgToFwd)
     {
       if (this->verbose)
-        std::cout<<"Debug: Rejected message of type "
-          <<GetTypeName<Msg>()<<std::endl;
+        std::cout << "Debug: Rejected message of type "
+          <<GetTypeName<Msg>() << std::endl;
       return;
     }
 
@@ -426,8 +426,8 @@ class GazeboServiceForwarder
 
                if (this->verbose)
                {
-                 std::cout<<"Forwarding request: "<<msg->DebugString()
-                          <<" to "<<_requestDestTopic<<std::endl;
+                 std::cout << "Forwarding request: " << msg->DebugString()
+                          <<" to " << _requestDestTopic << std::endl;
                }
 
                RequestConstPtr msgToFwd(nullptr);
@@ -436,7 +436,7 @@ class GazeboServiceForwarder
                if (!msgToFwd)
                {
                  if (this->verbose)
-                   std::cout<<"Debug: Filtered out request"<<std::endl;
+                   std::cout << "Debug: Filtered out request" << std::endl;
                  continue;
                }
 
@@ -459,7 +459,7 @@ class GazeboServiceForwarder
            {
              assert(_request);
              // std::cout << "Buffering request: "
-             //           << _request->DebugString()<<std::endl;
+             //           << _request->DebugString() << std::endl;
              std::lock_guard<std::mutex> lock(bufferedRequestsMutex);
              this->bufferedRequests.push_back(_request);
            }
@@ -558,8 +558,8 @@ class GazeboTopicBlockPrinter:
               _node->Subscribe(_topic, &GazeboTopicBlockPrinter::OnMsg,
                                this, _subLatching);
 //            std::cout << "Catching messages of type "
-//                      << GetTypeName<Msg>()<<" from topic "
-//                      << _topic<<std::endl;
+//                      << GetTypeName<Msg>() << " from topic "
+//                      << _topic << std::endl;
           }
 
   private: void OnMsg(const boost::shared_ptr<Msg const> &_msg)
@@ -567,10 +567,10 @@ class GazeboTopicBlockPrinter:
     assert(_msg);
     if (!msgFilter || msgFilter->Filter(_msg))
     {
-      /* std::cout<<printPrefix<<": Blocked message of type "<<GetTypeName<Msg>();
-      if (this->sub) std::cout<<" on topic "<<this->sub->GetTopic();
-      else std::cout<<" <null>";
-      std::cout<<std::endl;*/
+      /* std::cout << printPrefix << ": Blocked message of type " << GetTypeName<Msg>();
+      if (this->sub) std::cout << " on topic " << this->sub->GetTopic();
+      else std::cout << " <null>";
+      std::cout << std::endl;*/
     }
   }
 

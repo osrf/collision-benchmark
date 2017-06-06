@@ -17,7 +17,7 @@ bool MultipleWorldsTestFramework::RefreshClient(const double timeoutSecs)
   MirrorWorld::ConstPtr mirrorWorld = worldManager->GetMirrorWorld();
   if (!mirrorWorld) return false;
   std::string mirrorName = mirrorWorld->GetName();
-  std::cout<<"Refreshing client with mirror "<<mirrorName<<std::endl;
+  std::cout << "Refreshing client with mirror " << mirrorName << std::endl;
 
   // initialize node
   if (!node)
@@ -114,7 +114,7 @@ bool MultipleWorldsTestFramework::RefreshClient(const double timeoutSecs)
   std::vector<std::string> allModels = world->GetAllModelIDs();
   if (allModels.empty())
   {
-    std::cout<<"DEBUG: NO MODELS TO UPDATE" << __FILE__ <<std::endl;
+    std::cout << "DEBUG: NO MODELS TO UPDATE" << __FILE__ <<std::endl;
     return true;
   }
   for (std::vector<std::string>::iterator it = allModels.begin();
@@ -127,13 +127,13 @@ bool MultipleWorldsTestFramework::RefreshClient(const double timeoutSecs)
     BasicState state;
     if (!world->GetBasicModelState(*it,state))
     {
-      std::cerr<<"Could not get basic model state for " << *it << std::endl;
+      std::cerr << "Could not get basic model state for " << *it << std::endl;
       continue;
     }
     int intID = world->GetIntegerModelID(*it);
     if (intID < 0)
     {
-      std::cerr<<"Negative model ID: Pose update won't work."<<std::endl;
+      std::cerr << "Negative model ID: Pose update won't work." << std::endl;
       continue;
     }
     gazebo::msgs::Pose * poseMsg = msg.add_pose();
@@ -146,7 +146,7 @@ bool MultipleWorldsTestFramework::RefreshClient(const double timeoutSecs)
 
     gazebo::msgs::Set(poseMsg, ignPose);
     // publish the pose and block until the message has been written out.
-    // std::cout<<"Publish "<<msg.DebugString()<<std::endl;
+    // std::cout << "Publish " << msg.DebugString() << std::endl;
     pub->Publish(msg, true);
   }
 #endif
@@ -156,7 +156,7 @@ bool MultipleWorldsTestFramework::RefreshClient(const double timeoutSecs)
   // arrive at client.
   while (pub->GetOutgoingCount() > 0)
   {
-    std::cout<<"Getting out last messages, got "
+    std::cout << "Getting out last messages, got "
       <<pub->GetOutgoingCount() << " left." << std::endl;
      pub->SendMessage();
     gazebo::common::Time::MSleep(200);

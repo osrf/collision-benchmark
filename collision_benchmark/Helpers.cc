@@ -34,8 +34,8 @@ bool collision_benchmark::makeDirectoryIfNeeded(const std::string &dPath)
 {
   if (!isDirectory(dPath))
   {
-    std::cerr<<"Trying to access a directory which has the format "
-             <<"of a file name"<<std::endl;
+    std::cerr << "Trying to access a directory which has the format "
+             <<"of a file name" << std::endl;
     return false;
   }
 
@@ -52,14 +52,14 @@ bool collision_benchmark::makeDirectoryIfNeeded(const std::string &dPath)
       if (!boost::filesystem::exists(buildPath) &&
           !boost::filesystem::create_directory(buildPath))
       {
-        std::cerr<<"Could not create directory " << buildPath;
+        std::cerr << "Could not create directory " << buildPath;
         return false;
       }
     }
   }
   catch (const boost::filesystem::filesystem_error &ex)
   {
-    std::cerr<<ex.what()<<std::endl;
+    std::cerr << ex.what() << std::endl;
     return false;
   }
   return true;

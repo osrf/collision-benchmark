@@ -145,19 +145,19 @@ bool WriteTrimesh(const std::string &filename,
   aiScene * scene = CreateTrimeshScene(meshData);
   if (!scene)
   {
-    std::cerr<<"Could not create trimesh scene"<<std::endl;
+    std::cerr << "Could not create trimesh scene" << std::endl;
     return false;
   }
   std::string fname = SetOrReplaceFileExtension(filename, outformat);
 
-  // std::cout<<"Writing to file "<<fname<<std::endl;
+  // std::cout << "Writing to file " << fname << std::endl;
 
   Assimp::Exporter exporter;
   if (exporter.Export(scene, outformat, fname, aiProcess_GenNormals)\
       != AI_SUCCESS)
   {
-    std::cerr<<"Could not write "<<fname<<" in the format "
-             <<outformat<<". Error: "<<exporter.GetErrorString()<<std::endl;
+    std::cerr << "Could not write " << fname << " in the format "
+             <<outformat << ". Error: " << exporter.GetErrorString() << std::endl;
     return false;
   }
   delete scene;

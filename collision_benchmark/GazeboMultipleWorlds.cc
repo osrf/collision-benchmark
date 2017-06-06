@@ -194,7 +194,7 @@ bool GazeboMultipleWorlds::Run(bool waitForStartSignal,
     worldManager->SetPaused(true);
 
     std::cout << "Press [Enter] to continue without gzclient or hit "
-              << "the play button in gzclient."<<std::endl;
+              << "the play button in gzclient." << std::endl;
 
     // wait until either the [Play] button has been clicked, or [Enter] pressed.
     startWaiter.WaitForUnpause();
@@ -210,7 +210,7 @@ bool GazeboMultipleWorlds::Run(bool waitForStartSignal,
     return true;
   }
 
-  // std::cout << "Now starting to update worlds."<<std::endl;
+  // std::cout << "Now starting to update worlds." << std::endl;
   int iter = 0;
   worldManager->SetPaused(false);
 

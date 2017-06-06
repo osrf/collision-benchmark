@@ -145,7 +145,7 @@ bool collision_benchmark::CollisionState(const std::string &modelName1,
     GzWorldManager::PhysicsWorldPtr w = *it;
     if (!w->SupportsContacts())
     {
-      std::cout<<"A world does not support contact calculation"<<std::endl;
+      std::cout << "A world does not support contact calculation" << std::endl;
       return false;
     }
 

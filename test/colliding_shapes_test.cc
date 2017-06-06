@@ -87,7 +87,7 @@ int main(int argc, char **argv)
     for (std::vector<std::string>::iterator it = selectedEngines.begin();
          it != selectedEngines.end(); ++it)
     {
-      std::cout<<*it<<std::endl;
+      std::cout<<*it << std::endl;
     }
   }
   else
@@ -102,7 +102,7 @@ int main(int argc, char **argv)
     for (std::vector<std::string>::iterator it = unitShapes.begin();
          it != unitShapes.end(); ++it)
     {
-      std::cout<<*it<<std::endl;
+      std::cout<<*it << std::endl;
     }
   }
 
@@ -112,7 +112,7 @@ int main(int argc, char **argv)
     for (std::vector<std::string>::iterator it = sdfModels.begin();
          it != sdfModels.end(); ++it)
     {
-      std::cout<<*it<<std::endl;
+      std::cout<<*it << std::endl;
     }
   }
 */

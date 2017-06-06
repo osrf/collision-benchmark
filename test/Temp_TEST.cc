@@ -27,8 +27,8 @@ int main(int argc, char** argv)
   gazebo::transport::PublisherPtr pub =
     node->Advertise<gazebo::msgs::PosesStamped>("~/test");
 
-  std::cout<<"Run the following command in a new terminal:"<<std::endl;
-  std::cout<<"gz topic -e /gazebo/transp/test"<<std::endl;
+  std::cout << "Run the following command in a new terminal:" << std::endl;
+  std::cout << "gz topic -e /gazebo/transp/test" << std::endl;
 
   // wait for the remote connection
   // IMPORTANT: This error will only be triggered with remote
@@ -37,7 +37,7 @@ int main(int argc, char** argv)
   pub->WaitForConnection();
 
   // connection received, continue.
-  std::cout<<"Received remote connection."<<std::endl;
+  std::cout << "Received remote connection." << std::endl;
 
   // now make an additional subscriber which will count the
   // number of messages arrived and trigger the dead-end for messages.
@@ -53,20 +53,20 @@ int main(int argc, char** argv)
 
   for (int i = 0; i < numMsgs; ++i)
   {
-    std::cout<<"SENDING MESSAGE! "<<i<<"..."<<std::endl;
+    std::cout << "SENDING MESSAGE! " << i<<"..." << std::endl;
     gazebo::msgs::Set(msg.mutable_time(), gazebo::common::Time(i));
     // do a direct publishing in which the message should
     // be written out right away
     pub->Publish(msg, true);
   }
 
-  std::cout<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++"<<std::endl;
+  std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
   // if this is skipped, then the test will fail, as some
   // left-over messages which could not be sent immediately
   // will remain in the message queue in transport::Publisher.
   while (pub->GetOutgoingCount() > 0)
   {
-    std::cout<<"Getting out last messages, got "
+    std::cout << "Getting out last messages, got "
       <<pub->GetOutgoingCount() << " left." << std::endl;
      pub->SendMessage();
     gazebo::common::Time::MSleep(200);
@@ -76,7 +76,7 @@ int main(int argc, char** argv)
   int sleepTime = 0;
   while ((g_receivedPosesStamped != numMsgs) && (sleepTime < timeoutSecs))
   {
-    std::cout<<"SLEEP "<<sleepTime<<std::endl;
+    std::cout << "SLEEP " << sleepTime << std::endl;
     // not very nice but sleep just to make sure
     // enough time has passed for all messages to arrive
     gazebo::common::Time::Sleep(1);
@@ -85,7 +85,7 @@ int main(int argc, char** argv)
 
   if (g_receivedPosesStamped != numMsgs)
     std::cerr << "ERROR: Have not received all messages! Sent " <<numMsgs
-              << " and received "<<g_receivedPosesStamped << std::endl;
+              << " and received " << g_receivedPosesStamped << std::endl;
   else
     std::cout << "SUCCESS" << std::endl;
 }

@@ -71,7 +71,7 @@ TEST_F(MultipleWorldsTest, UsesDifferentEngines)
       << " World PhysicsEngine cannot be NULL";
     ASSERT_EQ((*it)->Physics()->GetType(), *eit)
       << "Engine must be '"<<*eit
-      <<"', is "<<(*it)->Physics()->GetType();
+      <<"', is " << (*it)->Physics()->GetType();
   }
 }
 
@@ -100,20 +100,20 @@ TEST_F(MultipleWorldsTest, UsesDifferentEnginesOverride)
   {
     std::string physicsfile = *it;
     std::string worldfile = "worlds/rubble.world";
-    std::cout<<"Loading physics from "<<physicsfile<<std::endl;
+    std::cout << "Loading physics from " << physicsfile << std::endl;
     sdf::ElementPtr physics =
       collision_benchmark::GetPhysicsFromSDF(physicsfile);
     ASSERT_NE(physics.get(), nullptr) <<
       "Could not get phyiscs engine from " << physicsfile;
-    // std::cout<<"Physics: "<<physics->ToString("")<<std::endl;
-    std::cout<<"Loading world from " << worldfile << std::endl;
+    // std::cout << "Physics: " << physics->ToString("") << std::endl;
+    std::cout << "Loading world from " << worldfile << std::endl;
     // because we are loading the same world mulitple times, we need to assing
     // a unique name to it, or the loading will fail.
     std::stringstream wname;
-    wname << "world_"<<i;
+    wname << "world_" << i;
     gazebo::physics::WorldPtr gzworld =
       collision_benchmark::LoadWorldFromFile(worldfile, wname.str(), physics);
-    ASSERT_NE(gzworld.get(), nullptr) <<"Could not load world "<<worldfile;
+    ASSERT_NE(gzworld.get(), nullptr) <<"Could not load world " << worldfile;
     worlds.push_back(gzworld);
   }
 
@@ -124,12 +124,12 @@ TEST_F(MultipleWorldsTest, UsesDifferentEnginesOverride)
   for (std::vector<gazebo::physics::WorldPtr>::iterator it=worlds.begin();
        it!=worlds.end(); ++it, ++eit)
   {
-    std::cout<<"Engine used: "<<(*it)->Physics()->GetType()<<std::endl;
+    std::cout << "Engine used: " << (*it)->Physics()->GetType() << std::endl;
     ASSERT_NE(it->get(),nullptr) << " World NULL pointer returned";
     ASSERT_NE((*it)->Physics().get(), nullptr)
       << " World PhysicsEngine cannot be NULL";
     ASSERT_EQ((*it)->Physics()->GetType(), *eit) << "Engine must be '"<<*eit
-      <<"', is "<<(*it)->Physics()->GetType();
+      <<"', is " << (*it)->Physics()->GetType();
   }
 }
 

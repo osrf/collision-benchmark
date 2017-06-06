@@ -229,8 +229,8 @@ void StaticTestFramework::AABBTestWorldsAgreement(const std::string &modelName1,
   collision_benchmark::GzAABB aabb1, aabb2;
   ASSERT_TRUE(GetAABBs(modelName1, modelName2, bbTol, aabb1, aabb2));
 
-  // std::cout<<"Got AABB 1: " <<  aabb1.min << ", " << aabb1.max << std::endl;
-  // std::cout<<"Got AABB 2: " <<  aabb2.min << ", " << aabb2.max << std::endl;
+  // std::cout << "Got AABB 1: " <<  aabb1.min << ", " << aabb1.max << std::endl;
+  // std::cout << "Got AABB 2: " <<  aabb2.min << ", " << aabb2.max << std::endl;
 
   collision_benchmark::GzAABB grid = aabb1;
   grid.min -= aabb2.size() / 2;
@@ -252,13 +252,13 @@ void StaticTestFramework::AABBTestWorldsAgreement(const std::string &modelName1,
   if (interactive)
   {
     std::cout << "Now start gzclient if you would like "
-              << "to view the test. "<<std::endl;
-    std::cout << "Press [Enter] to continue."<<std::endl;
+              << "to view the test. " << std::endl;
+    std::cout << "Press [Enter] to continue." << std::endl;
     getchar();
   }
 
   // start the update loop
-  std::cout << "Now starting to update worlds."<<std::endl;
+  std::cout << "Now starting to update worlds." << std::endl;
 
   int msSleep = 0;  // delay for running the test
   double eps = 1e-07;
@@ -269,7 +269,7 @@ void StaticTestFramework::AABBTestWorldsAgreement(const std::string &modelName1,
   for (double z = grid.min.Z(); z < grid.max.Z()+eps; z += cellSizeZ)
   {
     ++itCnt;
-    // std::cout<<"Placing model 2 at "<<x<<", "<<y<<", "<<z<<std::endl;
+    // std::cout << "Placing model 2 at " << x<<", " << y<<", " << z<<std::endl;
     bstate2.position.x = x;
     bstate2.position.y = y;
     bstate2.position.z = z;
@@ -328,8 +328,8 @@ void StaticTestFramework::AABBTestWorldsAgreement(const std::string &modelName1,
         ((positive <= negative) && (negative < minAgree)))
     {
       std::stringstream str;
-      std::cout << "FAIL "<<failCnt << ": Minimum agreement not reached. "
-                << "Agreement: "<<positive<<", "<<negative<<std::endl;
+      std::cout << "FAIL " << failCnt << ": Minimum agreement not reached. "
+                << "Agreement: " << positive << ", " << negative << std::endl;
 
       // str << " Collision: "<< VectorToString(colliding) << ", no collision: "
       //     << VectorToString(notColliding) << ".";
@@ -380,7 +380,7 @@ void StaticTestFramework::AABBTestWorldsAgreement(const std::string &modelName1,
       if (interactive)
       {
         std::cout << str.str() << std::endl
-                  << "Press [Enter] to continue."<<std::endl;
+                  << "Press [Enter] to continue." << std::endl;
         RefreshClient(5);
         collision_benchmark::UpdateUntilEnter(worldManager);
       }
@@ -392,5 +392,5 @@ void StaticTestFramework::AABBTestWorldsAgreement(const std::string &modelName1,
       ++failCnt;
     }
   }
-  std::cout<<"TwoModels test finished. "<<std::endl;
+  std::cout << "TwoModels test finished. " << std::endl;
 }
