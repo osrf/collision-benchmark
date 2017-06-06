@@ -350,27 +350,28 @@ visualization.
 
 Two shapes are loaded, one at each end of a "collision bar". The collision
 bar is the axis along which the objects will be moved to test the collision.
-A slider can be used to step-wise move the objects towards and apart from each
+A **slider** can be used to move the objects step-wise towards and apart from each
 other along the collision axis.
-An "Auto-collide" function will move the objects along the collision
+An **"Auto-collide"** function will move the objects along the collision
 bar until at least one of the physics engines used for testing reports a
 collision between the objects. 
 
 ![Two shapes test](images/Two-shapes-test-cans.png)
 
-The models' pose relative to the collision axis can be changed in order
+The models' **pose can be changed** relative to the collision axis in order
 to find critical collision configurations which happen when the models collide.
 To change the pose of the models, the Gazebo client transformation tools
 can be used.
 
-A configuration can then be saved an loaded again at a later point.
-The saved configuration will not save the amount the models were
+A **configuration can be saved** an loaded again at a later point (to load,
+use the command line argument ``-c <config-file>``).
+The saved configuration will *not* save the amount the models were
 moved via the axis slider or the auto-collide function, but only the amount
 they were moved around by the user (via the Gazebo client transformation tools).
 Before saving a configuration, it is advised to separate the models to the
 maximum extent using the slider, to get a feeling of which configuration
-will be saved. The configuration saved is the one at which models are separated
-to the full extent via the collision axis slider.
+will be saved. The configuration saved is the one at which the models are
+separated to the full extent via the collision axis slider.
 
 To load models, the test can use:
 
@@ -378,7 +379,7 @@ To load models, the test can use:
 - The name of the model (it has to be findable in ``GAZEBO_MODEL_PATH``)
 - Unit shapes: Box, cylinder and sphere
 
-However, only exactly two shapes to be loaded are supported.
+However, only exactly two shapes are supported, regardless what type.
 
 **Starting the test**
 
@@ -391,14 +392,17 @@ collide_test <list of physics engines> -m <Model-1> -m <Model-2>``
 the ``-m`` parameter specifies the model, either using *model names* or
 *a file path* to the model SDF file.
 Note that file paths have the limitation that when you save the configuration,
-and try to load it on another computer, it is not supported yet.
+and try to load the confiuration on another system, it is not supported yet,
+because the absolute path will be saved.
 
 Alternatively, to load a shape (unit sphere, box or cylinder),
 use the ``-s`` parameter instead:
 
 ```
-collide_test <list of physics engines> -m <Model-1> -s <Shape-name>``
+collide_test <list of physics engines> -m <Model-1> -s <shape-name>``
 ```
+
+where ``<shape-name>`` can be *sphere, cylinder* or *cube*.
 
 You can specify the models in any order, the only limitation is that it has
 to be exactly two models, regradless whether they are unit shapes or
@@ -410,6 +414,8 @@ It will use the "multiple worlds server" described earlier, each world
 using one of the physics engines you specified.
 You can switch between the worlds and see how the different engines interpret
 the collision situation.
+
+![Two shapes test](images/Two-shapes-dumpster-diff.png "Image: Difference between bullet and ODE")
 
 You may want to set the wireframe view an enable contacts display in
 Gazebo.
@@ -426,6 +432,15 @@ it is only displayed as a helping visualization.
 
 ``collide_test ode bullet -m dumpster -s sphere``
 
+Things to try out:
+
+- Using the slider
+- Using the "AutoCollide" function
+- Using the Gazebo client transform tools to change the models pose, then try
+  slider and AutoCollide again
+- Switch between worlds to see the differences
+- Saving a configuration in which the model poses have been changed with the
+  Gazebo transform tools.
 
 **More details**
 

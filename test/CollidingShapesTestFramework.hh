@@ -66,7 +66,7 @@ namespace test
  * - SDF files which contain the model
  * - The name of the model (it has to be findable in ``GAZEBO_MODEL_PATH``)
  * - Unit shapes: Box, cylinder and sphere
- * However, only exactly two shapes to be loaded are supported.
+ * However, only exactly two shapes are supported, regardless what type.
  *
  * Note that the collision axis cannot be moved. It is not a model in the world,
  * it is only displayed as a helping visualization.
