@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2012-2016 Open Source Robotics Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 #include <collision_benchmark/WorldManager.hh>
 #include <collision_benchmark/PrimitiveShape.hh>
 #include <collision_benchmark/SimpleTriMeshShape.hh>
@@ -32,12 +48,24 @@ bool defaultInteractive = false;
 // Default output path (empty string prevents writing to file)
 std::string defaultOutputPath = "";
 
-class StaticTest:
-  public StaticTestFramework {};
+  /**
+   * \brief subclass to create a new test group
+   */
+  class StaticTest:
+    public StaticTestFramework
+  {
+    public:
+  };
 
-class StaticTestWithParam:
-  public StaticTestFramework,
-  public testing::WithParamInterface<const char*> {};
+  /**
+   * \brief subclass to create a new test group
+   */
+  class StaticTestWithParam:
+    public StaticTestFramework,
+    public testing::WithParamInterface<const char*>
+  {
+    public:
+  };
 
 //////////////////////////////////////////////////////////////////////////////
 // Helper to create a simple shape out of two triangles
@@ -51,7 +79,7 @@ Shape::Ptr GetSimpleTestTriangle(const std::string &modelName)
   std::vector<Vertex>& vertices = meshData->GetVertices();
   std::vector<Face>& triangles = meshData->GetFaces();
   vertices.push_back(Vertex(-1, 0, 0));
-  vertices.push_back(Vertex(0, 0,-1));
+  vertices.push_back(Vertex(0, 0, -1));
   vertices.push_back(Vertex(1, 0, 0));
   vertices.push_back(Vertex(0, 1, 0));
   triangles.push_back(Face(0, 1, 2));
@@ -187,8 +215,8 @@ TEST_P(StaticTestWithParam, SphereEquivalentsTest)
   std::string modelName2 = "SphereMesh";
   SimpleTriMeshShape::MeshDataT::Ptr sphereMeshData =
     generator->MakeSphere(radius, 10, 10);
-    //generator->MakeCylinder(radius, 4, 50, true);
-  //sphereMeshData->Perturb(-0.2, 0.2, SimpleTriMeshShape::MeshDataT::Vertex(0, 0, 0),
+  // sphereMeshData->Perturb(-0.2, 0.2,
+  //                        SimpleTriMeshShape::MeshDataT::Vertex(0, 0, 0),
   //                        SimpleTriMeshShape::MeshDataT::Vertex(0, 1, 0));
   Shape::Ptr sphereMesh(new SimpleTriMeshShape(sphereMeshData, modelName2));
 
