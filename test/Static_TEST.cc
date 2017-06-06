@@ -23,7 +23,7 @@ const double minAgree = 0.999;
 
 
 // Default tolerance for comparison of bounding box sizes. The min
-// and max coordinates (per x,y,z) are allowed to vary by this much.
+// and max coordinates (per x, y, z) are allowed to vary by this much.
 const double bbTol = 1e-01;
 
 // Default value to run tests interactively (if false, automated)
@@ -48,14 +48,14 @@ Shape::Ptr GetSimpleTestTriangle(const std::string &modelName)
   SimpleTriMeshShape::MeshDataPtr meshData(new SimpleTriMeshShape::MeshDataT());
   typedef SimpleTriMeshShape::Vertex Vertex;
   typedef SimpleTriMeshShape::Face Face;
-  std::vector<Vertex>& vertices=meshData->GetVertices();
-  std::vector<Face>& triangles=meshData->GetFaces();
-  vertices.push_back(Vertex(-1,0,0));
-  vertices.push_back(Vertex(0,0,-1));
-  vertices.push_back(Vertex(1,0,0));
-  vertices.push_back(Vertex(0,1,0));
-  triangles.push_back(Face(0,1,2));
-  triangles.push_back(Face(0,2,3));
+  std::vector<Vertex>& vertices = meshData->GetVertices();
+  std::vector<Face>& triangles = meshData->GetFaces();
+  vertices.push_back(Vertex(-1, 0, 0));
+  vertices.push_back(Vertex(0, 0,-1));
+  vertices.push_back(Vertex(1, 0, 0));
+  vertices.push_back(Vertex(0, 1, 0));
+  triangles.push_back(Face(0, 1, 2));
+  triangles.push_back(Face(0, 2, 3));
   Shape::Ptr shape(new SimpleTriMeshShape(meshData, modelName1));
   return shape;
 }
@@ -78,16 +78,16 @@ TEST_F(StaticTest, BoxCylinderTest)
 
   // Model 1
   std::string modelName1 = "model1";
-  Shape::Ptr shape1(PrimitiveShape::CreateBox(2,2,2));
+  Shape::Ptr shape1(PrimitiveShape::CreateBox(2, 2, 2));
   // Model 2
   std::string modelName2 = "model2";
-  Shape::Ptr shape2(PrimitiveShape::CreateCylinder(1,3));
+  Shape::Ptr shape2(PrimitiveShape::CreateCylinder(1, 3));
 
   InitMultipleEngines(selectedEngines);
   LoadShape(shape1, modelName1);
   LoadShape(shape2, modelName2);
-  const static bool interactive = defaultInteractive;
-  const static float cellSizeFactor = 0.1;
+  static const bool interactive = defaultInteractive;
+  static const float cellSizeFactor = 0.1;
   AABBTestWorldsAgreement(modelName1, modelName2, cellSizeFactor, minAgree,
            bbTol, zeroDepthTol, interactive,
            defaultOutputPath, "BoxCylinderTest");
@@ -116,13 +116,13 @@ TEST_F(StaticTest, CylinderAndTwoTriangles)
 
   // Model 2
   std::string modelName2 = "model2";
-  Shape::Ptr shape2(PrimitiveShape::CreateCylinder(1,3));
+  Shape::Ptr shape2(PrimitiveShape::CreateCylinder(1, 3));
 
   InitMultipleEngines(selectedEngines);
   LoadShape(shape1, modelName1);
   LoadShape(shape2, modelName2);
-  const static bool interactive = defaultInteractive;
-  const static float cellSizeFactor = 0.1;
+  static const bool interactive = defaultInteractive;
+  static const float cellSizeFactor = 0.1;
   AABBTestWorldsAgreement(modelName1, modelName2, cellSizeFactor, minAgree,
                           bbTol, zeroDepthTol, interactive,
                           defaultOutputPath, "CylinderAndTwoTriangles");
@@ -164,8 +164,8 @@ TEST_F(StaticTest, SpherePrimMesh)
   InitMultipleEngines(selectedEngines);
   LoadShape(sphereMesh, meshName);
   LoadShape(spherePrimitive, primName);
-  const static bool interactive = defaultInteractive;
-  const static float cellSizeFactor = 0.1;
+  static const bool interactive = defaultInteractive;
+  static const float cellSizeFactor = 0.1;
   AABBTestWorldsAgreement(meshName, primName, cellSizeFactor, minAgree,
                           bbTol, zeroDepthTol, interactive,
                           defaultOutputPath, "SpherePrimMesh");
@@ -188,8 +188,8 @@ TEST_P(StaticTestWithParam, SphereEquivalentsTest)
   SimpleTriMeshShape::MeshDataT::Ptr sphereMeshData =
     generator->MakeSphere(radius, 10, 10);
     //generator->MakeCylinder(radius, 4, 50, true);
-  //sphereMeshData->Perturb(-0.2, 0.2, SimpleTriMeshShape::MeshDataT::Vertex(0,0,0),
-  //                        SimpleTriMeshShape::MeshDataT::Vertex(0,1,0));
+  //sphereMeshData->Perturb(-0.2, 0.2, SimpleTriMeshShape::MeshDataT::Vertex(0, 0, 0),
+  //                        SimpleTriMeshShape::MeshDataT::Vertex(0, 1, 0));
   Shape::Ptr sphereMesh(new SimpleTriMeshShape(sphereMeshData, modelName2));
 
   // sphere as a primitive
@@ -205,8 +205,8 @@ TEST_P(StaticTestWithParam, SphereEquivalentsTest)
   // first world, and the mesh into the second
   LoadShape(spherePrimitive, modelName2, 0);
   LoadShape(sphereMesh, modelName2, 1);
-  const static bool interactive = defaultInteractive;
-  const static float cellSizeFactor = 0.1;
+  static const bool interactive = defaultInteractive;
+  static const float cellSizeFactor = 0.1;
   const double _bbTol = 0.15;
   AABBTestWorldsAgreement(modelName1, modelName2, cellSizeFactor, minAgree,
                           _bbTol, zeroDepthTol, interactive,

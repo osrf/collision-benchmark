@@ -104,7 +104,7 @@ namespace collision_benchmark
          it != v.end(); ++it)
     {
       if (it != v.begin()) str << ", ";
-      str<<*it;
+      str << *it;
     }
     str << "]";
     return str.str();
@@ -121,7 +121,7 @@ namespace collision_benchmark
          it != v.end(); ++it)
     {
       if (it != v.begin()) str << ", ";
-      str<<**it;
+      str << **it;
     }
     str << "]";
     return str.str();

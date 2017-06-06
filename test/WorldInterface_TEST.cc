@@ -231,11 +231,11 @@ TEST_F(WorldInterfaceTest, GazeboModelLoading)
 
   // Add another model via the Shape load function
   std::string forcedModelName3 = "test-shape";
-  //Shape::Ptr shape(PrimitiveShape::CreateBox(2,2,2));
+  //Shape::Ptr shape(PrimitiveShape::CreateBox(2, 2,2));
   //Shape::Ptr shape(PrimitiveShape::CreateSphere(2));
-  //Shape::Ptr shape(PrimitiveShape::CreateCylinder(1,3));
+  //Shape::Ptr shape(PrimitiveShape::CreateCylinder(1, 3));
   //Shape::Ptr shape(PrimitiveShape::CreatePlane
-  //                  (Shape::Vector3(1,0,0), Shape::Vector2(10,10)));
+  //                  (Shape::Vector3(1, 0,0), Shape::Vector2(10, 10)));
 
   // create simple mesh
   SimpleTriMeshShape::MeshDataPtr meshData(new SimpleTriMeshShape::MeshDataT());
@@ -243,15 +243,15 @@ TEST_F(WorldInterfaceTest, GazeboModelLoading)
   typedef SimpleTriMeshShape::Face Face;
   std::vector<Vertex>& vertices=meshData->GetVertices();
   std::vector<Face>& triangles=meshData->GetFaces();
-  vertices.push_back(Vertex(-1,0,0));
-  vertices.push_back(Vertex(0,0,-1));
-  vertices.push_back(Vertex(1,0,0));
-  vertices.push_back(Vertex(0,1,0));
-  triangles.push_back(Face(0,1,2));
-  triangles.push_back(Face(0,2,3));
+  vertices.push_back(Vertex(-1, 0,0));
+  vertices.push_back(Vertex(0, 0,-1));
+  vertices.push_back(Vertex(1, 0,0));
+  vertices.push_back(Vertex(0, 1,0));
+  triangles.push_back(Face(0, 1,2));
+  triangles.push_back(Face(0, 2,3));
   Shape::Ptr shape(new SimpleTriMeshShape(meshData, "test_mesh"));
 
-  shape->SetPose(Shape::Pose3(2,2,2,0,0,0));
+  shape->SetPose(Shape::Pose3(2, 2,2, 0,0, 0));
   std::cout << "Adding model from shape.." << std::endl;
   GzPhysicsWorld::ModelLoadResult res3 =
     world->AddModelFromShape(forcedModelName3, shape, shape);
@@ -290,15 +290,15 @@ TEST_F(WorldInterfaceTest, GazeboWorldSaving)
   typedef SimpleTriMeshShape::Face Face;
   std::vector<Vertex>& vertices=meshData->GetVertices();
   std::vector<Face>& triangles=meshData->GetFaces();
-  vertices.push_back(Vertex(-1,0,0));
-  vertices.push_back(Vertex(0,0,-1));
-  vertices.push_back(Vertex(1,0,0));
-  vertices.push_back(Vertex(0,1,0));
-  triangles.push_back(Face(0,1,2));
-  triangles.push_back(Face(0,2,3));
+  vertices.push_back(Vertex(-1, 0,0));
+  vertices.push_back(Vertex(0, 0,-1));
+  vertices.push_back(Vertex(1, 0,0));
+  vertices.push_back(Vertex(0, 1,0));
+  triangles.push_back(Face(0, 1,2));
+  triangles.push_back(Face(0, 2,3));
   Shape::Ptr shape(new SimpleTriMeshShape(meshData, "test_mesh"));
 
-  shape->SetPose(Shape::Pose3(2,2,2,0,0,0));
+  shape->SetPose(Shape::Pose3(2, 2,2, 0,0, 0));
   std::cout << "Adding model from shape.." << std::endl;
   GzPhysicsWorld::ModelLoadResult res
     = world->AddModelFromShape(shapeName, shape, shape);
