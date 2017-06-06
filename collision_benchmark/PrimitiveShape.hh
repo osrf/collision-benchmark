@@ -25,10 +25,10 @@
 #include <collision_benchmark/PrimitiveShapeParameters.hh>
 
 #include <memory>
+#include <string>
 
 namespace collision_benchmark
 {
-
 /**
  * \brief A shape which is one of the primitives
  * of the types BOX, SPHERE, CYLINDER, PLANE
@@ -55,7 +55,7 @@ class PrimitiveShape: public Shape
             Shape(o),
             params(o.params) {}
 
-  public: virtual ~PrimitiveShape(){}
+  public: virtual ~PrimitiveShape() {}
 
   // Creates a box
   public: static PrimitiveShape * CreateBox(double width,
@@ -93,8 +93,5 @@ class PrimitiveShape: public Shape
 
   private: PrimitiveShapeParameters::Ptr params;
 };
-
-
 }  // namespace
-
 #endif  // COLLISION_BENCHMARK_PRIMITIVESHAPE

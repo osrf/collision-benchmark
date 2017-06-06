@@ -26,13 +26,15 @@
 #include <gazebo/physics/Contact.hh>
 
 #ifndef CONTACTS_ENFORCABLE
-//#include <gazebo/msgs/MessageTypes.hh>
 #include <gazebo/transport/TransportTypes.hh>
 #endif
 
+#include <vector>
+#include <list>
+#include <string>
+
 namespace collision_benchmark
 {
-
 struct GazeboPhysicsWorldTypes
 {
   /// Describes a state of the world
@@ -66,8 +68,8 @@ struct GazeboPhysicsEngineWorldTypes
  * \author Jennifer Buehler
  * \date November 2016
  */
-class GazeboPhysicsWorld:
-  public collision_benchmark::PhysicsEngineWorld<GazeboPhysicsWorldTypes,
+class GazeboPhysicsWorld
+  : public collision_benchmark::PhysicsEngineWorld<GazeboPhysicsWorldTypes,
                                                  GazeboPhysicsEngineWorldTypes>
 {
   protected: typedef PhysicsEngineWorld<GazeboPhysicsWorldTypes,
@@ -108,19 +110,19 @@ class GazeboPhysicsWorld:
   //  computed if there is at least one subscriber to the contacts topic.
   //  Use this flag to enforce contacts computation in any case.
   public: GazeboPhysicsWorld(bool enforceContactComputation = false);
-  public: GazeboPhysicsWorld(const GazeboPhysicsWorld &w){}
+  public: GazeboPhysicsWorld(const GazeboPhysicsWorld &w) {}
   public: virtual ~GazeboPhysicsWorld();
 
   public: virtual bool SupportsSDF() const;
 
   public: virtual OpResult LoadFromSDF(const sdf::ElementPtr &sdf,
-                                       const std::string &worldname="");
+                                       const std::string &worldname = "");
 
   public: virtual OpResult LoadFromFile(const std::string &filename,
-                                        const std::string &worldname="");
+                                        const std::string &worldname = "");
 
   public: virtual OpResult LoadFromString(const std::string &str,
-                                          const std::string &worldname="");
+                                          const std::string &worldname = "");
 
   public: virtual bool SaveToFile(const std::string &filename,
                                   const std::string &resourceDir = "",
@@ -128,15 +130,15 @@ class GazeboPhysicsWorld:
 
   public: virtual ModelLoadResult
                     AddModelFromFile(const std::string &filename,
-                                     const std::string &modelname="");
+                                     const std::string &modelname = "");
 
   public: virtual ModelLoadResult
                     AddModelFromString(const std::string &str,
-                                       const std::string &modelname="");
+                                       const std::string &modelname = "");
 
   public: virtual ModelLoadResult
                   AddModelFromSDF(const sdf::ElementPtr &sdf,
-                                  const std::string &modelname="");
+                                  const std::string &modelname = "");
 
   public: virtual bool SupportsShapes() const;
 
@@ -271,13 +273,10 @@ class GazeboPhysicsWorld:
   // world is paused. So the paused state has to be managed
   // separately.
   private: bool paused;
-
 };  // class GazeboPhysicsWorld
 
 /// \def GazeboPhysicsWorldPtr
 /// \brief Boost shared pointer to a GazeboPhysicsWorld object
 typedef std::shared_ptr<GazeboPhysicsWorld> GazeboPhysicsWorldPtr;
-
 }  // namespace
-
 #endif  // COLLISION_BENCHMARK_GAZEBOPHYSICSWORLD

@@ -56,20 +56,6 @@ void GetNewEntities(const gazebo::physics::WorldState &_state1,
   }
 }
 
-/*void collision_benchmark::AddDiffWorldState(gazebo::physics::WorldPtr &world,
-                                  const gazebo::physics::WorldState &diffState)
-{
-  bool pauseState = world->IsPaused();
-  world->SetPaused(true);
-  gazebo::physics::WorldState currentState(world);
-
-  gazebo::physics::WorldState newState = currentState + diffState;
-  world->SetState(newState);
-
-  world->SetPaused(pauseState);
-}*/
-
-
 // XXX TODO REMOVE: Flags for testing
 #define FORCE_TARGET_TIME_VALUES
 // #define DEBUGWORLDSTATE
@@ -86,7 +72,7 @@ void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr &world,
   std::cout << "Current state: " << std::endl << currentState << std::endl;
 #endif
 
-  //re-set state times
+  // re-set state times
   // XXX TODO CHECK: should reset all times of the state as well,
   // because the *difference* is going to be added to it
   // Not sure yet how to best handle the times.
@@ -228,8 +214,8 @@ void collision_benchmark::PrintWorldStates
 }
 
 void collision_benchmark::PrintWorldStates
-      (const std::vector<PhysicsWorldStateInterface
-                           <gazebo::physics::WorldState>::Ptr>& worlds)
+      (const std::vector< PhysicsWorldStateInterface
+                           < gazebo::physics::WorldState >::Ptr>& worlds)
 {
   typedef PhysicsWorldStateInterface<gazebo::physics::WorldState> WorldStateT;
   typedef WorldStateT::Ptr WorldStatePtr;

@@ -47,9 +47,9 @@ std::string generateWorldName(const std::string &baseName,
 }
 
 GazeboWorldLoader::GazeboWorldLoader(const std::string &_engine,
-                                     const bool _alwaysCalcContacts):
-          WorldLoader(_engine),
-          alwaysCalcContacts(_alwaysCalcContacts)
+                                     const bool _alwaysCalcContacts)
+  : WorldLoader(_engine),
+    alwaysCalcContacts(_alwaysCalcContacts)
 {
   std::string physicsSDF =
     collision_benchmark::getPhysicsSettingsSdfFor(_engine);
@@ -68,9 +68,9 @@ GazeboWorldLoader::GazeboWorldLoader(const std::string &_engine,
   // std::cout << "Physics: " << physics->ToString("") << std::endl;
 }
 
-GazeboWorldLoader::GazeboWorldLoader(const bool _alwaysCalcContacts):
-          WorldLoader(""),
-          alwaysCalcContacts(_alwaysCalcContacts)
+GazeboWorldLoader::GazeboWorldLoader(const bool _alwaysCalcContacts)
+    : WorldLoader(""),
+      alwaysCalcContacts(_alwaysCalcContacts)
 {
 }
 
@@ -243,7 +243,7 @@ collision_benchmark::GetSDFElementFromFile(const std::string &filename,
   {
     fullFile = gazebo::common::find_file(filename);
   }
-  catch (gazebo::common::Exception &e)
+  catch(gazebo::common::Exception &e)
   {
     std::cerr << "File " << filename << " not found. "
               << e.GetErrorStr() << std::endl;
@@ -268,7 +268,7 @@ collision_benchmark::GetSDFElementFromFile(const std::string &filename,
       return sdfRoot;
     }
   }
-  catch (...)
+  catch(...)
   {
     std::cerr << "Unable to read sdf file[" << filename << "]\n";
     return sdfRoot;
@@ -397,7 +397,8 @@ collision_benchmark::LoadWorldFromSDF(const sdf::ElementPtr &sdfRoot,
 
   if (gazebo::physics::has_world(useName))
   {
-    std::cerr << "World with name " << useName << " already exists." << std::endl;
+    std::cerr << "World with name " << useName
+              << " already exists." << std::endl;
     return nullptr;
   }
 
@@ -426,7 +427,7 @@ collision_benchmark::LoadWorldFromSDF(const sdf::ElementPtr &sdfRoot,
     // the sensors of the current world, physics::get_world();
     if (forceSensorsInit) world->_SetSensorsInitialized(true);
   }
-  catch (gazebo::common::Exception &e)
+  catch(gazebo::common::Exception &e)
   {
     std::cerr << " Exception ocurred when loading world. "
               << e.GetErrorStr() << std::endl;
@@ -538,7 +539,7 @@ LoadWorld_helper(const std::string &str,
       sdfRoot =
         collision_benchmark::GetSDFElementFromString(str, "world", name);
   }
-  catch (gazebo::common::Exception &e)
+  catch(gazebo::common::Exception &e)
   {
     std::cerr << " Exception ocurred when loading world. "
               << e.GetErrorStr() << std::endl;
@@ -664,7 +665,7 @@ collision_benchmark::GetSupportedGazeboWorldLoaders
         WorldLoader::ConstPtr(new GazeboWorldLoader(engine,
                                                     enforceContactCalc));
     }
-    catch (collision_benchmark::Exception &e)
+    catch(collision_benchmark::Exception &e)
     {
       std::cerr << "Could not add support for engine "
                 <<engine << ": " << e.what() << std::endl;

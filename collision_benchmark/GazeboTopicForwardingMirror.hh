@@ -32,10 +32,10 @@
 
 #include <string>
 #include <iostream>
+#include <vector>
 
 namespace collision_benchmark
 {
-
 /**
  * \brief Forwards messages of a Gazebo world to a separate topic.
  *
@@ -44,9 +44,9 @@ namespace collision_benchmark
  * \author Jennifer Buehler
  * \date February 2016
  */
-class GazeboTopicForwardingMirror:
-  public MirrorWorld,
-  public std::enable_shared_from_this<GazeboTopicForwardingMirror>
+class GazeboTopicForwardingMirror
+  : public MirrorWorld,
+    public std::enable_shared_from_this<GazeboTopicForwardingMirror>
 {
     public: typedef std::shared_ptr<GazeboTopicForwardingMirror> Ptr;
     public: typedef std::shared_ptr<const GazeboTopicForwardingMirror> ConstPtr;
@@ -65,7 +65,8 @@ class GazeboTopicForwardingMirror:
     public:  GazeboTopicForwardingMirror(const std::string &worldname
                                           = "default");
     // prohibit copy constructor
-    private: GazeboTopicForwardingMirror(const GazeboTopicForwardingMirror &o){}
+    private: GazeboTopicForwardingMirror(const GazeboTopicForwardingMirror &o)
+             {}
     public:  ~GazeboTopicForwardingMirror();
 
     /// Documentation inherited
@@ -140,6 +141,5 @@ class GazeboTopicForwardingMirror:
     private: std::string worldName;
     private: bool initialized;
 };
-
 }  // namespace collision_benchmark
 #endif

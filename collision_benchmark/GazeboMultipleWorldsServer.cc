@@ -54,7 +54,7 @@ bool GazeboMultipleWorldsServer::Start(int argc, const char** argv)
     // so const casting shoudld be safe.
     gazebo::setupServer(argc, (char**)argv);
   }
-  catch (...)
+  catch(...)
   {
     std::cerr << "Could not setup server" << std::endl;
     return false;

@@ -23,11 +23,12 @@
 #include <sdf/sdf.hh>
 #include <ignition/math/Vector3.hh>
 #include <ignition/math/Vector2.hh>
+
 #include <memory>
+#include <string>
 
 namespace collision_benchmark
 {
-
 /**
  * \brief Basic interface for a shape, which can be either a primitive
  * or a mesh. All supported types are defined in the type \e Type.
@@ -40,7 +41,7 @@ class Shape
 {
   public: typedef std::shared_ptr<Shape> Ptr;
   public: typedef std::shared_ptr<const Shape> ConstPtr;
-  public: typedef enum Types_{ BOX, SPHERE, CYLINDER, PLANE, MESH} Type;
+  public: typedef enum Types_ { BOX, SPHERE, CYLINDER, PLANE, MESH } Type;
 
   public: typedef ignition::math::Pose3<double> Pose3;
   public: typedef ignition::math::Vector3<double> Vector3;
@@ -51,7 +52,7 @@ class Shape
   public: Shape(const Shape &o):
           type(o.type),
           pose(o.pose) {}
-  public: virtual ~Shape(){}
+  public: virtual ~Shape() {}
 
   public: inline Type GetType() const { return type; }
   public: inline void SetPose(const Pose3& p) { pose = p; }
@@ -102,8 +103,5 @@ class Shape
   private: Type type;
   private: Pose3 pose;
 };
-
-
 }  // namespace
-
 #endif  // COLLISION_BENCHMARK_SHAPE

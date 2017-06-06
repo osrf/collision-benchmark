@@ -26,6 +26,8 @@
 #include <sdf/sdf.hh>
 
 #include <memory>
+#include <vector>
+#include <string>
 
 namespace collision_benchmark
 {
@@ -251,8 +253,8 @@ class PhysicsWorldModelInterface
       } ModelLoadResult;
 
 
-  public: PhysicsWorldModelInterface(){}
-  public: virtual ~PhysicsWorldModelInterface(){}
+  public: PhysicsWorldModelInterface() {}
+  public: virtual ~PhysicsWorldModelInterface() {}
 
   /// Loads a model from a file and adds it to the world.
   /// Doesn't set the model pose.
@@ -371,15 +373,15 @@ class PhysicsWorldContactInterface
   public: typedef std::shared_ptr<Self> Ptr;
   public: typedef std::shared_ptr<const Self> ConstPtr;
 
-  public: typedef collision_benchmark::Contact<Vector3,Wrench> Contact;
+  public: typedef collision_benchmark::Contact<Vector3, Wrench> Contact;
   public: typedef typename Contact::Ptr ContactPtr;
 
   public: typedef collision_benchmark::ContactInfo<Contact, ModelID,
                                                    ModelPartID> ContactInfo;
   public: typedef typename ContactInfo::Ptr ContactInfoPtr;
 
-  public: PhysicsWorldContactInterface(){}
-  public: virtual ~PhysicsWorldContactInterface(){}
+  public: PhysicsWorldContactInterface() {}
+  public: virtual ~PhysicsWorldContactInterface() {}
 
   /// \return false if the underlying implementation does not
   ///         compute contact points, true otherwise.
@@ -436,8 +438,8 @@ class PhysicsEngineWorldInterface
   public: typedef std::shared_ptr<PhysicsEngine> PhysicsEnginePtr;
   public: typedef std::shared_ptr<World> WorldPtr;
 
-  public: PhysicsEngineWorldInterface(){}
-  public: virtual ~PhysicsEngineWorldInterface(){}
+  public: PhysicsEngineWorldInterface() {}
+  public: virtual ~PhysicsEngineWorldInterface() {}
 
   /// \retval true if this is an adaptor to another world (either of type
   ///   \e PhysicsWorld or of \e WorldPtr). This means \e GetWorld() will
@@ -491,7 +493,6 @@ class PhysicsEngineWorldInterface
   public: virtual std::vector<NativeContactPtr>
                   GetNativeContacts(const ModelID &m1,
                                     const ModelID &m2) const = 0;
-
 };  // class PhysicsEngineWorld
 
 
@@ -518,11 +519,11 @@ class PhysicsEngineWorldInterface
  */
 template<class _WorldState, class _ModelID,
          class _ModelPartID, class _Vector3, class _Wrench>
-class PhysicsWorld:
-  public PhysicsWorldBaseInterface,
-  public PhysicsWorldStateInterface<_WorldState>,
-  public PhysicsWorldModelInterface<_ModelID, _ModelPartID, _Vector3>,
-  public PhysicsWorldContactInterface<_ModelID, _ModelPartID,
+class PhysicsWorld
+  : public PhysicsWorldBaseInterface,
+    public PhysicsWorldStateInterface<_WorldState>,
+    public PhysicsWorldModelInterface<_ModelID, _ModelPartID, _Vector3>,
+    public PhysicsWorldContactInterface<_ModelID, _ModelPartID,
                                       _Vector3, _Wrench>
 {
   public: typedef _WorldState WorldState;
@@ -583,13 +584,13 @@ class PhysicsWorld:
  * \date October 2016
  */
 template<class PhysicsWorldTypes_, class PhysicsEngineWorldTypes_>
-class PhysicsEngineWorld:
-  public PhysicsWorld<typename PhysicsWorldTypes_::WorldState,
+class PhysicsEngineWorld
+  : public PhysicsWorld<typename PhysicsWorldTypes_::WorldState,
                       typename PhysicsWorldTypes_::ModelID,
                       typename PhysicsWorldTypes_::ModelPartID,
                       typename PhysicsWorldTypes_::Vector3,
                       typename PhysicsWorldTypes_::Wrench>,
-  public PhysicsEngineWorldInterface<
+    public PhysicsEngineWorldInterface<
               typename PhysicsWorldTypes_::ModelID,
               typename PhysicsEngineWorldTypes_::Model,
               typename PhysicsEngineWorldTypes_::Contact,

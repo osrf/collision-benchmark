@@ -111,7 +111,8 @@ ClientGui::ClientGui()
   // Send the name request to the gazebo server
   gazebo::msgs::Any m;
   m.set_type(gazebo::msgs::Any::INT32);
-  m.set_int_value(0); // Request world name
+  // Request world name
+  m.set_int_value(0);
   this->mirrorWorldPub->Publish(m);
 }
 
@@ -141,7 +142,8 @@ void ClientGui::OnButtonNext()
 {
   gazebo::msgs::Any m;
   m.set_type(gazebo::msgs::Any::INT32);
-  m.set_int_value(1); // "Next" world
+  // "Next" world
+  m.set_int_value(1);
   this->mirrorWorldPub->Publish(m);
 }
 
@@ -151,6 +153,7 @@ void ClientGui::OnButtonPrev()
 {
   gazebo::msgs::Any m;
   m.set_type(gazebo::msgs::Any::INT32);
-  m.set_int_value(-1); // "Prev" world
+  // "Prev" world
+  m.set_int_value(-1);
   this->mirrorWorldPub->Publish(m);
 }
