@@ -132,6 +132,9 @@ in lexicographical order.
 
 ![Multiple worlds](images/Multiple-worlds-rubble.png)
 
+*Image: Differences in the rubble world in bullet and ODE at the
+same time of simulation*
+
 You can switch between the physics engines with the GUI control panel displayed on the top left.
 Between the buttons, the name of the currently displayed world is shown, which should contain the physics
 engine in the name.
@@ -259,8 +262,8 @@ to the physics. However contact points between objects are still computed.
 The static tests are therefore suitable for testing collision and
 contact properties.
 
-The main method of testing implemented so far is the "AABB intersection test"
-in which two object's axis-aligned bounding boxes are intersected in many
+The main method of testing implemented so far is the **"AABB intersection test"**
+in which two objects axis-aligned bounding boxes are intersected in many
 possible ways that they can intersect.
 This generally leads to many states in which the objects are
 colliding, and also states in which they are not (but in which they are
@@ -276,6 +279,9 @@ The test iterates through all AABB intersection states and moves the objects
 accordingly with the AABB, so all worlds are in the same state. It
 then compares the output of the worlds.
 If the worlds disagree about the collision state, a failure is triggered.
+
+![Static test](images/Static-test-spheres.png)
+*Image: An example where the engines disagree. Bullet detects a collision, but ODE doesnt'.*
 
 The static tests can be run interactively or automated.
 In interactive mode, the test will stop at each failure so you can inspect
@@ -348,6 +354,10 @@ For this purpose, the "two colliding shapes" test was developed.
 
 This test only works with the Gazebo engines and uses the Gazebo client for
 visualization.
+
+Note that the dynamics engine is disabled, just as in the static tests, because
+we want to obsever the contact points and not have the models react to
+the collision.
 
 **How the test works**
 
