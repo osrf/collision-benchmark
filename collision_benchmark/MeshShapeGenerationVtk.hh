@@ -153,7 +153,6 @@ void getTriangleSoup(const vtkSmartPointer<vtkPolyData>& polydata,
                      std::vector<vPoint>& vertices,
                      std::vector<vTriIdx>& triangles);
 
-
 /**
  * Triangulates the data and returns the triangulated data
  */

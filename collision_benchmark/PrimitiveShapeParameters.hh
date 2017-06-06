@@ -14,6 +14,10 @@
  * limitations under the License.
  *
  */
+/*
+ * Author: Jennifer Buehler
+ * Date: December 2016
+ */
 
 #ifndef COLLISION_BENCHMARK_PRIMITIVESHAPE_PARAMETERS_H
 #define COLLISION_BENCHMARK_PRIMITIVESHAPE_PARAMETERS_H
@@ -23,7 +27,6 @@
 
 namespace collision_benchmark
 {
-
 /**
  * Interface for parameters that describe a primitive, such as radius or length.
  * Primitives can have a subset of parameters as defined in the type
@@ -39,8 +42,8 @@ class PrimitiveShapeParameters
   public: typedef std::shared_ptr<PrimitiveShapeParameters> Ptr;
   public: typedef std::shared_ptr<const PrimitiveShapeParameters> ConstPtr;
 
-  public: PrimitiveShapeParameters(){}
-  public: virtual ~PrimitiveShapeParameters(){}
+  public: PrimitiveShapeParameters() {}
+  public: virtual ~PrimitiveShapeParameters() {}
 
   // Parameter values for a variety of primitive types.
   // VALX/Y/Z can be used for any primitive-specific type with x/y/z values,
@@ -71,19 +74,19 @@ class RadiusParameter: public PrimitiveShapeParameters
 {
   public: typedef PrimitiveShapeParameters Super;
   public: explicit RadiusParameter(const Float &radius):
-    radius(radius){}
+    radius(radius) {}
   public: RadiusParameter(const RadiusParameter<Float>& o):
-    radius(o.radius){}
+    radius(o.radius) {}
 
   public: virtual double Get(const Super::ParameterType &type)
   {
-    if (type!=RADIUS)
+    if (type != RADIUS)
       THROW_EXCEPTION("RadiusParameter does hot have the type " << type);
     return radius;
   }
   public: virtual void Set(const Super::ParameterType &type, const double &val)
   {
-    if (type!=RADIUS)
+    if (type != RADIUS)
       THROW_EXCEPTION("RadiusParameter does hot have the type " << type);
     radius = val;
   }
@@ -106,25 +109,29 @@ class RadiusAndValueParameter: public RadiusParameter<Float>
   public: explicit RadiusAndValueParameter(const Float &radius,
                                            const Float &value):
     Super(radius),
-    value(value){}
+    value(value) {}
   public: RadiusAndValueParameter(const RadiusAndValueParameter<Float>& o):
     Super(o),
-    value(o.value){}
+    value(o.value) {}
 
   public: virtual double Get(const typename Super::ParameterType &type)
   {
-    if (type!=Super::RADIUS && type!=Super::LENGTH)
-      THROW_EXCEPTION("RadiusAndValueParameter does hot have the type " << type);
-    if (type==Super::RADIUS) return Super::Get(type);
+    if (type != Super::RADIUS && type != Super::LENGTH)
+      THROW_EXCEPTION("RadiusAndValueParameter does hot have the type "
+                      << type);
+    if (type == Super::RADIUS) return Super::Get(type);
     return value;
   }
   public: virtual void Set(const typename Super::ParameterType &type,
                            const double &val)
   {
-    if (type!=Super::RADIUS && type!=Super::LENGTH)
-      THROW_EXCEPTION("RadiusAndValueParameter does hot have the type " << type);
-    if (type==Super::RADIUS) Super::Set(type, val);
-    else value = val;
+    if (type != Super::RADIUS && type != Super::LENGTH)
+      THROW_EXCEPTION("RadiusAndValueParameter does hot have the type "
+                      << type);
+    if (type == Super::RADIUS)
+      Super::Set(type, val);
+    else
+      value = val;
   }
   public: virtual typename Super::Ptr Clone() const
   {
@@ -158,15 +165,15 @@ class Dim3Parameter: public PrimitiveShapeParameters
 
   public: virtual double Get(const typename Super::ParameterType &type)
   {
-    if (type==DIMX)
+    if (type == DIMX)
     {
       return x;
     }
-    else if (type==DIMY)
+    else if (type == DIMY)
     {
       return y;
     }
-    else if (type==DIMZ)
+    else if (type == DIMZ)
     {
       return z;
     }
@@ -175,15 +182,15 @@ class Dim3Parameter: public PrimitiveShapeParameters
   public: virtual void Set(const typename Super::ParameterType &type,
                            const double &val)
   {
-    if (type==DIMX)
+    if (type == DIMX)
     {
       x = val;
     }
-    else if (type==DIMY)
+    else if (type == DIMY)
     {
       y = val;
     }
-    else if (type==DIMZ)
+    else if (type == DIMZ)
     {
       z = val;
     }
@@ -223,15 +230,15 @@ class Val3Parameter: public PrimitiveShapeParameters
 
   public: virtual double Get(const typename Super::ParameterType &type)
   {
-    if (type==VALX)
+    if (type == VALX)
     {
       return x;
     }
-    else if (type==VALY)
+    else if (type == VALY)
     {
       return y;
     }
-    else if (type==VALZ)
+    else if (type == VALZ)
     {
       return z;
     }
@@ -240,15 +247,15 @@ class Val3Parameter: public PrimitiveShapeParameters
   public: virtual void Set(const typename Super::ParameterType &type,
                            const double &val)
   {
-    if (type==VALX)
+    if (type == VALX)
     {
       x = val;
     }
-    else if (type==VALY)
+    else if (type == VALY)
     {
       y = val;
     }
-    else if (type==VALZ)
+    else if (type == VALZ)
     {
       z = val;
     }
@@ -288,7 +295,7 @@ class PlaneParameter: public Val3Parameter<double>
 
   public: virtual double Get(const typename Super::ParameterType &type)
   {
-    if (type==LENGTH)
+    if (type == LENGTH)
         return distance;
     return Super::Get(type);
   }
@@ -296,7 +303,7 @@ class PlaneParameter: public Val3Parameter<double>
   public: virtual void Set(const typename Super::ParameterType &type,
                            const double &val)
   {
-    if (type==LENGTH)
+    if (type == LENGTH)
       distance = val;
     Super::Set(type, val);
   }
@@ -332,11 +339,11 @@ class BoundedPlaneParameter: public PlaneParameter<double>
 
   public: virtual double Get(const typename Super::ParameterType &type)
   {
-    if (type==DIMX)
+    if (type == DIMX)
     {
       return xDim;
     }
-    else if (type==DIMY)
+    else if (type == DIMY)
     {
       return yDim;
     }
@@ -345,15 +352,15 @@ class BoundedPlaneParameter: public PlaneParameter<double>
   public: virtual void Set(const typename Super::ParameterType &type,
                            const double &val)
   {
-    if (type==DIMX)
+    if (type == DIMX)
     {
       xDim = val;
     }
-    else if (type==DIMY)
+    else if (type == DIMY)
     {
       yDim = val;
     }
-    else if (type==DIMZ)
+    else if (type == DIMZ)
     {
       yDim = val;
     }

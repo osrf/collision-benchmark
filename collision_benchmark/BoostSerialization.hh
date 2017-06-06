@@ -21,7 +21,6 @@
 
 namespace collision_benchmark
 {
-
 struct Vector3::access
 {
   template<class Archive>
@@ -86,7 +85,7 @@ namespace serialization
     collision_benchmark::BasicState::access::serialize(ar, b, version);
   }
 
-} // namespace serialization
-} // namespace boost
+}  // namespace serialization
+}  // namespace boost
 
 #endif  // COLLISION_BENCHMARK_SERIALIZATION_H

@@ -38,7 +38,6 @@
 
 namespace collision_benchmark
 {
-
 /**
  * \brief Strategy pattern to filter messages.
  * Messages may be simply filtered out, or modified by the filter.
@@ -52,6 +51,8 @@ class MessageFilter
   private: typedef  MessageFilter<Msg> Self;
   public: typedef std::shared_ptr<Self> Ptr;
   public: typedef std::shared_ptr<const Self> ConstPtr;
+
+  public: virtual ~MessageFilter() {}
 
   // Determines whether a message is filtered out. If it is not filtered
   // out, it may have been modified.
@@ -103,7 +104,7 @@ class GazeboTopicForwarder
           {
             ForwardTo(_to, _node, _pubQueueLimit, _pubHzRate);
           }
-  public: virtual ~GazeboTopicForwarder(){}
+  public: virtual ~GazeboTopicForwarder() {}
 
   // \brief Disconnects the subscribers
   public: void DisconnectSubscriber()
@@ -132,8 +133,6 @@ class GazeboTopicForwarder
                             const gazebo::transport::NodePtr &_node,
                             const bool _subLatching = true)
           {
-            // std::cout << "Subscribing to topic " << _from << "." << std::endl;
-
             std::lock_guard<std::mutex> lock(transportMutex);
 
             if (!this->pub)
@@ -157,8 +156,10 @@ class GazeboTopicForwarder
                         << (verbose ? "true" : "false") << ") of type "
                         << GetTypeName<Msg>() << " from topic "
                         << _from << " to topic ";
-              if (this->pub) std::cout << this->pub->GetTopic() << std::endl;
-              else std::cout << "<none>" << std::endl;
+              if (this->pub)
+                std::cout << this->pub->GetTopic() << std::endl;
+              else
+                std::cout << "<none>" << std::endl;
             }
           }
 
@@ -180,13 +181,14 @@ class GazeboTopicForwarder
                      double _pubHzRate = 0)
            {
              // std::cout << "Forwarding messages of type "
-             //         <<GetTypeName<Msg>() << " to topic " << _to << std::endl;
+             //       << GetTypeName<Msg>() << " to topic " << _to << std::endl;
              try
              {
                std::lock_guard<std::mutex> lock(transportMutex);
                this->pub =
                  _node->Advertise<Msg>(_to, _pubQueueLimit, _pubHzRate);
-             } catch (gazebo::common::Exception &e)
+             }
+             catch(gazebo::common::Exception &e)
              {
                THROW_EXCEPTION("Could not create forwarder to "
                                << _to <<" with message type "
@@ -199,7 +201,8 @@ class GazeboTopicForwarder
     assert(_msg);
 
     if (this->verbose)
-      std::cout << "Debug: Got message of type " << GetTypeName<Msg>() << std::endl;
+      std::cout << "Debug: Got message of type "
+                << GetTypeName<Msg>() << std::endl;
 
     std::lock_guard<std::mutex> lock(transportMutex);
     if (!this->sub) THROW_EXCEPTION("Inconsistency: Subscriber is NULL, "
@@ -208,8 +211,10 @@ class GazeboTopicForwarder
     if (this->verbose)
     {
       std::cout << " - on topic " << this->sub->GetTopic();
-      if (this->pub) std::cout << " forwarded to topic " << this->pub->GetTopic();
-      else std::cout << " <null>";
+      if (this->pub)
+        std::cout << " forwarded to topic " << this->pub->GetTopic();
+      else
+        std::cout << " <null>";
       std::cout << std::endl;
     }
 
@@ -220,8 +225,10 @@ class GazeboTopicForwarder
     }
 
     boost::shared_ptr<Msg const> msgToFwd(nullptr);
-    if (!msgFilter) msgToFwd = _msg;
-    else msgToFwd = msgFilter->Filter(_msg);
+    if (!msgFilter)
+      msgToFwd = _msg;
+    else
+      msgToFwd = msgFilter->Filter(_msg);
     if (!msgToFwd)
     {
       if (this->verbose)
@@ -325,7 +332,7 @@ class GazeboServiceForwarder
 
 
 
-  public: virtual ~GazeboServiceForwarder(){}
+  public: virtual ~GazeboServiceForwarder() {}
 
   // Buffers incoming request messages *before* Forward() is called
   // with the right topics (in case the destination topic is only known later)
@@ -431,8 +438,10 @@ class GazeboServiceForwarder
                }
 
                RequestConstPtr msgToFwd(nullptr);
-               if (!_reqFltr) msgToFwd = msg;
-               else msgToFwd = _reqFltr->Filter(msg);
+               if (!_reqFltr)
+                 msgToFwd = msg;
+               else
+                 msgToFwd = _reqFltr->Filter(msg);
                if (!msgToFwd)
                {
                  if (this->verbose)
@@ -496,7 +505,6 @@ class GazeboServiceForwarder
 
   /// \brief for debugging
   private: bool verbose;
-
 };
 
 class GazeboTopicBlockPrinterInterface
@@ -504,7 +512,6 @@ class GazeboTopicBlockPrinterInterface
   private: typedef GazeboTopicBlockPrinterInterface Self;
   public: typedef std::shared_ptr<Self> Ptr;
   public: typedef std::shared_ptr<const Self> ConstPtr;
-
 };
 
 /**
@@ -517,8 +524,8 @@ class GazeboTopicBlockPrinterInterface
  * \date February 2017
  */
 template<typename Msg_>
-class GazeboTopicBlockPrinter:
-  public GazeboTopicBlockPrinterInterface
+class GazeboTopicBlockPrinter
+  : public GazeboTopicBlockPrinterInterface
 {
   public: typedef Msg_ Msg;
   private: typedef GazeboTopicBlockPrinter<Msg> Self;
@@ -534,13 +541,13 @@ class GazeboTopicBlockPrinter:
   public: GazeboTopicBlockPrinter(const std::string &_printPrefix,
                                   const std::string &_topic,
                                   const gazebo::transport::NodePtr &_node,
-                                  const MessageFilterConstPtr _filter = nullptr):
-          printPrefix(_printPrefix),
-          msgFilter(_filter)
+                                  const MessageFilterConstPtr _filter = nullptr)
+          : printPrefix(_printPrefix),
+            msgFilter(_filter)
           {
             Init(_topic, _node, false);
           }
-  public: virtual ~GazeboTopicBlockPrinter(){}
+  public: virtual ~GazeboTopicBlockPrinter() {}
 
   // \brief Disconnects the subscribers
   public: void DisconnectSubscriber()

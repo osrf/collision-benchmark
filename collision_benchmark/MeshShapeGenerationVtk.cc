@@ -73,7 +73,7 @@ void collision_benchmark::getTriangleSoup
   tridataClean->Update();
   vtkSmartPointer<vtkPolyData> tridata = tridataClean->GetOutput();
 
-  for(vtkIdType i = 0; i < tridata->GetNumberOfPoints(); i++)
+  for (vtkIdType i = 0; i < tridata->GetNumberOfPoints(); i++)
   {
     // This is identical to:
     // tridata->GetPoints()->GetPoint(i, p);
@@ -86,10 +86,11 @@ void collision_benchmark::getTriangleSoup
     points.push_back(point);
   }
 
-  // Write all of the coordinates of the points in the vtkPolyData to the console.
+  // Write all of the coordinates of the points in the
+  // vtkPolyData to the console.
   tridata->GetPolys()->InitTraversal();
   vtkSmartPointer<vtkIdList> idList = vtkSmartPointer<vtkIdList>::New();
-  while(tridata->GetPolys()->GetNextCell(idList))
+  while (tridata->GetPolys()->GetNextCell(idList))
   {
     if (idList->GetNumberOfIds() != 3)
     {
@@ -153,7 +154,6 @@ collision_benchmark::makeCylinderVtk(const double radius, const double height,
                                      const unsigned int resolution,
                                      const bool capping)
 {
-
   vtkSmartPointer<vtkCylinderSource> cylinderSource =
       vtkSmartPointer<vtkCylinderSource>::New();
   cylinderSource->SetCenter(0.0, 0.0, 0.0);
