@@ -14,6 +14,10 @@
  * limitations under the License.
  *
  */
+/*
+ * Author: Jennifer Buehler
+ * Date: December 2016
+ */
 
 #include <collision_benchmark/Helpers.hh>
 #include <boost/filesystem.hpp>

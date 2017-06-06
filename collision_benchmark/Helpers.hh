@@ -21,7 +21,6 @@
 
 namespace collision_benchmark
 {
-
 // checks if \e path is a directory, or a potential path to a
 // non-existing directory
 bool isDirectory(const std::string &path);
@@ -30,7 +29,6 @@ bool isDirectory(const std::string &path);
 // \return false on error, true if directory already exists or has been
 //    successfully created.
 bool makeDirectoryIfNeeded(const std::string &dPath);
-
 }  // namespace
 
 #endif  // COLLISION_BENCHMARK_HELPERS

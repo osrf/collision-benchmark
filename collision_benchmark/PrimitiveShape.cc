@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
+/*
+ * Author: Jennifer Buehler
+ * Date: January 2017
+ */
+
 #include <collision_benchmark/PrimitiveShape.hh>
 
 using collision_benchmark::PrimitiveShape;

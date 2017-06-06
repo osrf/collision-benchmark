@@ -14,6 +14,10 @@
  * limitations under the License.
  *
  */
+/*
+ * Author: Jennifer Buehler
+ * Date: March 2017
+ */
 #include <collision_benchmark/GazeboMultipleWorldsServer.hh>
 #include <collision_benchmark/GazeboWorldLoader.hh>
 #include <collision_benchmark/GazeboTopicForwardingMirror.hh>

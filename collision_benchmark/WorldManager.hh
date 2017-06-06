@@ -36,10 +36,10 @@
 #include <string>
 #include <iostream>
 #include <mutex>
+#include <vector>
 
 namespace collision_benchmark
 {
-
 /**
  * \brief Convenience class which maintains a number of worlds
  * and provides functionality to access the same method in all worlds,
@@ -65,8 +65,8 @@ namespace collision_benchmark
  * \author Jennifer Buehler
  * \date December 2016
  */
-template<class _WorldState, class _ModelID,
-         class _ModelPartID, class _Vector3, class _Wrench>
+template<class _WorldState, class _ModelID, class _ModelPartID,
+         class _Vector3, class _Wrench>  // newline causes silly cppcheck fail
 class WorldManager
 {
   public: typedef _WorldState WorldState;
@@ -240,7 +240,6 @@ class WorldManager
 
   public: bool SetMirroredWorld(const int _index)
   {
-
     if (_index < 0 ||  _index >= this->worlds.size())
       return false;
 
@@ -698,15 +697,19 @@ class WorldManager
      {
        // Switch to previous world
        std::cout << "WorldManager: Switching to prev world" << std::endl;
-       if (mirroredWorldIdx > 0) --mirroredWorldIdx;
-       else mirroredWorldIdx = worlds.size()-1; // go back to last world
+       if (mirroredWorldIdx > 0)
+         --mirroredWorldIdx;
+       else
+         mirroredWorldIdx = worlds.size() - 1;  // go back to last world
      }
      else if (ctrl > 0)
      {
        // Switch to next world
        std::cout << "WorldManager: Switching to next world" << std::endl;
-       if (mirroredWorldIdx < (worlds.size()-1)) ++mirroredWorldIdx;
-       else mirroredWorldIdx = 0; // go back to first world
+       if (mirroredWorldIdx < (worlds.size()-1))
+         ++mirroredWorldIdx;
+       else
+         mirroredWorldIdx = 0;  // go back to first world
      }
 
      if (mirroredWorldIdx == oldMirrorIdx)
@@ -827,7 +830,6 @@ class WorldManager
   private: int mirroredWorldIdx;
 
   private: ControlServerPtr controlServer;
-
 };
 
 }  // namespace collision_benchmark

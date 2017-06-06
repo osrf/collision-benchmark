@@ -23,17 +23,18 @@
 #include <gazebo/physics/WorldState.hh>
 #include <ignition/math/Vector3.hh>
 #include <atomic>
+#include <string>
+
 namespace collision_benchmark
 {
-
 /**
  * \brief Implementation of MultipleWorldServer for Gazebo
  *
  * \author Jennifer Buehler
  * \date March 2017
  */
-class GazeboMultipleWorldsServer:
-  public MultipleWorldsServer<GazeboPhysicsWorldTypes::WorldState,
+class GazeboMultipleWorldsServer
+  : public MultipleWorldsServer<GazeboPhysicsWorldTypes::WorldState,
                               GazeboPhysicsWorldTypes::ModelID,
                               GazeboPhysicsWorldTypes::ModelPartID,
                               GazeboPhysicsWorldTypes::Vector3,

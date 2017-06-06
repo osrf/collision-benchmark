@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
+/*
+ * Author: Jennifer Buehler
+ * Date: December 2016
+ */
+
 #include <sstream>
 #include <gazebo/msgs/msgs.hh>
 #include "ClientGui.hh"

@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
+/*
+ * Author: Jennifer Buehler
+ * Date: March 2017
+ */
+
 #include <collision_benchmark/SimpleTriMeshShape.hh>
 #include <collision_benchmark/MeshHelper.hh>
 #include <collision_benchmark/Helpers.hh>

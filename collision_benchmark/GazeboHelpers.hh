@@ -21,11 +21,10 @@
 #include <set>
 #include <map>
 #include <vector>
+#include <string>
 
 namespace collision_benchmark
 {
-
-
 /**
  * Clears all models, and all contacts, from the world.
  */
@@ -104,9 +103,6 @@ void wrapSDF(std::string &sdf);
  * Calls fixSDF() for all the sdf's
  */
 void wrapSDF(std::vector<std::string>& sdf);
-
-
-
 }  // namespace
 
 #endif   // COLLISION_BENCHMARK_GAZEBOHELPERS_
