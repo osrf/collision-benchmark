@@ -1,3 +1,23 @@
+/*
+ * Copyright (C) 2012-2016 Open Source Robotics Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+/*
+ * Author: Jennifer Buehler
+ * Date: March 2017
+ */
 #ifndef COLLISION_BENCHMARK_MESHSHAPEGENERATIONVTK_H
 #define COLLISION_BENCHMARK_MESHSHAPEGENERATIONVTK_H
 
@@ -7,7 +27,6 @@
 
 namespace collision_benchmark
 {
-
 /**
  * \param[in] radius radius of sphere
  * \param[in] theta number of points in the longitude direction
@@ -71,9 +90,9 @@ vtkSmartPointer<vtkPolyData> makeConeVtk(const double radius,
                                          const unsigned int resolution,
                                          const double angle_deg,
                                          const bool capping,
-                                         const double dir_x=0,
-                                         const double dir_y=0,
-                                         const double dir_z=1);
+                                         const double dir_x = 0,
+                                         const double dir_y = 0,
+                                         const double dir_z = 1);
 /**
  * \param[in] innerRadius the inner radius
  * \param[in] outerRadius the outer radius
@@ -103,7 +122,7 @@ vtkSmartPointer<vtkPolyData> makeEllipsoidVtk(const double xRad,
  *    ring of the torus.
  * \param[in] crossRadius radius of the cross section of ring of the torus.
  * \param[in] uRes resolution in u-direction. Will create uRes-1 "circle
- *    sections", e.g. with uRes=4 it will be a triangle-shaped torus.
+ *    sections", e.g. with uRes = 4 it will be a triangle-shaped torus.
  * \param[in] vRes resolution in v-direction
  * \return the polygon data
  */
@@ -114,7 +133,7 @@ vtkSmartPointer<vtkPolyData> makeTorusVtk(const double ringRadius,
 // Simple helper for a point
 struct vPoint
 {
-  double x,y,z;
+  double x, y, z;
 };
 
 // Simple helper for a triangle index set
@@ -133,7 +152,6 @@ struct vTriIdx
 void getTriangleSoup(const vtkSmartPointer<vtkPolyData>& polydata,
                      std::vector<vPoint>& vertices,
                      std::vector<vTriIdx>& triangles);
-
 
 /**
  * Triangulates the data and returns the triangulated data

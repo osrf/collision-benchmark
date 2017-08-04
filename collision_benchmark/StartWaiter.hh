@@ -24,10 +24,10 @@
 #include <gazebo/common/Time.hh>
 #include <thread>
 #include <atomic>
+#include <vector>
 
 namespace collision_benchmark
 {
-
 /**
  * \brief Simple helper class to wait for the "start" signal to a program.
  *
@@ -57,7 +57,7 @@ class StartWaiter
     {
       gazebo::common::Time::MSleep(100);
       bool triggered = false;
-      for (std::vector<std::function<bool(void)>>::iterator
+      for (std::vector<std::function<bool(void)> >::iterator
            it = unpausedCallbacks.begin(); it != unpausedCallbacks.end(); ++it)
       {
         std::function<bool(void)> func = *it;
@@ -78,7 +78,6 @@ class StartWaiter
   // is called with \e pause being true.
   public: void PauseCallback(bool pause)
   {
-    //std::cout<<"############ Pause callback: "<<pause<<std::endl;
     unpaused = !pause;
   }
 
@@ -94,7 +93,7 @@ class StartWaiter
   private: void WaitForEnter()
   {
     int key = getchar();
-    keypressed=true;
+    keypressed = true;
   }
 
   // test is paused or not
@@ -102,7 +101,5 @@ class StartWaiter
   private: std::atomic<bool> keypressed;
   private: std::vector<std::function<bool(void)>> unpausedCallbacks;
 };
-
 }
-
 #endif  // COLLISION_BENCHMARK_START_WAITER_HH

@@ -14,7 +14,13 @@
  * limitations under the License.
  *
  */
+/*
+ * Author: Jennifer Buehler
+ * Date: 2017
+ */
+
 #include <collision_benchmark/MathHelpers.hh>
+#include <algorithm>
 
 //////////////////////////////////////////////////////////////////////////////
 template<typename Float>
@@ -52,7 +58,7 @@ collision_benchmark::Conv(const ignition::math::Quaternion<Float>& v)
 //////////////////////////////////////////////////////////////////////////////
 template<typename Float>
 ignition::math::Quaternion<Float>
-collision_benchmark::ConvIgn(const collision_benchmark::Quaternion& v)
+collision_benchmark::ConvIgn(const collision_benchmark::Quaternion &v)
 {
   return ignition::math::Quaternion<Float>(v.w, v.x, v.y, v.z);
 }
@@ -70,7 +76,7 @@ collision_benchmark::ConvIgn(const ignition::math::Quaternion<Float>& q)
 template<typename Float>
 ignition::math::Matrix4<Float>
 collision_benchmark::GetMatrix(const collision_benchmark::Vector3& p,
-                                       const collision_benchmark::Quaternion& q)
+                                       const collision_benchmark::Quaternion &q)
 {
   ignition::math::Vector3<Float> pos(ConvIgn<Float>(p));
   ignition::math::Quaternion<Float> quat(ConvIgn<Float>(q));
@@ -96,30 +102,30 @@ collision_benchmark::GetMatrix(const ignition::math::Vector3<Float>& pos,
 template<typename Float1, typename Float2>
 bool
 collision_benchmark::EqualFloats(const Float1& f1, const Float2& f2,
-                                 const double& t)
+                                 const double &t)
 {
   return fabs(f1-f2) < t;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 bool
-collision_benchmark::EqualVectors(const ignition::math::Vector3d& v1,
-                  const ignition::math::Vector3d& v2, const double& t)
+collision_benchmark::EqualVectors(const ignition::math::Vector3d &v1,
+                  const ignition::math::Vector3d &v2, const double &t)
 {
-  return EqualFloats(v1.X(),v2.X(),t)
-      && EqualFloats(v1.Y(),v2.Y(),t)
-      && EqualFloats(v1.Z(),v2.Z(),t);
+  return EqualFloats(v1.X(), v2.X(), t)
+      && EqualFloats(v1.Y(), v2.Y(), t)
+      && EqualFloats(v1.Z(), v2.Z(), t);
 }
 
 //////////////////////////////////////////////////////////////////////////////
 template<typename Float>
 bool
 collision_benchmark::EqualVectors(const ignition::math::Vector3<Float>& v1,
-                  const ignition::math::Vector3<Float>& v2, const double& t)
+                  const ignition::math::Vector3<Float>& v2, const double &t)
 {
-  return EqualFloats(v1.X(),v2.X(),t)
-      && EqualFloats(v1.Y(),v2.Y(),t)
-      && EqualFloats(v1.Z(),v2.Z(),t);
+  return EqualFloats(v1.X(), v2.X(), t)
+      && EqualFloats(v1.Y(), v2.Y(), t)
+      && EqualFloats(v1.Z(), v2.Z(), t);
 }
 
 // Helper function for ignition::math::Vector3.
@@ -133,7 +139,7 @@ void SetIdx(const int idx,
             ignition::math::Vector3<Float>& v)
 {
   uint32_t index = idx < 0 ? 0u : idx > 2 ? 2 : idx;
-  switch(index)
+  switch (index)
   {
     case 0:
       {
@@ -170,9 +176,9 @@ void collision_benchmark::UpdateAABB
 
     newMin = ignition::math::Vector3<Float>(FLT_MAX, FLT_MAX, FLT_MAX);
     newMax = -newMin;
-    for (int x=0; x<2; ++x)
-      for (int y=0; y<2; ++y)
-        for (int z=0; z<2; ++z)
+    for (int x = 0; x < 2; ++x)
+      for (int y = 0; y < 2; ++y)
+        for (int z = 0; z < 2; ++z)
         {
           ignition::math::Vector3<Float> v(xCoords[x], yCoords[y], zCoords[z]);
           v = transform * v;
@@ -188,16 +194,16 @@ void collision_benchmark::UpdateAABB
     // by Ericson, Vol 1, chapter 4.2.6, p. 86, function UpdateAABB
 
     // for all 3 axes
-    for (int i=0; i < 3; ++i)
+    for (int i = 0; i < 3; ++i)
     {
       // Start by adding in translation
-      SetIdx(i, transform(i,3), newMin);
-      SetIdx(i, transform(i,3), newMax);
+      SetIdx(i, transform(i, 3), newMin);
+      SetIdx(i, transform(i, 3), newMax);
       // form extent by summing smaller and larger terms respectively
-      for (int j=0; j < 3; ++j)
+      for (int j = 0; j < 3; ++j)
       {
-        Float e = transform(i,j) * initialMin[j];
-        Float f = transform(i,j) * initialMax[j];
+        Float e = transform(i, j) * initialMin[j];
+        Float f = transform(i, j) * initialMax[j];
         if (e < f)
         {
           SetIdx(i, newMin[i] + e, newMin);

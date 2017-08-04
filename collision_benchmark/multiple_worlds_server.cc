@@ -13,14 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
+/*
+ * Author: Jennifer Buehler
+ * Date: December 2016
+ */
 
 #include <collision_benchmark/GazeboWorldLoader.hh>
 #include <collision_benchmark/PhysicsWorld.hh>
 #include <collision_benchmark/GazeboPhysicsWorld.hh>
 #include <collision_benchmark/GazeboWorldState.hh>
 #include <collision_benchmark/GazeboTopicForwardingMirror.hh>
-#include <collision_benchmark/GazeboPhysicsWorld.hh>
 #include <collision_benchmark/boost_std_conversion.hh>
 #include <collision_benchmark/GazeboHelpers.hh>
 #include <collision_benchmark/WorldManager.hh>
@@ -111,7 +114,6 @@ bool Init(const bool loadMirror,
   return true;
 }
 
-
 // Runs the multiple worlds server
 bool Run()
 {
@@ -133,23 +135,23 @@ bool Run()
   worldManager->SetPaused(true);
 
   std::cout << "Now start gzclient if you would like "
-            << "to view the worlds: "<<std::endl;
+            << "to view the worlds: " << std::endl;
   std::cout << "gzclient --g libcollision_benchmark_gui.so" << std::endl;
   std::cout << "Press [Enter] to continue without gzclient or hit "
-            << "the play button in gzclient."<<std::endl;
+            << "the play button in gzclient." << std::endl;
 
   // wait until either the [Play] button has been clicked, or [Enter] pressed.
   startWaiter.WaitForUnpause();
 
   worldManager->SetPaused(false);
 
-  std::cout << "Now starting to update worlds."<<std::endl;
+  std::cout << "Now starting to update worlds." << std::endl;
   int iter = 0;
   // TODO: at this point, we can only stop the program with Ctrl+C
   // which is not great. Find a better way to do this.
-  while(true)
+  while (true)
   {
-    int numSteps=1;
+    int numSteps = 1;
     worldManager->Update(numSteps);
     LoopIter(iter);
     ++iter;
@@ -157,7 +159,6 @@ bool Run()
   g_server->Stop();
   return true;
 }
-
 
 /////////////////////////////////////////////////
 int main(int argc, char **argv)
@@ -177,16 +178,15 @@ int main(int argc, char **argv)
   desc.add_options()
     ("help,h", "Produce help message")
     ("engines,e",
-      po::value<std::vector<std::string>>(&selectedEngines)->multitoken(),
+      po::value<std::vector<std::string> >(&selectedEngines)->multitoken(),
       descEngines.str().c_str())
     ("keep-name,k", "keep the names of the worlds as specified in the files. \
-Only works when no engines are specified with -e.")
-    ;
+Only works when no engines are specified with -e.");
   po::options_description desc_hidden("Positional options");
   desc_hidden.add_options()
-    ("worlds,w", po::value<std::vector<std::string>>(&worldFiles)->multitoken(),
-      "World file(s).")
-    ;
+    ("worlds,w",
+      po::value<std::vector<std::string> >(&worldFiles)->multitoken(),
+      "World file(s).");
 
   po::variables_map vm;
   po::positional_options_description p;
@@ -196,8 +196,8 @@ Only works when no engines are specified with -e.")
   po::options_description desc_composite;
   desc_composite.add(desc).add(desc_hidden);
 
-  po::command_line_parser parser{argc, argv};
-  parser.options(desc_composite).positional(p); // .allow_unregistered();
+  po::command_line_parser parser(argc, argv);
+  parser.options(desc_composite).positional(p);
   po::parsed_options parsedOpt = parser.run();
   po::store(parsedOpt, vm);
   po::notify(vm);
@@ -215,7 +215,7 @@ Only works when no engines are specified with -e.")
     for (std::vector<std::string>::iterator it = selectedEngines.begin();
          it != selectedEngines.end(); ++it)
     {
-      std::cout<<*it<<std::endl;
+      std::cout << *it << std::endl;
     }
   }
   else
@@ -232,7 +232,7 @@ Only works when no engines are specified with -e.")
 
   // Initialize server
   bool loadMirror = true;
-  bool enforceContactCalc=false;
+  bool enforceContactCalc = false;
   bool allowControlViaMirror = true;
   Init(loadMirror, allowControlViaMirror, enforceContactCalc);
   assert(g_server);
@@ -244,7 +244,7 @@ Only works when no engines are specified with -e.")
        it != worldFiles.end(); ++it, ++i)
   {
     std::string worldfile = *it;
-    std::cout<<"Loading world " << worldfile <<std::endl;
+    std::cout << "Loading world " << worldfile <<std::endl;
 
     std::string worldPrefix;
     if (!selectedEngines.empty() || !vm.count("keep-name"))

@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
+/*
+ * Author: Jennifer Buehler
+ */
 #ifndef COLLISION_BENCHMARK_GAZEBOMULTIPLEWORLDS_H
 #define COLLISION_BENCHMARK_GAZEBOMULTIPLEWORLDS_H
 
@@ -29,10 +32,11 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <memory>
+#include <vector>
+#include <string>
 
 namespace collision_benchmark
 {
-
 /**
  * \brief Helper class which loads up a MultpleWorldsServer and a gzclient
  * at the same time.
@@ -44,7 +48,6 @@ namespace collision_benchmark
  */
 class GazeboMultipleWorlds
 {
-
   public: typedef std::shared_ptr<GazeboMultipleWorlds> Ptr;
   public: typedef std::shared_ptr<const GazeboMultipleWorlds> ConstPtr;
 
@@ -74,7 +77,7 @@ class GazeboMultipleWorlds
   public: bool Load(const std::vector<std::string>& selectedEngines,
                     bool physicsEnabled = true,
                     bool loadMirror = true,
-                    bool enforceContactCalc=false,
+                    bool enforceContactCalc = false,
                     bool allowControlViaMirror = true,
                     const std::vector<std::string>& additionalGuis
                       = std::vector<std::string>());
@@ -149,9 +152,6 @@ class GazeboMultipleWorlds
 
   // \brief flag whether the simulation has been started.
   private: std::atomic<bool> started;
-
 };  // class GazeboMultipleWorlds
-
-} // namespace
-
+}  // namespace
 #endif  // COLLISION_BENCHMARK_GAZEBOMULTIPLEWORLDS_H

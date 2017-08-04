@@ -23,6 +23,8 @@
 #include <thread>
 #include <mutex>
 #include <atomic>
+#include <string>
+#include <vector>
 #include <unistd.h>
 #include <sys/wait.h>
 
@@ -32,7 +34,6 @@ namespace collision_benchmark
 {
 namespace test
 {
-
 /**
  * \brief Test framework for colliding two shapes along an axis.
  *
@@ -161,10 +162,10 @@ class CollidingShapesTestFramework
   // The model will not be added to the world(s), it will only be added to
   // gzclient. Trying to manipulate the pose of the collision bar may
   // print errors of that the model cannot be found. This can be ignored.
-  private: void CollisionBarHandler(const ignition::math::Pose3d& collBarPose,
+  private: void CollisionBarHandler(const ignition::math::Pose3d &collBarPose,
                            const float cylinderRadius,
                            const float cylinderLength,
-                           const std::string& mirrorName);
+                           const std::string &mirrorName);
 
   // \brief Helper fuction which returns the AABB of the model from the first
   // world in \e worldManager.
@@ -180,9 +181,9 @@ class CollidingShapesTestFramework
   // \retval -1 the model does not exist in the first world.
   // \retval -2 no worlds in world manager
   // \retval -3 could not get AABB from model
-  private: int GetAABB(const std::string& modelName,
-              const GzWorldManager::Ptr& worldManager,
-              Vector3& min, Vector3& max, bool& inLocalFrame);
+  private: int GetAABB(const std::string &modelName,
+              const GzWorldManager::Ptr &worldManager,
+              Vector3& min, Vector3& max, bool &inLocalFrame);
 
   // \brief Helper function which gets state of the model in the first world of
   // \the e worldManager. Presumes that the model exists in all worlds and the
@@ -191,9 +192,9 @@ class CollidingShapesTestFramework
   // \retval -1 the model does not exist in the first world.
   // \retval -2 no worlds in world manager
   // \retval -3 could not get state of model
-  private: int GetBasicModelState(const std::string& modelName,
-                   const GzWorldManager::Ptr& worldManager,
-                   BasicState& state);
+  private: int GetBasicModelState(const std::string &modelName,
+                   const GzWorldManager::Ptr &worldManager,
+                   BasicState &state);
 
   // \brief Helper function which moves models towards/away from each other
   // along the axis by distance \e moveDist. Model 1 will move at \e moveDist,
@@ -237,7 +238,7 @@ class CollidingShapesTestFramework
   //    collision axis via AutoCollide or the slider
   // \param[in] model2Slide the amount which model 2 has been slid along the
   //    collision axis via AutoCollide or the slider
-  private: void SaveConfiguration(const std::string& file,
+  private: void SaveConfiguration(const std::string &file,
                                   const double model1Slide,
                                   const double model2Slide);
 

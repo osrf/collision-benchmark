@@ -31,12 +31,12 @@
  * \param models new models added in \e state2
  * \param models new lights added in \e state2
  */
-void GetNewEntities(const gazebo::physics::WorldState& _state1,
-          const gazebo::physics::WorldState& _state2,
+void GetNewEntities(const gazebo::physics::WorldState &_state1,
+          const gazebo::physics::WorldState &_state2,
           std::vector<gazebo::physics::ModelState>& models,
           std::vector<gazebo::physics::LightState>& lights)
 {
-  const gazebo::physics::ModelState_M& _modelStates1 = _state1.GetModelStates();
+  const gazebo::physics::ModelState_M &_modelStates1 = _state1.GetModelStates();
   for (gazebo::physics::ModelState_M::const_iterator iter =
         _modelStates1.begin(); iter != _modelStates1.end(); ++iter)
   {
@@ -46,7 +46,7 @@ void GetNewEntities(const gazebo::physics::WorldState& _state1,
     }
   }
 
-  const gazebo::physics::LightState_M& _lightStates1 = _state1.LightStates();
+  const gazebo::physics::LightState_M &_lightStates1 = _state1.LightStates();
   for (const auto & light : _lightStates1)
   {
     if (!_state2.HasLightState(light.second.GetName()))
@@ -56,25 +56,11 @@ void GetNewEntities(const gazebo::physics::WorldState& _state1,
   }
 }
 
-/*void collision_benchmark::AddDiffWorldState(gazebo::physics::WorldPtr& world,
-                                  const gazebo::physics::WorldState& diffState)
-{
-  bool pauseState = world->IsPaused();
-  world->SetPaused(true);
-  gazebo::physics::WorldState currentState(world);
-
-  gazebo::physics::WorldState newState = currentState + diffState;
-  world->SetState(newState);
-
-  world->SetPaused(pauseState);
-}*/
-
-
 // XXX TODO REMOVE: Flags for testing
 #define FORCE_TARGET_TIME_VALUES
 // #define DEBUGWORLDSTATE
-void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr& world,
-                               const gazebo::physics::WorldState& targetState)
+void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr &world,
+                               const gazebo::physics::WorldState &targetState)
 {
   bool pauseState = world->IsPaused();
   world->SetPaused(true);
@@ -86,7 +72,7 @@ void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr& world,
   std::cout << "Current state: " << std::endl << currentState << std::endl;
 #endif
 
-  //re-set state times
+  // re-set state times
   // XXX TODO CHECK: should reset all times of the state as well,
   // because the *difference* is going to be added to it
   // Not sure yet how to best handle the times.
@@ -143,7 +129,7 @@ void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr& world,
   for (const auto & model : models)
   {
 #ifdef DEBUGWORLDSTATE
-    std::cout<<"New model: "<<model.GetName()<<std::endl;
+    std::cout << "New model: " << model.GetName() << std::endl;
 #endif
     gazebo::physics::ModelPtr m = world->ModelByName(model.GetName());
     if (!m)
@@ -157,7 +143,7 @@ void collision_benchmark::SetWorldState(gazebo::physics::WorldPtr& world,
   for (const auto & light : lights)
   {
 #ifdef DEBUGWORLDSTATE
-    std::cout<<"New light: "<<light.GetName()<<std::endl;
+    std::cout << "New light: " << light.GetName() << std::endl;
 #endif
     gazebo::physics::LightPtr l = world->LightByName(light.GetName());
     if (!l)
@@ -228,8 +214,8 @@ void collision_benchmark::PrintWorldStates
 }
 
 void collision_benchmark::PrintWorldStates
-      (const std::vector<PhysicsWorldStateInterface
-                           <gazebo::physics::WorldState>::Ptr>& worlds)
+      (const std::vector< PhysicsWorldStateInterface
+                           < gazebo::physics::WorldState >::Ptr>& worlds)
 {
   typedef PhysicsWorldStateInterface<gazebo::physics::WorldState> WorldStateT;
   typedef WorldStateT::Ptr WorldStatePtr;

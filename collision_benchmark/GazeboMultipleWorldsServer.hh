@@ -14,6 +14,9 @@
  * limitations under the License.
  *
  */
+/*
+ * Author: Jennifer Buehler
+ */
 #ifndef COLLISION_BENCHMARK_GAZEBOMULTIPLEWORLDSSERVER_H
 #define COLLISION_BENCHMARK_GAZEBOMULTIPLEWORLDSSERVER_H
 
@@ -23,17 +26,18 @@
 #include <gazebo/physics/WorldState.hh>
 #include <ignition/math/Vector3.hh>
 #include <atomic>
+#include <string>
+
 namespace collision_benchmark
 {
-
 /**
  * \brief Implementation of MultipleWorldServer for Gazebo
  *
  * \author Jennifer Buehler
  * \date March 2017
  */
-class GazeboMultipleWorldsServer:
-  public MultipleWorldsServer<GazeboPhysicsWorldTypes::WorldState,
+class GazeboMultipleWorldsServer
+  : public MultipleWorldsServer<GazeboPhysicsWorldTypes::WorldState,
                               GazeboPhysicsWorldTypes::ModelID,
                               GazeboPhysicsWorldTypes::ModelPartID,
                               GazeboPhysicsWorldTypes::Vector3,
@@ -45,8 +49,8 @@ class GazeboMultipleWorldsServer:
                               GazeboPhysicsWorldTypes::Vector3,
                               GazeboPhysicsWorldTypes::Wrench> Super;
 
-  public: GazeboMultipleWorldsServer(const WorldLoader_M& _worldLoaders,
-                               const WorldLoader::ConstPtr& _universalLoader =
+  public: GazeboMultipleWorldsServer(const WorldLoader_M &_worldLoaders,
+                               const WorldLoader::ConstPtr &_universalLoader =
                                   nullptr):
           Super(_worldLoaders, _universalLoader),
           running(false) {}
@@ -55,7 +59,7 @@ class GazeboMultipleWorldsServer:
   public: virtual void Stop();
   public: virtual bool isRunning() const;
   protected: virtual WorldManagerPtr
-             createWorldManager(const std::string& mirror_name = "",
+             createWorldManager(const std::string &mirror_name = "",
                                 const bool allowMirrorControl = false);
   private: std::atomic<bool> running;
 };  // class GazeboMultipleWorldsServer

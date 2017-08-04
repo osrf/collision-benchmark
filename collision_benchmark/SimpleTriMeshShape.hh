@@ -14,6 +14,9 @@
  * limitations under the License.
  *
  */
+/*
+ * Author: Jennifer Buehler
+ */
 
 #ifndef COLLISION_BENCHMARK_MESHSHAPE
 #define COLLISION_BENCHMARK_MESHSHAPE
@@ -26,7 +29,6 @@
 
 namespace collision_benchmark
 {
-
 /**
  * \brief A simple Shape which is implements the MESH type for triangle meshes.
  * Textures are not supported.
@@ -60,23 +62,23 @@ class SimpleTriMeshShape: public Shape
    *        GetShapeSDF() is called, which needs to write the mesh data
    *        to a unique file name.
    */
-  public: SimpleTriMeshShape(const MeshDataPtr& data_,
-                             const std::string& name_):
+  public: SimpleTriMeshShape(const MeshDataPtr &data_,
+                             const std::string &name_):
             Shape(MESH),
             data(data_),
             name(name_)  {}
 
-  public: SimpleTriMeshShape(const SimpleTriMeshShape& o):
+  public: SimpleTriMeshShape(const SimpleTriMeshShape &o):
             Shape(o),
             data(o.data) {}
 
-  public: virtual ~SimpleTriMeshShape(){}
+  public: virtual ~SimpleTriMeshShape() {}
 
   // Documentation inherited from parent class
   public: virtual sdf::ElementPtr
-                  GetShapeSDF(bool detailed=true,
-                              const std::string& resourceDir = "/tmp/",
-                              const std::string& resourceSubDir = "",
+                  GetShapeSDF(bool detailed = true,
+                              const std::string &resourceDir = "/tmp/",
+                              const std::string &resourceSubDir = "",
                               const bool useFullPath = false) const;
 
   private: MeshDataT::Ptr data;

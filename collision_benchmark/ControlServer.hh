@@ -32,7 +32,6 @@
 
 namespace collision_benchmark
 {
-
 /**
  * \brief Implements certain controls that can be applied to a world.
  * Detaches the implementation of how the controls are received from
@@ -84,7 +83,7 @@ class ControlServer
 
   /// Constructor.
   public:  ControlServer() {}
-  public: ControlServer(const ControlServer& o):
+  public: ControlServer(const ControlServer &o):
           pauseCallbacks(o.pauseCallbacks),
           updateCallbacks(o.updateCallbacks),
           modelStateCallbacks(o.modelStateCallbacks),
@@ -124,7 +123,8 @@ class ControlServer
             modelLoadCallbacks.push_back(_fct);
           }
 
-  public: void RegisterDynamicsEnableCallback(const NotifyDynamicsEnableFct &_fct)
+  public: void RegisterDynamicsEnableCallback
+              (const NotifyDynamicsEnableFct &_fct)
           {
             dynamicsEnableCallbacks.push_back(_fct);
           }
@@ -156,8 +156,8 @@ class ControlServer
   protected: void NotifyPause(const bool _flag)
              {
                 std::vector<NotifyPauseFct>::iterator it;
-                for (it=pauseCallbacks.begin();
-                     it!=pauseCallbacks.end(); ++it)
+                for (it = pauseCallbacks.begin();
+                     it != pauseCallbacks.end(); ++it)
                 {
                   (*it)(_flag);
                 }
@@ -170,8 +170,8 @@ class ControlServer
   protected: void NotifyUpdate(const int _numSteps)
              {
                 std::vector<NotifyUpdateFct>::iterator it;
-                for (it=updateCallbacks.begin();
-                     it!=updateCallbacks.end(); ++it)
+                for (it = updateCallbacks.begin();
+                     it != updateCallbacks.end(); ++it)
                 {
                   (*it)(_numSteps);
                 }
@@ -182,8 +182,8 @@ class ControlServer
   protected: void NotifyDynamicsEnable(const bool enable)
              {
                 std::vector<NotifyDynamicsEnableFct>::iterator it;
-                for (it=dynamicsEnableCallbacks.begin();
-                     it!=dynamicsEnableCallbacks.end(); ++it)
+                for (it = dynamicsEnableCallbacks.begin();
+                     it != dynamicsEnableCallbacks.end(); ++it)
                 {
                   (*it)(enable);
                 }
@@ -196,33 +196,33 @@ class ControlServer
                                 const float gravity_z)
              {
                 std::vector<NotifyGravityFct>::iterator it;
-                for (it=gravityCallbacks.begin();
-                     it!=gravityCallbacks.end(); ++it)
+                for (it = gravityCallbacks.begin();
+                     it != gravityCallbacks.end(); ++it)
                 {
                   (*it)(gravity_x, gravity_y, gravity_z);
                 }
              }
 
   // must be called by subclasses when the model is to be changed
-  protected: void NotifySetModelState(const ModelID& _id,
+  protected: void NotifySetModelState(const ModelID &_id,
                                       const BasicState &_state)
              {
                 typename std::vector<NotifySetModelStateFct>::iterator it;
-                for (it=modelStateCallbacks.begin();
-                     it!=modelStateCallbacks.end(); ++it)
+                for (it = modelStateCallbacks.begin();
+                     it != modelStateCallbacks.end(); ++it)
                 {
-                  (*it)(_id,_state);
+                  (*it)(_id, _state);
                 }
              }
 
   // must be called by subclasses when the model is to be changed
-  protected: void NotifySdfModelLoad(const std::string& _sdf,
+  protected: void NotifySdfModelLoad(const std::string &_sdf,
                                      const bool _isString,
                                      const BasicState &_state)
              {
                 typename std::vector<NotifySdfModelLoadFct>::iterator it;
-                for (it=modelLoadCallbacks.begin();
-                     it!=modelLoadCallbacks.end(); ++it)
+                for (it = modelLoadCallbacks.begin();
+                     it != modelLoadCallbacks.end(); ++it)
                 {
                   (*it)(_sdf, _isString, _state);
                 }
@@ -250,6 +250,5 @@ class ControlServer
   private: std::vector<NotifyGravityFct> gravityCallbacks;
   private: std::shared_ptr<NotifySelectWorldFct> selectWorldCallback;
 };
-
 }  // namespace collision_benchmark
 #endif

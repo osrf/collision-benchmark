@@ -1,3 +1,24 @@
+/*
+ * Copyright (C) 2014-2016 Open Source Robotics Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+/*
+ * Author: Jennifer Buehler
+ * Date: December 2016
+ */
+
 #include <collision_benchmark/GazeboHelpers.hh>
 #include <gazebo/physics/PhysicsEngine.hh>
 #include <gazebo/physics/ContactManager.hh>
@@ -7,7 +28,7 @@
 #include <tinyxml.h>
 
 /////////////////////////////////////////////////
-void collision_benchmark::ClearModels(gazebo::physics::WorldPtr& world)
+void collision_benchmark::ClearModels(gazebo::physics::WorldPtr &world)
 {
   bool pauseState = world->IsPaused();
   world->SetPaused(true);
@@ -30,7 +51,7 @@ std::set<std::string> collision_benchmark::GetSupportedPhysicsEngines()
   // XXX TODO: Should use same names as used
   // in Gazebo/SDF to select physics engines. Use this as soon
   // as there a constant/macro for it.
-  engines.insert("ode"); // ODE is always supported
+  engines.insert("ode");  // ODE is always supported
 #ifdef HAVE_BULLET
   engines.insert("bullet");
 #endif
@@ -48,29 +69,29 @@ std::set<std::string> collision_benchmark::GetSupportedPhysicsEngines()
   or with #include <gazebo/test/helper_physics_generator.hh>
   std::vector<std::string> engines =
       {"ode" BULLET_SUPPORT SIMBODY_SUPPORT DART_SUPPORT};
-  std::cout<<"Supported engines: "<<std::endl;
-  for (int i=0; i<engines.size(); ++i)
-    std::cout<<engines[i]<<std::endl;*/
+  std::cout << "Supported engines: " << std::endl;
+  for (int i = 0; i<engines.size(); ++i)
+    std::cout << engines[i]<<std::endl;*/
 
   return engines;
 }
 
 /////////////////////////////////////////////////
-std::string collision_benchmark::getPhysicsSettingsSdfFor(const std::string& e)
+std::string collision_benchmark::getPhysicsSettingsSdfFor(const std::string &e)
 {
-  if (e=="bullet")
+  if (e == "bullet")
     return "physics_settings/bullet_default.sdf";
-  else if (e=="dart")
+  else if (e == "dart")
     return "physics_settings/dart_default.sdf";
-  else if (e=="ode")
+  else if (e == "ode")
     return "physics_settings/ode_default.sdf";
-  else if (e=="simbody")
+  else if (e == "simbody")
     return "physics_settings/simbody_default.sdf";
   return "";
 }
 
 /////////////////////////////////////////////////
-std::map<std::string,std::string>
+std::map<std::string, std::string>
 collision_benchmark::getPhysicsSettingsSdfFor
   (const std::vector<std::string>& engines)
 {
@@ -79,7 +100,7 @@ collision_benchmark::getPhysicsSettingsSdfFor
     collision_benchmark::GetSupportedPhysicsEngines();
 
   for (std::vector<std::string>::const_iterator
-       eit=engines.begin(); eit!=engines.end(); ++eit)
+       eit = engines.begin(); eit != engines.end(); ++eit)
   {
     std::string e=*eit;
     if (!supported_engines.count(e)) continue;
@@ -96,53 +117,53 @@ collision_benchmark::getPhysicsSettingsSdfFor
 }
 
 /////////////////////////////////////////////////
-std::map<std::string,std::string>
+std::map<std::string, std::string>
 collision_benchmark::getPhysicsSettingsSdfForAllEngines()
 {
   std::set<std::string> enginesSet =
     collision_benchmark::GetSupportedPhysicsEngines();
-  std::vector<std::string> enginesVector(enginesSet.begin(),enginesSet.end());
+  std::vector<std::string> enginesVector(enginesSet.begin(), enginesSet.end());
   return getPhysicsSettingsSdfFor(enginesVector);
 }
 
 
 
 /////////////////////////////////////////////////
-int collision_benchmark::isProperSDFFile(const std::string& filename,
+int collision_benchmark::isProperSDFFile(const std::string &filename,
                                          std::string * version)
 {
   TiXmlDocument xmlDoc;
   if (!xmlDoc.LoadFile(filename))
   {
-    // std::cout << "Could not read file "<<filename
-    //           << " so cannot check if SDF needs conversion"<<std::endl;
+    // std::cout << "Could not read file " << filename
+    //           << " so cannot check if SDF needs conversion" << std::endl;
     return -3;
   }
 
   TiXmlElement *elem = xmlDoc.FirstChildElement("sdf");
   if (!elem)
   {
-    // std::cout<<"No outer SDF tag"<<std::endl;
+    // std::cout << "No outer SDF tag" << std::endl;
     return -2;
   }
 
   if (!elem->Attribute("version"))
   {
-    // std::cout<< "SDF Tag has no SDF version"<<std::endl;
+    // std::cout<< "SDF Tag has no SDF version" << std::endl;
     return -1;
   }
 
   if (version)
   {
     *version = elem->Attribute("version");
-    // std::cout<<"SDF version "<<*version<<std::endl;
+    // std::cout << "SDF version "<<*version << std::endl;
   }
 
   return 0;
 }
 
 /////////////////////////////////////////////////
-int collision_benchmark::isProperSDFString(const std::string& string,
+int collision_benchmark::isProperSDFString(const std::string &string,
                                            std::string * version)
 {
   TiXmlDocument xmlDoc;
@@ -155,27 +176,24 @@ int collision_benchmark::isProperSDFString(const std::string& string,
   TiXmlElement *elem = xmlDoc.FirstChildElement("sdf");
   if (!elem)
   {
-    //std::cout<<"No outer SDF tag"<<std::endl;
     return -2;
   }
 
   if (!elem->Attribute("version"))
   {
-    //std::cout<< "SDF Tag has no SDF version"<<std::endl;
     return -1;
   }
 
   if (version)
   {
     *version = elem->Attribute("version");
-    // std::cout<<"SDF version "<<*version<<std::endl;
   }
 
   return 0;
 }
 
 
-void collision_benchmark::wrapSDF(std::string& sdf)
+void collision_benchmark::wrapSDF(std::string &sdf)
 {
   std::stringstream mod;
   mod << "<sdf version='1.6'>" << sdf << "</sdf>";

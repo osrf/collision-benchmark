@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
+/*
+ * Author: Jennifer Buehler
+ */
 #ifndef COLLISION_BENCHMARK_CLIENTGUI_H
 #define COLLISION_BENCHMARK_CLIENTGUI_H
 
@@ -24,6 +27,8 @@
 # include <gazebo/transport/transport.hh>
 # include <gazebo/gui/gui.hh>
 #endif
+
+#include <string>
 
 namespace collision_benchmark
 {
@@ -63,9 +68,10 @@ namespace collision_benchmark
     /// changing the name of the label has to be done via a signal/slot
     /// in order to be handled by the Qt event loop. Connect this signal
     /// to OnNameChange.
-    signals: void TriggerNameChange(const std::string& n);
+    signals: void TriggerNameChange(const std::string &n);
+
     /// Slot for TriggerNameChange.
-    private slots: void OnNameChange(const std::string& n);
+    private slots: void OnNameChange(const std::string &n);
 
     /// \brief Label to display current world name
     private: QLabel * labelName;

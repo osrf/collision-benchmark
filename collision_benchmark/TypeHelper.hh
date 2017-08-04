@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 /*
  * Author: Jennifer Buehler
  * Date: December 2016
@@ -27,11 +27,10 @@
 
 namespace collision_benchmark
 {
-
 std::string Demangle(const char* name);
 
 template <typename T>
-std::string GetTypeName(const T& t)
+std::string GetTypeName(const T &t)
 {
     return Demangle(typeid(t).name());
 }
@@ -67,16 +66,16 @@ struct InstantiationOfImpl<T<Ts...>, T> : std::true_type {};
 template <typename T,
           template <typename...> class Templated>
 using InstantiationOf =
-      InstantiationOfImpl<typename std::remove_reference<T>::type,Templated>;
+      InstantiationOfImpl<typename std::remove_reference<T>::type, Templated>;
 
 /**
- * Shortcut for InstantiationOf<T,Templated>::value;
+ * Shortcut for InstantiationOf<T, Templated>::value;
  */
 template <typename T,
           template <typename...> class Templated>
 inline bool is_InstantiationOf()
 {
-  return InstantiationOf<T,Templated>::value;
+  return InstantiationOf<T, Templated>::value;
 }
 
 // private use by IsBaseOfTemplate
@@ -92,9 +91,9 @@ std::false_type IsBaseOfTemplateImpl(...);
  * with some limitations.
  * For example, if we have a template<typename X> class A{} and a class B
  * that derives from it (complete type known), we can do something like:
- * if (IsBaseOfTemplate<A,B<int>>()) { ... B is derived from A }.
+ * if (IsBaseOfTemplate<A, B<int>>()) { ... B is derived from A }.
  * Limitation: Won't work for multiple inheritance (if B derives from
- * another class X, then IsBaseOfTemplate<X,B<int>> won't work), and will
+ * another class X, then IsBaseOfTemplate<X, B<int>> won't work), and will
  * only work for public inheritance (will generate compiler error).
  */
 template <template <typename...> class C, typename T>
@@ -102,4 +101,4 @@ using IsBaseOfTemplate = decltype(IsBaseOfTemplateImpl<C>(std::declval<T*>()));
 
 }  // namespace
 
-#endif //COLLISION_BENCHMARK_TYPEHELPER_H
+#endif  // COLLISION_BENCHMARK_TYPEHELPER_H

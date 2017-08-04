@@ -14,6 +14,10 @@
  * limitations under the License.
  *
  */
+/*
+ * Author: Jennifer Buehler
+ * Date: March 2017
+ */
 #include <collision_benchmark/GazeboMultipleWorldsServer.hh>
 #include <collision_benchmark/GazeboWorldLoader.hh>
 #include <collision_benchmark/GazeboTopicForwardingMirror.hh>
@@ -50,9 +54,9 @@ bool GazeboMultipleWorldsServer::Start(int argc, const char** argv)
     // so const casting shoudld be safe.
     gazebo::setupServer(argc, (char**)argv);
   }
-  catch (...)
+  catch(...)
   {
-    std::cerr<<"Could not setup server"<<std::endl;
+    std::cerr << "Could not setup server" << std::endl;
     return false;
   }
   running = true;
@@ -72,7 +76,7 @@ void GazeboMultipleWorldsServer::Stop()
 /////////////////////////////////////////////////////////////////////
 GazeboMultipleWorldsServer::WorldManagerPtr
 GazeboMultipleWorldsServer::createWorldManager
-    (const std::string& mirror_name,
+    (const std::string &mirror_name,
      const bool allowMirrorControl)
 {
   MirrorWorld::Ptr mirror;

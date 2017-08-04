@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
+/*
+ * Author: Jennifer Buehler
+ * Date: January 2017
+ */
+
 #include <collision_benchmark/PrimitiveShape.hh>
 
 using collision_benchmark::PrimitiveShape;
@@ -64,8 +69,8 @@ PrimitiveShape * PrimitiveShape::CreatePlane(double nx, double ny, double nz,
 
 sdf::ElementPtr
 PrimitiveShape::GetShapeSDF(bool detailed,
-                            const std::string& resourceDir,
-                            const std::string& resourceSubDir,
+                            const std::string &resourceDir,
+                            const std::string &resourceSubDir,
                             const bool useFullPath) const
 {
   sdf::ElementPtr geometry(new sdf::Element());
@@ -74,15 +79,15 @@ PrimitiveShape::GetShapeSDF(bool detailed,
   geometry->InsertElement(geomChild);
   sdf::ElementPtr geomElem(new sdf::Element());
   geomChild->InsertElement(geomElem);
-  switch(GetType())
+  switch (GetType())
   {
     case BOX:
     {
       geomChild->SetName("box");
       geomElem->SetName("size");
       std::stringstream vals;
-      vals<<params->Get(PrimitiveShapeParameters::DIMX)<<" "
-        <<params->Get(PrimitiveShapeParameters::DIMY)<<" "
+      vals << params->Get(PrimitiveShapeParameters::DIMX) << " "
+        <<params->Get(PrimitiveShapeParameters::DIMY) << " "
         <<params->Get(PrimitiveShapeParameters::DIMZ);
       geomElem->AddValue("vector3", vals.str(), true, "Box size");
       break;
@@ -119,8 +124,8 @@ PrimitiveShape::GetShapeSDF(bool detailed,
 
       geomElem->SetName("normal");
       std::stringstream valsN;
-      valsN<<params->Get(PrimitiveShapeParameters::VALX)<<" "
-        <<params->Get(PrimitiveShapeParameters::VALY)<<" "
+      valsN << params->Get(PrimitiveShapeParameters::VALX) << " "
+        <<params->Get(PrimitiveShapeParameters::VALY) << " "
         <<params->Get(PrimitiveShapeParameters::VALZ);
       geomElem->AddValue("vector3", valsN.str(), true, "Normal of the plane");
 
@@ -128,7 +133,7 @@ PrimitiveShape::GetShapeSDF(bool detailed,
       geomElem2->SetName("size");
       geomChild->InsertElement(geomElem2);
       std::stringstream valsS;
-      valsS<<params->Get(PrimitiveShapeParameters::DIMX)<<" "
+      valsS << params->Get(PrimitiveShapeParameters::DIMX) << " "
         <<params->Get(PrimitiveShapeParameters::DIMY);
 //                  <<params->Get(PrimitiveShapeParameters::DIMZ);
       geomElem2->AddValue("vector2d", valsS.str(), true,

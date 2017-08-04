@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2012-2016 Open Source Robotics Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 #include <test/StaticTestFramework.hh>
 
 #include <collision_benchmark/PrimitiveShape.hh>
@@ -63,7 +79,7 @@ void StaticTestFramework::InitMultipleEngines
 }
 
 ////////////////////////////////////////////////////////////////
-void StaticTestFramework::InitOneEngine(const std::string& engine,
+void StaticTestFramework::InitOneEngine(const std::string &engine,
                                         const unsigned int numWorlds)
 {
   Init();
@@ -80,7 +96,7 @@ void StaticTestFramework::InitOneEngine(const std::string& engine,
 }
 
 ////////////////////////////////////////////////////////////////
-void StaticTestFramework::LoadOneEngine(const std::string& engine,
+void StaticTestFramework::LoadOneEngine(const std::string &engine,
                                         const unsigned int numWorlds)
 {
   GzMultipleWorldsServer::Ptr mServer = GetServer();
@@ -96,7 +112,7 @@ void StaticTestFramework::LoadOneEngine(const std::string& engine,
   {
     std::stringstream _worldname;
     _worldname << "world_" << i << "_" << engine;
-    std::string worldname=_worldname.str();
+    std::string worldname = _worldname.str();
     mServer->Load(worldfile, engine, worldname);
   }
   int numWorldsInMgrNew = worldManager->GetNumWorlds();
@@ -104,11 +120,9 @@ void StaticTestFramework::LoadOneEngine(const std::string& engine,
     << "Could not load up world " << numWorlds << " times.";
 }
 
-
-
 ////////////////////////////////////////////////////////////////
-void StaticTestFramework::LoadShape(const Shape::Ptr& shape,
-                                    const std::string& modelName)
+void StaticTestFramework::LoadShape(const Shape::Ptr &shape,
+                                    const std::string &modelName)
 {
   GzMultipleWorldsServer::Ptr mServer = GetServer();
   ASSERT_NE(mServer.get(), nullptr) << "Could not create and start server";
@@ -127,7 +141,7 @@ void StaticTestFramework::LoadShape(const Shape::Ptr& shape,
   for (std::vector<ModelLoadResult>::iterator it = res.begin();
        it != res.end(); ++it)
   {
-    const ModelLoadResult& mlRes=*it;
+    const ModelLoadResult &mlRes=*it;
     ASSERT_EQ(mlRes.opResult, collision_benchmark::SUCCESS)
       << "Could not load model";
     ASSERT_EQ(mlRes.modelID, modelName)
@@ -136,8 +150,8 @@ void StaticTestFramework::LoadShape(const Shape::Ptr& shape,
 }
 
 ////////////////////////////////////////////////////////////////
-void StaticTestFramework::LoadShape(const Shape::Ptr& shape,
-                                    const std::string& modelName,
+void StaticTestFramework::LoadShape(const Shape::Ptr &shape,
+                                    const std::string &modelName,
                                     const unsigned int worldIdx)
 {
   GzMultipleWorldsServer::Ptr mServer = GetServer();
@@ -152,7 +166,7 @@ void StaticTestFramework::LoadShape(const Shape::Ptr& shape,
   ASSERT_NE(world.get(), nullptr) << "No world at index " << worldIdx;
 
   GzWorldManager::PhysicsWorldModelInterfacePtr mWorld =
-   GzWorldManager::ToWorldWithModel(world);
+    GzWorldManager::ToWorldWithModel(world);
   ASSERT_NE(mWorld.get(), nullptr) << "Cast failure";
 
   // Load model
@@ -170,11 +184,11 @@ void StaticTestFramework::LoadShape(const Shape::Ptr& shape,
 
 
 ////////////////////////////////////////////////////////////////
-bool StaticTestFramework::GetAABBs(const std::string& modelName1,
-                                   const std::string& modelName2,
+bool StaticTestFramework::GetAABBs(const std::string &modelName1,
+                                   const std::string &modelName2,
                                    const double bbTol,
-                                   collision_benchmark::GzAABB& m1,
-                                   collision_benchmark::GzAABB& m2)
+                                   collision_benchmark::GzAABB &m1,
+                                   collision_benchmark::GzAABB &m2)
 {
   GzMultipleWorldsServer::Ptr mServer = GetServer();
   if (!mServer) return false;
@@ -190,15 +204,15 @@ bool StaticTestFramework::GetAABBs(const std::string& modelName1,
 
 
 ////////////////////////////////////////////////////////////////
-void StaticTestFramework::AABBTestWorldsAgreement(const std::string& modelName1,
-                                   const std::string& modelName2,
+void StaticTestFramework::AABBTestWorldsAgreement(const std::string &modelName1,
+                                   const std::string &modelName2,
                                    const float cellSizeFactor,
                                    const double minAgree,
                                    const double bbTol,
                                    const double zeroDepthTol,
                                    const bool interactive,
-                                   const std::string& outputBasePath,
-                                   const std::string& outputSubdir)
+                                   const std::string &outputBasePath,
+                                   const std::string &outputSubdir)
 {
   ASSERT_GT(cellSizeFactor, 1e-07) << "Cell size factor too small";
 
@@ -218,8 +232,8 @@ void StaticTestFramework::AABBTestWorldsAgreement(const std::string& modelName1,
   // (in case they were loaded form SDF they may have a pose different
   // to the origin, but here we want to start them at the origin).
   BasicState originPose;
-  originPose.SetPosition(Vector3(0,0,0));
-  originPose.SetRotation(Quaternion(0,0,0,1));
+  originPose.SetPosition(Vector3(0, 0, 0));
+  originPose.SetRotation(Quaternion(0, 0, 0, 1));
   int cnt1 = worldManager->SetBasicModelState(modelName1, originPose);
   ASSERT_EQ(cnt1, numWorlds) << "All worlds should have been updated";
   int cnt2 = worldManager->SetBasicModelState(modelName2, originPose);
@@ -229,8 +243,10 @@ void StaticTestFramework::AABBTestWorldsAgreement(const std::string& modelName1,
   collision_benchmark::GzAABB aabb1, aabb2;
   ASSERT_TRUE(GetAABBs(modelName1, modelName2, bbTol, aabb1, aabb2));
 
-  // std::cout<<"Got AABB 1: " <<  aabb1.min << ", " << aabb1.max << std::endl;
-  // std::cout<<"Got AABB 2: " <<  aabb2.min << ", " << aabb2.max << std::endl;
+  // std::cout << "Got AABB 1: " <<  aabb1.min << ", "
+  //           << aabb1.max << std::endl;
+  // std::cout << "Got AABB 2: " <<  aabb2.min << ", "
+  //           << aabb2.max << std::endl;
 
   collision_benchmark::GzAABB grid = aabb1;
   grid.min -= aabb2.size() / 2;
@@ -252,13 +268,13 @@ void StaticTestFramework::AABBTestWorldsAgreement(const std::string& modelName1,
   if (interactive)
   {
     std::cout << "Now start gzclient if you would like "
-              << "to view the test. "<<std::endl;
-    std::cout << "Press [Enter] to continue."<<std::endl;
+              << "to view the test. " << std::endl;
+    std::cout << "Press [Enter] to continue." << std::endl;
     getchar();
   }
 
   // start the update loop
-  std::cout << "Now starting to update worlds."<<std::endl;
+  std::cout << "Now starting to update worlds." << std::endl;
 
   int msSleep = 0;  // delay for running the test
   double eps = 1e-07;
@@ -269,14 +285,14 @@ void StaticTestFramework::AABBTestWorldsAgreement(const std::string& modelName1,
   for (double z = grid.min.Z(); z < grid.max.Z()+eps; z += cellSizeZ)
   {
     ++itCnt;
-    // std::cout<<"Placing model 2 at "<<x<<", "<<y<<", "<<z<<std::endl;
+    // std::cout << "Placing model 2 at " << x<<", " << y<<", " << z<<std::endl;
     bstate2.position.x = x;
     bstate2.position.y = y;
     bstate2.position.z = z;
     cnt = worldManager->SetBasicModelState(modelName2, bstate2);
     ASSERT_EQ(cnt, numWorlds) << "All worlds should have been updated";
 
-    int numSteps=1;
+    int numSteps = 1;
     worldManager->Update(numSteps);
     if (msSleep > 0) gazebo::common::Time::MSleep(msSleep);
 
@@ -319,17 +335,17 @@ void StaticTestFramework::AABBTestWorldsAgreement(const std::string& modelName1,
     size_t total = colliding.size() + notColliding.size();
 
     ASSERT_EQ(numWorlds, total) << "All worlds must have voted";
-    ASSERT_GT(total, 0 ) << "This should have been caught before";
+    ASSERT_GT(total, 0) << "This should have been caught before";
 
-    double negative = notColliding.size() / (double) total;
-    double positive= colliding.size() / (double) total;
+    double negative = notColliding.size() / static_cast<double>(total);
+    double positive= colliding.size() / static_cast<double>(total);
 
     if (((positive > negative) && (positive < minAgree)) ||
         ((positive <= negative) && (negative < minAgree)))
     {
       std::stringstream str;
-      std::cout << "FAIL "<<failCnt << ": Minimum agreement not reached. "
-                << "Agreement: "<<positive<<", "<<negative<<std::endl;
+      std::cout << "FAIL " << failCnt << ": Minimum agreement not reached. "
+                << "Agreement: " << positive << ", " << negative << std::endl;
 
       // str << " Collision: "<< VectorToString(colliding) << ", no collision: "
       //     << VectorToString(notColliding) << ".";
@@ -380,7 +396,7 @@ void StaticTestFramework::AABBTestWorldsAgreement(const std::string& modelName1,
       if (interactive)
       {
         std::cout << str.str() << std::endl
-                  << "Press [Enter] to continue."<<std::endl;
+                  << "Press [Enter] to continue." << std::endl;
         RefreshClient(5);
         collision_benchmark::UpdateUntilEnter(worldManager);
       }
@@ -392,5 +408,5 @@ void StaticTestFramework::AABBTestWorldsAgreement(const std::string& modelName1,
       ++failCnt;
     }
   }
-  std::cout<<"TwoModels test finished. "<<std::endl;
+  std::cout << "TwoModels test finished. " << std::endl;
 }

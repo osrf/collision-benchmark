@@ -17,20 +17,19 @@
 #ifndef COLLISION_BENCHMARK_TEST_SERIALIZATION_H
 #define COLLISION_BENCHMARK_TEST_SERIALIZATION_H
 
-#include "CollidingShapesConfiguration.hh"
-
 #include <collision_benchmark/BoostSerialization.hh>
 #include <boost/serialization/vector.hpp>
+
+#include "CollidingShapesConfiguration.hh"
 
 namespace collision_benchmark
 {
 namespace test
 {
-
 struct CollidingShapesConfiguration::access
 {
   template<class Archive>
-  static void serialize(Archive& ar, CollidingShapesConfiguration& conf,
+  static void serialize(Archive &ar, CollidingShapesConfiguration &conf,
                         const unsigned int version)
   {
     ar & BOOST_SERIALIZATION_NVP(conf.models);
@@ -48,15 +47,15 @@ namespace boost
 namespace serialization
 {
   template<class Archive>
-  void serialize(Archive& ar,
-                 collision_benchmark::test::CollidingShapesConfiguration& conf,
+  void serialize(Archive &ar,
+                 collision_benchmark::test::CollidingShapesConfiguration &conf,
                  const unsigned int version)
   {
     collision_benchmark::test::CollidingShapesConfiguration
       ::access::serialize(ar, conf, version);
   }
 
-} // namespace serialization
-} // namespace boost
+}  // namespace serialization
+}  // namespace boost
 
 #endif  // COLLISION_BENCHMARK_TEST_SERIALIZATION_H

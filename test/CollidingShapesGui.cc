@@ -14,13 +14,14 @@
  * limitations under the License.
  *
 */
-#include "CollidingShapesGui.hh"
-#include "CollidingShapesParams.hh"
-#include <sstream>
 #include <gazebo/msgs/msgs.hh>
+#include <sstream>
 
 #include <QScrollBar>
 #include <QSlider>
+
+#include "CollidingShapesGui.hh"
+#include "CollidingShapesParams.hh"
 
 using collision_benchmark::test::CollidingShapesGui;
 using collision_benchmark::test::CollidingShapesParams;
@@ -28,8 +29,8 @@ using collision_benchmark::test::CollidingShapesParams;
 // Register this plugin with the simulator
 GZ_REGISTER_GUI_PLUGIN(CollidingShapesGui)
 
-QSize maxHeightAddWidth(const QSize& s1, const QSize& s2,
-                        float wFact=1, float hFact=1.0)
+QSize maxHeightAddWidth(const QSize &s1, const QSize &s2,
+                        float wFact = 1, float hFact = 1.0)
 {
   return QSize((s1.width() + s2.width())*wFact,
                std::max(s1.height(), s2.height())*hFact);
@@ -61,7 +62,7 @@ CollidingShapesGui::CollidingShapesGui()
   slider->setMinimum(0);
   slider->setMaximum(CollidingShapesParams::MaxSliderVal);
   slider->setValue(CollidingShapesParams::MaxSliderVal);
-  slider->resize(300,20);
+  slider->resize(300, 20);
   connect(slider, SIGNAL(valueChanged(int)),
           this, SLOT(OnValueChanged(int)));
   collidingShapesLayout->addWidget(slider);
@@ -242,7 +243,7 @@ void CollidingShapesGui::OnButtonDec()
 /////////////////////////////////////////////////
 void CollidingShapesGui::receiveFeedbackMsg(ConstAnyPtr &_msg)
 {
-  // std::cout << "GUI FEEDBACK! "<<_msg->DebugString();
+  // std::cout << "GUI FEEDBACK! " << _msg->DebugString();
   switch (_msg->type())
   {
     case gazebo::msgs::Any::INT32:

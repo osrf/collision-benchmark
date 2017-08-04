@@ -14,6 +14,10 @@
  * limitations under the License.
  *
  */
+/*
+ * Author: Jennifer Buehler
+ * Date: May 2017
+ */
 
 #include <collision_benchmark/GazeboMultipleWorlds.hh>
 
@@ -50,8 +54,8 @@ using collision_benchmark::StartWaiter;
 
 const std::string GazeboMultipleWorlds::MirrorName = "mirror";
 
-GazeboMultipleWorlds::GazeboMultipleWorlds():
-  started(false)
+GazeboMultipleWorlds::GazeboMultipleWorlds()
+  : started(false)
 {
 }
 
@@ -113,8 +117,9 @@ bool GazeboMultipleWorlds::IsClientRunning()
   int child_status;
   // result will be 0 if child is still running
   pid_t result = waitpid(gzclient_pid, &child_status, WNOHANG);
-  if (result != 0) // child has stopped (client closed)
+  if (result != 0)
   {
+    // child has stopped (client closed)
     return false;
   }
   return true;
@@ -181,9 +186,9 @@ bool GazeboMultipleWorlds::Run(bool waitForStartSignal,
 
     if (controlServer)
     {
-      controlServer->RegisterPauseCallback(std::bind(&StartWaiter::PauseCallback,
-                                                     &startWaiter,
-                                                     std::placeholders::_1));
+      controlServer->RegisterPauseCallback
+        (std::bind(&StartWaiter::PauseCallback,
+                   &startWaiter, std::placeholders::_1));
     }
 
     // closing the client also serves as an "unpause" signal, so that the
@@ -194,7 +199,7 @@ bool GazeboMultipleWorlds::Run(bool waitForStartSignal,
     worldManager->SetPaused(true);
 
     std::cout << "Press [Enter] to continue without gzclient or hit "
-              << "the play button in gzclient."<<std::endl;
+              << "the play button in gzclient." << std::endl;
 
     // wait until either the [Play] button has been clicked, or [Enter] pressed.
     startWaiter.WaitForUnpause();
@@ -210,16 +215,16 @@ bool GazeboMultipleWorlds::Run(bool waitForStartSignal,
     return true;
   }
 
-  // std::cout << "Now starting to update worlds."<<std::endl;
+  // std::cout << "Now starting to update worlds." << std::endl;
   int iter = 0;
   worldManager->SetPaused(false);
 
   // for non-blocking calls, don't do the simulation loop in here.
   if (!blocking) return true;
 
-  while(IsClientRunning())
+  while (IsClientRunning())
   {
-    int numSteps=1;
+    int numSteps = 1;
     worldManager->Update(numSteps);
     if (loopCallback) loopCallback(iter);
     ++iter;
@@ -262,7 +267,8 @@ bool GazeboMultipleWorlds::IsParent() const
 ///////////////////////////////////////////////////////////////////////////////
 // handler for SIGSEV to kill all child processes
 pid_t gPGid;
-void handler(int sig) {
+void handler(int sig)
+{
   if (sig == SIGSEGV)
   {
     std::cout << "Segmentation fault - caught SIGSEV and killing "

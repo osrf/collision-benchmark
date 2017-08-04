@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2012-2016 Open Source Robotics Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 #include <test/TestUtils.hh>
 #include <collision_benchmark/BasicTypes.hh>
 #include <collision_benchmark/MirrorWorld.hh>
@@ -28,11 +44,11 @@ std::atomic<bool> g_keypressed(false);
 void WaitForEnterImpl()
 {
   int key = getchar();
-  g_keypressed=true;
+  g_keypressed = true;
 }
 
 ////////////////////////////////////////////////////////////////
-void collision_benchmark::UpdateUntilEnter(GzWorldManager::Ptr& worlds)
+void collision_benchmark::UpdateUntilEnter(GzWorldManager::Ptr &worlds)
 {
   g_keypressed = false;
   std::thread * t = new std::thread(WaitForEnterImpl);
@@ -45,10 +61,10 @@ void collision_benchmark::UpdateUntilEnter(GzWorldManager::Ptr& worlds)
 }
 
 ////////////////////////////////////////////////////////////////
-bool collision_benchmark::GetConsistentAABB(const std::string& modelName,
-                                  const GzWorldManager::Ptr& worldManager,
+bool collision_benchmark::GetConsistentAABB(const std::string &modelName,
+                                  const GzWorldManager::Ptr &worldManager,
                                   const double bbTol,
-                                  GzAABB& mAABB)
+                                  GzAABB &mAABB)
 {
   std::vector<GzWorldManager::PhysicsWorldModelInterfacePtr>
     worlds = worldManager->GetModelPhysicsWorlds();
@@ -84,7 +100,7 @@ bool collision_benchmark::GetConsistentAABB(const std::string& modelName,
   GzAABB lastAABB;
   for (itAABB = aabbs.begin();  itAABB != aabbs.end(); ++itAABB)
   {
-    const GzAABB& aabb = *itAABB;
+    const GzAABB &aabb = *itAABB;
     if (itAABB != aabbs.begin())
     {
       if (!aabb.min.Equal(lastAABB.min, bbTol) ||
@@ -106,10 +122,10 @@ bool collision_benchmark::GetConsistentAABB(const std::string& modelName,
 
 ////////////////////////////////////////////////////////////////
 std::vector<collision_benchmark::GzContactInfoPtr>
-collision_benchmark::GetContactInfo(const std::string& modelName1,
-                                    const std::string& modelName2,
-                                    const std::string& worldName,
-                                    const GzWorldManager::Ptr& worldManager)
+collision_benchmark::GetContactInfo(const std::string &modelName1,
+                                    const std::string &modelName2,
+                                    const std::string &worldName,
+                                    const GzWorldManager::Ptr &worldManager)
 {
   std::vector<GzContactInfoPtr> ret;
 
@@ -124,12 +140,12 @@ collision_benchmark::GetContactInfo(const std::string& modelName1,
 
 
 ////////////////////////////////////////////////////////////////
-bool collision_benchmark::CollisionState(const std::string& modelName1,
-                                       const std::string& modelName2,
-                                       const GzWorldManager::Ptr& worldManager,
+bool collision_benchmark::CollisionState(const std::string &modelName1,
+                                       const std::string &modelName2,
+                                       const GzWorldManager::Ptr &worldManager,
                                        std::vector<std::string>& colliding,
                                        std::vector<std::string>& notColliding,
-                                       double& maxDepth)
+                                       double &maxDepth)
 {
   colliding.clear();
   notColliding.clear();
@@ -145,7 +161,7 @@ bool collision_benchmark::CollisionState(const std::string& modelName1,
     GzWorldManager::PhysicsWorldPtr w = *it;
     if (!w->SupportsContacts())
     {
-      std::cout<<"A world does not support contact calculation"<<std::endl;
+      std::cout << "A world does not support contact calculation" << std::endl;
       return false;
     }
 
@@ -158,7 +174,6 @@ bool collision_benchmark::CollisionState(const std::string& modelName1,
            cit = contacts.begin(); cit != contacts.end(); ++cit)
       {
         GzContactInfoPtr c = *cit;
-        // std::cout << "World " << w->GetName() <<" Contact: " << *c << std::endl;
         double tmpMax;
         if (c->maxDepth(tmpMax) && tmpMax > maxDepth)
           maxDepth = tmpMax;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 /*
  * Author: Jennifer Buehler
  * Date: December 2016
@@ -38,7 +38,6 @@
 
 namespace collision_benchmark
 {
-
 /**
  * \brief Strategy pattern to filter messages.
  * Messages may be simply filtered out, or modified by the filter.
@@ -52,6 +51,8 @@ class MessageFilter
   private: typedef  MessageFilter<Msg> Self;
   public: typedef std::shared_ptr<Self> Ptr;
   public: typedef std::shared_ptr<const Self> ConstPtr;
+
+  public: virtual ~MessageFilter() {}
 
   // Determines whether a message is filtered out. If it is not filtered
   // out, it may have been modified.
@@ -78,8 +79,8 @@ class GazeboTopicForwarder
   // \brief Constructor
   // \param _filter filters out all messages to which the filter applies
   //      and does not republish them. If NULL, does not filter any messages.
- public: GazeboTopicForwarder(const MessageFilterConstPtr _filter=nullptr,
-                              const bool _verbose=false):
+  public: GazeboTopicForwarder(const MessageFilterConstPtr _filter = nullptr,
+                               const bool _verbose = false):
           msgFilter(_filter),
           verbose(_verbose)
           {
@@ -92,18 +93,18 @@ class GazeboTopicForwarder
   // \param _pubHzRate update rate for publisher (0=fastest possible)
   // \param _filter filters out all messages to which the filter applies
   //      and does not republish them. If NULL, does not filter any messages.
- public: GazeboTopicForwarder(const std::string &_to,
-                              const gazebo::transport::NodePtr &_node,
+  public: GazeboTopicForwarder(const std::string &_to,
+                               const gazebo::transport::NodePtr &_node,
                               unsigned int _pubQueueLimit = 1000,
                               double _pubHzRate = 0,
-                              const MessageFilterConstPtr _filter=nullptr,
-                              const bool _verbose=false):
+                              const MessageFilterConstPtr _filter = nullptr,
+                              const bool _verbose = false):
           msgFilter(_filter),
           verbose(_verbose)
           {
-            ForwardTo(_to,_node,_pubQueueLimit,_pubHzRate);
+            ForwardTo(_to, _node, _pubQueueLimit, _pubHzRate);
           }
-  public: virtual ~GazeboTopicForwarder(){}
+  public: virtual ~GazeboTopicForwarder() {}
 
   // \brief Disconnects the subscribers
   public: void DisconnectSubscriber()
@@ -114,7 +115,7 @@ class GazeboTopicForwarder
   public: void Forward(const std::string &_from,
                        const std::string &_to,
                        const gazebo::transport::NodePtr &_node,
-                       const bool _subLatching=true,
+                       const bool _subLatching = true,
                        unsigned int _pubQueueLimit = 1000,
                        double _pubHzRate = 0)
           {
@@ -130,15 +131,13 @@ class GazeboTopicForwarder
   // \param _node the node to use for creating the subscriber
   public: void ForwardFrom(const std::string &_from,
                             const gazebo::transport::NodePtr &_node,
-                            const bool _subLatching=true)
+                            const bool _subLatching = true)
           {
-            // std::cout<<"Subscribing to topic "<<_from<<"."<<std::endl;
-
             std::lock_guard<std::mutex> lock(transportMutex);
 
             if (!this->pub)
             {
-              gzwarn<<"Publisher is not initialized, should call \
+              gzwarn << "Publisher is not initialized, should call \
                 GazeboTopicForwarder::ForwardTo first!\n";
             }
 
@@ -154,11 +153,13 @@ class GazeboTopicForwarder
             if (this->verbose)
             {
               std::cout << "Forwarding messages (verbose: "
-                        << (verbose ? "true" : "false")<<") of type "
-                        << GetTypeName<Msg>()<<" from topic "
-                        << _from<<" to topic ";
-              if (this->pub) std::cout<<this->pub->GetTopic()<<std::endl;
-              else std::cout<<"<none>"<<std::endl;
+                        << (verbose ? "true" : "false") << ") of type "
+                        << GetTypeName<Msg>() << " from topic "
+                        << _from << " to topic ";
+              if (this->pub)
+                std::cout << this->pub->GetTopic() << std::endl;
+              else
+                std::cout << "<none>" << std::endl;
             }
           }
 
@@ -174,19 +175,20 @@ class GazeboTopicForwarder
   // \param _node the node to use for creating the publisher
   // \param _pubQueueLimit limit of the queue for the re-publisher
   // \param _pubHzRate update rate for publisher (0=fastest possible)
-  public: void ForwardTo(const std::string& _to,
-                     const gazebo::transport::NodePtr& _node,
+  public: void ForwardTo(const std::string &_to,
+                     const gazebo::transport::NodePtr &_node,
                      unsigned int _pubQueueLimit = 1000,
                      double _pubHzRate = 0)
            {
-             // std::cout<<"Forwarding messages of type "
-             //         <<GetTypeName<Msg>()<<" to topic "<<_to<<std::endl;
+             // std::cout << "Forwarding messages of type "
+             //       << GetTypeName<Msg>() << " to topic " << _to << std::endl;
              try
              {
                std::lock_guard<std::mutex> lock(transportMutex);
                this->pub =
                  _node->Advertise<Msg>(_to, _pubQueueLimit, _pubHzRate);
-             } catch (gazebo::common::Exception &e)
+             }
+             catch(gazebo::common::Exception &e)
              {
                THROW_EXCEPTION("Could not create forwarder to "
                                << _to <<" with message type "
@@ -199,7 +201,8 @@ class GazeboTopicForwarder
     assert(_msg);
 
     if (this->verbose)
-      std::cout<<"Debug: Got message of type "<<GetTypeName<Msg>()<<std::endl;
+      std::cout << "Debug: Got message of type "
+                << GetTypeName<Msg>() << std::endl;
 
     std::lock_guard<std::mutex> lock(transportMutex);
     if (!this->sub) THROW_EXCEPTION("Inconsistency: Subscriber is NULL, "
@@ -207,10 +210,12 @@ class GazeboTopicForwarder
 
     if (this->verbose)
     {
-      std::cout<<" - on topic "<<this->sub->GetTopic();
-      if (this->pub) std::cout<<" forwarded to topic "<<this->pub->GetTopic();
-      else std::cout<<" <null>";
-      std::cout<<std::endl;
+      std::cout << " - on topic " << this->sub->GetTopic();
+      if (this->pub)
+        std::cout << " forwarded to topic " << this->pub->GetTopic();
+      else
+        std::cout << " <null>";
+      std::cout << std::endl;
     }
 
     if (!this->pub)
@@ -220,13 +225,15 @@ class GazeboTopicForwarder
     }
 
     boost::shared_ptr<Msg const> msgToFwd(nullptr);
-    if (!msgFilter) msgToFwd = _msg;
-    else msgToFwd = msgFilter->Filter(_msg);
+    if (!msgFilter)
+      msgToFwd = _msg;
+    else
+      msgToFwd = msgFilter->Filter(_msg);
     if (!msgToFwd)
     {
       if (this->verbose)
-        std::cout<<"Debug: Rejected message of type "
-          <<GetTypeName<Msg>()<<std::endl;
+        std::cout << "Debug: Rejected message of type "
+          <<GetTypeName<Msg>() << std::endl;
       return;
     }
 
@@ -288,9 +295,9 @@ class GazeboServiceForwarder
   //      of messages to be published
   // \param _pubHzRate update rate for re-publisher of messages
   //      (0=fastest possible)
- public: GazeboServiceForwarder(unsigned int _pubQueueLimit = 1000,
-                                double _pubHzRate = 0,
-                                const bool _verbose=false):
+  public: GazeboServiceForwarder(unsigned int _pubQueueLimit = 1000,
+                                 double _pubHzRate = 0,
+                                 const bool _verbose = false):
           pubQueueLimit(_pubQueueLimit),
           pubHzRate(_pubHzRate),
           verbose(_verbose)
@@ -303,11 +310,11 @@ class GazeboServiceForwarder
   //      of messages to be published
   // \param _pubHzRate update rate for re-publisher of messages
   //      (0=fastest possible)
- public: GazeboServiceForwarder(const std::string &_requestSourceTopic,
-                                const std::string &_responseSourceTopic,
-                                unsigned int _pubQueueLimit = 1000,
-                                double _pubHzRate = 0,
-                                const bool _verbose=false):
+  public: GazeboServiceForwarder(const std::string &_requestSourceTopic,
+                                 const std::string &_responseSourceTopic,
+                                 unsigned int _pubQueueLimit = 1000,
+                                 double _pubHzRate = 0,
+                                 const bool _verbose = false):
           requestSourceTopic(_requestSourceTopic),
           responseSourceTopic(_responseSourceTopic),
           pubQueueLimit(_pubQueueLimit),
@@ -325,7 +332,7 @@ class GazeboServiceForwarder
 
 
 
-  public: virtual ~GazeboServiceForwarder(){}
+  public: virtual ~GazeboServiceForwarder() {}
 
   // Buffers incoming request messages *before* Forward() is called
   // with the right topics (in case the destination topic is only known later)
@@ -336,7 +343,7 @@ class GazeboServiceForwarder
   // \param latching if true, the last arrived request will also be considered
   public: void BufferRequests(const std::string &_requestSourceTopic,
                               const gazebo::transport::NodePtr &_node,
-                              const bool latching=true)
+                              const bool latching = true)
           {
             std::lock_guard<std::mutex> lock(bufferedRequestsMutex);
             if (this->bufferedRequestsSub)
@@ -383,15 +390,15 @@ class GazeboServiceForwarder
                         const std::string &_requestDestTopic,
                         const std::string &_responseDestTopic,
                         const RequestMessageFilterConstPtr &_requestFilter,
-                        const gazebo::transport::NodePtr& _node)
+                        const gazebo::transport::NodePtr &_node)
           {
             // first, forward all requests which have arrived before we
             // called this and stop the buffering.
             StopBufferRequests(_requestDestTopic, _node, _requestFilter);
-            requestSourceTopic=_requestSourceTopic;
-            responseSourceTopic=_responseSourceTopic;
-            requestDestTopic=_requestDestTopic;
-            responseDestTopic=_responseDestTopic;
+            requestSourceTopic = _requestSourceTopic;
+            responseSourceTopic = _responseSourceTopic;
+            requestDestTopic = _requestDestTopic;
+            responseDestTopic = _responseDestTopic;
             if (reqFwd) reqFwd->DisconnectSubscriber();
             if (resFwd) resFwd->DisconnectSubscriber();
             reqFwd.reset(new RequestForwarder(_requestDestTopic, _node,
@@ -400,7 +407,7 @@ class GazeboServiceForwarder
             resFwd.reset(new ResponseForwarder(_responseSourceTopic, _node,
                                                pubQueueLimit, pubHzRate,
                                                nullptr, verbose));
-            bool latching=false;
+            bool latching = false;
             reqFwd->ForwardFrom(_requestSourceTopic, _node, latching);
             resFwd->ForwardFrom(_responseDestTopic, _node, latching);
           }
@@ -419,24 +426,26 @@ class GazeboServiceForwarder
              std::lock_guard<std::mutex> lock(bufferedRequestsMutex);
              while (!this->bufferedRequests.empty())
              {
-               RequestConstPtr msg=this->bufferedRequests.front();
+               RequestConstPtr msg = this->bufferedRequests.front();
                this->bufferedRequests.pop_front();
 
                assert(msg);
 
                if (this->verbose)
                {
-                 std::cout<<"Forwarding request: "<<msg->DebugString()
-                          <<" to "<<_requestDestTopic<<std::endl;
+                 std::cout << "Forwarding request: " << msg->DebugString()
+                          <<" to " << _requestDestTopic << std::endl;
                }
 
                RequestConstPtr msgToFwd(nullptr);
-               if (!_reqFltr) msgToFwd = msg;
-               else msgToFwd = _reqFltr->Filter(msg);
+               if (!_reqFltr)
+                 msgToFwd = msg;
+               else
+                 msgToFwd = _reqFltr->Filter(msg);
                if (!msgToFwd)
                {
                  if (this->verbose)
-                   std::cout<<"Debug: Filtered out request"<<std::endl;
+                   std::cout << "Debug: Filtered out request" << std::endl;
                  continue;
                }
 
@@ -459,7 +468,7 @@ class GazeboServiceForwarder
            {
              assert(_request);
              // std::cout << "Buffering request: "
-             //           << _request->DebugString()<<std::endl;
+             //           << _request->DebugString() << std::endl;
              std::lock_guard<std::mutex> lock(bufferedRequestsMutex);
              this->bufferedRequests.push_back(_request);
            }
@@ -496,7 +505,6 @@ class GazeboServiceForwarder
 
   /// \brief for debugging
   private: bool verbose;
-
 };
 
 class GazeboTopicBlockPrinterInterface
@@ -504,7 +512,6 @@ class GazeboTopicBlockPrinterInterface
   private: typedef GazeboTopicBlockPrinterInterface Self;
   public: typedef std::shared_ptr<Self> Ptr;
   public: typedef std::shared_ptr<const Self> ConstPtr;
-
 };
 
 /**
@@ -517,8 +524,8 @@ class GazeboTopicBlockPrinterInterface
  * \date February 2017
  */
 template<typename Msg_>
-class GazeboTopicBlockPrinter:
-  public GazeboTopicBlockPrinterInterface
+class GazeboTopicBlockPrinter
+  : public GazeboTopicBlockPrinterInterface
 {
   public: typedef Msg_ Msg;
   private: typedef GazeboTopicBlockPrinter<Msg> Self;
@@ -534,13 +541,13 @@ class GazeboTopicBlockPrinter:
   public: GazeboTopicBlockPrinter(const std::string &_printPrefix,
                                   const std::string &_topic,
                                   const gazebo::transport::NodePtr &_node,
-                                  const MessageFilterConstPtr _filter=nullptr):
-          printPrefix(_printPrefix),
-          msgFilter(_filter)
+                                  const MessageFilterConstPtr _filter = nullptr)
+          : printPrefix(_printPrefix),
+            msgFilter(_filter)
           {
-            Init(_topic,_node, false);
+            Init(_topic, _node, false);
           }
-  public: virtual ~GazeboTopicBlockPrinter(){}
+  public: virtual ~GazeboTopicBlockPrinter() {}
 
   // \brief Disconnects the subscribers
   public: void DisconnectSubscriber()
@@ -550,7 +557,7 @@ class GazeboTopicBlockPrinter:
 
   private: void Init(const std::string &_topic,
                      const gazebo::transport::NodePtr &_node,
-                     const bool _subLatching=false)
+                     const bool _subLatching = false)
           {
             if (this->sub)
               this->sub->Unsubscribe();
@@ -558,8 +565,8 @@ class GazeboTopicBlockPrinter:
               _node->Subscribe(_topic, &GazeboTopicBlockPrinter::OnMsg,
                                this, _subLatching);
 //            std::cout << "Catching messages of type "
-//                      << GetTypeName<Msg>()<<" from topic "
-//                      << _topic<<std::endl;
+//                      << GetTypeName<Msg>() << " from topic "
+//                      << _topic << std::endl;
           }
 
   private: void OnMsg(const boost::shared_ptr<Msg const> &_msg)
@@ -567,10 +574,10 @@ class GazeboTopicBlockPrinter:
     assert(_msg);
     if (!msgFilter || msgFilter->Filter(_msg))
     {
-      /* std::cout<<printPrefix<<": Blocked message of type "<<GetTypeName<Msg>();
-      if (this->sub) std::cout<<" on topic "<<this->sub->GetTopic();
-      else std::cout<<" <null>";
-      std::cout<<std::endl;*/
+      /* std::cout << printPrefix << ": Blocked message of type " << GetTypeName<Msg>();
+      if (this->sub) std::cout << " on topic " << this->sub->GetTopic();
+      else std::cout << " <null>";
+      std::cout << std::endl;*/
     }
   }
 

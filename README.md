@@ -423,7 +423,7 @@ However, only exactly two shapes are supported, regardless what type.
 To start the test (which is part of the cmake ``tests`` target):
 
 ```
-collide_test <list of physics engines> -m <Model-1> -m <Model-2>``
+colliding_shapes_test <list of physics engines> -m <Model-1> -m <Model-2>``
 ```
 
 the ``-m`` parameter specifies the model, either using *model names* or
@@ -436,7 +436,7 @@ Alternatively, to load a shape (unit sphere, box or cylinder),
 use the ``-s`` parameter instead:
 
 ```
-collide_test <list of physics engines> -m <Model-1> -s <shape-name>``
+colliding_shapes_test <list of physics engines> -m <Model-1> -s <shape-name>``
 ```
 
 where ``<shape-name>`` can be *sphere, cylinder* or *cube*.
@@ -457,9 +457,9 @@ the collision situation.
 
 *Example*
 
-``collide_test ode bullet -m coke_can -m beer``
+``colliding_shapes_test ode bullet -m coke_can -m beer``
 
-``collide_test ode bullet -m dumpster -s sphere``
+``colliding_shapes_test ode bullet -m dumpster -s sphere``
 
 You may want to set the wireframe view an enable contacts display in
 Gazebo.

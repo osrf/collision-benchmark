@@ -14,9 +14,6 @@
  * limitations under the License.
  *
 */
-#include "CollidingShapesTestFramework.hh"
-#include "CollidingShapesParams.hh"
-#include "BoostSerialization.hh"
 #include <collision_benchmark/PrimitiveShape.hh>
 #include <collision_benchmark/GazeboModelLoader.hh>
 #include <collision_benchmark/GazeboWorldLoader.hh>
@@ -30,6 +27,10 @@
 
 #include <fstream>
 
+#include "CollidingShapesTestFramework.hh"
+#include "CollidingShapesParams.hh"
+#include "BoostSerialization.hh"
+
 using collision_benchmark::test::CollidingShapesTestFramework;
 using collision_benchmark::test::CollidingShapesParams;
 using collision_benchmark::test::CollidingShapesConfiguration;
@@ -42,10 +43,10 @@ using collision_benchmark::GazeboMultipleWorlds;
 using collision_benchmark::BasicState;
 
 /////////////////////////////////////////////////////////////////////////////
-CollidingShapesTestFramework::CollidingShapesTestFramework():
-  collisionAxis(0,1,0),
-  triggeredAutoCollide(false),
-  shapesOnAxisPos(CollidingShapesParams::MaxSliderVal)
+CollidingShapesTestFramework::CollidingShapesTestFramework()
+  : collisionAxis(0, 1, 0),
+    triggeredAutoCollide(false),
+    shapesOnAxisPos(CollidingShapesParams::MaxSliderVal)
 {
 }
 
@@ -58,11 +59,14 @@ bool CollidingShapesTestFramework::Run
      const bool modelsGapIsFactor)
 {
   static const double axEp = 1e-06;
-  if (!collision_benchmark::EqualVectors(collisionAxis, Vector3(1,0,0), axEp) &&
-      !collision_benchmark::EqualVectors(collisionAxis, Vector3(0,1,0), axEp) &&
-      !collision_benchmark::EqualVectors(collisionAxis, Vector3(0,0,1), axEp))
+  if (!collision_benchmark::EqualVectors(collisionAxis,
+                                         Vector3(1, 0, 0), axEp) &&
+      !collision_benchmark::EqualVectors(collisionAxis,
+                                         Vector3(0, 1, 0), axEp) &&
+      !collision_benchmark::EqualVectors(collisionAxis,
+                                         Vector3(0, 0, 1), axEp))
   {
-    std::cerr << "At this point, the only collision axes supported are x,y "
+    std::cerr << "At this point, the only collision axes supported are x, y "
               << "or z axis. Is " << collisionAxis << std::endl;
     return false;
   }
@@ -73,11 +77,11 @@ bool CollidingShapesTestFramework::Run
     std::cerr << "Specified shapes: " << std::endl;
     for (std::vector<std::string>::const_iterator it = unitShapes.begin();
          it != unitShapes.end(); ++it)
-      std::cout<<" " << *it<<std::endl;
+      std::cout << " " << *it << std::endl;
     std::cerr << "Models: " << std::endl;
     for (std::vector<std::string>::const_iterator it = sdfModels.begin();
          it != sdfModels.end(); ++it)
-      std::cout<<" " << *it<<std::endl;
+      std::cout << " " << *it << std::endl;
     std::cout << "which makes a total of " << (unitShapes.size() +
                  sdfModels.size()) << " models. " << std::endl;
     return false;
@@ -132,7 +136,7 @@ bool CollidingShapesTestFramework::RunImpl
   bool loadMirror = true;
   // important to be true so contacts are calculated for all worlds,
   // not only the displayed one!
-  bool enforceContactCalc=true;
+  bool enforceContactCalc = true;
   // control via mirror has to be allowed so we can move around models
   // relative to collision bar.
   bool allowControlViaMirror = true;
@@ -159,7 +163,7 @@ bool CollidingShapesTestFramework::RunImpl
        it = configuration->shapes.begin();
        it != configuration->shapes.end(); ++it, ++modelNum)
   {
-    const std::string& shapeID = *it;
+    const std::string &shapeID = *it;
     Shape::Ptr shape;
     if (shapeID == "sphere")
     {
@@ -195,7 +199,7 @@ bool CollidingShapesTestFramework::RunImpl
        it = configuration->models.begin();
        it != configuration->models.end(); ++it, ++modelNum)
   {
-    const std::string& modelResource = *it;
+    const std::string &modelResource = *it;
     std::string modelSDF =
       GazeboModelLoader::GetModelSdfFilename(modelResource);
     std::string modelName = "model_" + std::to_string(modelNum);
@@ -215,8 +219,8 @@ bool CollidingShapesTestFramework::RunImpl
   // make sure the models are at the origin first (ie. remove any pose
   // information they may have in the SDF).
   BasicState modelState1;
-  modelState1.SetPosition(0,0,0);
-  modelState1.SetRotation(0,0,0,1);
+  modelState1.SetPosition(0, 0, 0);
+  modelState1.SetRotation(0, 0, 0, 1);
   BasicState modelState2(modelState1);
   if ((worldManager->SetBasicModelState(loadedModelNames[0], modelState1)
        != worldManager->GetNumWorlds()) ||
@@ -331,7 +335,7 @@ bool CollidingShapesTestFramework::RunImpl
       ignition::math::Vector3d(collisionAxis.X(), collisionAxis.Y(),
                                collisionAxis.Z()) * collAxisLength/2;
   // axis of cylinder
-  const Vector3 zAxis(0,0,1);
+  const Vector3 zAxis(0, 0, 1);
   ignition::math::Quaterniond collBarQ;
   collBarQ.From2Axes(zAxis, collisionAxis);
   ignition::math::Pose3d collBarPose(collBarP, collBarQ);
@@ -508,9 +512,7 @@ bool CollidingShapesTestFramework::RunImpl
 
   // end the thread to handle the collision bar
   running = false;
-  //std::cout << "Joining thread" << std::endl;
   t.join();
-
   // std::cout << "Finished running CollidingShapesTestFramework." << std::endl;
   return true;
 }
@@ -565,7 +567,7 @@ CollidingShapesTestFramework::UpdateConfiguration(const double model1Slide,
 }
 
 /////////////////////////////////////////////////
-void CollidingShapesTestFramework::SaveConfiguration(const std::string& file,
+void CollidingShapesTestFramework::SaveConfiguration(const std::string &file,
                                         const double model1Slide,
                                         const double model2Slide)
 {
@@ -714,12 +716,12 @@ void CollidingShapesTestFramework::MoveModelsAlongAxis(const float moveDist,
 }
 
 //////////////////////////////////////////////////////////////////////////////
-int CollidingShapesTestFramework::GetAABB(const std::string& modelName,
-            const GazeboMultipleWorlds::GzWorldManager::Ptr& worldManager,
-            Vector3& min, Vector3& max, bool& inLocalFrame)
+int CollidingShapesTestFramework::GetAABB(const std::string &modelName,
+            const GazeboMultipleWorlds::GzWorldManager::Ptr &worldManager,
+            Vector3& min, Vector3& max, bool &inLocalFrame)
 {
-  std::vector<GazeboMultipleWorlds::GzWorldManager
-              ::PhysicsWorldModelInterfacePtr>
+  std::vector< GazeboMultipleWorlds::GzWorldManager
+              ::PhysicsWorldModelInterfacePtr >
     worlds = worldManager->GetModelPhysicsWorlds();
 
   if (worlds.empty()) return -2;
@@ -738,12 +740,12 @@ int CollidingShapesTestFramework::GetAABB(const std::string& modelName,
 
 //////////////////////////////////////////////////////////////////////////////
 int CollidingShapesTestFramework::GetBasicModelState
-    (const std::string& modelName,
-     const GazeboMultipleWorlds::GzWorldManager::Ptr& worldManager,
-     BasicState& state)
+    (const std::string &modelName,
+     const GazeboMultipleWorlds::GzWorldManager::Ptr &worldManager,
+     BasicState &state)
 {
-  std::vector<GazeboMultipleWorlds::GzWorldManager
-              ::PhysicsWorldModelInterfacePtr>
+  std::vector< GazeboMultipleWorlds::GzWorldManager
+              ::PhysicsWorldModelInterfacePtr >
     worlds = worldManager->GetModelPhysicsWorlds();
 
   if (worlds.empty()) return -2;
@@ -762,10 +764,10 @@ int CollidingShapesTestFramework::GetBasicModelState
 
 /////////////////////////////////////////////////////////////////////////////
 void CollidingShapesTestFramework::CollisionBarHandler
-        (const ignition::math::Pose3d& collBarPose,
+        (const ignition::math::Pose3d &collBarPose,
          const float cylinderRadius,
          const float cylinderLength,
-         const std::string& mirrorName)
+         const std::string &mirrorName)
 {
   // make a model publisher which will publish the bar to gzclient
   gazebo::transport::NodePtr node =
@@ -810,7 +812,7 @@ void CollidingShapesTestFramework::CollisionBarHandler
   collision_benchmark::Shape::Ptr shape
     (collision_benchmark::PrimitiveShape::CreateCylinder(cylinderRadius,
                                                          cylinderLength));
-  sdf::ElementPtr shapeGeom=shape->GetShapeSDF();
+  sdf::ElementPtr shapeGeom = shape->GetShapeSDF();
   sdf::ElementPtr visualSDF(new sdf::Element());
   visualSDF->SetName("visual");
   visualSDF->AddAttribute("name", "string", "visual", true, "visual name");
@@ -891,7 +893,7 @@ void CollidingShapesTestFramework::CollisionBarHandler
 /////////////////////////////////////////////////
 void CollidingShapesTestFramework::receiveControlMsg(ConstAnyPtr &_msg)
 {
-  // std::cout << "Any msg: "<<_msg->DebugString();
+  // std::cout << "Any msg: " << _msg->DebugString();
   switch (_msg->type())
   {
     case gazebo::msgs::Any::BOOLEAN:

@@ -14,17 +14,21 @@
  * limitations under the License.
  *
  */
+/*
+ * Author: Jennifer Buehler
+ */
 #ifndef COLLISION_BENCHMARK_SHAPE
 #define COLLISION_BENCHMARK_SHAPE
 
 #include <sdf/sdf.hh>
 #include <ignition/math/Vector3.hh>
 #include <ignition/math/Vector2.hh>
+
 #include <memory>
+#include <string>
 
 namespace collision_benchmark
 {
-
 /**
  * \brief Basic interface for a shape, which can be either a primitive
  * or a mesh. All supported types are defined in the type \e Type.
@@ -37,21 +41,21 @@ class Shape
 {
   public: typedef std::shared_ptr<Shape> Ptr;
   public: typedef std::shared_ptr<const Shape> ConstPtr;
-  public: typedef enum Types_{ BOX, SPHERE, CYLINDER, PLANE, MESH} Type;
+  public: typedef enum Types_ { BOX, SPHERE, CYLINDER, PLANE, MESH } Type;
 
   public: typedef ignition::math::Pose3<double> Pose3;
   public: typedef ignition::math::Vector3<double> Vector3;
   public: typedef ignition::math::Vector2<double> Vector2;
 
-  public: Shape(const Type& type_):
+  public: Shape(const Type &type_):
           type(type_) {}
-  public: Shape(const Shape& o):
+  public: Shape(const Shape &o):
           type(o.type),
           pose(o.pose) {}
-  public: virtual ~Shape(){}
+  public: virtual ~Shape() {}
 
   public: inline Type GetType() const { return type; }
-  public: inline void SetPose(const Pose3& p) { pose=p; }
+  public: inline void SetPose(const Pose3& p) { pose = p; }
   public: inline const Pose3& GetPose() const { return pose; }
   public: inline Pose3& GetPose() { return pose; }
 
@@ -85,9 +89,9 @@ class Shape
   /// \param useFullPath use the absolute path in the URI instead of the
   ///   relative path only starting from \e resourceSubDir.
   public: virtual sdf::ElementPtr
-                  GetShapeSDF(bool detailed=true,
-                              const std::string& resourceDir = "/tmp/",
-                              const std::string& resourceSubDir = "",
+                  GetShapeSDF(bool detailed = true,
+                              const std::string &resourceDir = "/tmp/",
+                              const std::string &resourceSubDir = "",
                               const bool useFullPath = false) const = 0;
 
   /// returns true if GetShapeSDF() returns a different mesh with parameter
@@ -99,8 +103,5 @@ class Shape
   private: Type type;
   private: Pose3 pose;
 };
-
-
 }  // namespace
-
 #endif  // COLLISION_BENCHMARK_SHAPE

@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
+/*
+ * Author: Jennifer Buehler
+ * Date: December 2016
+ */
+
 #include <sstream>
 #include <gazebo/msgs/msgs.hh>
 #include "ClientGui.hh"
@@ -24,8 +29,8 @@ using collision_benchmark::ClientGui;
 GZ_REGISTER_GUI_PLUGIN(ClientGui)
 
 
-QSize maxHeightAddWidth(const QSize& s1, const QSize& s2,
-                        float wFact=1, float hFact=1.0)
+QSize maxHeightAddWidth(const QSize &s1, const QSize &s2,
+                        float wFact = 1, float hFact = 1.0)
 {
   return QSize((s1.width() + s2.width())*wFact,
                std::max(s1.height(), s2.height())*hFact);
@@ -106,7 +111,8 @@ ClientGui::ClientGui()
   // Send the name request to the gazebo server
   gazebo::msgs::Any m;
   m.set_type(gazebo::msgs::Any::INT32);
-  m.set_int_value(0); // Request world name
+  // Request world name
+  m.set_int_value(0);
   this->mirrorWorldPub->Publish(m);
 }
 
@@ -118,13 +124,13 @@ ClientGui::~ClientGui()
 /////////////////////////////////////////////////
 void ClientGui::receiveWorldMsg(ConstAnyPtr &_msg)
 {
-  // std::cout << "Any msg: "<<_msg->DebugString();
-  std::string worldName=_msg->string_value();
+  // std::cout << "Any msg: " << _msg->DebugString();
+  std::string worldName = _msg->string_value();
   emit TriggerNameChange(worldName);
 }
 
 /////////////////////////////////////////////////
-void ClientGui::OnNameChange(const std::string& name)
+void ClientGui::OnNameChange(const std::string &name)
 {
   labelName->setText(name.c_str());
   QSize totalSize = maxHeightAddWidth(labelName->sizeHint(), minSize, 1.1);
@@ -136,7 +142,8 @@ void ClientGui::OnButtonNext()
 {
   gazebo::msgs::Any m;
   m.set_type(gazebo::msgs::Any::INT32);
-  m.set_int_value(1); // "Next" world
+  // "Next" world
+  m.set_int_value(1);
   this->mirrorWorldPub->Publish(m);
 }
 
@@ -146,6 +153,7 @@ void ClientGui::OnButtonPrev()
 {
   gazebo::msgs::Any m;
   m.set_type(gazebo::msgs::Any::INT32);
-  m.set_int_value(-1); // "Prev" world
+  // "Prev" world
+  m.set_int_value(-1);
   this->mirrorWorldPub->Publish(m);
 }

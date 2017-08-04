@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 /*
  * Author: Jennifer Buehler
  * Date: December 2016
@@ -32,10 +32,10 @@
 
 #include <string>
 #include <iostream>
+#include <vector>
 
 namespace collision_benchmark
 {
-
 /**
  * \brief Forwards messages of a Gazebo world to a separate topic.
  *
@@ -44,14 +44,13 @@ namespace collision_benchmark
  * \author Jennifer Buehler
  * \date February 2016
  */
-class GazeboTopicForwardingMirror:
-  public MirrorWorld,//<gazebo::physics::WorldState>
-  public std::enable_shared_from_this<GazeboTopicForwardingMirror>
+class GazeboTopicForwardingMirror
+  : public MirrorWorld,
+    public std::enable_shared_from_this<GazeboTopicForwardingMirror>
 {
     public: typedef std::shared_ptr<GazeboTopicForwardingMirror> Ptr;
     public: typedef std::shared_ptr<const GazeboTopicForwardingMirror> ConstPtr;
     public: typedef MirrorWorld Parent;
-    //public: typedef MirrorWorld<gazebo::physics::WorldState> Parent;
 
     // PhysicsEngineWorldInterface instantiated with Gazebo types.
     // Required to use GetWorld().
@@ -63,10 +62,11 @@ class GazeboTopicForwardingMirror:
                 gazebo::physics::World> GazeboPhysicsEngineWorld;
 
     /// Constructor.
-    public:  GazeboTopicForwardingMirror(const std::string& worldname
+    public:  GazeboTopicForwardingMirror(const std::string &worldname
                                           = "default");
     // prohibit copy constructor
-    private: GazeboTopicForwardingMirror(const GazeboTopicForwardingMirror& o){}
+    private: GazeboTopicForwardingMirror(const GazeboTopicForwardingMirror &o)
+             {}
     public:  ~GazeboTopicForwardingMirror();
 
     /// Documentation inherited
@@ -90,7 +90,7 @@ class GazeboTopicForwardingMirror:
     // registers the namespace and waits until this has been done.
     // Throws an exception if it didn't work after a maximum time
     // (current default is 10 seconds)
-    private: void RegisterNamespace(const std::string& worldname) const;
+    private: void RegisterNamespace(const std::string &worldname) const;
 
     /// \brief Transportation node.
     private: gazebo::transport::NodePtr node;
@@ -122,13 +122,6 @@ class GazeboTopicForwardingMirror:
     /// \brief topic forwarder for poseAnim messages.
     private: GazeboTopicForwarder<gazebo::msgs::PoseAnimation>::Ptr poseAnimFwd;
 
-  /*
-    // XXX TODO Get rid of this unless needed again. This has to be
-    // forwarded to ALL worlds.
-    /// \brief topic forwarder for physics messages.
-    private: GazeboTopicForwarder<gazebo::msgs::Physics>::Ptr physicsFwd;
-  */
-
     /// \brief Publisher for request messages to use for clients subscribed
     /// the the mirror world (e.g. visualization/gzclient).
     private: gazebo::transport::PublisherPtr requestPub;
@@ -148,6 +141,5 @@ class GazeboTopicForwardingMirror:
     private: std::string worldName;
     private: bool initialized;
 };
-
 }  // namespace collision_benchmark
 #endif

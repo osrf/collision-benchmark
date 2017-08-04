@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
+/*
+ * Author: Jennifer Buehler
+ * Date: March 2017
+ */
+
 #include <collision_benchmark/SimpleTriMeshShape.hh>
 #include <collision_benchmark/MeshHelper.hh>
 #include <collision_benchmark/Helpers.hh>
@@ -24,14 +29,14 @@ const std::string SimpleTriMeshShape::MESH_EXT="stl";
 
 sdf::ElementPtr
 SimpleTriMeshShape::GetShapeSDF(bool detailed,
-                                const std::string& resourceDir,
-                                const std::string& resourceSubDir,
+                                const std::string &resourceDir,
+                                const std::string &resourceSubDir,
                                 const bool useFullPath) const
 {
   if (resourceDir.empty() && resourceSubDir.empty())
   {
     std::cerr << "Resource directory to write mesh data to is empty, "
-              << "so cannot create SDF for mesh."<<std::endl;
+              << "so cannot create SDF for mesh." << std::endl;
     return sdf::ElementPtr();
   }
 
@@ -71,7 +76,7 @@ SimpleTriMeshShape::GetShapeSDF(bool detailed,
 
   if (!collision_benchmark::WriteTrimesh(fullname, MESH_EXT, data))
   {
-    std::cerr<<"Could not write mesh data!"<<std::endl;
+    std::cerr << "Could not write mesh data!" << std::endl;
     return sdf::ElementPtr();
   }
 

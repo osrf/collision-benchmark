@@ -16,6 +16,9 @@
  * limitations under the License.
  *
  */
+/*
+ * Author: Jennifer Buehler
+ */
 
 #include <collision_benchmark/ContactInfo.hh>
 #include <collision_benchmark/Shape.hh>
@@ -23,10 +26,11 @@
 #include <sdf/sdf.hh>
 
 #include <memory>
+#include <vector>
+#include <string>
 
 namespace collision_benchmark
 {
-
 /// Type to indicate success or failure of an operation
 /// NOT_SUPPORTED: depending on the context of the function, this means
 ///   something about what the method does is not supported
@@ -57,13 +61,12 @@ typedef enum _RefResult {ERROR, CLONED, SHALLOW_COPIED, REFERENCED} RefResult;
  */
 class PhysicsWorldBaseInterface
 {
-
   private: typedef PhysicsWorldBaseInterface Self;
   public: typedef std::shared_ptr<Self> Ptr;
   public: typedef std::shared_ptr<const Self> ConstPtr;
 
-  public: PhysicsWorldBaseInterface(){}
-  public: virtual ~PhysicsWorldBaseInterface(){}
+  public: PhysicsWorldBaseInterface() {}
+  public: virtual ~PhysicsWorldBaseInterface() {}
 
   /// Clears the world of all models, lights and anything else that can be
   /// in the world implementation.
@@ -77,7 +80,7 @@ class PhysicsWorldBaseInterface
   ///   but it will only have an effect for this calling thread
   ///   (if other threads try to call this with force set to false
   ///   the world will not update for the call from the other thread).
-  public: virtual void Update(int steps=1, bool force=false) = 0;
+  public: virtual void Update(int steps = 1, bool force = false) = 0;
 
   /// Pauses or "freezes" the world simulation in the current state.
   /// If the world is paused, any calls of Update() will have no effect.
@@ -100,8 +103,8 @@ class PhysicsWorldBaseInterface
   /// \retval NOT_SUPPORTED the type of model specified in the SDF
   ///         is not supported
   /// \retval FAILED Loading failed for any other reason
-  public: virtual OpResult LoadFromSDF(const sdf::ElementPtr& sdf,
-                                       const std::string& worldname="") = 0;
+  public: virtual OpResult LoadFromSDF(const sdf::ElementPtr &sdf,
+                                       const std::string &worldname="") = 0;
 
   /// Loads a world from a file. The format of the file has to be
   /// supported by the implementation.
@@ -110,8 +113,8 @@ class PhysicsWorldBaseInterface
   /// \retval NOT_SUPPORTED the file type, or the world specified
   ///         within is not supported
   /// \retval FAILED Loading failed for any other reason
-  public: virtual OpResult LoadFromFile(const std::string& filename,
-                                        const std::string& worldname="") = 0;
+  public: virtual OpResult LoadFromFile(const std::string &filename,
+                                        const std::string &worldname="") = 0;
 
   /// Loads a world from a string \e str. The format of the string has to be
   /// supported by the implementation.
@@ -120,8 +123,8 @@ class PhysicsWorldBaseInterface
   /// \retval NOT_SUPPORTED the format of the string, or the world specified
   ///         within is not supported
   /// \retval FAILED Loading failed for any other reason
-  public: virtual OpResult LoadFromString(const std::string& str,
-                                          const std::string& worldname="") = 0;
+  public: virtual OpResult LoadFromString(const std::string &str,
+                                          const std::string &worldname="") = 0;
 
   /// Saves the world to the file.
   /// \param[in] filename the filename (absolute path).
@@ -141,9 +144,9 @@ class PhysicsWorldBaseInterface
   /// \param[in] resourceSubdir see description of \e resourceDir. If empty,
   ///   has no effect.
   /// \return success or not
-  public: virtual bool SaveToFile(const std::string& filename,
-                                  const std::string& resourceDir = "",
-                                  const std::string& resourceSubdir = "") = 0;
+  public: virtual bool SaveToFile(const std::string &filename,
+                                  const std::string &resourceDir = "",
+                                  const std::string &resourceSubdir = "") = 0;
 
   /// Set the dynamics engine to enabledl or disabled. If disabled, the objects
   /// won't react to physics laws, but objects can be maintained in the world
@@ -178,8 +181,8 @@ class PhysicsWorldStateInterface
   /// Describes a state of the world
   public: typedef WorldStateImpl WorldState;
 
-  public: PhysicsWorldStateInterface(){}
-  public: virtual ~PhysicsWorldStateInterface(){}
+  public: PhysicsWorldStateInterface() {}
+  public: virtual ~PhysicsWorldStateInterface() {}
 
   /// Get the current state of the world
   public: virtual WorldState GetWorldState() const = 0;
@@ -189,7 +192,7 @@ class PhysicsWorldStateInterface
   /// it will be in the state of \e other (this includes adding or removing
   /// of models and any other entities in the underlying world)
   public: virtual WorldState
-                  GetWorldStateDiff(const WorldState& other) const = 0;
+                  GetWorldStateDiff(const WorldState &other) const = 0;
 
   /// Set the current state of the world. It can be used to *update* the state,
   /// like model poses etc., and also to *add and remove* models, lights,
@@ -209,8 +212,8 @@ class PhysicsWorldStateInterface
   ///         \e isDiff and \e state, ie. the parameters not being compatible
   ///         for whichever reason.
   /// \retval FAILED Failure for other reasons than \e NOT_SUPPORTED
-  public: virtual OpResult SetWorldState(const WorldState& state,
-                                         bool isDiff=false) = 0;
+  public: virtual OpResult SetWorldState(const WorldState &state,
+                                         bool isDiff = false) = 0;
 };
 
 /**
@@ -250,8 +253,8 @@ class PhysicsWorldModelInterface
       } ModelLoadResult;
 
 
-  public: PhysicsWorldModelInterface(){}
-  public: virtual ~PhysicsWorldModelInterface(){}
+  public: PhysicsWorldModelInterface() {}
+  public: virtual ~PhysicsWorldModelInterface() {}
 
   /// Loads a model from a file and adds it to the world.
   /// Doesn't set the model pose.
@@ -261,8 +264,8 @@ class PhysicsWorldModelInterface
   ///         within is not supported
   /// \retval FAILED Loading failed for any other reason
   public: virtual ModelLoadResult
-                  AddModelFromFile(const std::string& filename,
-                                   const std::string& modelname="") = 0;
+                  AddModelFromFile(const std::string &filename,
+                                   const std::string &modelname="") = 0;
 
   /// Loads a model from a string and adds it to the world.
   /// The format of the string must be supported by the implementation.
@@ -274,8 +277,8 @@ class PhysicsWorldModelInterface
   ///         specified within is not supported
   /// \retval FAILED Loading failed for any other reason
   public: virtual ModelLoadResult
-                  AddModelFromString(const std::string& str,
-                                     const std::string& modelname="") = 0;
+                  AddModelFromString(const std::string &str,
+                                     const std::string &modelname="") = 0;
 
   /// Loads a model from a SDF specification and adds it to the world.
   /// Some implementations may not support directly reading from SDF,
@@ -285,8 +288,8 @@ class PhysicsWorldModelInterface
   /// \param modelname set to non-empty string to override world
   ///        name given in SDF
   public: virtual ModelLoadResult
-                  AddModelFromSDF(const sdf::ElementPtr& sdf,
-                                  const std::string& modelname="") = 0;
+                  AddModelFromSDF(const sdf::ElementPtr &sdf,
+                                  const std::string &modelname="") = 0;
 
   /// \return true if AddModelFromShape() is supported
   public: virtual bool SupportsShapes() const = 0;
@@ -305,9 +308,9 @@ class PhysicsWorldModelInterface
   ///         this throws an exception (see also SupportsShapes()).
   ///         Instead, the AddModel*() methods have to be used.
   public: virtual ModelLoadResult
-                  AddModelFromShape(const std::string& modelname,
-                                    const Shape::Ptr& shape,
-                                    const Shape::Ptr& collShape
+                  AddModelFromShape(const std::string &modelname,
+                                    const Shape::Ptr &shape,
+                                    const Shape::Ptr &collShape
                                       = Shape::Ptr()) = 0;
 
   public: virtual std::vector<ModelID> GetAllModelIDs() const = 0;
@@ -317,29 +320,29 @@ class PhysicsWorldModelInterface
   // integer ID. Usually, negative numbers mean that the implementation
   // does not use integer IDs, or it would mean that the model
   // with this \e id was not found.
-  public: virtual int GetIntegerModelID(const ModelID& id) const = 0;
+  public: virtual int GetIntegerModelID(const ModelID &id) const = 0;
 
   /// Removes a model from the world
   /// \retval false the model was not in the world
-  public: virtual bool RemoveModel(const ModelID& id) = 0;
+  public: virtual bool RemoveModel(const ModelID &id) = 0;
 
   /// Sets the pose and scale of a model.
   /// \retval false the model was not in the world
-  public: virtual bool SetBasicModelState(const ModelID& id,
-                                          const BasicState& state) = 0;
+  public: virtual bool SetBasicModelState(const ModelID &id,
+                                          const BasicState &state) = 0;
 
   /// Gets the pose and scale of a model.
   /// \retval false the model was not in the world
-  public: virtual bool GetBasicModelState(const ModelID& id,
-                                          BasicState& state) = 0;
+  public: virtual bool GetBasicModelState(const ModelID &id,
+                                          BasicState &state) = 0;
 
   /// \brief Get axis aligned bounding box of the model.
   /// \param[out] inLocalFrame true if the AABB is expressed in the
   ///   local coordinate system of the model, false if it's in global.
   /// \retval false the model was not in the world
-  public: virtual bool GetAABB(const ModelID& id,
+  public: virtual bool GetAABB(const ModelID &id,
                                Vector3& min, Vector3& max,
-                               bool& inLocalFrame) const = 0;
+                               bool &inLocalFrame) const = 0;
 };
 
 /**
@@ -370,15 +373,15 @@ class PhysicsWorldContactInterface
   public: typedef std::shared_ptr<Self> Ptr;
   public: typedef std::shared_ptr<const Self> ConstPtr;
 
-  public: typedef collision_benchmark::Contact<Vector3,Wrench> Contact;
+  public: typedef collision_benchmark::Contact<Vector3, Wrench> Contact;
   public: typedef typename Contact::Ptr ContactPtr;
 
   public: typedef collision_benchmark::ContactInfo<Contact, ModelID,
                                                    ModelPartID> ContactInfo;
   public: typedef typename ContactInfo::Ptr ContactInfoPtr;
 
-  public: PhysicsWorldContactInterface(){}
-  public: virtual ~PhysicsWorldContactInterface(){}
+  public: PhysicsWorldContactInterface() {}
+  public: virtual ~PhysicsWorldContactInterface() {}
 
   /// \return false if the underlying implementation does not
   ///         compute contact points, true otherwise.
@@ -394,8 +397,8 @@ class PhysicsWorldContactInterface
   /// Works as GetContactInfo() but only returns the contact points between
   /// models \e m1 and \e m2.
   public: virtual std::vector<ContactInfoPtr>
-                  GetContactInfo(const ModelID& m1,
-                                 const ModelID& m2) const = 0;
+                  GetContactInfo(const ModelID &m1,
+                                 const ModelID &m2) const = 0;
 };
 
 /**
@@ -435,8 +438,8 @@ class PhysicsEngineWorldInterface
   public: typedef std::shared_ptr<PhysicsEngine> PhysicsEnginePtr;
   public: typedef std::shared_ptr<World> WorldPtr;
 
-  public: PhysicsEngineWorldInterface(){}
-  public: virtual ~PhysicsEngineWorldInterface(){}
+  public: PhysicsEngineWorldInterface() {}
+  public: virtual ~PhysicsEngineWorldInterface() {}
 
   /// \retval true if this is an adaptor to another world (either of type
   ///   \e PhysicsWorld or of \e WorldPtr). This means \e GetWorld() will
@@ -456,7 +459,7 @@ class PhysicsEngineWorldInterface
   ///   In this case, the result of GetWorld() will return a pointer
   ///   to \e world.
   /// \retval ERROR Error copying the state of \e world.
-  public: virtual RefResult SetWorld(const WorldPtr& world) = 0;
+  public: virtual RefResult SetWorld(const WorldPtr &world) = 0;
 
   /// Returns the underlying world, or a pointer to this instance if this is
   /// a self-contained implementation (not an adaptor to another world).
@@ -465,7 +468,7 @@ class PhysicsEngineWorldInterface
   /// the specific type is known (eg. to call specific functions on it).
   public: virtual WorldPtr GetWorld() const = 0;
 
-  public: virtual ModelPtr GetModel(const ModelID& model) const = 0;
+  public: virtual ModelPtr GetModel(const ModelID &model) const = 0;
 
   /// Get underlying physics engine to use for more specific tests on the
   /// current state of the world. Returns NULL pointer type if there
@@ -488,9 +491,8 @@ class PhysicsEngineWorldInterface
   /// Works as GetNativeContact() but only returns the contact points
   /// between models \e m1 and \e m2.
   public: virtual std::vector<NativeContactPtr>
-                  GetNativeContacts(const ModelID& m1,
-                                    const ModelID& m2) const = 0;
-
+                  GetNativeContacts(const ModelID &m1,
+                                    const ModelID &m2) const = 0;
 };  // class PhysicsEngineWorld
 
 
@@ -517,11 +519,11 @@ class PhysicsEngineWorldInterface
  */
 template<class _WorldState, class _ModelID,
          class _ModelPartID, class _Vector3, class _Wrench>
-class PhysicsWorld:
-  public PhysicsWorldBaseInterface,
-  public PhysicsWorldStateInterface<_WorldState>,
-  public PhysicsWorldModelInterface<_ModelID, _ModelPartID, _Vector3>,
-  public PhysicsWorldContactInterface<_ModelID, _ModelPartID,
+class PhysicsWorld
+  : public PhysicsWorldBaseInterface,
+    public PhysicsWorldStateInterface<_WorldState>,
+    public PhysicsWorldModelInterface<_ModelID, _ModelPartID, _Vector3>,
+    public PhysicsWorldContactInterface<_ModelID, _ModelPartID,
                                       _Vector3, _Wrench>
 {
   public: typedef _WorldState WorldState;
@@ -582,13 +584,13 @@ class PhysicsWorld:
  * \date October 2016
  */
 template<class PhysicsWorldTypes_, class PhysicsEngineWorldTypes_>
-class PhysicsEngineWorld:
-  public PhysicsWorld<typename PhysicsWorldTypes_::WorldState,
+class PhysicsEngineWorld
+  : public PhysicsWorld<typename PhysicsWorldTypes_::WorldState,
                       typename PhysicsWorldTypes_::ModelID,
                       typename PhysicsWorldTypes_::ModelPartID,
                       typename PhysicsWorldTypes_::Vector3,
                       typename PhysicsWorldTypes_::Wrench>,
-  public PhysicsEngineWorldInterface<
+    public PhysicsEngineWorldInterface<
               typename PhysicsWorldTypes_::ModelID,
               typename PhysicsEngineWorldTypes_::Model,
               typename PhysicsEngineWorldTypes_::Contact,

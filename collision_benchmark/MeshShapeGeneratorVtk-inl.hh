@@ -1,12 +1,33 @@
+/*
+ * Copyright (C) 2012-2016 Open Source Robotics Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+/*
+ * Author: Jennifer Buehler
+ * Date: March 2017
+ */
+
 #ifndef COLLISION_BENCHMARK_MESHSHAPEGENERATORVTK_INL_H
 #define COLLISION_BENCHMARK_MESHSHAPEGENERATORVTK_INL_H
 
 #include <collision_benchmark/MeshShapeGenerationVtk.hh>
+#include <vector>
 
 namespace collision_benchmark
 {
-
-
+//////////////////////////////////////////////////////////////////////////
 template<typename VP>
 typename MeshShapeGeneratorVtk<VP>::TriMeshDataPtr
 GetTriMeshFromVtkPoly(const vtkSmartPointer<vtkPolyData>& poly)
@@ -21,25 +42,26 @@ GetTriMeshFromVtkPoly(const vtkSmartPointer<vtkPolyData>& poly)
   collision_benchmark::getTriangleSoup(poly, vtkPoints, vtkFaces);
 
   TriMeshDataPtr ret(new TriMeshData());
-  TriMeshVerts_V& verts = ret->GetVertices();
+  TriMeshVerts_V &verts = ret->GetVertices();
   for (std::vector<collision_benchmark::vPoint>::const_iterator
        it = vtkPoints.begin(); it != vtkPoints.end(); ++it)
   {
-    const collision_benchmark::vPoint& p = *it;
+    const collision_benchmark::vPoint &p = *it;
     verts.push_back(typename TriMeshData::Vertex(p.x, p.y, p.z));
   }
 
-  TriMeshFaces_V& faces = ret->GetFaces();
+  TriMeshFaces_V &faces = ret->GetFaces();
   for (std::vector<collision_benchmark::vTriIdx>::const_iterator
        it = vtkFaces.begin(); it != vtkFaces.end(); ++it)
   {
-    const collision_benchmark::vTriIdx& f = *it;
+    const collision_benchmark::vTriIdx &f = *it;
     faces.push_back(typename TriMeshData::Face(f.v1, f.v2, f.v3));
   }
   return ret;
 }
 
 
+//////////////////////////////////////////////////////////////////////////
 template<typename VP>
 typename MeshShapeGeneratorVtk<VP>::TriMeshDataPtr
 MeshShapeGeneratorVtk<VP>::MakeSphere(const double radius,
@@ -53,6 +75,7 @@ MeshShapeGeneratorVtk<VP>::MakeSphere(const double radius,
   return GetTriMeshFromVtkPoly<VP>(sphere);
 }
 
+//////////////////////////////////////////////////////////////////////////
 template<typename VP>
 typename MeshShapeGeneratorVtk<VP>::TriMeshDataPtr
 MeshShapeGeneratorVtk<VP>::MakeCylinder(const double radius,
@@ -66,6 +89,7 @@ MeshShapeGeneratorVtk<VP>::MakeCylinder(const double radius,
   return GetTriMeshFromVtkPoly<VP>(cylinder);
 }
 
+//////////////////////////////////////////////////////////////////////////
 template<typename VP>
 typename MeshShapeGeneratorVtk<VP>::TriMeshDataPtr
 MeshShapeGeneratorVtk<VP>::MakeBox(const double x,
@@ -78,6 +102,7 @@ MeshShapeGeneratorVtk<VP>::MakeBox(const double x,
   return GetTriMeshFromVtkPoly<VP>(box);
 }
 
+//////////////////////////////////////////////////////////////////////////
 template<typename VP>
 typename MeshShapeGeneratorVtk<VP>::TriMeshDataPtr
 MeshShapeGeneratorVtk<VP>::MakeBox(const double xMin, const double xMax,
@@ -90,6 +115,7 @@ MeshShapeGeneratorVtk<VP>::MakeBox(const double xMin, const double xMax,
   return GetTriMeshFromVtkPoly<VP>(box);
 }
 
+//////////////////////////////////////////////////////////////////////////
 template<typename VP>
 typename MeshShapeGeneratorVtk<VP>::TriMeshDataPtr
 MeshShapeGeneratorVtk<VP>::MakeCone(const double radius,
@@ -108,6 +134,7 @@ MeshShapeGeneratorVtk<VP>::MakeCone(const double radius,
   return GetTriMeshFromVtkPoly<VP>(cone);
 }
 
+//////////////////////////////////////////////////////////////////////////
 template<typename VP>
 typename MeshShapeGeneratorVtk<VP>::TriMeshDataPtr
 MeshShapeGeneratorVtk<VP>::MakeDisk(const double innerRadius,
@@ -122,6 +149,7 @@ MeshShapeGeneratorVtk<VP>::MakeDisk(const double innerRadius,
   return GetTriMeshFromVtkPoly<VP>(disk);
 }
 
+//////////////////////////////////////////////////////////////////////////
 template<typename VP>
 typename MeshShapeGeneratorVtk<VP>::TriMeshDataPtr
 MeshShapeGeneratorVtk<VP>::MakeEllipsoid(const double xRad,
@@ -136,6 +164,7 @@ MeshShapeGeneratorVtk<VP>::MakeEllipsoid(const double xRad,
   return GetTriMeshFromVtkPoly<VP>(ellipsoid);
 }
 
+//////////////////////////////////////////////////////////////////////////
 template<typename VP>
 typename MeshShapeGeneratorVtk<VP>::TriMeshDataPtr
 MeshShapeGeneratorVtk<VP>::MakeTorus(const double ringRadius,

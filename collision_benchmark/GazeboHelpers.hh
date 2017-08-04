@@ -14,6 +14,9 @@
  * limitations under the License.
  *
  */
+/*
+ * Author: Jennifer Buehler
+ */
 #ifndef COLLISION_BENCHMARK_GAZEBOHELPERS_
 #define COLLISION_BENCHMARK_GAZEBOHELPERS_
 
@@ -21,15 +24,14 @@
 #include <set>
 #include <map>
 #include <vector>
+#include <string>
 
 namespace collision_benchmark
 {
-
-
 /**
  * Clears all models, and all contacts, from the world.
  */
-void ClearModels(gazebo::physics::WorldPtr& world);
+void ClearModels(gazebo::physics::WorldPtr &world);
 
 /**
  * Returns all supported physics engines
@@ -47,7 +49,7 @@ std::set<std::string> GetSupportedPhysicsEngines();
  * GAZEBO_RESOURCE_PATH
  * \param engines can contain "ode", "bullet", "dart", "simbody"
  */
-std::map<std::string,std::string>
+std::map<std::string, std::string>
 getPhysicsSettingsSdfFor(const std::vector<std::string>& engines);
 
 /**
@@ -59,13 +61,13 @@ getPhysicsSettingsSdfFor(const std::vector<std::string>& engines);
  * \return the path to the SDF file with the physics settings,
  *         or empty string if engine not supported.
  */
-std::string getPhysicsSettingsSdfFor(const std::string& engine);
+std::string getPhysicsSettingsSdfFor(const std::string &engine);
 
 /**
  * Calls getPhysicsSettingsSdfFor() with all supported
  * engines as returned from GetSupportedPhysicsEngines().
  */
-std::map<std::string,std::string> getPhysicsSettingsSdfForAllEngines();
+std::map<std::string, std::string> getPhysicsSettingsSdfForAllEngines();
 
 
 /**
@@ -77,7 +79,7 @@ std::map<std::string,std::string> getPhysicsSettingsSdfForAllEngines();
  * \retval -2 no outer ``<sdf>`` tag
  * \retval -3 file could not be read
  */
-int isProperSDFFile(const std::string& filename, std::string* version=NULL);
+int isProperSDFFile(const std::string &filename, std::string* version = NULL);
 
 /**
  * Checks whether the SDF format in the string is proper, which means an outer
@@ -87,7 +89,7 @@ int isProperSDFFile(const std::string& filename, std::string* version=NULL);
  * \retval -1 no version in ``<sdf>`` tag
  * \retval -2 no outer ``<sdf>`` tag
  */
-int isProperSDFString(const std::string& str, std::string* version=NULL);
+int isProperSDFString(const std::string &str, std::string* version = NULL);
 
 /**
  * Helper function which fixes the SDF format in the string, aimed at being part
@@ -98,15 +100,12 @@ int isProperSDFString(const std::string& str, std::string* version=NULL);
  * from WorldState::operator- are in a format not compatible and need to be
  * fixed with this function..
  */
-void wrapSDF(std::string& sdf);
+void wrapSDF(std::string &sdf);
 
 /**
  * Calls fixSDF() for all the sdf's
  */
 void wrapSDF(std::vector<std::string>& sdf);
-
-
-
 }  // namespace
 
 #endif   // COLLISION_BENCHMARK_GAZEBOHELPERS_

@@ -79,7 +79,6 @@ add_custom_target(tests)
 add_executable(multiple_worlds_server
   collision_benchmark/multiple_worlds_server.cc)
 
-
 target_link_libraries(collision_benchmark
   ${dependencies_LIBRARIES})
 
@@ -105,9 +104,43 @@ add_dependencies(tests collision_benchmark_test_gui)
 
 # compile testing libraries and executables
 # -----------------------------------------
+
 enable_testing()
-find_package(GTest REQUIRED)
-include_directories(${GTEST_INCLUDE_DIRS})
+# - Gtest build
+
+# Download and unpack googletest at configure time
+configure_file(CMakeLists.txt.in ${CMAKE_BINARY_DIR}/googletest-download/CMakeLists.txt)
+execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+    RESULT_VARIABLE result
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
+if(result)
+  message(FATAL_ERROR "CMake step for googletest failed: ${result}")
+endif()
+execute_process(COMMAND ${CMAKE_COMMAND} --build .
+  RESULT_VARIABLE result
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
+if(result)
+  message(FATAL_ERROR "Build step for googletest failed: ${result}")
+endif()
+
+# Prevent overriding the parent project's compiler/linker
+# settings on Windows
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+# Add googletest directly to our build. This defines
+# the gtest and gtest_main targets.
+add_subdirectory(${CMAKE_BINARY_DIR}/googletest-src
+                 ${CMAKE_BINARY_DIR}/googletest-build)
+
+# The gtest/gtest_main targets carry header search path
+# dependencies automatically when using CMake 2.8.11 or
+# later. Otherwise we have to add them here ourselves.
+if (CMAKE_VERSION VERSION_LESS 2.8.11)
+  include_directories("${gtest_SOURCE_DIR}/include")
+endif()
+
+# names of both gtest libraries for linking
+set(GTEST_BOTH_LIBRARIES gtest gtest_main)
 
 set(TEST_LIB_SRCS
     test/TestUtils.cc
@@ -146,12 +179,6 @@ target_link_libraries(static_test
 add_test(StaticTest static_test)
 add_dependencies(tests static_test)
 
-add_executable(tmp_test EXCLUDE_FROM_ALL test/Temp_TEST.cc)
-target_link_libraries(tmp_test
-  collision_benchmark collision_benchmark_test ${GTEST_BOTH_LIBRARIES})
-add_dependencies(tests tmp_test)
-
-
 # tutorials
 add_custom_target(tutorials)
 
@@ -183,6 +210,6 @@ install (FILES ${physics_SDF}
 install (FILES ${test_WORLDS}
   DESTINATION ${CMAKE_INSTALL_PREFIX}/share/test_worlds)
 
-install (TARGETS collision_benchmark multiple_worlds_server 
+install (TARGETS collision_benchmark multiple_worlds_server
   LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
   RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)

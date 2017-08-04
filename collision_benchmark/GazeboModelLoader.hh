@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
+/*
+ * Author: Jennifer Buehler
+ */
 #ifndef COLLISION_BENCHMARK_GAZEBOMODELLOADER_H
 #define COLLISION_BENCHMARK_GAZEBOMODELLOADER_H
 
@@ -22,9 +25,10 @@
 #include <boost/filesystem.hpp>
 #include <tinyxml.h>
 
+#include <string>
+
 namespace collision_benchmark
 {
-
 /**
  * \brief Helper to load a model of a given name from the gazebo model paths.
  *
@@ -35,7 +39,7 @@ class GazeboModelLoader
 {
   //
   public: static std::string
-          GetModelSdfFilename(const std::string& modelNameOrFile)
+          GetModelSdfFilename(const std::string &modelNameOrFile)
   {
     // first, check if \e modelNameOrFile is a file
     boost::filesystem::path modelNamePath(modelNameOrFile);
@@ -109,7 +113,5 @@ class GazeboModelLoader
     return sdfFilename;
   }
 };  // class GazeboModelLoader
-
-} // namespace
-
+}  // namespace
 #endif  // COLLISION_BENCHMARK_GAZEBOMODELLOADER_H

@@ -60,7 +60,7 @@ class MultipleWorldsTestFramework : public ::testing::Test
 
   virtual void SetUp()
   {
-    bool enforceContactCalc=true;
+    bool enforceContactCalc = true;
     GzMultipleWorldsServer::WorldLoader_M loaders =
       collision_benchmark::GetSupportedGazeboWorldLoaders(enforceContactCalc);
 
@@ -103,7 +103,6 @@ class MultipleWorldsTestFramework : public ::testing::Test
   gazebo::transport::NodePtr node;
   // publisher needed in RefreshClient()
   gazebo::transport::PublisherPtr pub;
-
 };
 
 

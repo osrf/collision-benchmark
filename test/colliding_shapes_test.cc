@@ -41,24 +41,22 @@ int main(int argc, char **argv)
   desc.add_options()
     ("help,h", "Produce help message")
     ("shape,s",
-      po::value<std::vector<std::string>>(&unitShapes)->multitoken(),
+      po::value<std::vector<std::string> >(&unitShapes)->multitoken(),
       "Unit shape specification, can be any of [sphere, cylinder, cube]")
     ("model,m",
-      po::value<std::vector<std::string>>(&sdfModels)->multitoken(),
+      po::value<std::vector<std::string> >(&sdfModels)->multitoken(),
       std::string(std::string("Model specification, can be either the ") +
       std::string("name of a model in the gazebo model paths, or a ") +
       std::string("path to a SDF file")).c_str())
     ("config,c",
       po::value<std::string>(&configFile),
-      "load from configuration file")
-    ;
+      "load from configuration file");
 
   po::options_description desc_hidden("Positional options");
   desc_hidden.add_options()
     ("engines,e",
-      po::value<std::vector<std::string>>(&selectedEngines)->multitoken(),
-      descEngines.str().c_str())
-    ;
+      po::value<std::vector<std::string> >(&selectedEngines)->multitoken(),
+      descEngines.str().c_str());
 
   po::variables_map vm;
   po::positional_options_description p;
@@ -68,8 +66,8 @@ int main(int argc, char **argv)
   po::options_description desc_composite;
   desc_composite.add(desc).add(desc_hidden);
 
-  po::command_line_parser parser{argc, argv};
-  parser.options(desc_composite).positional(p); // .allow_unregistered();
+  po::command_line_parser parser(argc, argv);
+  parser.options(desc_composite).positional(p);
   po::parsed_options parsedOpt = parser.run();
   po::store(parsedOpt, vm);
   po::notify(vm);
@@ -87,7 +85,7 @@ int main(int argc, char **argv)
     for (std::vector<std::string>::iterator it = selectedEngines.begin();
          it != selectedEngines.end(); ++it)
     {
-      std::cout<<*it<<std::endl;
+      std::cout << *it << std::endl;
     }
   }
   else
@@ -102,7 +100,7 @@ int main(int argc, char **argv)
     for (std::vector<std::string>::iterator it = unitShapes.begin();
          it != unitShapes.end(); ++it)
     {
-      std::cout<<*it<<std::endl;
+      std::cout << *it << std::endl;
     }
   }
 
@@ -112,7 +110,7 @@ int main(int argc, char **argv)
     for (std::vector<std::string>::iterator it = sdfModels.begin();
          it != sdfModels.end(); ++it)
     {
-      std::cout<<*it<<std::endl;
+      std::cout << *it << std::endl;
     }
   }
 */

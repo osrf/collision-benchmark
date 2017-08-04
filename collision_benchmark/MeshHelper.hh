@@ -14,6 +14,9 @@
  * limitations under the License.
  *
  */
+/*
+ * Author: Jennifer Buehler
+ */
 #ifndef COLLISION_BENCHMARK_MESHHELPER
 #define COLLISION_BENCHMARK_MESHHELPER
 
@@ -26,12 +29,12 @@
 #include <boost/filesystem.hpp>
 
 #include <vector>
+#include <string>
 
 namespace collision_benchmark
 {
-
-std::string SetOrReplaceFileExtension(const std::string& in,
-                                      const std::string& ext)
+std::string SetOrReplaceFileExtension(const std::string &in,
+                                      const std::string &ext)
 {
   boost::filesystem::path p(in);
   boost::filesystem::path swapped = p.replace_extension(ext);
@@ -40,10 +43,7 @@ std::string SetOrReplaceFileExtension(const std::string& in,
 
 aiMaterial * GetDefaultMaterial()
 {
-
   aiMaterial* mat = new aiMaterial();
-
-
   /*mat->AddProperty(&srcMat.diffuse,  1,AI_MATKEY_COLOR_DIFFUSE);
   mat->AddProperty(&srcMat.specular, 1,AI_MATKEY_COLOR_SPECULAR);
   mat->AddProperty(&srcMat.ambient,  1,AI_MATKEY_COLOR_AMBIENT);
@@ -52,15 +52,15 @@ aiMaterial * GetDefaultMaterial()
   mat->AddProperty(&m, 1, AI_MATKEY_SHADING_MODEL);
 
   if (srcMat.name.length)
-      mat->AddProperty(&srcMat.name,AI_MATKEY_NAME);
+      mat->AddProperty(&srcMat.name, AI_MATKEY_NAME);
   */
   return mat;
 }
 
-template<typename Float=float>
+template<typename Float = float>
 aiScene *
 CreateTrimeshScene(const typename
-                   collision_benchmark::MeshData<Float, 3>::ConstPtr& meshData)
+                   collision_benchmark::MeshData<Float, 3>::ConstPtr &meshData)
 {
   // Create new aiScene (aiMesh)
   aiScene *assimpScene = new aiScene;
@@ -70,7 +70,7 @@ CreateTrimeshScene(const typename
   assimpScene->mMeshes[0] = assimpMesh;
   aiNode * rootNode = new aiNode();
   rootNode->mName.Set("Root");
-  rootNode->mNumMeshes=1;
+  rootNode->mNumMeshes = 1;
   rootNode->mMeshes = new unsigned int[1];
   rootNode->mMeshes[0] = 0;
   assimpScene->mRootNode = rootNode;
@@ -95,8 +95,8 @@ CreateTrimeshScene(const typename
   typedef typename MeshDataT::Vertex Vertex;
   typedef typename MeshDataT::Face Face;
 
-  const std::vector<Vertex>& vertices=meshData->GetVertices();
-  const std::vector<Face>& faces=meshData->GetFaces();
+  const std::vector<Vertex>& vertices = meshData->GetVertices();
+  const std::vector<Face>& faces = meshData->GetFaces();
 
   for (unsigned int i = 0; i < numVertices; ++i)
   {
@@ -136,28 +136,29 @@ CreateTrimeshScene(const typename
  *        supported by assimp (e.g. "dae", "stl", "obj")
  * \param meshData the mesh data to be written
  */
-template<typename Float=float>
-bool WriteTrimesh(const std::string& filename,
-                  const std::string& outformat,
+template<typename Float = float>
+bool WriteTrimesh(const std::string &filename,
+                  const std::string &outformat,
                   const typename collision_benchmark::MeshData
-                                 <Float, 3>::ConstPtr& meshData)
+                                 <Float, 3>::ConstPtr &meshData)
 {
   aiScene * scene = CreateTrimeshScene(meshData);
   if (!scene)
   {
-    std::cerr<<"Could not create trimesh scene"<<std::endl;
+    std::cerr << "Could not create trimesh scene" << std::endl;
     return false;
   }
   std::string fname = SetOrReplaceFileExtension(filename, outformat);
 
-  // std::cout<<"Writing to file "<<fname<<std::endl;
+  // std::cout << "Writing to file " << fname << std::endl;
 
   Assimp::Exporter exporter;
   if (exporter.Export(scene, outformat, fname, aiProcess_GenNormals)\
       != AI_SUCCESS)
   {
-    std::cerr<<"Could not write "<<fname<<" in the format "
-             <<outformat<<". Error: "<<exporter.GetErrorString()<<std::endl;
+    std::cerr << "Could not write " << fname << " in the format "
+              << outformat << ". Error: " << exporter.GetErrorString()
+              << std::endl;
     return false;
   }
   delete scene;
