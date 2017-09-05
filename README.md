@@ -43,7 +43,6 @@ branch, which is the default branch merged with
 - [PR 2657](https://bitbucket.org/osrf/gazebo/pull-requests/2657): problems with transport
 - [PR 2708](https://bitbucket.org/osrf/gazebo/pull-requests/2708): add method World::SDF()
 - [PR 2709](https://bitbucket.org/osrf/gazebo/pull-requests/2709): ODE contact points not constantly displayed
-- [PR 2713](https://bitbucket.org/osrf/gazebo/pull-requests/2713): Faulty bounding boxes in bullet and dart
 - only minor: [PR 2705](https://bitbucket.org/osrf/gazebo/pull-requests/2705)
 - only minor: [PR 2707](https://bitbucket.org/osrf/gazebo/pull-requests/2707)
 
