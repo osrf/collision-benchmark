@@ -1,0 +1,285 @@
+<sdf version='1.6'>
+  <world name='SRC_finals'>
+    <physics name='default_physics' default='0' type='ode'>
+      <real_time_update_rate>1000</real_time_update_rate>
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <ode>
+        <solver>
+          <type>quick</type>
+          <iters>150</iters>
+          <precon_iters>0</precon_iters>
+          <sor>1.4</sor>
+          <use_dynamic_moi_rescaling>1</use_dynamic_moi_rescaling>
+        </solver>
+        <constraints>
+          <cfm>0</cfm>
+          <erp>0.8</erp>
+          <contact_max_correcting_vel>2000</contact_max_correcting_vel>
+          <contact_surface_layer>0.01</contact_surface_layer>
+        </constraints>
+      </ode>
+    </physics>
+    <gui fullscreen='0'>
+      <camera name='user_camera'>
+        <pose frame=''>1.30351 0.396872 0.387083 0 0.366 -0.6</pose>
+        <view_controller>orbit</view_controller>
+        <projection_type>perspective</projection_type>
+      </camera>
+    </gui>
+    <scene>
+      <grid>0</grid>
+      <origin_visual>0</origin_visual>
+      <ambient>0.4 0.4 0.4 1</ambient>
+      <shadows>1</shadows>
+    </scene>
+    <light name='sun' type='directional'>
+      <cast_shadows>1</cast_shadows>
+      <pose frame=''>0 0 1000 -0.920673 -1.46746 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+    <model name='bling_4'>
+      <static>1</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <polyline>
+              <height>0.15215</height>
+              <point>-0.762 0</point>
+              <point>-0.762 1.07763</point>
+              <point>0 1.8396</point>
+              <point>1.07763 0.763</point>
+              <point>0.762 0.45</point>
+              <point>0.762 0</point>
+            </polyline>
+          </geometry>
+          <surface>
+            <contact>
+              <ode>
+                <kp>1e+06</kp>
+                <kd>100</kd>
+                <max_vel>1</max_vel>
+                <min_depth>0</min_depth>
+              </ode>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name="bling_4_visual">
+          <geometry>
+            <polyline>
+              <height>0.15215</height>
+              <point>-0.762 0</point>
+              <point>-0.762 1.07763</point>
+              <point>0 1.8396</point>
+              <point>1.07763 0.763</point>
+              <point>0.762 0.45</point>
+              <point>0.762 0</point>
+            </polyline>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+        <enable_wind>0</enable_wind>
+      </link>
+      <pose frame=''>1.614 -0 -0.052151 0 0 -1.5708</pose>
+    </model>
+    <gravity>0 0 -9.8</gravity>
+    <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
+    <atmosphere type='adiabatic'/>
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <latitude_deg>0</latitude_deg>
+      <longitude_deg>0</longitude_deg>
+      <elevation>0</elevation>
+      <heading_deg>0</heading_deg>
+    </spherical_coordinates>
+    <model name='valkyrie_left'>
+      <link name='leftFoot'>
+        <pose frame=''>-0.010126 0.137705 -1.08343 0 -0 0</pose>
+        <inertial>
+          <pose frame=''>0.036909 0.004943 -0.048928 0 -0 0</pose>
+          <mass>2.37</mass>
+          <inertia>
+            <ixx>0.00641532</ixx>
+            <ixy>0.00020788</ixy>
+            <ixz>0.00128536</ixz>
+            <iyy>0.0179943</iyy>
+            <iyz>-0.000202908</iyz>
+            <izz>0.0209358</izz>
+          </inertia>
+        </inertial>
+        <collision name='leftFoot_collision'>
+          <pose frame=''>0.045 0 -0.056 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.27 0.16 0.064</size>
+            </box>
+          </geometry>
+          <surface>
+            <contact>
+              <ode>
+                <kp>1e+06</kp>
+                <kd>100</kd>
+                <max_vel>1</max_vel>
+                <min_depth>0</min_depth>
+              </ode>
+            </contact>
+            <friction>
+              <ode>
+                <mu>1.5</mu>
+                <mu2>1.5</mu2>
+                <fdir1>1 0 0</fdir1>
+              </ode>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='leftFoot_visual'>
+          <pose frame=''>0.045 0 -0.056 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.27 0.16 0.064</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>__default__</uri>
+              <name>__default__</name>
+            </script>
+          </material>
+        </visual>
+        <gravity>1</gravity>
+        <velocity_decay/>
+        <self_collide>1</self_collide>
+        <kinematic>0</kinematic>
+        <enable_wind>0</enable_wind>
+      </link>
+    </model>
+    <model name='valkyrie_right'>
+      <link name='rightFoot'>
+        <pose frame=''>-0.010126 -0.137705 -1.08343 0 -0 0</pose>
+        <inertial>
+          <pose frame=''>0.036909 0.004943 -0.048928 0 -0 0</pose>
+          <mass>2.37</mass>
+          <inertia>
+            <ixx>0.00641532</ixx>
+            <ixy>0.00020788</ixy>
+            <ixz>0.00128536</ixz>
+            <iyy>0.0179943</iyy>
+            <iyz>-0.000202908</iyz>
+            <izz>0.0209358</izz>
+          </inertia>
+        </inertial>
+        <collision name='rightFoot_collision'>
+          <pose frame=''>0.045 0 -0.056 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.27 0.16 0.064</size>
+            </box>
+          </geometry>
+          <surface>
+            <contact>
+              <ode>
+                <kp>1e+06</kp>
+                <kd>100</kd>
+                <max_vel>1</max_vel>
+                <min_depth>0</min_depth>
+              </ode>
+            </contact>
+            <friction>
+              <ode>
+                <mu>1.5</mu>
+                <mu2>1.5</mu2>
+                <fdir1>1 0 0</fdir1>
+              </ode>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='rightFoot_visual'>
+          <pose frame=''>0.045 0 -0.056 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.27 0.16 0.064</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>__default__</uri>
+              <name>__default__</name>
+            </script>
+          </material>
+        </visual>
+        <gravity>1</gravity>
+        <velocity_decay/>
+        <self_collide>1</self_collide>
+        <kinematic>0</kinematic>
+        <enable_wind>0</enable_wind>
+      </link>
+      <pose frame=''>0 0 1.25 0 -0 0</pose>
+    </model>
+    <wind/>
+    <state world_name='SRC_finals'>
+      <sim_time>162 368000000</sim_time>
+      <real_time>1141 301068533</real_time>
+      <wall_time>1504614793 108052010</wall_time>
+      <iterations>162368</iterations>
+      <model name='bling_4'>
+        <pose frame=''>1.614 0 -0.0522 0 0 -1.571</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose frame=''>1.614 0 -0.0522 0 0 -1.571</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='valkyrie_left'>
+        <pose frame=''>1.878 -0.0042 1.083 -0.0007 0.0024 0.0001</pose>
+        <scale>1 1 1</scale>
+        <link name='leftFoot'>
+          <pose frame=''>1.903 0.151 0.1878 -0.0001 0.0007 -0.0003</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='valkyrie_right'>
+        <pose frame=''>1.878 -0.0042 1.083 -0.0007 0.0024 0.0001</pose>
+        <link name='rightFoot'>
+          <pose frame=''>1.903 -0.1503 0.1878 -0.0002 0.0013 0.0014</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <light name='sun'>
+        <pose frame=''>0 0 1000 -0.920673 -1.46746 0</pose>
+      </light>
+    </state>
+  </world>
+</sdf>
