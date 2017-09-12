@@ -44,7 +44,6 @@ branch, which is the default branch merged with
 - [PR 2708](https://bitbucket.org/osrf/gazebo/pull-requests/2708): add method World::SDF()
 - [PR 2709](https://bitbucket.org/osrf/gazebo/pull-requests/2709): ODE contact points not constantly displayed
 - only minor: [PR 2705](https://bitbucket.org/osrf/gazebo/pull-requests/2705)
-- only minor: [PR 2707](https://bitbucket.org/osrf/gazebo/pull-requests/2707)
 
 Please also see [dart PR 881](https://github.com/dartsim/dart/pull/881)
 and [fcl PR 213](https://github.com/flexible-collision-library/fcl/pull/213)
