@@ -1,5 +1,5 @@
 <sdf version='1.6'>
-  <world name='SRC_finals'>
+  <world name='test_contact'>
     <gui fullscreen='0'>
       <camera name='user_camera'>
         <pose frame=''>1.30351 0.396872 0.387083 0 0.366 -0.6</pose>
@@ -43,19 +43,6 @@
     <gravity>0 0 -9.8</gravity>
     <model name='valkyrie_left'>
       <link name='leftFoot'>
-        <pose frame=''>-0.010126 0.137705 -1.08343 0 -0 0</pose>
-        <inertial>
-          <pose frame=''>0.036909 0.004943 -0.048928 0 -0 0</pose>
-          <mass>2.37</mass>
-          <inertia>
-            <ixx>0.00641532</ixx>
-            <ixy>0.00020788</ixy>
-            <ixz>0.00128536</ixz>
-            <iyy>0.0179943</iyy>
-            <iyz>-0.000202908</iyz>
-            <izz>0.0209358</izz>
-          </inertia>
-        </inertial>
         <collision name='leftFoot_collision'>
           <pose frame=''>0.045 0 -0.056 0 -0 0</pose>
           <geometry>
