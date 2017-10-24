@@ -303,18 +303,21 @@ bool GazeboPhysicsWorld::SaveToFile(const std::string &filename,
     }
   }
 
-  sdf::ElementPtr sdf = world->SDF();
-  if (!sdf)
+  sdf::ElementPtr worldSdf = world->SDF();
+  if (!worldSdf)
   {
     std::cerr << "Could not get SDF of world" << std::endl;
     return false;
   }
 
-  if (!sdf->HasElement("world"))
+  if (!worldSdf->HasElement("world"))
   {
     std::cerr << "Missing SDF 'world' element" << std::endl;
     return false;
   }
+
+  sdf::ElementPtr sdf = sdf::WrapInRoot(worldSdf->Clone());
+
   if (!resourceDir.empty())
   {
     sdf::ElementPtr worldElem = sdf->GetElement("world");

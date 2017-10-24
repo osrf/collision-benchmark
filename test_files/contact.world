@@ -1,0 +1,109 @@
+<sdf version='1.6'>
+  <world name='SRC_finals'>
+    <gui fullscreen='0'>
+      <camera name='user_camera'>
+        <pose frame=''>1.30351 0.396872 0.387083 0 0.366 -0.6</pose>
+        <view_controller>orbit</view_controller>
+        <projection_type>perspective</projection_type>
+      </camera>
+    </gui>
+    <light name='sun' type='directional'>
+      <cast_shadows>1</cast_shadows>
+      <pose frame=''>0 0 1000 -0.920673 -1.46746 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+    <model name='bling_4'>
+      <static>1</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+           <mesh>
+             <uri>model://triangle/triangle.obj</uri>
+           </mesh>
+          </geometry>
+        </collision>
+        <visual name="bling_4_visual">
+         <geometry>
+           <mesh>
+             <uri>model://triangle/triangle.obj</uri>
+           </mesh>
+         </geometry>
+        </visual>
+      </link>
+      <pose frame=''>1.614 -0 -0.052151 0 0 -1.5708</pose>
+    </model>
+    <gravity>0 0 -9.8</gravity>
+    <model name='valkyrie_left'>
+      <link name='leftFoot'>
+        <pose frame=''>-0.010126 0.137705 -1.08343 0 -0 0</pose>
+        <inertial>
+          <pose frame=''>0.036909 0.004943 -0.048928 0 -0 0</pose>
+          <mass>2.37</mass>
+          <inertia>
+            <ixx>0.00641532</ixx>
+            <ixy>0.00020788</ixy>
+            <ixz>0.00128536</ixz>
+            <iyy>0.0179943</iyy>
+            <iyz>-0.000202908</iyz>
+            <izz>0.0209358</izz>
+          </inertia>
+        </inertial>
+        <collision name='leftFoot_collision'>
+          <pose frame=''>0.045 0 -0.056 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.27 0.16 0.064</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name='leftFoot_visual'>
+          <pose frame=''>0.045 0 -0.056 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.27 0.16 0.064</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <state world_name='SRC_finals'>
+      <sim_time>162 368000000</sim_time>
+      <real_time>1141 301068533</real_time>
+      <wall_time>1504614793 108052010</wall_time>
+      <iterations>162368</iterations>
+      <model name='bling_4'>
+        <pose frame=''>1.614 0 -0.0522 0 0 -1.571</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose frame=''>1.614 0 -0.0522 0 0 -1.571</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='valkyrie_left'>
+        <pose frame=''>1.878 -0.0042 1.083 -0.0007 0.0024 0.0001</pose>
+        <scale>1 1 1</scale>
+        <link name='leftFoot'>
+          <!--pose frame=''>1.903 0.151 0.1878 -0.0001 0.0007 -0.0003</pose-->
+          <!-- error is introduced by this: -->
+          <pose frame=''>1.903 0.151 0.1878 -0.0004 0.0012 -0.0003</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <light name='sun'>
+        <pose frame=''>0 0 1000 -0.920673 -1.46746 0</pose>
+      </light>
+    </state>
+  </world>
+</sdf>
