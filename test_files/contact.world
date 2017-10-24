@@ -20,7 +20,7 @@
       </attenuation>
       <direction>-0.5 0.1 -0.9</direction>
     </light>
-    <model name='bling_4'>
+    <model name='triangle'>
       <static>1</static>
       <link name='link'>
         <collision name='collision'>
@@ -30,7 +30,7 @@
            </mesh>
           </geometry>
         </collision>
-        <visual name="bling_4_visual">
+        <visual name="triangle_visual">
          <geometry>
            <mesh>
              <uri>model://triangle/triangle.obj</uri>
@@ -38,7 +38,6 @@
          </geometry>
         </visual>
       </link>
-      <pose frame=''>1.614 -0 -0.052151 0 0 -1.5708</pose>
     </model>
     <gravity>0 0 -9.8</gravity>
     <model name='valkyrie_left'>
@@ -66,8 +65,7 @@
       <real_time>1141 301068533</real_time>
       <wall_time>1504614793 108052010</wall_time>
       <iterations>162368</iterations>
-      <model name='bling_4'>
-        <pose frame=''>1.614 0 -0.0522 0 0 -1.571</pose>
+      <model name='triangle'>
         <scale>1 1 1</scale>
         <link name='link'>
           <pose frame=''>1.614 0 -0.0522 0 0 -1.571</pose>
@@ -77,10 +75,10 @@
         </link>
       </model>
       <model name='valkyrie_left'>
-        <pose frame=''>1.878 -0.0042 1.083 -0.0007 0.0024 0.0001</pose>
         <scale>1 1 1</scale>
         <link name='leftFoot'>
           <!--pose frame=''>1.903 0.151 0.1878 -0.0001 0.0007 -0.0003</pose-->
+          <!--pose frame=''>1.903 0.151 0.1878 -0.0004 -0.04 -0.0003</pose-->
           <!-- error is introduced by this: -->
           <pose frame=''>1.903 0.151 0.1878 -0.0004 0.0012 -0.0003</pose>
           <velocity>0 0 0 0 -0 0</velocity>
