@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2012-2016 Open Source Robotics Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 #include <collision_benchmark/GazeboWorldLoader.hh>
 #include <collision_benchmark/PhysicsWorld.hh>
 #include <collision_benchmark/GazeboPhysicsWorld.hh>
@@ -26,15 +43,15 @@ LoadWorlds(const std::vector<std::string>& filenames)
 {
   // list of worlds to be loaded
   std::vector<collision_benchmark::Worldfile> worldsToLoad;
-  int i=0;
-  for (std::vector<std::string>::const_iterator it=filenames.begin();
-       it!=filenames.end(); ++it, ++i)
+  int i = 0;
+  for (std::vector<std::string>::const_iterator it = filenames.begin();
+       it != filenames.end(); ++it, ++i)
   {
     std::string worldfile = *it;
     std::stringstream worldname;
     worldname << "world_" << i - 1;
     worldsToLoad.push_back
-      (collision_benchmark::Worldfile(worldfile,worldname.str()));
+      (collision_benchmark::Worldfile(worldfile, worldname.str()));
   }
   return collision_benchmark::LoadWorlds(worldsToLoad);
 }
@@ -57,21 +74,21 @@ TEST_F(MultipleWorldsTest, UsesDifferentEngines)
     // XXX TODO add the empty_simbody.world file
     filenames.push_back("../test_worlds/empty_simbody.world");
 
-  std::vector<gazebo::physics::WorldPtr> worlds=LoadWorlds(filenames);
+  std::vector<gazebo::physics::WorldPtr> worlds = LoadWorlds(filenames);
 
   ASSERT_EQ(worlds.size(), filenames.size())
     << filenames.size() << "  Worlds must have been loaded";
 
-  std::set<std::string>::iterator eit=engines.begin();
-  for (std::vector<gazebo::physics::WorldPtr>::iterator it=worlds.begin();
-       it!=worlds.end(); ++it, ++eit)
+  std::set<std::string>::iterator eit = engines.begin();
+  for (std::vector<gazebo::physics::WorldPtr>::iterator it = worlds.begin();
+       it != worlds.end(); ++it, ++eit)
   {
-    ASSERT_NE(it->get(),nullptr) << " World NULL pointer returned";
+    ASSERT_NE(it->get(), nullptr) << " World NULL pointer returned";
     ASSERT_NE((*it)->Physics().get(), nullptr)
       << " World PhysicsEngine cannot be NULL";
     ASSERT_EQ((*it)->Physics()->GetType(), *eit)
-      << "Engine must be '"<<*eit
-      <<"', is "<<(*it)->Physics()->GetType();
+      << "Engine must be '" << *eit
+      <<"', is " << (*it)->Physics()->GetType();
   }
 }
 
@@ -96,40 +113,40 @@ TEST_F(MultipleWorldsTest, UsesDifferentEnginesOverride)
   int i = 0;
   std::vector<gazebo::physics::WorldPtr> worlds;
   for (std::vector<std::string>::const_iterator it = physics_filenames.begin();
-       it!=physics_filenames.end(); ++it, ++i)
+       it != physics_filenames.end(); ++it, ++i)
   {
     std::string physicsfile = *it;
     std::string worldfile = "worlds/rubble.world";
-    std::cout<<"Loading physics from "<<physicsfile<<std::endl;
+    std::cout << "Loading physics from " << physicsfile << std::endl;
     sdf::ElementPtr physics =
       collision_benchmark::GetPhysicsFromSDF(physicsfile);
     ASSERT_NE(physics.get(), nullptr) <<
       "Could not get phyiscs engine from " << physicsfile;
-    // std::cout<<"Physics: "<<physics->ToString("")<<std::endl;
-    std::cout<<"Loading world from " << worldfile << std::endl;
+    // std::cout << "Physics: " << physics->ToString("") << std::endl;
+    std::cout << "Loading world from " << worldfile << std::endl;
     // because we are loading the same world mulitple times, we need to assing
     // a unique name to it, or the loading will fail.
     std::stringstream wname;
-    wname << "world_"<<i;
+    wname << "world_" << i;
     gazebo::physics::WorldPtr gzworld =
       collision_benchmark::LoadWorldFromFile(worldfile, wname.str(), physics);
-    ASSERT_NE(gzworld.get(), nullptr) <<"Could not load world "<<worldfile;
+    ASSERT_NE(gzworld.get(), nullptr) <<"Could not load world " << worldfile;
     worlds.push_back(gzworld);
   }
 
   ASSERT_EQ(worlds.size(), physics_filenames.size())
     << physics_filenames.size() << "  Worlds must have been loaded";
 
-  std::set<std::string>::iterator eit=engines.begin();
-  for (std::vector<gazebo::physics::WorldPtr>::iterator it=worlds.begin();
-       it!=worlds.end(); ++it, ++eit)
+  std::set<std::string>::iterator eit = engines.begin();
+  for (std::vector<gazebo::physics::WorldPtr>::iterator it = worlds.begin();
+       it != worlds.end(); ++it, ++eit)
   {
-    std::cout<<"Engine used: "<<(*it)->Physics()->GetType()<<std::endl;
-    ASSERT_NE(it->get(),nullptr) << " World NULL pointer returned";
+    std::cout << "Engine used: " << (*it)->Physics()->GetType() << std::endl;
+    ASSERT_NE(it->get(), nullptr) << " World NULL pointer returned";
     ASSERT_NE((*it)->Physics().get(), nullptr)
       << " World PhysicsEngine cannot be NULL";
-    ASSERT_EQ((*it)->Physics()->GetType(), *eit) << "Engine must be '"<<*eit
-      <<"', is "<<(*it)->Physics()->GetType();
+    ASSERT_EQ((*it)->Physics()->GetType(), *eit) << "Engine must be '" << *eit
+      <<"', is " << (*it)->Physics()->GetType();
   }
 }
 

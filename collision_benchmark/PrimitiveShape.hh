@@ -14,6 +14,9 @@
  * limitations under the License.
  *
  */
+/*
+ * Author: Jennifer Buehler
+ */
 
 #ifndef COLLISION_BENCHMARK_PRIMITIVESHAPE
 #define COLLISION_BENCHMARK_PRIMITIVESHAPE
@@ -22,10 +25,10 @@
 #include <collision_benchmark/PrimitiveShapeParameters.hh>
 
 #include <memory>
+#include <string>
 
 namespace collision_benchmark
 {
-
 /**
  * \brief A shape which is one of the primitives
  * of the types BOX, SPHERE, CYLINDER, PLANE
@@ -43,16 +46,16 @@ class PrimitiveShape: public Shape
   public: typedef std::shared_ptr<PrimitiveShape> Ptr;
   public: typedef std::shared_ptr<const PrimitiveShape> ConstPtr;
 
-  private: PrimitiveShape(const Type& type,
-                          const PrimitiveShapeParameters::Ptr& params_):
+  private: PrimitiveShape(const Type &type,
+                          const PrimitiveShapeParameters::Ptr &params_):
             Shape(type),
             params(params_) {}
 
-  public: PrimitiveShape(const PrimitiveShape& o):
+  public: PrimitiveShape(const PrimitiveShape &o):
             Shape(o),
             params(o.params) {}
 
-  public: virtual ~PrimitiveShape(){}
+  public: virtual ~PrimitiveShape() {}
 
   // Creates a box
   public: static PrimitiveShape * CreateBox(double width,
@@ -83,15 +86,12 @@ class PrimitiveShape: public Shape
 
   // Documentation inherited from parent class
   public: virtual sdf::ElementPtr
-                  GetShapeSDF(bool detailed=true,
-                              const std::string& resourceDir = "/tmp/",
-                              const std::string& resourceSubDir = "",
+                  GetShapeSDF(bool detailed = true,
+                              const std::string &resourceDir = "/tmp/",
+                              const std::string &resourceSubDir = "",
                               const bool useFullPath = false) const;
 
   private: PrimitiveShapeParameters::Ptr params;
 };
-
-
 }  // namespace
-
 #endif  // COLLISION_BENCHMARK_PRIMITIVESHAPE

@@ -34,23 +34,23 @@
 
 namespace collision_benchmark
 {
-
 /**
+ * \brief Implementation of the ControlServer for gazebo
  * \author Jennifer Buehler
  * \date February 2017
  */
-class GazeboControlServer:
-  public ControlServer<std::string>
+class GazeboControlServer
+  : public ControlServer<std::string>
 {
   private: typedef ControlServer<std::string> Super;
   public: typedef std::shared_ptr<GazeboControlServer> Ptr;
   public: typedef std::shared_ptr<const GazeboControlServer> ConstPtr;
 
   /// Constructor.
-  public:  GazeboControlServer(const std::string& _worldName="default");
+  public:  GazeboControlServer(const std::string &_worldName="default");
 
   // prohibit copy constructor
-  private: GazeboControlServer(const GazeboControlServer& o){}
+  private: GazeboControlServer(const GazeboControlServer &o) {}
   public:  ~GazeboControlServer();
 
   private: void Init(const std::string &_worldName);
@@ -68,13 +68,13 @@ class GazeboControlServer:
   private: void OnPhysics
            (const boost::shared_ptr<gazebo::msgs::Physics const> &_msg);
 
-  private: void HandleWorldControl (const gazebo::msgs::WorldControl &_msg);
+  private: void HandleWorldControl(const gazebo::msgs::WorldControl &_msg);
 
   /// Callback for control client subscriber \e wldIdxCtrlSubscriber.
   /// Will send back the current world name with \e wldIdxCtrlPublisher.
   private:  void WorldSelectClientCallback(ConstAnyPtr &_msg);
   /// sends the name of a word via \e wldIdxCtrlPublisher
-  private: void SendWorldName(const std::string& name);
+  private: void SendWorldName(const std::string &name);
 
   /// \brief Transportation node, initialized with world name
   private: gazebo::transport::NodePtr node;
@@ -104,8 +104,6 @@ class GazeboControlServer:
 
   // General node, initialized without namespace
   private: gazebo::transport::NodePtr generalCtrlNode;
-
 };
-
 }  // namespace collision_benchmark
 #endif

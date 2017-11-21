@@ -24,11 +24,11 @@ sdf::ElementPtr Shape::GetPoseSDF() const
   sdf::ElementPtr root(new sdf::Element());
   root->SetName("pose");
   std::stringstream vals;
-  vals<<pose.Pos().X()<<" "
-      <<pose.Pos().Y()<<" "
-      <<pose.Pos().Z()<<" "
-      <<pose.Rot().Euler().X()<<" "
-      <<pose.Rot().Euler().Y()<<" "
+  vals << pose.Pos().X() << " "
+      <<pose.Pos().Y() << " "
+      <<pose.Pos().Z() << " "
+      <<pose.Rot().Euler().X() << " "
+      <<pose.Rot().Euler().Y() << " "
       <<pose.Rot().Euler().Z();
   root->AddValue("pose", vals.str(), "0", "description");
   return root;

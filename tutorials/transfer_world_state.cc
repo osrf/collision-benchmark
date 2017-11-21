@@ -1,3 +1,24 @@
+/*
+ * Copyright (C) 2012-2016 Open Source Robotics Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+/*
+ * Author: Jennifer Buehler
+ * Date: January 2017
+ */
+
 #include <collision_benchmark/PhysicsWorld.hh>
 #include <collision_benchmark/GazeboPhysicsWorld.hh>
 #include <collision_benchmark/GazeboStateCompare.hh>
@@ -31,34 +52,39 @@ int main(int argc, char** argv)
   // start up the Gazebo server
   StartGzServer();
 
-  // set the number of iterations after which we will set the state of the first world
-  // loaded to the same state of the second world.
-  int switchAfterIter=1000;
+  // set the number of iterations after which we will set the state of
+  // the first world loaded to the same state of the second world.
+  int switchAfterIter = 1000;
   // run the test for this many iterations
-  int runForIter=10000;
-  // set this to false to skip a comparison test in the main loop below. More about this later.
-  bool doTestComparison=false;
+  int runForIter = 10000;
+  // set this to false to skip a comparison test in the main loop below.
+  // More about this later.
+  bool doTestComparison = false;
   if (argc >= 2)
   {
-    switchAfterIter=atoi(argv[1]);
+    switchAfterIter = atoi(argv[1]);
     if (argc >=3)
-      runForIter=atoi(argv[2]);
+      runForIter = atoi(argv[2]);
   }
 
-  // typedef for the basic interface depending only on the gazebo world state type.
-  // Create this for convenience so you don't have to type the full template type each time.
-  typedef collision_benchmark::PhysicsWorldStateInterface<gazebo::physics::WorldState> GzPhysicsWorld;
+  // typedef for the basic interface depending only on the gazebo world
+  // state type.
+  // Create this for convenience so you don't have to type the full
+  // template type each time.
+  typedef collision_benchmark::PhysicsWorldStateInterface
+            < gazebo::physics::WorldState > GzPhysicsWorld;
 
   // two worlds with the full interface of collision_engine::PhysicsEngineWorld.
   GazeboPhysicsWorld::Ptr gazeboWorld1(new GazeboPhysicsWorld());
   GazeboPhysicsWorld::Ptr gazeboWorld2(new GazeboPhysicsWorld());
 
-  // pointers to access the worlds via the GzPhysicsWorld interface depending only
-  // on the gazebo state.
+  // pointers to access the worlds via the GzPhysicsWorld interface depending
+  // only on the gazebo state.
   GzPhysicsWorld::Ptr gzWorld1(gazeboWorld1);
   GzPhysicsWorld::Ptr gzWorld2(gazeboWorld2);
 
-  // pointers to access the worlds via the basic interface PhysicsWorldBaseInterface.
+  // pointers to access the worlds via the basic interface
+  // PhysicsWorldBaseInterface.
   PhysicsWorldBaseInterface::Ptr world1(gazeboWorld1);
   PhysicsWorldBaseInterface::Ptr world2(gazeboWorld2);
 
@@ -69,12 +95,13 @@ int main(int argc, char** argv)
   //
   // While we will use the basic interface PhysicsWorldBaseInterface for loading
   // worlds, the actual loading of the world will only work for
-  // implementations which support SDF files (which is the rubble world), and for
-  // implementations which look for the files in the GAZEBO_RESOURCE_PATH
+  // implementations which support SDF files (which is the rubble world), and
+  // for implementations which look for the files in the GAZEBO_RESOURCE_PATH
   // (or we would need to specify the full path here).
   // Because we instantiate the world with a GazeboPhysicsWorld, it will work.
 
-  if (world1->LoadFromFile("worlds/empty.world") != collision_benchmark::SUCCESS)
+  if (world1->LoadFromFile("worlds/empty.world")
+      != collision_benchmark::SUCCESS)
   {
     std::cerr << "Could not load empty world" << std::endl;
     return 1;
@@ -82,9 +109,9 @@ int main(int argc, char** argv)
 
   // Disable the physics engine in the first world:
   // We will set the state of this world manually in this example.
-  // The physics engine can be disabled to enforce that the state is always the state we set
-  // manually (otherwise the world would jitter between when we set the state and when its
-  // physics engine reacts to it).
+  // The physics engine can be disabled to enforce that the state is always the
+  // state we set manually (otherwise the world would jitter between when we
+  // set the state and when its physics engine reacts to it).
   world1->SetDynamicsEnabled(false);
 
   // In the second world, load the rubble world. Name it 'rubble', because
@@ -100,28 +127,30 @@ int main(int argc, char** argv)
 
   // print a messsage to notify you that you can now start the client
   // to view the world.
-  std::cout<<"You may now start gzclient to view the first world. "
+  std::cout << "You may now start gzclient to view the first world. "
            <<"Press [Enter] to start the simulation after gzclient "
-           <<"has started."<<std::endl;
+           <<"has started." << std::endl;
   getchar();
 
   // Now run the worlds until you hit Ctrl+C. Starting from *after*
   // <switchAfterIter> iterations, we will set world1 to the state of world2,
   // so world1 should display the rubble world as well after a while.
-  unsigned int iter=0;
+  unsigned int iter = 0;
   while (iter < runForIter)
   {
     if (iter >= switchAfterIter)
     {
       if (iter == switchAfterIter)
-        std::cout<<"Now starting to set the world to the rubble state"<<std::endl;
+        std::cout << "Now starting to set the world to the rubble state"
+          << std::endl;
 
       // get the rubble world state
-      gazebo::physics::WorldState rubbleState=gzWorld2->GetWorldState();
+      gazebo::physics::WorldState rubbleState = gzWorld2->GetWorldState();
       // set the first world to the same state
       gzWorld1->SetWorldState(rubbleState);
 
-      // do a test: the states of both worlds should be the same, or something went wrong!
+      // do a test: the states of both worlds should be the same,
+      // or something went wrong!
       // The class GazeboStateCompare can help us with this.
       if (doTestComparison)
       {
@@ -129,18 +158,22 @@ int main(int argc, char** argv)
         gazebo::physics::WorldState newState1 = gzWorld1->GetWorldState();
         // Now, set the tolerances we want to use for comparing.
         // We will just use the default tolerances.
-        GazeboStateCompare::Tolerances t=GazeboStateCompare::Tolerances::Default;
-        // However, in the tolerances we disable the check for the dynamic properties, because we
-        // disabled the physics engine in world1. The accelerations of the links will not be correct.
-        // Disabling dynamics checks skips the check of accelerations, velocities and wrenches.
-        t.CheckDynamics=false;
+        GazeboStateCompare::Tolerances t =
+          GazeboStateCompare::Tolerances::Default;
+        // However, in the tolerances we disable the check for the dynamic
+        // properties, because we disabled the physics engine in world1.
+        // The accelerations of the links will not be correct.
+        // Disabling dynamics checks skips the check of accelerations,
+        // velocities and wrenches.
+        t.CheckDynamics = false;
         if (!GazeboStateCompare::Equal(newState1, rubbleState, t))
         {
-          std::cerr<<"There is a problem: Target state was not set to the rubble world!" << std::endl;
-          /*std::cerr<<"Rubble state:"<<std::endl;
-          std::cerr<<rubbleState<<std::endl;
-          std::cerr<<"Cloned state:"<<std::endl;
-          std::cerr<<newState1<<std::endl;*/
+          std::cerr << "There is a problem: Target state was not set to "
+                    << "the rubble world!" << std::endl;
+          /*std::cerr << "Rubble state:" << std::endl;
+          std::cerr << rubbleState << std::endl;
+          std::cerr << "Cloned state:" << std::endl;
+          std::cerr << newState1<<std::endl;*/
         }
       }
     }
@@ -153,9 +186,11 @@ int main(int argc, char** argv)
 
   // End of test. Shut down the server.
 
-  std::cout<<"Test is finished, world won't be updated in gzclient any more. "<<std::endl;
-  std::cout<<"Set higher iteration count via command line parameters if you wish to run the test for longer."<<std::endl;
-  std::cout<<"Shutting down server. Bye bye."<<std::endl;
+  std::cout << "Test is finished, world won't be updated "
+            << "in gzclient any more. " << std::endl;
+  std::cout << "Set higher iteration count via command line parameters "
+            << "if you wish to run the test for longer." << std::endl;
+  std::cout << "Shutting down server. Bye bye." << std::endl;
 
   ShutdownGzServer();
 

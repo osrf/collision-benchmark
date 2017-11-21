@@ -1,3 +1,25 @@
+
+/*
+ * Copyright (C) 2012-2016 Open Source Robotics Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+/*
+ * Author: Jennifer Buehler
+ * Date: March 2017
+ */
+
 #include <collision_benchmark/MeshShapeGenerationVtk.hh>
 #include <vtkSphereSource.h>
 #include <vtkCylinderSource.h>
@@ -51,12 +73,12 @@ void collision_benchmark::getTriangleSoup
   tridataClean->Update();
   vtkSmartPointer<vtkPolyData> tridata = tridataClean->GetOutput();
 
-  for(vtkIdType i = 0; i < tridata->GetNumberOfPoints(); i++)
+  for (vtkIdType i = 0; i < tridata->GetNumberOfPoints(); i++)
   {
     // This is identical to:
-    // tridata->GetPoints()->GetPoint(i,p);
+    // tridata->GetPoints()->GetPoint(i, p);
     double p[3];
-    tridata->GetPoint(i,p);
+    tridata->GetPoint(i, p);
     vPoint point;
     point.x = p[0];
     point.y = p[1];
@@ -64,10 +86,11 @@ void collision_benchmark::getTriangleSoup
     points.push_back(point);
   }
 
-  // Write all of the coordinates of the points in the vtkPolyData to the console.
+  // Write all of the coordinates of the points in the
+  // vtkPolyData to the console.
   tridata->GetPolys()->InitTraversal();
   vtkSmartPointer<vtkIdList> idList = vtkSmartPointer<vtkIdList>::New();
-  while(tridata->GetPolys()->GetNextCell(idList))
+  while (tridata->GetPolys()->GetNextCell(idList))
   {
     if (idList->GetNumberOfIds() != 3)
     {
@@ -90,14 +113,14 @@ void printTriangleSoup
   for (std::vector<collision_benchmark::vPoint>::const_iterator
        it = points.begin(); it != points.end(); ++it)
   {
-    const collision_benchmark::vPoint& p = *it;
+    const collision_benchmark::vPoint &p = *it;
     std::cout << "Point " << p.x << ", " << p.y << ", " << p.z << std::endl;
   }
 
   for (std::vector<collision_benchmark::vTriIdx>::const_iterator
        it = faces.begin(); it != faces.end(); ++it)
   {
-    const collision_benchmark::vTriIdx& f = *it;
+    const collision_benchmark::vTriIdx &f = *it;
     std::cout << "Face " << f.v1 << ", " << f.v2 << ", " << f.v3 << std::endl;
   }
 }
@@ -131,7 +154,6 @@ collision_benchmark::makeCylinderVtk(const double radius, const double height,
                                      const unsigned int resolution,
                                      const bool capping)
 {
-
   vtkSmartPointer<vtkCylinderSource> cylinderSource =
       vtkSmartPointer<vtkCylinderSource>::New();
   cylinderSource->SetCenter(0.0, 0.0, 0.0);

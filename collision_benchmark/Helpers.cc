@@ -14,13 +14,17 @@
  * limitations under the License.
  *
  */
+/*
+ * Author: Jennifer Buehler
+ * Date: December 2016
+ */
 
 #include <collision_benchmark/Helpers.hh>
 #include <boost/filesystem.hpp>
 #include <iostream>
 
 ////////////////////////////////////////////////////////////////
-bool collision_benchmark::isDirectory(const std::string& path)
+bool collision_benchmark::isDirectory(const std::string &path)
 {
   boost::filesystem::path dir(path);
   // is an existing directory
@@ -30,12 +34,12 @@ bool collision_benchmark::isDirectory(const std::string& path)
 }
 
 ////////////////////////////////////////////////////////////////
-bool collision_benchmark::makeDirectoryIfNeeded(const std::string& dPath)
+bool collision_benchmark::makeDirectoryIfNeeded(const std::string &dPath)
 {
   if (!isDirectory(dPath))
   {
-    std::cerr<<"Trying to access a directory which has the format "
-             <<"of a file name"<<std::endl;
+    std::cerr << "Trying to access a directory which has the format "
+             <<"of a file name" << std::endl;
     return false;
   }
 
@@ -52,14 +56,14 @@ bool collision_benchmark::makeDirectoryIfNeeded(const std::string& dPath)
       if (!boost::filesystem::exists(buildPath) &&
           !boost::filesystem::create_directory(buildPath))
       {
-        std::cerr<<"Could not create directory " << buildPath;
+        std::cerr << "Could not create directory " << buildPath;
         return false;
       }
     }
   }
-  catch (const boost::filesystem::filesystem_error& ex)
+  catch(const boost::filesystem::filesystem_error &ex)
   {
-    std::cerr<<ex.what()<<std::endl;
+    std::cerr << ex.what() << std::endl;
     return false;
   }
   return true;

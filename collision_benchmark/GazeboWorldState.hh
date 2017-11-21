@@ -14,21 +14,24 @@
  * limitations under the License.
  *
  */
+/*
+ * Author: Jennifer Buehler
+ */
 #ifndef COLLISION_BENCHMARK_GAZEBOWORLDSTATE_
 #define COLLISION_BENCHMARK_GAZEBOWORLDSTATE_
 
 #include <collision_benchmark/PhysicsWorld.hh>
 #include <gazebo/physics/World.hh>
 
+#include <vector>
+
 namespace collision_benchmark
 {
-
-
 /**
  * Sets the \e world to the state \e targetState
  */
-void SetWorldState(gazebo::physics::WorldPtr& world,
-                   const gazebo::physics::WorldState& targetState);
+void SetWorldState(gazebo::physics::WorldPtr &world,
+                   const gazebo::physics::WorldState &targetState);
 
 /**
  * Print the world state. Can be used for testing.
@@ -43,9 +46,7 @@ void PrintWorldStates(const std::vector<gazebo::physics::WorldPtr>& worlds);
 /**
  * Print the world states. Can be used for testing.
  */
-void PrintWorldStates(const std::vector<PhysicsWorldStateInterface
-                                        <gazebo::physics::WorldState>::Ptr>& w);
-
+void PrintWorldStates(const std::vector< PhysicsWorldStateInterface
+                                      < gazebo::physics::WorldState >::Ptr>& w);
 }
-
 #endif   // COLLISION_BENCHMARK_GAZEBOWORLDSTATE_

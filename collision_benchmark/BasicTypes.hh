@@ -32,70 +32,82 @@
 
 namespace collision_benchmark
 {
-
 // simple 3D vector data with no functionality,
 // just for portability of data
 class Vector3
 {
-  public: Vector3(double _x=0, double _y=0, double _z=0):
+  // helper struct to allow external boost serialization
+  public: struct access;
+
+  public: Vector3(double _x = 0, double _y = 0, double _z = 0):
     x(_x), y(_y), z(_z) {}
   public: Vector3(const Vector3& o):
     x(o.x), y(o.y), z(o.z) {}
 
   public: friend std::ostream&
-          operator<<(std::ostream& _o, const Vector3& _v)
+          operator << (std::ostream &_o, const Vector3& _v)
           {
-            _o<<"["<<_v.x<<", "<<_v.y<<", "<<_v.z<<"]";
+            _o << "[" << _v.x << ", " << _v.y << ", " << _v.z << "]";
             return _o;
           }
-  public: double x,y,z;
+  public: double x, y, z;
 };
 
 // simple quaternion data with no functionality,
 // just for portability of data
 class Quaternion: public Vector3
 {
-  public: Quaternion(double _x=0, double _y=0, double _z=0, double _w=0):
-          Vector3(_x,_y,_z), w(_w) {}
-  public: Quaternion(const Quaternion& o):
-          Vector3(o), w(o.w) {}
+  // helper struct to allow external boost serialization
+  public: struct access;
+  public: Quaternion(double _x = 0, double _y = 0,
+                     double _z = 0, double _w = 1)
+          : Vector3(_x, _y, _z), w(_w) {}
+  public: Quaternion(const Quaternion &o)
+          : Vector3(o), w(o.w) {}
 
   public: friend std::ostream&
-          operator<<(std::ostream& _o, const Quaternion& _q)
+          operator << (std::ostream &_o, const Quaternion &_q)
           {
-            _o<<"["<<_q.x<<", "<<_q.y<<", "<<_q.z<<", "<<_q.w<<"]";
+            _o << "[" << _q.x << ", " << _q.y << ", " << _q.z
+               << ", " << _q.w << "]";
             return _o;
           }
   public: double w;
 };
 
-// simple state of an object
-// Not all values are mandatory.
-// If disabled, assumes current values are kept.
+/**
+ * \brief Simple state of an object
+ * Not all values are mandatory.
+ * If disabled, assumes current values are kept.
+ * \author Jennifer Buehler
+ * \date 2017
+ */
 class BasicState
 {
+  // helper struct to allow external boost serialization
+  public: struct access;
   // constructor which enables only fields which are not NULL
-  public: BasicState(const Vector3 *_position=NULL,
-                     const Quaternion *_rotation=NULL,
-                     const Vector3 *_scale=NULL):
-    position(_position ? *_position : Vector3(0,0,0)),
-    rotation(_rotation ? *_rotation : Quaternion(0,0,0,0)),
-    scale(_scale ? *_scale : Vector3(1,1,1)),
-    posEnabled(_position ? true : false),
-    rotEnabled(_rotation ? true : false),
-    scaleEnabled(_scale ? true : false) {}
-  public: BasicState(const BasicState& o):
-    position(o.position),
-    rotation(o.rotation),
-    scale(o.scale),
-    posEnabled(o.posEnabled),
-    rotEnabled(o.rotEnabled),
-    scaleEnabled(o.scaleEnabled) {}
+  public: BasicState(const Vector3 *_position = NULL,
+                     const Quaternion *_rotation = NULL,
+                     const Vector3 *_scale = NULL)
+    : position(_position ? *_position : Vector3(0, 0, 0)),
+      rotation(_rotation ? *_rotation : Quaternion(0, 0, 0, 0)),
+      scale(_scale ? *_scale : Vector3(1, 1, 1)),
+      posEnabled(_position ? true : false),
+      rotEnabled(_rotation ? true : false),
+      scaleEnabled(_scale ? true : false) {}
+  public: BasicState(const BasicState &o)
+    : position(o.position),
+      rotation(o.rotation),
+      scale(o.scale),
+      posEnabled(o.posEnabled),
+      rotEnabled(o.rotEnabled),
+      scaleEnabled(o.scaleEnabled) {}
 
   public: void SetPosition(double x, double y, double z)
           {
-            position=Vector3(x,y,z);
-            posEnabled=true;
+            position = Vector3(x, y, z);
+            posEnabled = true;
           }
   public: void SetPosition(const Vector3 &_pos)
           {
@@ -103,8 +115,8 @@ class BasicState
           }
   public: void SetRotation(double x, double y, double z, double w)
           {
-            rotation=Quaternion(x,y,z,w);
-            rotEnabled=true;
+            rotation = Quaternion(x, y, z, w);
+            rotEnabled = true;
           }
   public: void SetRotation(const Quaternion &_q)
           {
@@ -113,8 +125,8 @@ class BasicState
 
   public: void SetScale(double x, double y, double z)
           {
-            scale=Vector3(x,y,z);
-            scaleEnabled=true;
+            scale = Vector3(x, y, z);
+            scaleEnabled = true;
           }
   public: void SetScale(const Vector3 &_scale)
           {
@@ -122,11 +134,11 @@ class BasicState
           }
 
   public: friend std::ostream&
-          operator<<(std::ostream& _o, const BasicState& _s)
+          operator << (std::ostream &_o, const BasicState &_s)
           {
-            if (_s.posEnabled) _o<<"Position: "<<_s.position<<" ";
-            if (_s.rotEnabled) _o<<"Rotation: "<<_s.rotation<<" ";
-            if (_s.scaleEnabled) _o<<"Scale: "<<_s.scale;
+            if (_s.posEnabled) _o << "Position: " << _s.position << " ";
+            if (_s.rotEnabled) _o << "Rotation: " << _s.rotation << " ";
+            if (_s.scaleEnabled) _o << "Scale: " << _s.scale;
             return _o;
           }
 
@@ -137,7 +149,7 @@ class BasicState
   public: Vector3 position;
   public: Quaternion rotation;
   public: Vector3 scale;
-  public: bool posEnabled, rotEnabled, scaleEnabled;
+  private: bool posEnabled, rotEnabled, scaleEnabled;
 };
 
 

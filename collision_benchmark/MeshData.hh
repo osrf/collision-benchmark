@@ -14,6 +14,9 @@
  * limitations under the License.
  *
  */
+/*
+ * Author: Jennifer Buehler
+ */
 #ifndef COLLISION_BENCHMARK_MESHDATA
 #define COLLISION_BENCHMARK_MESHDATA
 
@@ -24,7 +27,6 @@
 
 namespace collision_benchmark
 {
-
 /**
  * Simple class for mesh data. Includes vertex and face index array.
  *
@@ -35,7 +37,7 @@ namespace collision_benchmark
  * \author Jennifer Buehler
  * \date December 2016
  */
-template<typename VertexPrecision_=float, int FaceSize=3>
+template<typename VertexPrecision_ = float, int FaceSize = 3>
 class MeshData
 {
   static_assert(FaceSize >= 3, "FaceSize must be at least 3");
@@ -49,24 +51,28 @@ class MeshData
 
   public: struct Face
           {
-            Face(const std::size_t& i1,
-                   const std::size_t& i2,
-                   const std::size_t& i3)
-            { val[0]=i1; val[1]=i2; val[2]=i3; }
+            Face(const std::size_t &i1,
+                   const std::size_t &i2,
+                   const std::size_t &i3)
+            {
+              val[0]=i1;
+              val[1]=i2;
+              val[2]=i3;
+            }
 
-            const std::size_t& operator[](int i) const { return val[i]; }
+            const std::size_t &operator[](int i) const { return val[i]; }
             std::size_t val[FaceSize];
           };
 
-  MeshData(){}
+  MeshData() {}
   public: MeshData(const std::vector<Vertex>& vertices,
                    const std::vector<Face>& faces):
             verts(vertices),
             faces(faces) {}
-  public: MeshData(const MeshData& o):
+  public: MeshData(const MeshData &o):
             verts(o.verts),
             faces(o.faces) {}
-  public: ~MeshData(){}
+  public: ~MeshData() {}
 
   public: inline std::vector<Vertex>& GetVertices() { return verts; }
   public: inline const std::vector<Vertex>& GetVertices() const
@@ -78,23 +84,18 @@ class MeshData
   // Perturbs each vertex by a random value between \e min and \e max along
   // the line from the vertex to \e center.
   public: void Perturb(const double min, const double max,
-                       const Vertex& center = Vertex(0,0,0));
+                       const Vertex &center = Vertex(0, 0, 0));
 
   // Perturbs each vertex by a random value between \e min and \e max *away
   // from the line* through \e center with direction \e dir.
   // This will move the vertex along the line orthogonal to the given line.
   // Vertices on the line will not be perturbed.
   public: void Perturb(const double min, const double max,
-                       const Vertex& center, const Vertex& dir);
-
+                       const Vertex &center, const Vertex &dir);
 
   private: std::vector<Vertex> verts;
   private:std::vector<Face> faces;
-
 };
-
 }
-
 #include "MeshData-inl.hh"
-
 #endif   //  COLLISION_BENCHMARK_MESHDATA

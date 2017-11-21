@@ -14,6 +14,10 @@
  * limitations under the License.
  *
  */
+/*
+ * Author: Jennifer Buehler
+ * Date: March 2017
+ */
 #include <collision_benchmark/GazeboMultipleWorldsServer.hh>
 #include <collision_benchmark/GazeboWorldLoader.hh>
 #include <collision_benchmark/GazeboTopicForwardingMirror.hh>
@@ -23,6 +27,12 @@
 #include <gazebo/gazebo.hh>
 
 using collision_benchmark::GazeboMultipleWorldsServer;
+
+/////////////////////////////////////////////////////////////////////
+bool GazeboMultipleWorldsServer::isRunning() const
+{
+  return running;
+}
 
 /////////////////////////////////////////////////////////////////////
 bool GazeboMultipleWorldsServer::Start(int argc, const char** argv)
@@ -44,26 +54,29 @@ bool GazeboMultipleWorldsServer::Start(int argc, const char** argv)
     // so const casting shoudld be safe.
     gazebo::setupServer(argc, (char**)argv);
   }
-  catch (...)
+  catch(...)
   {
-    std::cerr<<"Could not setup server"<<std::endl;
+    std::cerr << "Could not setup server" << std::endl;
     return false;
   }
+  running = true;
   return true;
 }
 
 /////////////////////////////////////////////////////////////////////
 void GazeboMultipleWorldsServer::Stop()
 {
-  std::cout << "Shutting down..." <<std::endl;
+  if (!running) return;
+  // std::cout << "Shutting down..." <<std::endl;
   gazebo::shutdown();
-  std::cout << "Multi-world server ended." << std::endl;
+  // std::cout << "Multi-world server shut down." << std::endl;
+  running = false;
 }
 
 /////////////////////////////////////////////////////////////////////
 GazeboMultipleWorldsServer::WorldManagerPtr
 GazeboMultipleWorldsServer::createWorldManager
-    (const std::string& mirror_name,
+    (const std::string &mirror_name,
      const bool allowMirrorControl)
 {
   MirrorWorld::Ptr mirror;
