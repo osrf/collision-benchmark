@@ -316,7 +316,7 @@ bool GazeboPhysicsWorld::SaveToFile(const std::string &filename,
     return false;
   }
 
-  sdf::ElementPtr sdf = sdf::WrapInRoot(worldSdf->Clone());
+  sdf::ElementPtr sdf = sdf::SDF::WrapInRoot(worldSdf->Clone());
 
   if (!resourceDir.empty())
   {

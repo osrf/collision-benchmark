@@ -176,23 +176,60 @@ class CollidingShapesTestFramework
   // have ensured that this is the case if the model has been loaded in
   // all collision engine worlds simultaneously and the world hasn't been
   // updated since the model was added.
-  //
+  // \param[in] modelName name of the model
+  // \param[in] worldManager the world manager
+  // \param[out] min minimum point of AABB
+  // \param[out] max maxium point of AABB
+  // \param[out] inLocalFrame \e min and \e max given in local coordinate frame
   // \retval 0 success
-  // \retval -1 the model does not exist in the first world.
-  // \retval -2 no worlds in world manager
-  // \retval -3 could not get AABB from model
+  // \retval -1 no worlds in world manager
+  // \retval -2 could not get AABB for model
   private: int GetAABB(const std::string &modelName,
               const GzWorldManager::Ptr &worldManager,
-              Vector3& min, Vector3& max, bool &inLocalFrame);
+              Vector3 &min, Vector3 &max, bool &inLocalFrame);
+
+  // \brief Helper fuction which returns the AABB of the model from the
+  // \e idxWorld'th world in \e worldManager.
+  // \param[in] modelName name of the model
+  // \param[in] idxWorld index of the world
+  // \param[in] worldManager the world manager
+  // \param[out] min minimum point of AABB
+  // \param[out] max maxium point of AABB
+  // \param[out] inLocalFrame \e min and \e max given in local coordinate frame
+  // \retval 0 success
+  // \retval -1 world \e idxWorld does not exist in world manager
+  // \retval -2 could not get AABB for model
+  private: int GetAABB(const std::string &modelName,
+              const unsigned int idxWorld,
+              const GzWorldManager::Ptr &worldManager,
+              Vector3 &min, Vector3 &max, bool &inLocalFrame);
+
+
 
   // \brief Helper function which gets state of the model in the first world of
-  // \the e worldManager. Presumes that the model exists in all worlds and the
+  // the \e worldManager. Presumes that the model exists in all worlds and the
   // state would be the same (or very, very similar) in all worlds.
+  // \param[in] modelName name of the model
+  // \param[in] worldManager the manager for all worlds
+  // \param[out] state the output state
   // \retval 0 success
   // \retval -1 the model does not exist in the first world.
   // \retval -2 no worlds in world manager
-  // \retval -3 could not get state of model
   private: int GetBasicModelState(const std::string &modelName,
+                   const GzWorldManager::Ptr &worldManager,
+                   BasicState &state);
+
+  // \brief Helper function which gets state of the model in \e idxWorld'th
+  // world in the \e worldManager.
+  // \param[in] modelName name of the model
+  // \param[in] idxWold number of the world
+  // \param[in] worldManager the manager for all worlds
+  // \param[out] state the output state
+  // \retval 0 success
+  // \retval -1 the model does not exist in the \e idxWorld'th world.
+  // \retval -2 world \e idxWorld does not exist
+  private: int GetBasicModelState(const std::string &modelName,
+                   const unsigned int idxWorld,
                    const GzWorldManager::Ptr &worldManager,
                    BasicState &state);
 
@@ -210,13 +247,16 @@ class CollidingShapesTestFramework
   //    engines report collision between the objects
   // \param[in] moveBoth if true, both models are moved towards each other.
   //    If false, only model 2 is moved towards model 1.
+  // \param[in] stepSize size of step the models are moved towards each other
+  //    at a time.
   // \return the distance the shape(s) have moved along the axis.
   //  If \e moveBoth was true, this is the distance that *both* shapes
   //  have moved along the axis (the overall distance decreased between
   //  the two objects will be twice this value). If \e moveBoth was false,
   //  this is the distance model 2 has traveled. For model 2, the distance
   //  moved will be the negative of the returned value.
-  private: double AutoCollide(bool allWorlds, bool moveBoth);
+  private: double AutoCollide(const bool allWorlds, const bool moveBoth,
+                              const double stepSize = 1e-03);
 
   // \brief Checks whether models collide
   // \param[in] allWorlds collision criteria is only met if all physics
@@ -286,8 +326,8 @@ class CollidingShapesTestFramework
   // \brief Names of both loaded models
   private: std::string loadedModelNames[2];
 
-  // currently loaded configuration. Ensure this is updated with
-  // UpdateConfiguration() before use.
+  // \brief currently loaded configuration.
+  // Ensure this is updated with UpdateConfiguration() before use.
   private: CollidingShapesConfiguration::Ptr configuration;
 };  // class
 

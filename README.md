@@ -2,17 +2,18 @@
 
 Test framework for collision and physics engines.
 
-This provides an API which acts as a general interface to physics engine's worlds.
+This test framework provides an API which acts as a general interface to physics engine's worlds.
 The API can support a variety of physics engine implementations and is therefore useful
 to compare performance and output of different engines.
 
-One main idea behind this API is to compare the output of different physics
+One main idea behind the collision_benchmark API is to compare the output of different physics
 engine implementations and find cases in which the engines significantly disagree
 on a specific situation (e.g. collision / no collision). Such cases can
 be helpful for debugging.
 
 The main implementation of the API provided to date uses Gazebo and therefore
-all physics engines coming with Gazebo are supported.
+all physics engines coming with Gazebo are supported. However it is also
+possible to add other non-gazebo physics engines to the test framework.
 
 ## Table of Contents
 
@@ -31,7 +32,6 @@ You will reqiure
 
 * Gazebo (currently only newest version compiled from source is tested)
   and its dependencies
-* Boost libraries
 * Assimp
 * libvtk
 
@@ -45,10 +45,8 @@ branch, which is the default branch merged with
 - [PR 2709](https://bitbucket.org/osrf/gazebo/pull-requests/2709): ODE contact points not constantly displayed
 - only minor: [PR 2705](https://bitbucket.org/osrf/gazebo/pull-requests/2705)
 
-Please also see [dart PR 881](https://github.com/dartsim/dart/pull/881)
-and [fcl PR 213](https://github.com/flexible-collision-library/fcl/pull/213)
-which fix some issues with DART/fcl. At the time of writing,
-the changes to fix the issues have not been merged yet.
+Please also see [fcl PR 213](https://github.com/flexible-collision-library/fcl/pull/213)
+which fixes an issue with fcl.
 
 If you compiled Gazebo from source, don't forget to source
 ``<your-gazebo-install-path>/share/setup.sh`` to set up the 
@@ -75,12 +73,12 @@ is in your GAZEBO_PLUGIN_PATH, and
 In order to be able to visualize all models you saved with the test
 framework in gzclient, you will need to have the directory
 ``<temp-path>/.gazebo/models``
-in your ``GAZEBO_RESOURCE_PATH``. This is required for enerated mesh shapes
-which have to be written to file for Gazebo
-(because SDF reads meshes from file).
+in your ``GAZEBO_RESOURCE_PATH``.
 ``<temp-path>`` should be your default system path temp folder
 (more specifically, the one returned by
  ``gazebo::common::SystemPaths::TmpPath()``):
+This is required for generated mesh shapes
+which have to be written to file (because SDF reads meshes from file).
 
 ``export GAZEBO_RESOURCE_PATH=${GAZEBO_RESOURCE_PATH}:/tmp/.gazebo/models``
 
@@ -119,7 +117,7 @@ Now you may start gzclient. You should load start it with the GUI plugin,
 which will allow you to control switching between the worlds:
 
 ```
-gzclient --g libcollision_benchmark_gui.so
+gzclient --gui-client-plugin libcollision_benchmark_gui.so
 ```
 
 Make sure *libcollision_benchmark_gui.so* is in the *GAZEBO_PLUGIN_PATH*.
@@ -161,7 +159,7 @@ This will load up the rubble world with the bullet and ODE engines.
 Now start the gzclient:
 
 ```
-gzclient --g libcollision_benchmark_gui.so
+gzclient --gui-client-plugin libcollision_benchmark_gui.so
 ```
 
 Use the GUI control panels to start the world (press ``<Play>``) and 
@@ -186,7 +184,7 @@ As before, you can start up the gzclient with the world switching GUI
 plugin to switch between the worlds:
 
 ```
-gzclient --g libcollision_benchmark_gui.so
+gzclient --gui-client-plugin libcollision_benchmark_gui.so
 ```
 
 Place a cube or any other new model in the empty world, switch back to the
@@ -238,20 +236,16 @@ To run all tests, type
 Running all the tests will also run the static tests (see below) which
 has a lot of failures. 
 To run only a specific test instead, use the test executable directly by
-running the executable:
+running the executable, e.g. 
 
-``<the-test-executable>``
-
-e.g. 
-
-``<your-build-dir>/world_interface_test``.
+``<your-build-dir>/world_interface_test``
 
 To run only a specific test within a test set,
 you may run the test with gtest parameter ``--gtest_filter``:
 
 ``<test executable> --gtest_filter=*<pattern in test name>*``
 
-for example, to run WorldInterfaceTest.TransferWorldState:
+for example, to run ``WorldInterfaceTest.TransferWorldState``:
 
 ``<your-build-dir>/world_interface_test --gtest_filter=*TransferWorldState*``
 
@@ -271,11 +265,10 @@ to the physics. However contact points between objects are still computed.
 The static tests are therefore suitable for testing collision and
 contact properties.
 
-The static tests make use of the **gtest framework** in order to support
-fully automated testing mode.
+The static tests make use of the **gtest framework**.
 
 The main method of testing implemented so far is the **"AABB intersection test"**
-in which two objects axis-aligned bounding boxes are intersected in many
+in which the axis-aligned bounding boxes of two objects are intersected in many
 possible ways that they can intersect.
 This generally leads to many states in which the objects are
 colliding, and also states in which they are not (but in which they are
@@ -329,7 +322,7 @@ In interactive mode, when the test prompts you to hit ``[Enter]`` to continue,
 you have time to start gzclient with the world switching GUI interface: 
 
 ```
-gzclient --g libcollision_benchmark_gui.so
+gzclient --gui-client-plugin libcollision_benchmark_gui.so
 ```
 
 You should see the start state of the test. Before you start the test,
@@ -344,8 +337,8 @@ to see the contacts better.
 
 When you are ready, to start the test,
 hit ``[Enter]`` in the terminal running the test and watch
-the test unfold.     
-If the test it stops due to a failure, it will prompt you to hit
+the test.     
+If the test stops due to a failure, it will prompt you to hit
 ``[Enter]`` again to continue.     
 Before you continue, you may want to switch between
 the worlds in gzclient and inspect the results and find the reason of failure.
@@ -374,11 +367,11 @@ in the exact same way, over and over again around the point where the
 contact jump happens.
 For this purpose, the "two colliding shapes" test was developed.
 
-This test only works with the Gazebo engines and uses the Gazebo client for
-visualization.
+This test only works with the physics engines integrated into Gazebo
+and uses the Gazebo client for visualization.
 
 Note that the dynamics engine is disabled, just as in the static tests, because
-we want to obsever the contact points and not have the models react to
+we want to obseve the contact points and not have the models react to
 the collision.
 
 **How the test works**
@@ -418,6 +411,9 @@ However, only exactly two shapes are supported, regardless what type.
 
 **Starting the test**
 
+First, make sure that ``libcollision_benchmark_test_gui.so`` is in your
+``GAZEBO_PLUGIN_PATH`` environment variable.
+
 To start the test (which is part of the cmake ``tests`` target):
 
 ```
@@ -427,8 +423,12 @@ colliding_shapes_test <list of physics engines> -m <Model-1> -m <Model-2>``
 the ``-m`` parameter specifies the model, either using *model names* or
 *a file path* to the model SDF file.
 Note that file paths have the limitation that when you save the configuration,
-and try to load the confiuration on another system, it is not supported yet,
-because the absolute path will be saved.
+the absolute path will be saved, so you cannot use the configuration
+file on another system.
+
+*Example*
+
+``colliding_shapes_test ode bullet -m coke_can -m beer``
 
 Alternatively, to load a shape (unit sphere, box or cylinder),
 use the ``-s`` parameter instead:
@@ -443,6 +443,10 @@ You can specify the models in any order, the only limitation is that it has
 to be exactly two models, regradless whether they are unit shapes or
 models.
 
+*Example*
+
+``colliding_shapes_test ode bullet -m dumpster -s sphere``
+
 The test will bring up Gazebo with the models you specified placed along
 the collision axis.
 It will use the "multiple worlds server" described earlier, each world
@@ -452,12 +456,6 @@ the collision situation.
 
 ![Two shapes test](images/Two-shapes-dumpster-diff.png)
 *Image: Difference between bullet and ODE*
-
-*Example*
-
-``colliding_shapes_test ode bullet -m coke_can -m beer``
-
-``colliding_shapes_test ode bullet -m dumpster -s sphere``
 
 You may want to set the wireframe view an enable contacts display in
 Gazebo.
@@ -481,9 +479,9 @@ Things to try out:
 - Saving a configuration in which the model poses have been changed with the
   Gazebo transform tools.
 
-**More details**
+**More implementation details**
 
-More details about how the implementation unfolds the test configuration:
+How the test is loaded up:
 
 1. The two models are loaded and placed *at the origin* (which means
    poses which they may have in the SDF files are ignored).
@@ -497,7 +495,7 @@ You can find the main part of the implementation in
 [test/CollidingShapesTestFramework.hh](test/CollidingShapesTestFramework.hh).
 
 
-## Short introduction to the API
+## Short introduction to the collision_benchmark API
 
 The API aims at subsuming several physics engine implementations under one common
 interface. This way several physics engines operating under the same interface can be used

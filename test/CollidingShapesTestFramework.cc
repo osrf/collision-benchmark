@@ -256,7 +256,7 @@ bool CollidingShapesTestFramework::RunImpl
   /*
   // Note: In case models at some point are *not* first placed at the origin
   // (so when global frame != local frame):
-  // If the ABBs are not given in global coordinate frame, we need to transform
+  // If the AABBs are not given in global coordinate frame, we need to transform
   // the AABBs first!
   // Example for first AABB:
   if (local1)
@@ -458,7 +458,7 @@ bool CollidingShapesTestFramework::RunImpl
         int unitsMoved = dist / sliderStepSize;
         /* std::cout << "Units moved during auto collide: "
                   << unitsMoved << ". Current value is "
-                  << shapesOnAxisPrev << std::endl; */
+                  << shapesOnAxisPrev << std::endl;*/
         std::lock_guard<std::mutex> lock(shapesOnAxisPosMtx);
         shapesOnAxisPrev -= unitsMoved;
         // enforce the slider to go onto the same position
@@ -596,12 +596,13 @@ void CollidingShapesTestFramework::SaveConfiguration(const std::string &file,
 }
 
 //////////////////////////////////////////////////////////////////////////////
-double CollidingShapesTestFramework::AutoCollide(bool allWorlds,
-                                               bool moveBoth)
+double CollidingShapesTestFramework::AutoCollide(const bool allWorlds,
+                                                 const bool moveBoth,
+                                                 const double stepSize)
 {
   GzWorldManager::Ptr worldManager = gzMultiWorld->GetWorldManager();
   assert(worldManager);
-  // to allow for a certain animation effect, move the shapes at a maximum
+  // to allow for an animation effect, move the shapes at a maximum
   // distance per second.
   // There cannot be a minimum velocity because we have to make tiny
   // movements in order to capture the first point of collision as exact
@@ -614,8 +615,7 @@ double CollidingShapesTestFramework::AutoCollide(bool allWorlds,
   while (!ModelsCollide(allWorlds) && gzMultiWorld->IsClientRunning())
   {
     gazebo::common::Time elapsed = timer.GetElapsed();
-    // move the shapes towards each other in steps of this size
-    const double stepSize = 1e-03;
+    // move the shapes towards each other in steps
     if (moved > 0)
     {
       // slow down the movement if it's too fast.
@@ -670,7 +670,6 @@ bool CollidingShapesTestFramework::ModelsCollide(bool allWorlds)
   return modelsColliding > 0;
 }
 
-
 //////////////////////////////////////////////////////////////////////////////
 void CollidingShapesTestFramework::MoveModelsAlongAxis(const float moveDist,
                                                        const bool moveBoth)
@@ -718,25 +717,33 @@ void CollidingShapesTestFramework::MoveModelsAlongAxis(const float moveDist,
 //////////////////////////////////////////////////////////////////////////////
 int CollidingShapesTestFramework::GetAABB(const std::string &modelName,
             const GazeboMultipleWorlds::GzWorldManager::Ptr &worldManager,
-            Vector3& min, Vector3& max, bool &inLocalFrame)
+            Vector3 &min, Vector3 &max, bool &inLocalFrame)
+{
+  return GetAABB(modelName, 0, worldManager, min, max, inLocalFrame);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+int CollidingShapesTestFramework::GetAABB(const std::string &modelName,
+            const unsigned int idxWorld,
+            const GazeboMultipleWorlds::GzWorldManager::Ptr &worldManager,
+            Vector3 &min, Vector3 &max, bool &inLocalFrame)
 {
   std::vector< GazeboMultipleWorlds::GzWorldManager
               ::PhysicsWorldModelInterfacePtr >
     worlds = worldManager->GetModelPhysicsWorlds();
 
-  if (worlds.empty()) return -2;
+  if (worlds.empty() || (worlds.size() <= idxWorld)) return -1;
 
   GazeboMultipleWorlds::GzWorldManager::PhysicsWorldModelInterfacePtr w =
-    worlds.front();
+    worlds[idxWorld];
   if (!w->GetAABB(modelName, min, max, inLocalFrame))
   {
       std::cerr << "Model " << modelName << ": AABB could not be retrieved"
                 << std::endl;
-      return -3;
+      return -2;
   }
   return 0;
 }
-
 
 //////////////////////////////////////////////////////////////////////////////
 int CollidingShapesTestFramework::GetBasicModelState
@@ -744,23 +751,33 @@ int CollidingShapesTestFramework::GetBasicModelState
      const GazeboMultipleWorlds::GzWorldManager::Ptr &worldManager,
      BasicState &state)
 {
+  return GetBasicModelState(modelName, 0, worldManager, state);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+int CollidingShapesTestFramework::GetBasicModelState
+    (const std::string &modelName,
+     const unsigned int idxWorld,
+     const GazeboMultipleWorlds::GzWorldManager::Ptr &worldManager,
+     BasicState &state)
+{
   std::vector< GazeboMultipleWorlds::GzWorldManager
               ::PhysicsWorldModelInterfacePtr >
     worlds = worldManager->GetModelPhysicsWorlds();
 
-  if (worlds.empty()) return -2;
+  if (worlds.empty() || (worlds.size() <= idxWorld)) return -2;
 
   GazeboMultipleWorlds::GzWorldManager::PhysicsWorldModelInterfacePtr w =
-    worlds.front();
+    worlds[idxWorld];
+
   if (!w->GetBasicModelState(modelName, state))
   {
       std::cerr << "Model " << modelName << ": state could not be retrieved"
                 << std::endl;
-      return -3;
+      return -1;
   }
   return 0;
 }
-
 
 /////////////////////////////////////////////////////////////////////////////
 void CollidingShapesTestFramework::CollisionBarHandler
