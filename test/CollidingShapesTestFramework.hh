@@ -19,6 +19,7 @@
 
 #include <test/CollidingShapesConfiguration.hh>
 #include <collision_benchmark/GazeboMultipleWorlds.hh>
+#include <collision_benchmark/ModelCollider.hh>
 
 #include <thread>
 #include <mutex>

@@ -61,12 +61,10 @@ ignition::math::Matrix4<Float>
 template<typename Float1, typename Float2>
 bool EqualFloats(const Float1& f1, const Float2& f2, const double &t);
 
-bool EqualVectors(const ignition::math::Vector3d &v1,
-                  const ignition::math::Vector3d &v2, const double &t);
-
 template<typename Float>
 bool EqualVectors(const ignition::math::Vector3<Float>& v1,
-                  const ignition::math::Vector3<Float>& v2, const double &t);
+                  const ignition::math::Vector3<Float>& v2,
+                  const double &t);
 
 
 // \brief Transforms the axis-aligned bounding box by \e transform.

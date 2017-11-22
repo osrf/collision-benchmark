@@ -152,6 +152,8 @@ class GazeboPhysicsWorld
   public: virtual std::vector<ModelID> GetAllModelIDs() const;
   public: virtual int GetIntegerModelID(const ModelID &id) const;
 
+  public: virtual bool HasModel(const ModelID &id) const;
+
   public: virtual bool RemoveModel(const ModelID &id);
 
   public: virtual bool GetAABB(const ModelID &id,

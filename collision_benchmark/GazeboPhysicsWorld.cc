@@ -512,6 +512,12 @@ GazeboPhysicsWorld::AddModelFromShape(const std::string &modelname,
 }
 
 //////////////////////////////////////////////////////////////////////////////
+bool GazeboPhysicsWorld::HasModel(const ModelID &id) const
+{
+  return world->ModelByName(id) != nullptr;
+}
+
+//////////////////////////////////////////////////////////////////////////////
 std::vector<GazeboPhysicsWorld::ModelID>
 GazeboPhysicsWorld::GetAllModelIDs() const
 {

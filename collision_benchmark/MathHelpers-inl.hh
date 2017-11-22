@@ -108,16 +108,6 @@ collision_benchmark::EqualFloats(const Float1& f1, const Float2& f2,
 }
 
 //////////////////////////////////////////////////////////////////////////////
-bool
-collision_benchmark::EqualVectors(const ignition::math::Vector3d &v1,
-                  const ignition::math::Vector3d &v2, const double &t)
-{
-  return EqualFloats(v1.X(), v2.X(), t)
-      && EqualFloats(v1.Y(), v2.Y(), t)
-      && EqualFloats(v1.Z(), v2.Z(), t);
-}
-
-//////////////////////////////////////////////////////////////////////////////
 template<typename Float>
 bool
 collision_benchmark::EqualVectors(const ignition::math::Vector3<Float>& v1,

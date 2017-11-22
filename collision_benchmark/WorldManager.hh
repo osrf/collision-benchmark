@@ -467,6 +467,22 @@ class WorldManager
     return cnt;
   }
 
+  /// Calls PhysicsWorldModelInterface::HasModel on
+  /// all worlds. Assumes that all worlds use the same model name.
+  public: bool ModelInAllWorlds(const ModelID &id,
+                               const BasicState &state)
+  {
+    std::vector<bool> ret = CallOnAllWorldsWithModel
+      <bool, const ModelID&, const BasicState&>
+        (&Self::ModelInAllWorldsCB, id, state);
+    int cnt = 0;
+    for (std::vector<bool>::iterator it = ret.begin(); it != ret.end(); ++it)
+    {
+      if (*it) ++cnt;
+    }
+    std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
+    return cnt == this->worlds.size();
+  }
 
   // Convenience method which casts the world \e w to a
   // PhysicsWorldStateInterface with the given state
@@ -791,6 +807,14 @@ class WorldManager
                const BasicState &state)
   {
     return w.SetBasicModelState(id, state);
+  }
+
+  // Helper callback to call ModelInAllWorlds on the world
+  private: static bool ModelInAllWorldsCB
+              (PhysicsWorldModelInterfaceT &w,
+               const ModelID&id)
+  {
+    return w.HasModel(id);
   }
 
   // Helper function which calls a callback function on each of the worlds
