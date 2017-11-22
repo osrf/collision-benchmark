@@ -301,13 +301,13 @@ bool GazeboMultipleWorlds::Load(const std::vector<std::string>& selectedEngines,
                                   verbose ? 1 : 0];
     // silly const cast to avoid compiler warning
     argvClient[0] = const_cast<char*>(static_cast<const char*>("gzclient"));
-    argvClient[1] = const_cast<char*>(static_cast<const char*>("--g"));
+    argvClient[1] = const_cast<char*>(static_cast<const char*>("--gui-client-plugin"));
     argvClient[2] = const_cast<char*>
                     (static_cast<const char*>("libcollision_benchmark_gui.so"));
     int i = 3;
     for (int g = 0; g < additionalGuis.size(); ++g)
     {
-      argvClient[i] = const_cast<char*>(static_cast<const char*>("--g"));
+      argvClient[i] = const_cast<char*>(static_cast<const char*>("--gui-client-plugin"));
       ++i;
       argvClient[i] = const_cast<char*>
                       (static_cast<const char*>(additionalGuis[g].c_str()));

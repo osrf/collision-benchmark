@@ -18,8 +18,7 @@
 #define COLLISION_BENCHMARK_TEST_TESTUTILS_H
 
 #include <collision_benchmark/WorldManager.hh>
-// support only for gazebo types at the moment.
-// Make the helpers header-only to support all types.
+// support only provided for gazebo types at the moment.
 #include <collision_benchmark/GazeboPhysicsWorld.hh>
 
 #include <string>
@@ -71,10 +70,10 @@ namespace collision_benchmark
                       std::vector<std::string>& notColliding,
                       double &maxDepth);
 
-  // checks that AABB of model 1 is the same in all worlds in
+  // checks that AABB of model \e modelName is the same in all worlds in
   // \e worldManager and returns the AABBs of the model if it is
   // the same in all worlds.
-  // \param bbTol tolerance for comparison of bounding box sizes. The min/max
+  // \param[in] bbTol tolerance for comparison of bounding box sizes. The min/max
   //    coordinates (per x,y,z) are allowed to vary by this much in the worlds.
   // \return true if models have same AABB in both worlds, false otherwise
   bool GetConsistentAABB(const std::string &modelName,
@@ -82,7 +81,8 @@ namespace collision_benchmark
                          const double bbTol,
                          GzAABB &aabb);
 
-  // Helper: returns contact info between model 1 and 2 in this world.
+  // Helper function
+  // \return contact info between model 1 and 2 in the world \e worldName
   std::vector<GzContactInfoPtr> GetContactInfo(const std::string &modelName1,
                                       const std::string &modelName2,
                                       const std::string &worldName,
