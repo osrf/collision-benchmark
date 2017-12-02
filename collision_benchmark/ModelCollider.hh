@@ -66,7 +66,7 @@ class ModelCollider
   // \brief sets the collision axis
   // \param[in] collisionAxis the collision axis to use
   // \return axis accepted or not
-  public: bool SetCollisionAxis(const Vector3 &collisionAxis);
+  public: bool SetCollisionAxis(const Vector3 &axis);
 
   // \brief places the models at both ends of the collision axis.
   // This will move the first model to the origin and the second along the
@@ -191,7 +191,7 @@ class ModelCollider
   // \retval 0 success
   // \retval -1 the model does not exist in the \e idxWorld'th world.
   // \retval -2 world \e idxWorld does not exist
-  private: static int GetBasicModelState(const std::string &modelName,
+  public: static int GetBasicModelState(const std::string &modelName,
                    const unsigned int idxWorld,
                    const WorldManagerPtr &worldManager,
                    BasicState &state);
@@ -209,7 +209,7 @@ class ModelCollider
 
   // \brief Axis to use for collision.
   // Can be unit x, y or z axis
-  private: const Vector3 collisionAxis;
+  private: Vector3 collisionAxis;
 
 };  // class
 

@@ -24,7 +24,7 @@ using collision_benchmark::BasicState;
 /////////////////////////////////////////////////////////////////////////////
 template<class WM>
 ModelCollider<WM>::ModelCollider()
-  : collisionAxis(0, 1, 0)
+  :collisionAxis(0, 1, 0)
 {
 }
 
@@ -35,17 +35,17 @@ bool ModelCollider<WM>::Init(const WorldManagerPtr &wManager,
                          const std::string &modelName1,
                          const std::string &modelName2)
 {
-  if (!this->worldManager->ModelInAllWorlds(modelName1) ||
-      !this->worldManager->ModelInAllWorlds(modelName2))
-  {
-    std::cerr << "ModelCollider only works if models are loaded in all worlds."
-              << std::endl;
-    return false;
-  }
-
   if (!wManager)
   {
     std::cerr << "Need to set world manager" << std::endl;
+    return false;
+  }
+
+  if (!wManager->ModelInAllWorlds(modelName1) ||
+      !wManager->ModelInAllWorlds(modelName2))
+  {
+    std::cerr << "ModelCollider only works if models are loaded in all worlds."
+              << std::endl;
     return false;
   }
 
@@ -55,9 +55,9 @@ bool ModelCollider<WM>::Init(const WorldManagerPtr &wManager,
     return false;
   }
 
-  modelNames[0] = modelName1;
-  modelNames[1] = modelName2;
-  worldManager = wManager;
+  this->modelNames[0] = modelName1;
+  this->modelNames[1] = modelName2;
+  this->worldManager = wManager;
   return true;
 }
 
@@ -77,7 +77,7 @@ bool ModelCollider<WM>::SetCollisionAxis(const Vector3 &collAxis)
               << "or z axis. Is " << collAxis << std::endl;
     return false;
   }
-  collisionAxis = collAxis;
+  this->collisionAxis = collAxis;
   return true;
 }
 
@@ -88,7 +88,7 @@ bool ModelCollider<WM>::PlaceModels(const float modelsGap,
                          BasicState &modelState1,
                          BasicState &modelState2)
 {
-  assert(worldManager);
+  assert(this->worldManager);
 
   // make sure the models are at the origin first (needed to
   // ensure the local coodrdinate system equals the global, to get the
@@ -96,10 +96,10 @@ bool ModelCollider<WM>::PlaceModels(const float modelsGap,
   modelState1.SetPosition(0, 0, 0);
   modelState1.SetRotation(0, 0, 0, 1);
   modelState2 = BasicState(modelState1);
-  if ((worldManager->SetBasicModelState(modelNames[0], modelState1)
-       != worldManager->GetNumWorlds()) ||
-      (worldManager->SetBasicModelState(modelNames[1], modelState2)
-       != worldManager->GetNumWorlds()))
+  if ((this->worldManager->SetBasicModelState(modelNames[0], modelState1)
+       != this->worldManager->GetNumWorlds()) ||
+      (this->worldManager->SetBasicModelState(modelNames[1], modelState2)
+       != this->worldManager->GetNumWorlds()))
   {
     std::cerr << "Could not set all model poses to origin" << std::endl;
     return false;
@@ -120,8 +120,8 @@ bool ModelCollider<WM>::PlaceModels(const float modelsGap,
   // First, get the AABB's of the two models.
   Vector3 min1, min2, max1, max2;
   bool local1, local2;
-  if ((GetAABB(modelNames[0], worldManager, min1, max1, local1) != 0) ||
-      (GetAABB(modelNames[1], worldManager, min2, max2, local2) != 0))
+  if ((GetAABB(modelNames[0], this->worldManager, min1, max1, local1) != 0) ||
+      (GetAABB(modelNames[1], this->worldManager, min2, max2, local2) != 0))
   {
     std::cerr << "Could not get AABBs of models" << std::endl;
     return false;
@@ -183,8 +183,8 @@ bool ModelCollider<WM>::PlaceModels(const float modelsGap,
   // distance to move model 2 by
   double moveM2Distance = desiredDistance - aabbDist;
   // std::cout << "Move model 2 along axis "
-  //         << collisionAxis*moveM2Distance << std::endl;
-  Vector3 moveM2AlongAxis = collisionAxis * moveM2Distance;
+  //         <<this->collisionAxis*moveM2Distance << std::endl;
+  Vector3 moveM2AlongAxis = this->collisionAxis * moveM2Distance;
   // std::cout << "State of model 2: " << modelState2 << std::endl;
   collision_benchmark::Vector3 newModelPos2 = modelState2.position;
   newModelPos2.x += moveM2AlongAxis.X();
@@ -192,7 +192,7 @@ bool ModelCollider<WM>::PlaceModels(const float modelsGap,
   newModelPos2.z += moveM2AlongAxis.Z();
   modelState2.SetPosition(newModelPos2);
   // move model 2
-  worldManager->SetBasicModelState(modelNames[1], modelState2);
+  this->worldManager->SetBasicModelState(modelNames[1], modelState2);
   return true;
 }
 
@@ -200,14 +200,14 @@ bool ModelCollider<WM>::PlaceModels(const float modelsGap,
 template<class WM>
 bool ModelCollider<WM>::ModelsCollide(bool allWorlds) const
 {
-  assert(worldManager);
+  assert(this->worldManager);
 
   typedef typename WorldManagerT::PhysicsWorldContactInterfacePtr
           PhysicsWorldContactInterfacePtr;
   std::vector<PhysicsWorldContactInterfacePtr>
-    contactWorlds = worldManager->GetContactPhysicsWorlds();
+    contactWorlds = this->worldManager->GetContactPhysicsWorlds();
 
-  assert(contactWorlds.size() == worldManager->GetNumWorlds());
+  assert(contactWorlds.size() == this->worldManager->GetNumWorlds());
 
   int modelsColliding = 0;
   for (typename std::vector<PhysicsWorldContactInterfacePtr>::iterator
@@ -238,7 +238,7 @@ double ModelCollider<WM>::AutoCollide(const bool allWorlds,
                                   const double stepSize,
                                   const float maxMovePerSec)
 {
-  assert(worldManager);
+  assert(this->worldManager);
   double moved = 0;
   gazebo::common::Timer timer;
   timer.Start();
@@ -271,22 +271,22 @@ template<class WM>
 bool ModelCollider<WM>::MoveModelsAlongAxis(const float moveDist,
                                         const bool moveBoth)
 {
-  assert(worldManager);
+  assert(this->worldManager);
   // get state of both models
   BasicState modelState1, modelState2;
   // get the states of the models as loaded in their original pose
   if (moveBoth &&
-      (GetBasicModelState(modelNames[0], worldManager, modelState1) != 0))
+      (GetBasicModelState(modelNames[0], this->worldManager, modelState1) != 0))
   {
     std::cerr << "Could not get BasicModelState." << std::endl;
     return false;
   }
-  if (GetBasicModelState(modelNames[1], worldManager, modelState2) != 0)
+  if (GetBasicModelState(modelNames[1], this->worldManager, modelState2) != 0)
   {
     std::cerr << "Could not get BasicModelState." << std::endl;
     return false;
   }
-  const ignition::math::Vector3d mv = collisionAxis * moveDist;
+  const ignition::math::Vector3d mv = this->collisionAxis * moveDist;
 
   if (moveBoth)
   {
@@ -300,15 +300,15 @@ bool ModelCollider<WM>::MoveModelsAlongAxis(const float moveDist,
                           modelState2.position.z - mv.Z());
 
   if ((moveBoth &&
-       (worldManager->SetBasicModelState(modelNames[0], modelState1)
-        != worldManager->GetNumWorlds())) ||
-      (worldManager->SetBasicModelState(modelNames[1], modelState2)
-       != worldManager->GetNumWorlds()))
+       (this->worldManager->SetBasicModelState(modelNames[0], modelState1)
+        != this->worldManager->GetNumWorlds())) ||
+      (this->worldManager->SetBasicModelState(modelNames[1], modelState2)
+       != this->worldManager->GetNumWorlds()))
   {
     std::cerr << "Could not set all model poses to origin" << std::endl;
     return false;
   }
-  worldManager->Update(1);
+  this->worldManager->Update(1);
   return true;
 }
 

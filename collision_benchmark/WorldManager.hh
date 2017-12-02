@@ -469,12 +469,10 @@ class WorldManager
 
   /// Calls PhysicsWorldModelInterface::HasModel on
   /// all worlds. Assumes that all worlds use the same model name.
-  public: bool ModelInAllWorlds(const ModelID &id,
-                               const BasicState &state)
+  public: bool ModelInAllWorlds(const ModelID &id)
   {
-    std::vector<bool> ret = CallOnAllWorldsWithModel
-      <bool, const ModelID&, const BasicState&>
-        (&Self::ModelInAllWorldsCB, id, state);
+    std::vector<bool> ret = CallOnAllWorldsWithModel<bool, const ModelID&>
+        (&Self::ModelInAllWorldsCB, id);
     int cnt = 0;
     for (std::vector<bool>::iterator it = ret.begin(); it != ret.end(); ++it)
     {
