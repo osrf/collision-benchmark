@@ -60,6 +60,7 @@ add_library(collision_benchmark SHARED
 # expand the dependencies_* variables for the include directories and libraries
 set(dependencies_INCLUDE_DIRS
   ${dependencies_INCLUDE_DIRS}
+  ${CMAKE_CURRENT_BINARY_DIR}
   ${PROJECT_SOURCE_DIR})
 
 include_directories(${dependencies_INCLUDE_DIRS})
@@ -87,6 +88,32 @@ target_link_libraries(collision_benchmark_gui
 
 target_link_libraries(multiple_worlds_server collision_benchmark)
 
+
+#############################################
+# messages
+#############################################
+find_package(Protobuf REQUIRED)
+
+set(PROTOBUF_IMPORT_DIRS)
+foreach(ITR ${GAZEBO_INCLUDE_DIRS})
+  if(ITR MATCHES ".*gazebo-[0-9.]+$")
+    set(PROTOBUF_IMPORT_DIRS "${ITR}/gazebo/msgs/proto")
+  endif()
+endforeach()
+
+set (msgs test/msgs/colliding_shapes.proto)
+PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${msgs})
+add_library(collision_benchmark_msgs SHARED ${PROTO_SRCS})
+target_link_libraries(collision_benchmark_msgs ${PROTOBUF_LIBRARY})
+
+# get a list of all generated headers
+# set(PROTO_TEST_MSGS_HDRS)
+# foreach(FIL ${msgs})
+#   get_filename_component(ABS_FIL ${FIL} ABSOLUTE)
+#   get_filename_component(FIL_WE ${FIL} NAME_WE)
+#   list(APPEND PROTO_TEST_MSGS_HDRS "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.h")
+# endforeach()
+
 #############################################
 # testing
 #############################################
@@ -100,6 +127,7 @@ add_library(collision_benchmark_test_gui SHARED
     test/CollidingShapesGui.cc
     test/CollidingShapesParams.cc
 )
+target_link_libraries(collision_benchmark_test_gui collision_benchmark_msgs)
 add_dependencies(tests collision_benchmark_test_gui)
 
 # compile testing libraries and executables
@@ -158,7 +186,8 @@ add_dependencies(tests collision_benchmark_test)
 add_executable(colliding_shapes_test
   test/colliding_shapes_test.cc)
 target_link_libraries(colliding_shapes_test collision_benchmark
-                                            collision_benchmark_test)
+                                            collision_benchmark_test
+                                            collision_benchmark_msgs)
 add_dependencies(tests colliding_shapes_test)
 
 add_executable(multiple_worlds_test EXCLUDE_FROM_ALL test/MultipleWorlds_TEST.cc)

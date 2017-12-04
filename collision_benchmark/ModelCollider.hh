@@ -110,8 +110,8 @@ class ModelCollider
   // \retval 1 \e stopWhenPassed was true and object centers have passed
   //      each other.
   public: int MoveModelsAlongAxis(const float moveDist,
-                                   const bool moveBoth = false,
-                                   const bool stopWhenPassed = false);
+                                  const bool moveBoth = false,
+                                  const bool stopWhenPassed = false);
 
   // \brief Moves models along collision axis until they collide.
   // This requires that they do collide when slid towards each other along
@@ -215,6 +215,20 @@ class ModelCollider
   //    engines report collision between the objects
   private: bool ModelsCollide(bool allWorlds) const;
 
+  // \brief gets an axis perpendicular to the \e axis.
+  // Will always return the same vector for the same \e axis.
+  // If \e axis is unit length, the returned vector is unit length too.
+  private: Vector3 GetAxisPerpendicular(const Vector3 &axis) const;
+
+  // \brief move a model perpendicular to the collision axis by this distance.
+  // The perpendicular axis is always the same for the collision axis,
+  // it is GetAxisPerpendicular().
+  // \param[in] distance the distance
+  // \param[in] model1 if true, model 1 is moved. Otherwise, model 2 is moved.
+  // \return true on success, false if model state could not be set
+  public: bool MoveModelPerpendicular(const double distance,
+                                      const bool model1 = true) const;
+
   // \brief the world manager
   private: WorldManagerPtr worldManager;
 
@@ -222,7 +236,6 @@ class ModelCollider
   private: std::string modelNames[2];
 
   // \brief Axis to use for collision.
-  // Can be unit x, y or z axis
   private: Vector3 collisionAxis;
 
 };  // class

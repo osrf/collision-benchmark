@@ -20,6 +20,9 @@
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/gui/GuiPlugin.hh>
 
+#include <QDial>
+#include <QSlider>
+
 #ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
 # include <gazebo/transport/transport.hh>
 # include <gazebo/gui/gui.hh>
@@ -63,11 +66,22 @@ class GAZEBO_VISIBLE CollidingShapesGui : public gazebo::GUIPlugin
   /// \brief Callback trigged when the slider is changed
   protected slots: void OnValueChanged(int value);
 
+  /// \brief Callback trigged when the slider is changed
+  protected slots: void OnPerpValueChanged(int value);
+
   /// \brief Callback trigged when the button "<" is pressed.
   protected slots: void OnButtonDec();
 
   /// \brief Callback trigged when the button ">" is pressed.
   protected slots: void OnButtonInc();
+
+  /// \brief Callback trigged when the button "<" is pressed
+  /// for perpendicular move.
+  protected slots: void OnButtonPerpDec();
+
+  /// \brief Callback trigged when the button ">" is pressed
+  /// for perpendicular move.
+  protected slots: void OnButtonPerpInc();
 
   /// \brief Callback trigged when the button "AutoCollide" is pressed.
   protected slots: void OnButtonAutoCollide();
@@ -91,8 +105,11 @@ class GAZEBO_VISIBLE CollidingShapesGui : public gazebo::GUIPlugin
   /// \brief Subscriber for feedback
   private: gazebo::transport::SubscriberPtr sub;
 
-  /// \brief the slider object
+  /// \brief the slider object for colliding the models
   private: QSlider * slider;
+
+  /// \brief the slider object for moving objects perpendicular
+  private: QDial * dial;
 };
 
 }  // namespace test

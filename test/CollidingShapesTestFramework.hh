@@ -35,6 +35,16 @@ namespace collision_benchmark
 {
 namespace test
 {
+
+  namespace msgs
+  {
+    // forward declaration of message
+    class CollidingShapesMsg;
+  }
+
+  typedef const boost::shared_ptr<const msgs::CollidingShapesMsg>
+          ConstCollidingShapesMsgPtr;
+
 /**
  * \brief Test framework for colliding two shapes along an axis.
  *
@@ -170,7 +180,7 @@ class CollidingShapesTestFramework
                            const std::string &mirrorName);
 
   // \brief Receives control messages from the GUI
-  private: void receiveControlMsg(ConstAnyPtr &_msg);
+  private: void receiveControlMsg(ConstCollidingShapesMsgPtr &_msg);
 
   // \brief Saves the configuration with the given states.
   // Model states to save should be a transform from the end point of the
@@ -234,7 +244,6 @@ class CollidingShapesTestFramework
   private: ModelColliderT modelCollider;
 
   // \brief Axis to use for collision.
-  // Can be unit x, y or z axis
   private: const Vector3 collisionAxis;
 
   // \brief Names of both loaded models

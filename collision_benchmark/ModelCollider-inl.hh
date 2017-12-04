@@ -347,6 +347,61 @@ int ModelCollider<WM>::MoveModelsAlongAxis(const float moveDist,
   return 0;
 }
 
+
+//////////////////////////////////////////////////////////////////////////////
+template<class WM>
+typename WM::Vector3
+ModelCollider<WM>::GetAxisPerpendicular(const Vector3 &axis) const
+{
+  static const Vector3 unitX(1,0,0);
+  static const Vector3 unitY(0,1,0);
+  static const Vector3 unitZ(0,0,1);
+  // if dot product of unit axis and the axis is larger than this,
+  // the cross product with that unit axis is returned.
+  static const float dotTolerance = 1e-02;
+  if (fabs(axis.Dot(unitX) > dotTolerance)) return axis.Cross(unitX);
+  if (fabs(axis.Dot(unitY) > dotTolerance)) return axis.Cross(unitY);
+  if (fabs(axis.Dot(unitZ) > dotTolerance)) return axis.Cross(unitZ);
+
+  // will only get here unless dotTolerance is large or the
+  // axis is not long enough. Return any vector in this case.
+  return Vector3(1,0,0);
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+template<class WM>
+bool ModelCollider<WM>::MoveModelPerpendicular(const double distance,
+                                               const bool model1) const
+{
+  assert(this->worldManager);
+  const std::string moveModelName =
+    model1 ? this->modelNames[0] : this->modelNames[1];
+  BasicState modelState;
+  // get the states of the models as loaded in their original pose
+  if (GetBasicModelState(moveModelName, this->worldManager, modelState) != 0)
+  {
+    std::cerr << "Could not get BasicModelState." << std::endl;
+    return false;
+  }
+
+  const Vector3 mvAxis = GetAxisPerpendicular(this->collisionAxis) * distance;
+
+  modelState.SetPosition(modelState.position.x + mvAxis.X(),
+                         modelState.position.y + mvAxis.Y(),
+                         modelState.position.z + mvAxis.Z());
+
+  if ((this->worldManager->SetBasicModelState(moveModelName, modelState)
+       != this->worldManager->GetNumWorlds()))
+  {
+    std::cerr << "Could not set all model poses to origin" << std::endl;
+    return false;
+  }
+  this->worldManager->Update(1);
+  return true;
+
+}
+
 //////////////////////////////////////////////////////////////////////////////
 template<class WM>
 int ModelCollider<WM>::GetAABB(const std::string &modelName,

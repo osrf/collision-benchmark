@@ -30,10 +30,12 @@
 #include "CollidingShapesTestFramework.hh"
 #include "CollidingShapesParams.hh"
 #include "BoostSerialization.hh"
+#include "colliding_shapes.pb.h"
 
 using collision_benchmark::test::CollidingShapesTestFramework;
 using collision_benchmark::test::CollidingShapesParams;
 using collision_benchmark::test::CollidingShapesConfiguration;
+using collision_benchmark::test::msgs::CollidingShapesMsg;
 
 using collision_benchmark::GazeboMultipleWorlds;
 using collision_benchmark::GazeboModelLoader;
@@ -318,7 +320,7 @@ bool CollidingShapesTestFramework::RunImpl
 
   std::string feedbackTopic="collide_shapes_test/feedback";
   gazebo::transport::PublisherPtr feedbackPub =
-    node->Advertise<gazebo::msgs::Any>(feedbackTopic);
+    node->Advertise<CollidingShapesMsg>(feedbackTopic);
 
   // Run the world(s)
   ///////////////////////////////
@@ -379,8 +381,8 @@ bool CollidingShapesTestFramework::RunImpl
         shapesOnAxisPrev -= unitsMoved;
         // enforce the slider to go onto the same position
         shapesOnAxisPos = shapesOnAxisPrev;
-        gazebo::msgs::Any m;
-        m.set_type(gazebo::msgs::Any::INT32);
+        CollidingShapesMsg m;
+        m.set_type(CollidingShapesMsg::INT32);
         m.set_int_value(shapesOnAxisPos);
         feedbackPub->Publish(m);
         // unset trigger
@@ -705,18 +707,19 @@ void CollidingShapesTestFramework::CollisionBarHandler
 }
 
 /////////////////////////////////////////////////
-void CollidingShapesTestFramework::receiveControlMsg(ConstAnyPtr &_msg)
+void CollidingShapesTestFramework::receiveControlMsg
+                                              (ConstCollidingShapesMsgPtr &_msg)
 {
-  // std::cout << "Any msg: " << _msg->DebugString();
+  // std::cout << "Msg: " << _msg->DebugString();
   switch (_msg->type())
   {
-    case gazebo::msgs::Any::BOOLEAN:
+    case CollidingShapesMsg::BOOLEAN:
       {
         std::cout <<"Triggered auto collide." << std::endl;
         triggeredAutoCollide = true;
         break;
       }
-    case gazebo::msgs::Any::INT32:
+    case CollidingShapesMsg::INT32:
       {
         // std::cout <<"Moving shapes to " << _msg->int_value() << std::endl;
         std::lock_guard<std::mutex> lock(shapesOnAxisPosMtx);
@@ -726,7 +729,7 @@ void CollidingShapesTestFramework::receiveControlMsg(ConstAnyPtr &_msg)
         if (shapesOnAxisPos < 0) shapesOnAxisPos = 0;
         break;
       }
-    case gazebo::msgs::Any::STRING:
+    case CollidingShapesMsg::STRING:
       {
         std::lock_guard<std::mutex> lock(triggeredSaveConfigMtx);
         triggeredSaveConfig = _msg->string_value();
