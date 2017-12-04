@@ -68,12 +68,27 @@ bool EqualVectors(const ignition::math::Vector3<Float>& v1,
 
 
 // \brief Transforms the axis-aligned bounding box by \e transform.
+// If the box is rotated by \e transform, the dimensions of the box may change.
 template<typename Float>
 void UpdateAABB(const ignition::math::Vector3<Float>& initialMin,
                 const ignition::math::Vector3<Float>& initialMax,
                 const ignition::math::Matrix4<Float>& transform,
                 ignition::math::Vector3<Float>& newMin,
                 ignition::math::Vector3<Float>& newMax);
+
+// \brief Projects an axis-aligned bounding box onto the axis \e projAxis.
+// \param[in] aabbMin min point of AABB
+// \param[in] aabbMax max point of AABB
+// \param[in] projAxis axis to project on (goes through origin)
+// \param[out] onAxisMin minimum point of axis. \e projAxis dot \e onAxisMin
+//    will be the point on the axis (the axis goes through the origin)
+// \param[out] onAxisMax max point, like \e onAxisMin
+template<typename Float>
+void ProjectAABBOnAxis(const ignition::math::Vector3<Float>& aabbMin,
+                       const ignition::math::Vector3<Float>& aabbMax,
+                       const ignition::math::Vector3<Float>& projAxis,
+                       Float& onAxisMin,
+                       Float& onAxisMax);
 
 }  // namespace
 

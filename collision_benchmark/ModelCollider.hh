@@ -100,8 +100,18 @@ class ModelCollider
   // \param[in] moveDist distance to move each model along axis
   // \param[in] moveBoth if true, both models are moved towards each other.
   //    If false, only model 2 is moved towards model 1.
-  public: bool MoveModelsAlongAxis(const float moveDist,
-                                    const bool moveBoth = false);
+  // \param[in] stopWhenPasses stop when the projection of the centres of the
+  //    models onto the collision axis have passed each other in the move
+  //    direction. This is not a reliable way to determine whether the models
+  //    could theoretically not collide any more when moving in this direction,
+  //    but in most cases (with convex shapes) this will be true.
+  // \retval -1 error
+  // \retval 0 success
+  // \retval 1 \e stopWhenPassed was true and object centers have passed
+  //      each other.
+  public: int MoveModelsAlongAxis(const float moveDist,
+                                   const bool moveBoth = false,
+                                   const bool stopWhenPassed = true);
 
   // \brief Moves models along collision axis until they collide.
   // This requires that they do collide when slid towards each other along
@@ -119,7 +129,9 @@ class ModelCollider
   //    move the shapes at this maximum distance per second.
   //    There cannot be a minimum velocity because we have to make tiny
   //    movements in order to capture the first point of collision as exact
-  //    as possible.
+  //    as possible. If negative, the velocity is not going to be controlled
+  //    and the shapes will just move towards each other with steps of size
+  //    \e stepSize
   // \return the distance the shape(s) have moved along the axis.
   //  If \e moveBoth was true, this is the distance that *both* shapes
   //  have moved along the axis (the overall distance decreased between

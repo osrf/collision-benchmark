@@ -151,6 +151,35 @@ void SetIdx(const int idx,
 
 //////////////////////////////////////////////////////////////////////////////
 template<typename Float>
+void collision_benchmark::ProjectAABBOnAxis
+        (const ignition::math::Vector3<Float>& aabbMin,
+         const ignition::math::Vector3<Float>& aabbMax,
+         const ignition::math::Vector3<Float>& projAxis,
+         Float& onAxisMin,
+         Float& onAxisMax)
+{
+    // make sure to use normalized axis
+    ignition::math::Vector3<Float>& axis(projAxis);
+    axis.Normalize();
+    Float xCoords[2] = { aabbMin.X(), aabbMax.X() };
+    Float yCoords[2] = { aabbMin.Y(), aabbMax.Y() };
+    Float zCoords[2] = { aabbMin.Z(), aabbMax.Z() };
+
+    onAxisMin = std::numeric_limits<Float>::max();
+    onAxisMax = -onAxisMin;
+    for (int x = 0; x < 2; ++x)
+      for (int y = 0; y < 2; ++y)
+        for (int z = 0; z < 2; ++z)
+        {
+          ignition::math::Vector3<Float> v(xCoords[x], yCoords[y], zCoords[z]);
+          Float projLength = v.Dot(axis);
+          onAxisMin = std::min(onAxisMin, projLength);
+          onAxisMax = std::max(onAxisMax, projLength);
+        }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+template<typename Float>
 void collision_benchmark::UpdateAABB
         (const ignition::math::Vector3<Float>& initialMin,
          const ignition::math::Vector3<Float>& initialMax,

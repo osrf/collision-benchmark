@@ -65,19 +65,31 @@ bool ModelCollider<WM>::Init(const WorldManagerPtr &wManager,
 template<class WM>
 bool ModelCollider<WM>::SetCollisionAxis(const Vector3 &collAxis)
 {
-  static const double axEp = 1e-06;
+  if (collAxis.Length() < 1e-06)
+  {
+    std::cerr << "Cannot set zero lenght collision axis" << std::endl;
+    return false;
+  }
+/*  static const double axEp = 1e-06;
   if (!collision_benchmark::EqualVectors(collAxis,
                                          Vector3(1, 0, 0), axEp) &&
       !collision_benchmark::EqualVectors(collAxis,
+                                         Vector3(-1, 0, 0), axEp) &&
+      !collision_benchmark::EqualVectors(collAxis,
                                          Vector3(0, 1, 0), axEp) &&
       !collision_benchmark::EqualVectors(collAxis,
-                                         Vector3(0, 0, 1), axEp))
+                                         Vector3(0, -1, 0), axEp) &&
+      !collision_benchmark::EqualVectors(collAxis,
+                                         Vector3(0, 0, 1), axEp) &&
+      !collision_benchmark::EqualVectors(collAxis,
+                                         Vector3(0, 0, -1), axEp))
   {
     std::cerr << "At this point, the only collision axes supported are x, y "
               << "or z axis. Is " << collAxis << std::endl;
     return false;
-  }
+  }*/
   this->collisionAxis = collAxis;
+  this->collisionAxis.Normalize();
   return true;
 }
 
@@ -128,8 +140,9 @@ bool ModelCollider<WM>::PlaceModels(const float modelsGap,
   }
 
   /*
-  // Note: In case models at some point are *not* first placed at the origin
-  // (so when global frame != local frame):
+  // NOTE
+  // In case models at some point are *not* first placed at the origin
+  // (as done now), so when global frame != local frame:
   // If the AABBs are not given in global coordinate frame, we need to transform
   // the AABBs first!
   // Example for first AABB:
@@ -241,18 +254,20 @@ double ModelCollider<WM>::AutoCollide(const bool allWorlds,
   assert(this->worldManager);
   double moved = 0;
   gazebo::common::Timer timer;
-  timer.Start();
+  if (maxMovePerSec > 0) timer.Start();
   // while collision is not found, move models towards each other
+  // XXX TODO: also check if models would collide at all considering
+  // their current poses
   while (!ModelsCollide(allWorlds))
   {
-    gazebo::common::Time elapsed = timer.GetElapsed();
-    // move the shapes towards each other in steps
-    if (moved > 0)
+    if (maxMovePerSec > 0)
     {
-      // slow down the movement if it's too fast.
+      gazebo::common::Time elapsed = timer.GetElapsed();
+      // move the shapes towards each other in steps.
+      // Slow down the movement if it's too fast.
       // Not the most accurate way to achieve a maximum velocity,
       // but considering this is only for animation purposes, this will do.
-      if (moved / elapsed.Double() > maxMovePerSec)
+      if ((moved > 0) && (moved / elapsed.Double() > maxMovePerSec))
       {
         // slow down the move as we've already moved too far.
         // Sleep a tiny bit.
@@ -260,7 +275,12 @@ double ModelCollider<WM>::AutoCollide(const bool allWorlds,
         continue;
       }
     }
-    MoveModelsAlongAxis(stepSize, moveBoth);
+    if (MoveModelsAlongAxis(stepSize, moveBoth) != 0)
+    {
+      std::cout << "Stopping Auto-Collide because objects weren't moved"
+                << std::endl;
+      break;
+    }
     moved += stepSize;
   }
   return moved;
@@ -268,8 +288,9 @@ double ModelCollider<WM>::AutoCollide(const bool allWorlds,
 
 //////////////////////////////////////////////////////////////////////////////
 template<class WM>
-bool ModelCollider<WM>::MoveModelsAlongAxis(const float moveDist,
-                                        const bool moveBoth)
+int ModelCollider<WM>::MoveModelsAlongAxis(const float moveDist,
+                                            const bool moveBoth,
+                                            const bool stopWhenPassed)
 {
   assert(this->worldManager);
   // get state of both models
@@ -279,13 +300,34 @@ bool ModelCollider<WM>::MoveModelsAlongAxis(const float moveDist,
       (GetBasicModelState(modelNames[0], this->worldManager, modelState1) != 0))
   {
     std::cerr << "Could not get BasicModelState." << std::endl;
-    return false;
+    return -1;
   }
   if (GetBasicModelState(modelNames[1], this->worldManager, modelState2) != 0)
   {
     std::cerr << "Could not get BasicModelState." << std::endl;
-    return false;
+    return -1;
   }
+
+  if (stopWhenPassed && (moveDist > 0))
+  {
+    // project both poses onto collision axis and see if the models
+    // center poses have passed each other along the collision axis
+    ignition::math::Vector3d pos1(modelState1.position.x,
+                                  modelState1.position.y,
+                                  modelState1.position.z);
+    ignition::math::Vector3d pos2(modelState2.position.x,
+                                  modelState2.position.y,
+                                  modelState2.position.z);
+    double dot1 = pos1.Dot(this->collisionAxis);
+    double dot2 = pos2.Dot(this->collisionAxis);
+    if (dot1 > dot2)
+    {
+      std::cout << "Objects centers have passed on collision axis, "
+                << "not moving further. " << std::endl;
+      return 1;
+    }
+  }
+
   const ignition::math::Vector3d mv = this->collisionAxis * moveDist;
 
   if (moveBoth)
@@ -306,10 +348,10 @@ bool ModelCollider<WM>::MoveModelsAlongAxis(const float moveDist,
        != this->worldManager->GetNumWorlds()))
   {
     std::cerr << "Could not set all model poses to origin" << std::endl;
-    return false;
+    return -1;
   }
   this->worldManager->Update(1);
-  return true;
+  return 0;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -367,7 +409,6 @@ int ModelCollider<WM>::GetBasicModelState
   if (worlds.empty() || (worlds.size() <= idxWorld)) return -2;
 
   typename WM::PhysicsWorldModelInterfacePtr w = worlds[idxWorld];
-
   if (!w->GetBasicModelState(modelName, state))
   {
       std::cerr << "Model " << modelName << ": state could not be retrieved"
