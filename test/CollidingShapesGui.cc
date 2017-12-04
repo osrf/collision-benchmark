@@ -214,7 +214,7 @@ void CollidingShapesGui::OnValueChanged(int val)
 {
   // std::cout << "Value changed! " << val << std::endl;
   CollidingShapesMsg m;
-  m.set_type(CollidingShapesMsg::INT32);
+  m.set_type(CollidingShapesMsg::COLLISION_SLIDER);
   m.set_int_value(val);
   this->pub->Publish(m);
 }
@@ -233,8 +233,7 @@ void CollidingShapesGui::OnPerpValueChanged(int val)
 void CollidingShapesGui::OnButtonAutoCollide()
 {
   CollidingShapesMsg m;
-  m.set_type(CollidingShapesMsg::BOOLEAN);
-  m.set_bool_value(true);
+  m.set_type(CollidingShapesMsg::AUTO_COLLIDE);
   this->pub->Publish(m);
 }
 
@@ -266,7 +265,7 @@ void CollidingShapesGui::OnButtonSaveConfig()
   }
   // std::cout << "Chosen to save as file " << configFile << std::endl;
   CollidingShapesMsg m;
-  m.set_type(CollidingShapesMsg::STRING);
+  m.set_type(CollidingShapesMsg::SAVE_CONFIG);
   m.set_string_value(configFile);
   this->pub->Publish(m);
 }
@@ -301,7 +300,7 @@ void CollidingShapesGui::receiveFeedbackMsg(ConstAnyPtr &_msg)
   // std::cout << "GUI FEEDBACK! " << _msg->DebugString();
   switch (_msg->type())
   {
-    case CollidingShapesMsg::INT32:
+    case CollidingShapesMsg::COLLISION_SLIDER:
       {
         // std::cout << "GUI feedback: Moved shapes to "
         //           << _msg->int_value() << std::endl;

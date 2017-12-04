@@ -382,7 +382,7 @@ bool CollidingShapesTestFramework::RunImpl
         // enforce the slider to go onto the same position
         shapesOnAxisPos = shapesOnAxisPrev;
         CollidingShapesMsg m;
-        m.set_type(CollidingShapesMsg::INT32);
+        m.set_type(CollidingShapesMsg::COLLISION_SLIDER);
         m.set_int_value(shapesOnAxisPos);
         feedbackPub->Publish(m);
         // unset trigger
@@ -713,13 +713,13 @@ void CollidingShapesTestFramework::receiveControlMsg
   // std::cout << "Msg: " << _msg->DebugString();
   switch (_msg->type())
   {
-    case CollidingShapesMsg::BOOLEAN:
+    case CollidingShapesMsg::AUTO_COLLIDE:
       {
         std::cout <<"Triggered auto collide." << std::endl;
         triggeredAutoCollide = true;
         break;
       }
-    case CollidingShapesMsg::INT32:
+    case CollidingShapesMsg::COLLISION_SLIDER:
       {
         // std::cout <<"Moving shapes to " << _msg->int_value() << std::endl;
         std::lock_guard<std::mutex> lock(shapesOnAxisPosMtx);
@@ -729,7 +729,7 @@ void CollidingShapesTestFramework::receiveControlMsg
         if (shapesOnAxisPos < 0) shapesOnAxisPos = 0;
         break;
       }
-    case CollidingShapesMsg::STRING:
+    case CollidingShapesMsg::SAVE_CONFIG:
       {
         std::lock_guard<std::mutex> lock(triggeredSaveConfigMtx);
         triggeredSaveConfig = _msg->string_value();
