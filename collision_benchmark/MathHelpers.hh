@@ -80,7 +80,7 @@ void UpdateAABB(const ignition::math::Vector3<Float>& initialMin,
 // \param[in] aabbMin min point of AABB
 // \param[in] aabbMax max point of AABB
 // \param[in] projAxis axis to project on (goes through origin)
-// \param[out] onAxisMin minimum point of axis. \e projAxis dot \e onAxisMin
+// \param[out] onAxisMin minimum point of axis. \e projAxis * \e onAxisMin
 //    will be the point on the axis (the axis goes through the origin)
 // \param[out] onAxisMax max point, like \e onAxisMin
 template<typename Float>

@@ -70,24 +70,6 @@ bool ModelCollider<WM>::SetCollisionAxis(const Vector3 &collAxis)
     std::cerr << "Cannot set zero lenght collision axis" << std::endl;
     return false;
   }
-/*  static const double axEp = 1e-06;
-  if (!collision_benchmark::EqualVectors(collAxis,
-                                         Vector3(1, 0, 0), axEp) &&
-      !collision_benchmark::EqualVectors(collAxis,
-                                         Vector3(-1, 0, 0), axEp) &&
-      !collision_benchmark::EqualVectors(collAxis,
-                                         Vector3(0, 1, 0), axEp) &&
-      !collision_benchmark::EqualVectors(collAxis,
-                                         Vector3(0, -1, 0), axEp) &&
-      !collision_benchmark::EqualVectors(collAxis,
-                                         Vector3(0, 0, 1), axEp) &&
-      !collision_benchmark::EqualVectors(collAxis,
-                                         Vector3(0, 0, -1), axEp))
-  {
-    std::cerr << "At this point, the only collision axes supported are x, y "
-              << "or z axis. Is " << collAxis << std::endl;
-    return false;
-  }*/
   this->collisionAxis = collAxis;
   this->collisionAxis.Normalize();
   return true;
@@ -163,10 +145,26 @@ bool ModelCollider<WM>::PlaceModels(const float modelsGap,
   // std::cout << "AABB 1: " << min1 << " -- " << max1 << std::endl;
   // std::cout << "AABB 2: " << min2 << " -- " << max2 << std::endl;
 
-  // Leave model 1 where it is and move model 2 away from it.
-  const float aabb1LenOnAxis = (max1-min1).Dot(collisionAxis);
-  const float aabb2LenOnAxis = (max2-min2).Dot(collisionAxis);
+  // Re-project min and max points of aabb on collision axis
+  double projMin, projMax;
+  ignition::math::Vector3d ignMin(collision_benchmark::ConvIgn<double>(min1));
+  ignition::math::Vector3d ignMax(collision_benchmark::ConvIgn<double>(max1));
+  collision_benchmark::ProjectAABBOnAxis(ignMin, ignMax, this->collisionAxis,
+                                         projMin, projMax);
+  const float aabb1LenOnAxis = fabs(projMax - projMin);
+  min1 = this->collisionAxis * projMin;
+  max1 = this->collisionAxis * projMax;
 
+  ignMin = collision_benchmark::ConvIgn<double>(min2);
+  ignMax = collision_benchmark::ConvIgn<double>(max2);
+  collision_benchmark::ProjectAABBOnAxis(ignMin, ignMax, this->collisionAxis,
+                                         projMin, projMax);
+  const float aabb2LenOnAxis = fabs(projMax - projMin);
+  min2 = this->collisionAxis * projMin;
+  max2 = this->collisionAxis * projMax;
+
+  // Leave model 1 where it is and move model 2 away from it.
+  //////////////////
 
   // determine the desired distance / gap between the models AABBs
   double desiredDistance = 0;

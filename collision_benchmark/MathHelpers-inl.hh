@@ -159,7 +159,7 @@ void collision_benchmark::ProjectAABBOnAxis
          Float& onAxisMax)
 {
     // make sure to use normalized axis
-    ignition::math::Vector3<Float>& axis(projAxis);
+    ignition::math::Vector3<Float> axis(projAxis);
     axis.Normalize();
     Float xCoords[2] = { aabbMin.X(), aabbMax.X() };
     Float yCoords[2] = { aabbMin.Y(), aabbMax.Y() };

@@ -44,10 +44,11 @@ using collision_benchmark::BasicState;
 
 /////////////////////////////////////////////////////////////////////////////
 CollidingShapesTestFramework::CollidingShapesTestFramework()
-  : collisionAxis(0, -1, 0),
+  : collisionAxis(0, 1, 0),
     triggeredAutoCollide(false),
     shapesOnAxisPos(CollidingShapesParams::MaxSliderVal)
 {
+  this->collisionAxis.Normalize();
 }
 
 /////////////////////////////////////////////////////////////////////////////
