@@ -19,4 +19,5 @@
 using collision_benchmark::test::CollidingShapesParams;
 
 const int CollidingShapesParams::MaxSliderVal = 1000;
+const int CollidingShapesParams::MaxDialVal = 1000;
 

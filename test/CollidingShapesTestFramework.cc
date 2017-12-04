@@ -48,7 +48,9 @@ using collision_benchmark::BasicState;
 CollidingShapesTestFramework::CollidingShapesTestFramework()
   : collisionAxis(0, 1, 0),
     triggeredAutoCollide(false),
-    shapesOnAxisPos(CollidingShapesParams::MaxSliderVal)
+    shapesOnAxisPos(CollidingShapesParams::MaxSliderVal),
+    perpendicularSteps(0),
+    perpendicularAngle(0)
 {
 }
 
@@ -349,6 +351,9 @@ bool CollidingShapesTestFramework::RunImpl
   // saving the configuration.
   float model2MovedAlongAxis = 0;
 
+  // perpendicularAngle in the last step
+  double lastPerpendicularAngle = 0;
+
   // run the main loop
   while (gzMultiWorld->IsClientRunning())
   {
@@ -377,30 +382,42 @@ bool CollidingShapesTestFramework::RunImpl
         /* std::cout << "Units moved during auto collide: "
                   << unitsMoved << ". Current value is "
                   << shapesOnAxisPrev << std::endl;*/
-        std::lock_guard<std::mutex> lock(shapesOnAxisPosMtx);
+        std::lock_guard<std::mutex> lock(this->shapesOnAxisPosMtx);
         shapesOnAxisPrev -= unitsMoved;
         // enforce the slider to go onto the same position
-        shapesOnAxisPos = shapesOnAxisPrev;
+        this->shapesOnAxisPos = shapesOnAxisPrev;
         CollidingShapesMsg m;
         m.set_type(CollidingShapesMsg::COLLISION_SLIDER);
-        m.set_int_value(shapesOnAxisPos);
+        m.set_int_value(this->shapesOnAxisPos);
         feedbackPub->Publish(m);
         // unset trigger
         triggeredAutoCollide = false;
       }
       { // lock scope
-        std::lock_guard<std::mutex> lock(shapesOnAxisPosMtx);
-        if (shapesOnAxisPos != shapesOnAxisPrev)
+        std::lock_guard<std::mutex> lock(this->shapesOnAxisPosMtx);
+        if (this->shapesOnAxisPos != shapesOnAxisPrev)
         {
-          float moveDist = (shapesOnAxisPrev - shapesOnAxisPos)*sliderStepSize;
+          float moveDist = (shapesOnAxisPrev - this->shapesOnAxisPos)*sliderStepSize;
           this->modelCollider.MoveModelsAlongAxis(moveDist, moveBoth);
           model2MovedAlongAxis += -moveDist;
-          shapesOnAxisPrev = shapesOnAxisPos;
+          shapesOnAxisPrev = this->shapesOnAxisPos;
         }
       }
+      if (this->perpendicularSteps != 0)
+      {
+        const static float stepSize = 0.1;
+        float moveDist = this->perpendicularSteps * stepSize;
+        this->modelCollider.MoveModelPerpendicular(moveDist, false);
+        this->perpendicularSteps = 0; // reset
+      }
+      if ((this->perpendicularAngle - lastPerpendicularAngle) > 1e-02)
+      {
+        std::cout << "UPDATE ANGLE: "<<this->perpendicularAngle<<std::endl;
+        lastPerpendicularAngle = this->perpendicularAngle;
+      }
       {  // lock scope
-        std::lock_guard<std::mutex> lock(triggeredSaveConfigMtx);
-        if (!triggeredSaveConfig.empty())
+        std::lock_guard<std::mutex> lock(this->triggeredSaveConfigMtx);
+        if (!this->triggeredSaveConfig.empty())
         {
           // This will save the model poses relative to their starting pose
           // which have been changed by the user. The amount the models were
@@ -411,7 +428,7 @@ bool CollidingShapesTestFramework::RunImpl
           // configuration as saved will be achieved by AutoCollide
           // and/or the slider.
 
-          std::lock_guard<std::mutex> lock(shapesOnAxisPosMtx);
+          std::lock_guard<std::mutex> lock(this->shapesOnAxisPosMtx);
           // Amount that model 2 has been moved along the collision axis
           // with the slider or AutoCollide - this will not count for the
           // configuration.
@@ -420,7 +437,7 @@ bool CollidingShapesTestFramework::RunImpl
           double model1Slide = 0;
           // model 2 has moved as we displaced it in
           // ModelCollider::PlaceModels(), and the moves via the shapes axis.
-          double model2Slide = /*-moveM2Distance*/ -model2MovedAlongAxis;
+          double model2Slide = -model2MovedAlongAxis;
 
           // get current state
           BasicState currModelState1, currModelState2;
@@ -435,14 +452,14 @@ bool CollidingShapesTestFramework::RunImpl
             // compared to the models initial poses
             BasicState m1Diff = GetTrans(modelState1, currModelState1);
             BasicState m2Diff = GetTrans(modelState2, currModelState2);
-            SaveConfiguration(triggeredSaveConfig, m1Diff, m2Diff);
+            SaveConfiguration(this->triggeredSaveConfig, m1Diff, m2Diff);
           }
           else
           {
             std::cerr << "Could not get model states, cannot save "
                       << "configuration." << std::endl;
           }
-          triggeredSaveConfig = "";
+          this->triggeredSaveConfig = "";
         }
       }
       int numSteps = 1;
@@ -722,24 +739,33 @@ void CollidingShapesTestFramework::receiveControlMsg
     case CollidingShapesMsg::COLLISION_SLIDER:
       {
         // std::cout <<"Moving shapes to " << _msg->int_value() << std::endl;
-        std::lock_guard<std::mutex> lock(shapesOnAxisPosMtx);
-        shapesOnAxisPos = _msg->int_value();
-        if (shapesOnAxisPos > CollidingShapesParams::MaxSliderVal)
-          shapesOnAxisPos = CollidingShapesParams::MaxSliderVal;
-        if (shapesOnAxisPos < 0) shapesOnAxisPos = 0;
+        std::lock_guard<std::mutex> lock(this->shapesOnAxisPosMtx);
+        this->shapesOnAxisPos = _msg->int_value();
+        if (this->shapesOnAxisPos > CollidingShapesParams::MaxSliderVal)
+          this->shapesOnAxisPos = CollidingShapesParams::MaxSliderVal;
+        if (this->shapesOnAxisPos < 0) this->shapesOnAxisPos = 0;
+        break;
+      }
+    case CollidingShapesMsg::PERPENDICULAR_ANGLE:
+      {
+        std::cout <<"Perp angle " << _msg->double_value() << std::endl;
+        this->perpendicularAngle = _msg->double_value() * M_PI/180.0;
+        break;
+      }
+    case CollidingShapesMsg::PERPENDICULAR_VALUE:
+      {
+        this->perpendicularSteps = _msg->int_value();
         break;
       }
     case CollidingShapesMsg::SAVE_CONFIG:
       {
-        std::lock_guard<std::mutex> lock(triggeredSaveConfigMtx);
-        triggeredSaveConfig = _msg->string_value();
+        std::lock_guard<std::mutex> lock(this->triggeredSaveConfigMtx);
+        this->triggeredSaveConfig = _msg->string_value();
         /* std::cout << "Saving configuration as "
-                  << triggeredSaveConfig << std::endl;*/
+                  << this->triggeredSaveConfig << std::endl;*/
         break;
       }
-
-
     default:
-      std::cerr << "Unsupported AnyMsg type" << std::endl;
+      std::cerr << "Unsupported CollidingShapesMsg type" << std::endl;
   }
 }

@@ -32,20 +32,42 @@ namespace collision_benchmark
 {
 namespace test
 {
+
+namespace msgs
+{
+  // forward declaration of message
+  class CollidingShapesMsg;
+}
+
+typedef const boost::shared_ptr<const msgs::CollidingShapesMsg>
+        ConstCollidingShapesMsgPtr;
+
+
 /**
  * Creates a GUI with a slider to move the two objects of
  * CollidingShapesTestFramework towards or apart from each other.
  * Also provides buttons to auto-collide and to save the configuration.
  *
- * Communication with the server works via gazebo::Any messages.
+ * Communication with the server works via the message
+ * collision_benchmark::test::msgs::CollidingShapesMsg.
  *
- * Publication: An integer indicates the slider position (0..MaxSliderVal),
- * a boolean indicates the auto-collide has been triggered, and a string
- * gives the filename to save the configuration to.
+ * Publication:
+ * - When COLLISION_SLIDER is set as type, an integer indicates the slider
+ *   position (0..MaxSliderVal).
+ * - When AUTO_COLLIDE is set as type, the auto-collide has been triggered.
+ * - When SAVE_CONFIG is set as type,  a string gives the filename to save the
+ *   configuration to.
+ * - And additional test functionality provides
+ *      - When PERPENDICULAR_VALUE is set, an int value indicates the number of
+ *        steps a model should move away from the collision axis, on an axis
+ *        perpendicular to the collision axis.
+ *      - When PERPENDICULAR_ANGLE is set, a double angle [0..360] is returned
+ *        which indicates the rotation of the shape around the collision axis
  *
- * Subscription: An integer can be sent to indicate when the shapes
- * have been moved along the collision axis (given in step sizes of the
- * slider bar, 0..MaxSliderVal).
+ * Subscription:
+ * With the type COLLISION_SLIDER set, an integer can be sent to indicate when
+ * the shapes have been moved along the collision axis (given in step sizes of
+ * the slider bar, 0..MaxSliderVal).
  *
  * \author Jennifer Buehler
  * \date May 2017
@@ -67,7 +89,7 @@ class GAZEBO_VISIBLE CollidingShapesGui : public gazebo::GUIPlugin
   protected slots: void OnValueChanged(int value);
 
   /// \brief Callback trigged when the slider is changed
-  protected slots: void OnPerpValueChanged(int value);
+  protected slots: void OnDialValueChanged(int value);
 
   /// \brief Callback trigged when the button "<" is pressed.
   protected slots: void OnButtonDec();
@@ -92,10 +114,7 @@ class GAZEBO_VISIBLE CollidingShapesGui : public gazebo::GUIPlugin
   protected: bool eventFilter(QObject *obj, QEvent *event);
 
   /// \brief receives feedback from the test
-  private: void receiveFeedbackMsg(ConstAnyPtr &_msg);
-
-  // \brief max value for the slider axis
-  public: static const int MaxSliderVal;
+  private: void receiveFeedbackMsg(ConstCollidingShapesMsgPtr &_msg);
 
   /// \brief Node used to establish communication with gzserver.
   private: gazebo::transport::NodePtr node;

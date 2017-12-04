@@ -36,14 +36,14 @@ namespace collision_benchmark
 namespace test
 {
 
-  namespace msgs
-  {
-    // forward declaration of message
-    class CollidingShapesMsg;
-  }
+namespace msgs
+{
+  // forward declaration of message
+  class CollidingShapesMsg;
+}
 
-  typedef const boost::shared_ptr<const msgs::CollidingShapesMsg>
-          ConstCollidingShapesMsgPtr;
+typedef const boost::shared_ptr<const msgs::CollidingShapesMsg>
+        ConstCollidingShapesMsgPtr;
 
 /**
  * \brief Test framework for colliding two shapes along an axis.
@@ -223,6 +223,7 @@ class CollidingShapesTestFramework
   // CollisionBarHandler.
   private: std::atomic<bool> running;
 
+
   // \brief is set to true when a message is received to auto-collide objects
   private: std::atomic<bool> triggeredAutoCollide;
 
@@ -239,6 +240,13 @@ class CollidingShapesTestFramework
   private: int shapesOnAxisPos;
   // \brief mutex for shapesOnAxisPos
   private: std::mutex shapesOnAxisPosMtx;
+
+  // \brief number of steps to move along the axis perpendicular to
+  //    the collision axis
+  private: std::atomic<int> perpendicularSteps;
+
+  // \brief angle to rotate the perpendicular axis around the collision axis
+  private: std::atomic<double> perpendicularAngle;
 
   // the helper for colliding models
   private: ModelColliderT modelCollider;

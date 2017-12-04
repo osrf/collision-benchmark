@@ -54,11 +54,11 @@ CollidingShapesGui::CollidingShapesGui()
   QHBoxLayout *perpMoveShapesLayout = new QHBoxLayout();
   this->dial = new QDial();
   this->dial->setMinimum(0);
-  this->dial->setMaximum(CollidingShapesParams::MaxSliderVal);
-  this->dial->setValue(CollidingShapesParams::MaxSliderVal);
+  this->dial->setMaximum(CollidingShapesParams::MaxDialVal);
+  this->dial->setValue(0);
   this->dial->resize(300, 20);
   connect(this->dial, SIGNAL(valueChanged(int)),
-          this, SLOT(OnPerpValueChanged(int)));
+          this, SLOT(OnDialValueChanged(int)));
   perpMoveShapesLayout->addWidget(this->dial);
   // Button up
   QPushButton * buttonDecPerp = new QPushButton("^");
@@ -212,7 +212,6 @@ bool CollidingShapesGui::eventFilter(QObject *obj, QEvent *event)
 /////////////////////////////////////////////////
 void CollidingShapesGui::OnValueChanged(int val)
 {
-  // std::cout << "Value changed! " << val << std::endl;
   CollidingShapesMsg m;
   m.set_type(CollidingShapesMsg::COLLISION_SLIDER);
   m.set_int_value(val);
@@ -220,13 +219,13 @@ void CollidingShapesGui::OnValueChanged(int val)
 }
 
 /////////////////////////////////////////////////
-void CollidingShapesGui::OnPerpValueChanged(int val)
+void CollidingShapesGui::OnDialValueChanged(int val)
 {
-  std::cout << "Value changed! " << val << std::endl;
-  /*CollidingShapesMsg m;
-  m.set_type(CollidingShapesMsg::INT32);
-  m.set_int_value(val);
-  this->pub->Publish(m);*/
+  CollidingShapesMsg m;
+  m.set_type(CollidingShapesMsg::PERPENDICULAR_ANGLE);
+  double angle = val / (double) CollidingShapesParams::MaxDialVal;
+  m.set_double_value(angle*360);
+  this->pub->Publish(m);
 }
 
 /////////////////////////////////////////////////
@@ -286,16 +285,23 @@ void CollidingShapesGui::OnButtonDec()
 /////////////////////////////////////////////////
 void CollidingShapesGui::OnButtonPerpInc()
 {
-  std::cout << "UP" << std::endl;
-}
-/////////////////////////////////////////////////
-void CollidingShapesGui::OnButtonPerpDec()
-{
-  std::cout << "DOWN" << std::endl;
+  CollidingShapesMsg m;
+  m.set_type(CollidingShapesMsg::PERPENDICULAR_VALUE);
+  m.set_int_value(1);
+  this->pub->Publish(m);
 }
 
 /////////////////////////////////////////////////
-void CollidingShapesGui::receiveFeedbackMsg(ConstAnyPtr &_msg)
+void CollidingShapesGui::OnButtonPerpDec()
+{
+  CollidingShapesMsg m;
+  m.set_type(CollidingShapesMsg::PERPENDICULAR_VALUE);
+  m.set_int_value(-1);
+  this->pub->Publish(m);
+}
+
+/////////////////////////////////////////////////
+void CollidingShapesGui::receiveFeedbackMsg(ConstCollidingShapesMsgPtr &_msg)
 {
   // std::cout << "GUI FEEDBACK! " << _msg->DebugString();
   switch (_msg->type())
@@ -307,9 +313,9 @@ void CollidingShapesGui::receiveFeedbackMsg(ConstAnyPtr &_msg)
         this->slider->setValue(_msg->int_value());
         break;
       }
-
     default:
-      std::cerr << "Unsupported AnyMsg type" << std::endl;
+      std::cerr << "CollidingShapesGui: Unsupported CollidingShapesMsg type"
+                << std::endl;
   }
 }
 

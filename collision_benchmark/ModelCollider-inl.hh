@@ -356,12 +356,11 @@ ModelCollider<WM>::GetAxisPerpendicular(const Vector3 &axis) const
   static const Vector3 unitX(1,0,0);
   static const Vector3 unitY(0,1,0);
   static const Vector3 unitZ(0,0,1);
-  // if dot product of unit axis and the axis is larger than this,
-  // the cross product with that unit axis is returned.
   static const float dotTolerance = 1e-02;
-  if (fabs(axis.Dot(unitX) > dotTolerance)) return axis.Cross(unitX);
-  if (fabs(axis.Dot(unitY) > dotTolerance)) return axis.Cross(unitY);
-  if (fabs(axis.Dot(unitZ) > dotTolerance)) return axis.Cross(unitZ);
+  const float axisLength = axis.Length();
+  if (fabs(axis.Dot(unitX))-axisLength > dotTolerance) return axis.Cross(unitX);
+  if (fabs(axis.Dot(unitY))-axisLength > dotTolerance) return axis.Cross(unitY);
+  if (fabs(axis.Dot(unitZ))-axisLength > dotTolerance) return axis.Cross(unitZ);
 
   // will only get here unless dotTolerance is large or the
   // axis is not long enough. Return any vector in this case.
@@ -390,6 +389,8 @@ bool ModelCollider<WM>::MoveModelPerpendicular(const double distance,
   modelState.SetPosition(modelState.position.x + mvAxis.X(),
                          modelState.position.y + mvAxis.Y(),
                          modelState.position.z + mvAxis.Z());
+
+  std::cout << "Moving model state by " << distance << ":" << mvAxis.X() << ", " << mvAxis.Y() << ", " << mvAxis.Z() << " .... " <<  modelState << std::endl;
 
   if ((this->worldManager->SetBasicModelState(moveModelName, modelState)
        != this->worldManager->GetNumWorlds()))
