@@ -48,7 +48,6 @@ CollidingShapesTestFramework::CollidingShapesTestFramework()
     triggeredAutoCollide(false),
     shapesOnAxisPos(CollidingShapesParams::MaxSliderVal)
 {
-  this->collisionAxis.Normalize();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -352,16 +351,27 @@ bool CollidingShapesTestFramework::RunImpl
   while (gzMultiWorld->IsClientRunning())
   {
       // while collision is not found, move models towards each other
-      bool allWorlds = false;
+      const bool allWorlds = false;
       // set to true to move both models towards/away from each other.
       // Note: At this point, the folliwng implementation assumes it is
       // false. Adjust implementation if a value of true is desired later.
-      bool moveBoth = false;
+      const bool moveBoth = false;
       if (triggeredAutoCollide)
       {
-        double dist =this->modelCollider.AutoCollide(allWorlds, moveBoth);
+        // Flag: stop auto-collide if object center projections on axis have
+        // passed each other and it is likely the objects will never collide
+        // along this axis.
+        const bool stopWhenPassed = true;
+        // maximum move distance per second
+        const double maxMovePerSec = 0.4;
+        // move models at this step size
+        const double stepSize = 1e-03;
+        // auto-collide models
+        const double dist =
+          this->modelCollider.AutoCollide(allWorlds, moveBoth, stepSize,
+                                          maxMovePerSec, stopWhenPassed);
         model2MovedAlongAxis += -dist;
-        int unitsMoved = dist / sliderStepSize;
+        const int unitsMoved = dist / sliderStepSize;
         /* std::cout << "Units moved during auto collide: "
                   << unitsMoved << ". Current value is "
                   << shapesOnAxisPrev << std::endl;*/

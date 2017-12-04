@@ -111,7 +111,7 @@ class ModelCollider
   //      each other.
   public: int MoveModelsAlongAxis(const float moveDist,
                                    const bool moveBoth = false,
-                                   const bool stopWhenPassed = true);
+                                   const bool stopWhenPassed = false);
 
   // \brief Moves models along collision axis until they collide.
   // This requires that they do collide when slid towards each other along
@@ -132,6 +132,7 @@ class ModelCollider
   //    as possible. If negative, the velocity is not going to be controlled
   //    and the shapes will just move towards each other with steps of size
   //    \e stepSize
+  // \param[in] stopWhenPassed see ModeModelsAlongAxis parameter stopWhenPassed
   // \return the distance the shape(s) have moved along the axis.
   //  If \e moveBoth was true, this is the distance that *both* shapes
   //  have moved along the axis (the overall distance decreased between
@@ -139,8 +140,9 @@ class ModelCollider
   //  this is the distance model 2 has traveled. For model 2, the distance
   //  moved will be the negative of the returned value.
   public: double AutoCollide(const bool allWorlds, const bool moveBoth,
-                              const double stepSize = 1e-03,
-                              const float maxMovePerSec = 0.4);
+                             const double stepSize = 1e-03,
+                             const float maxMovePerSec = 0.4,
+                             const bool stopWhenPassed = false);
 
   // \brief Helper fuction which returns the AABB of the model from the first
   // world in \e worldManager.

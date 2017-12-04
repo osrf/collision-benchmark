@@ -142,9 +142,6 @@ bool ModelCollider<WM>::PlaceModels(const float modelsGap,
   }
   */
 
-  // std::cout << "AABB 1: " << min1 << " -- " << max1 << std::endl;
-  // std::cout << "AABB 2: " << min2 << " -- " << max2 << std::endl;
-
   // Re-project min and max points of aabb on collision axis
   double projMin, projMax;
   ignition::math::Vector3d ignMin(collision_benchmark::ConvIgn<double>(min1));
@@ -193,10 +190,7 @@ bool ModelCollider<WM>::PlaceModels(const float modelsGap,
   double aabbDist = min2.Dot(collisionAxis) - max1.Dot(collisionAxis);
   // distance to move model 2 by
   double moveM2Distance = desiredDistance - aabbDist;
-  // std::cout << "Move model 2 along axis "
-  //         <<this->collisionAxis*moveM2Distance << std::endl;
   Vector3 moveM2AlongAxis = this->collisionAxis * moveM2Distance;
-  // std::cout << "State of model 2: " << modelState2 << std::endl;
   collision_benchmark::Vector3 newModelPos2 = modelState2.position;
   newModelPos2.x += moveM2AlongAxis.X();
   newModelPos2.y += moveM2AlongAxis.Y();
@@ -247,7 +241,8 @@ template<class WM>
 double ModelCollider<WM>::AutoCollide(const bool allWorlds,
                                   const bool moveBoth,
                                   const double stepSize,
-                                  const float maxMovePerSec)
+                                  const float maxMovePerSec,
+                                  const bool stopWhenPassed)
 {
   assert(this->worldManager);
   double moved = 0;
@@ -273,7 +268,7 @@ double ModelCollider<WM>::AutoCollide(const bool allWorlds,
         continue;
       }
     }
-    if (MoveModelsAlongAxis(stepSize, moveBoth) != 0)
+    if (MoveModelsAlongAxis(stepSize, moveBoth, stopWhenPassed) != 0)
     {
       std::cout << "Stopping Auto-Collide because objects weren't moved"
                 << std::endl;
