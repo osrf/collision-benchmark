@@ -1,0 +1,43 @@
+syntax = "proto2";
+package collision_benchmark.test.msgs;
+
+message CollidingShapesMsg 
+{
+  /// \brief The type of data the message contains.
+  enum ValueType
+  {
+    /// \brief empty message
+    NONE = 1;
+
+    /// \brief message contains an int32 for the collision slider
+    COLLISION_SLIDER = 2;
+    
+    /// \brief message contains an int32 for moving along the axis
+    ///   perpendicular to the collision axis
+    PERPENDICULAR_VALUE = 3;
+    
+    /// \brief message contains a double (0..360) for rotating the axis
+    ///   perpendicular to the collision axis
+    PERPENDICULAR_ANGLE = 4;
+
+    /// \brief Message contains a filename string to save configuration
+    SAVE_CONFIG = 5;
+
+    /// \brief Auto-collide button was pushed
+    AUTO_COLLIDE = 6;
+  }
+
+  /// \todo: Use protobuf oneof feature when we support protobuf 2.6
+
+  /// \brief Type of value that is contained in this message.
+  required ValueType type              = 1 [default = NONE];
+
+  /// \brief An int32 value
+  optional int32 int_value             = 2;
+  
+  /// \brief A double value
+  optional double double_value         = 3;
+
+  /// \brief A string value
+  optional string string_value         = 4;
+}
