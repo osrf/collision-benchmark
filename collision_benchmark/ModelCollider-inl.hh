@@ -340,57 +340,128 @@ int ModelCollider<WM>::MoveModelsAlongAxis(const float moveDist,
       (this->worldManager->SetBasicModelState(modelNames[1], modelState2)
        != this->worldManager->GetNumWorlds()))
   {
-    std::cerr << "Could not set all model poses to origin" << std::endl;
+    std::cerr << "Could not set all model poses" << std::endl;
     return -1;
   }
   this->worldManager->Update(1);
   return 0;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+template<class Vec>
+bool VectorsCollinear(const Vec &v1, const double v1Len,
+                      const Vec &v2, const double tolerance)
+{
+  return fabs(fabs(v1.Dot(v2))-v1Len) < tolerance;
+}
 
 //////////////////////////////////////////////////////////////////////////////
 template<class WM>
 typename WM::Vector3
-ModelCollider<WM>::GetAxisPerpendicular(const Vector3 &axis) const
+ModelCollider<WM>::GetAxisPerpendicular(const Vector3 &axis,
+                                        const double angle)
 {
   static const Vector3 unitX(1,0,0);
   static const Vector3 unitY(0,1,0);
   static const Vector3 unitZ(0,0,1);
   static const float dotTolerance = 1e-02;
   const float axisLength = axis.Length();
-  if (fabs(axis.Dot(unitX))-axisLength > dotTolerance) return axis.Cross(unitX);
-  if (fabs(axis.Dot(unitY))-axisLength > dotTolerance) return axis.Cross(unitY);
-  if (fabs(axis.Dot(unitZ))-axisLength > dotTolerance) return axis.Cross(unitZ);
+  Vector3 ret;
+  if (!VectorsCollinear(axis, axisLength, unitX, dotTolerance))
+  {
+    ret = axis.Cross(unitX);
+  }
+  else if (!VectorsCollinear(axis, axisLength, unitY, dotTolerance))
+  {
+    ret = axis.Cross(unitY);
+  }
+  else if (!VectorsCollinear(axis, axisLength, unitZ, dotTolerance))
+  {
+    ret = axis.Cross(unitZ);
+  }
+  else
+  {
+    // will only get here unless dotTolerance is large or the
+    // axis is not long enough. Return any vector in this case.
+    ret = Vector3(1,0,0);
+    std::cout << "WARNING: no origin axis found suitable. "
+              << __FILE__ << std::endl;
+  }
 
-  // will only get here unless dotTolerance is large or the
-  // axis is not long enough. Return any vector in this case.
-  return Vector3(1,0,0);
+  // need to apply a rotation to the axis
+  if (fabs(angle) > std::numeric_limits<double>::epsilon())
+  {
+    const ignition::math::Quaterniond axisQuat(axis, angle);
+    ret = axisQuat * ret;
+  }
+  return ret;
 }
 
 
 //////////////////////////////////////////////////////////////////////////////
 template<class WM>
 bool ModelCollider<WM>::MoveModelPerpendicular(const double distance,
+                                               const double angle,
                                                const bool model1) const
 {
   assert(this->worldManager);
   const std::string moveModelName =
     model1 ? this->modelNames[0] : this->modelNames[1];
   BasicState modelState;
-  // get the states of the models as loaded in their original pose
   if (GetBasicModelState(moveModelName, this->worldManager, modelState) != 0)
   {
     std::cerr << "Could not get BasicModelState." << std::endl;
     return false;
   }
 
-  const Vector3 mvAxis = GetAxisPerpendicular(this->collisionAxis) * distance;
+  const Vector3 mvAxis =
+    GetAxisPerpendicular(this->collisionAxis, angle) * distance;
 
   modelState.SetPosition(modelState.position.x + mvAxis.X(),
                          modelState.position.y + mvAxis.Y(),
                          modelState.position.z + mvAxis.Z());
+//  std::cout << "SET MODEL STATE: " << modelState << std::endl;
 
-  std::cout << "Moving model state by " << distance << ":" << mvAxis.X() << ", " << mvAxis.Y() << ", " << mvAxis.Z() << " .... " <<  modelState << std::endl;
+  std::cout << "Moving model state by " << distance << ":" << mvAxis.X()
+            << ", " << mvAxis.Y() << ", " << mvAxis.Z() << std::endl;
+
+  if ((this->worldManager->SetBasicModelState(moveModelName, modelState)
+       != this->worldManager->GetNumWorlds()))
+  {
+    std::cerr << "Could not set all model poses to origin" << std::endl;
+    return false;
+  }
+  this->worldManager->Update(1);
+
+  return true;
+
+}
+template<class WM>
+bool ModelCollider<WM>::RotateModel(const double angle,
+                                    const bool model1) const
+{
+  std::cout << "Rotating model state by " << angle << std::endl;
+  assert(this->worldManager);
+  const std::string moveModelName =
+    model1 ? this->modelNames[0] : this->modelNames[1];
+  BasicState modelState;
+  if (GetBasicModelState(moveModelName, this->worldManager, modelState) != 0)
+  {
+    std::cerr << "Could not get BasicModelState." << std::endl;
+    return false;
+  }
+
+  const ignition::math::Quaterniond axisQuat(this->collisionAxis, angle);
+  ignition::math::Quaterniond modelQuat = axisQuat;
+  if (modelState.RotEnabled())
+  {
+    ignition::math::Quaterniond
+      quat(modelState.rotation.w, modelState.rotation.x,
+            modelState.rotation.y, modelState.rotation.z);
+    modelQuat = quat * axisQuat;
+  }
+  modelState.SetRotation(modelQuat.X(), modelQuat.Y(),
+                         modelQuat.Z(), modelQuat.W());
 
   if ((this->worldManager->SetBasicModelState(moveModelName, modelState)
        != this->worldManager->GetNumWorlds()))
@@ -400,8 +471,8 @@ bool ModelCollider<WM>::MoveModelPerpendicular(const double distance,
   }
   this->worldManager->Update(1);
   return true;
-
 }
+
 
 //////////////////////////////////////////////////////////////////////////////
 template<class WM>

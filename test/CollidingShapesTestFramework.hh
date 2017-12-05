@@ -242,10 +242,11 @@ class CollidingShapesTestFramework
   private: std::mutex shapesOnAxisPosMtx;
 
   // \brief number of steps to move along the axis perpendicular to
-  //    the collision axis
+  //    the collision axis in the next iteration
   private: std::atomic<int> perpendicularSteps;
 
   // \brief angle to rotate the perpendicular axis around the collision axis
+  // in radians.
   private: std::atomic<double> perpendicularAngle;
 
   // the helper for colliding models

@@ -57,8 +57,8 @@ CollidingShapesGui::CollidingShapesGui()
   this->dial->setMaximum(CollidingShapesParams::MaxDialVal);
   this->dial->setValue(0);
   this->dial->resize(300, 20);
-  connect(this->dial, SIGNAL(valueChanged(int)),
-          this, SLOT(OnDialValueChanged(int)));
+  connect(this->dial, SIGNAL(sliderReleased()),
+          this, SLOT(OnDialValueChanged()));
   perpMoveShapesLayout->addWidget(this->dial);
   // Button up
   QPushButton * buttonDecPerp = new QPushButton("^");
@@ -219,8 +219,9 @@ void CollidingShapesGui::OnValueChanged(int val)
 }
 
 /////////////////////////////////////////////////
-void CollidingShapesGui::OnDialValueChanged(int val)
+void CollidingShapesGui::OnDialValueChanged()
 {
+  int val = this->dial->value();
   CollidingShapesMsg m;
   m.set_type(CollidingShapesMsg::PERPENDICULAR_ANGLE);
   double angle = val / (double) CollidingShapesParams::MaxDialVal;

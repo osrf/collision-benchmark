@@ -275,6 +275,9 @@ class GazeboPhysicsWorld
   // world is paused. So the paused state has to be managed
   // separately.
   private: bool paused;
+  // last time the pose of a model was set. Needed for a hack to
+  // avoid issues with the gazebo::physics::World pose publishing throttle.
+  private: gazebo::common::Time prevPoseSetTime;
 };  // class GazeboPhysicsWorld
 
 /// \def GazeboPhysicsWorldPtr

@@ -353,6 +353,9 @@ bool CollidingShapesTestFramework::RunImpl
 
   // perpendicularAngle in the last step
   double lastPerpendicularAngle = 0;
+  // number of steps translated along perpendicular axis
+  int totalPerpendicularSteps = 0;
+  const static float perpendicularStepSize = 0.1;
 
   // run the main loop
   while (gzMultiWorld->IsClientRunning())
@@ -405,15 +408,28 @@ bool CollidingShapesTestFramework::RunImpl
       }
       if (this->perpendicularSteps != 0)
       {
-        const static float stepSize = 0.1;
-        float moveDist = this->perpendicularSteps * stepSize;
-        this->modelCollider.MoveModelPerpendicular(moveDist, false);
+        float moveDist = this->perpendicularSteps * perpendicularStepSize;
+        this->modelCollider.MoveModelPerpendicular(moveDist,
+                                                   this->perpendicularAngle,
+                                                   false);
+        totalPerpendicularSteps += this->perpendicularSteps;
         this->perpendicularSteps = 0; // reset
       }
-      if ((this->perpendicularAngle - lastPerpendicularAngle) > 1e-02)
+      if (this->perpendicularAngle > 0)
       {
         std::cout << "UPDATE ANGLE: "<<this->perpendicularAngle<<std::endl;
+        // translate the shape back along the old perpendicular axis
+        float moveDist = totalPerpendicularSteps * perpendicularStepSize;
+        this->modelCollider.MoveModelPerpendicular(-moveDist,
+                                                   lastPerpendicularAngle,
+                                                   false);
+
+        // translate the shape back along the perpendicular step size
+        this->modelCollider.MoveModelPerpendicular(moveDist,
+                                                   this->perpendicularAngle,
+                                                   false);
         lastPerpendicularAngle = this->perpendicularAngle;
+        this->perpendicularAngle = -1;
       }
       {  // lock scope
         std::lock_guard<std::mutex> lock(this->triggeredSaveConfigMtx);
@@ -748,7 +764,7 @@ void CollidingShapesTestFramework::receiveControlMsg
       }
     case CollidingShapesMsg::PERPENDICULAR_ANGLE:
       {
-        std::cout <<"Perp angle " << _msg->double_value() << std::endl;
+        // std::cout <<"Perp angle " << _msg->double_value() << std::endl;
         this->perpendicularAngle = _msg->double_value() * M_PI/180.0;
         break;
       }

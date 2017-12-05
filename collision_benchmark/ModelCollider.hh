@@ -215,19 +215,32 @@ class ModelCollider
   //    engines report collision between the objects
   private: bool ModelsCollide(bool allWorlds) const;
 
-  // \brief gets an axis perpendicular to the \e axis.
+  // \brief Helper: gets an axis perpendicular to the \e axis, rotated around
+  // \e angle about \e axis.
   // Will always return the same vector for the same \e axis.
   // If \e axis is unit length, the returned vector is unit length too.
-  private: Vector3 GetAxisPerpendicular(const Vector3 &axis) const;
+  private: static Vector3 GetAxisPerpendicular(const Vector3 &axis,
+                                               const double angle);
 
   // \brief move a model perpendicular to the collision axis by this distance.
   // The perpendicular axis is always the same for the collision axis,
   // it is GetAxisPerpendicular().
   // \param[in] distance the distance
+  // \param[in] angle the angle which the perpendicular axis is rotated around
+  //    the collision axis
   // \param[in] model1 if true, model 1 is moved. Otherwise, model 2 is moved.
   // \return true on success, false if model state could not be set
   public: bool MoveModelPerpendicular(const double distance,
-                                      const bool model1 = true) const;
+                                      const double angle,
+                                      const bool model1) const;
+
+  // \brief rotate model about \e angle around the collision axis
+  // \param[in] axis the axis
+  // \param[in] angle the angle
+  // \param[in] model1 if true, model 1 is moved. Otherwise, model 2 is moved.
+  // \return true on success, false if model state could not be set
+  public: bool RotateModel(const double angle,
+                           const bool model1) const;
 
   // \brief the world manager
   private: WorldManagerPtr worldManager;

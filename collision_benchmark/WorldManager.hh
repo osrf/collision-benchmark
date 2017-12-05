@@ -547,7 +547,7 @@ class WorldManager
   /// calls MirrorWorld::Sync() and MirrorWorld::Update().
   public: void Update(int iter = 1, bool force = false)
   {
-    // we cannot just lock the worldMutex with a lock here, because
+    // we cannot just lock the worldMutex in the whole function, because
     // calling Update() may trigger the call of callbacks in this
     // class, called by the ControlServer. ControlServer implementations
     // may trigger the call of the callbacks from a different thread,

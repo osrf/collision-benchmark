@@ -613,6 +613,23 @@ bool GazeboPhysicsWorld::SetBasicModelState(const ModelID  &_id,
 
   // std::cout << "Setting world state " << _state << std::endl;
 
+  // Fix / HACK: Because World::posePub is throttled for publishing the
+  // pose, space the publishing of poses apart to make sure they are
+  // actually published.
+  // Get the current time
+  gazebo::common::Time currentTime = gazebo::common::Time::GetWallTime();
+  static const double updatePeriod = 1.0 / 60.0;
+  // Skip publication if the time difference is less than the update period.
+  double timeDiff = (currentTime - this->prevPoseSetTime).Double();
+  if (timeDiff < updatePeriod)
+  {
+    std::cout << "WARNING: Throttling the setting of the pose due to the "
+              << "gazebo::physics::World throttle on pose publishing. "
+              << __FILE__ << std::endl;
+    gazebo::common::Time::Sleep((updatePeriod - timeDiff) + 1e-03);
+  }
+  this->prevPoseSetTime = currentTime;
+
   m->SetWorldPose(pose);
 
   if (_state.ScaleEnabled())
@@ -682,9 +699,9 @@ void GazeboPhysicsWorld::Update(int steps, bool force)
     static bool printOnce = true;
     if (printOnce)
     {
-      std::cout << "DEBUG WARNING: The Gazebo world is not paused. "
+      std::cout << "WARNING: The Gazebo world is not paused. "
         <<"In GazeboPhysicsWorld::Update(), we operate it in "
-        <<"paused mode and rely on manually doint the updates "
+        <<"paused mode and rely on manually doing the updates "
         <<"instead of letting the gazebo world update "
         <<"itself continuously." << std::endl;
       printOnce = false;
