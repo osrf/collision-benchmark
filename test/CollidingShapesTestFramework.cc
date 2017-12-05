@@ -333,7 +333,14 @@ bool CollidingShapesTestFramework::RunImpl
             << "be started..." << std::endl;
   // Sleep while the start signal has not been triggered yet
   while (!gzMultiWorld->HasStarted())
+  {
+    static int cnt = 0;
+    ++cnt;
+    if (cnt > 10)
+      std::cerr << "WARNING: Waiting until simulation has started akes too long"
+                << std::endl;
     gazebo::common::Time::MSleep(100);
+  }
   std::cout << "CollidingShapesTestFramework: ... now starting simulation."
             << std::endl;
 
@@ -415,9 +422,8 @@ bool CollidingShapesTestFramework::RunImpl
         totalPerpendicularSteps += this->perpendicularSteps;
         this->perpendicularSteps = 0; // reset
       }
-      if (this->perpendicularAngle > 0)
+      if (fabs(lastPerpendicularAngle - this->perpendicularAngle) > 1e-06)
       {
-        std::cout << "UPDATE ANGLE: "<<this->perpendicularAngle<<std::endl;
         // translate the shape back along the old perpendicular axis
         float moveDist = totalPerpendicularSteps * perpendicularStepSize;
         this->modelCollider.MoveModelPerpendicular(-moveDist,
@@ -429,7 +435,6 @@ bool CollidingShapesTestFramework::RunImpl
                                                    this->perpendicularAngle,
                                                    false);
         lastPerpendicularAngle = this->perpendicularAngle;
-        this->perpendicularAngle = -1;
       }
       {  // lock scope
         std::lock_guard<std::mutex> lock(this->triggeredSaveConfigMtx);
@@ -629,6 +634,11 @@ void CollidingShapesTestFramework::CollisionBarHandler
             << "Waiting for gzclient model subscriber..." << std::endl;
   while (!modelPub->HasConnections())
   {
+    static int cnt = 0;
+    ++cnt;
+    if (cnt > 10)
+      std::cerr << "WARNING: Connecting to model publisher takes too long"
+                << std::endl;
     gazebo::common::Time::MSleep(500);
   }
   std::cout << "CollidingShapesTestFramework::CollisionBarHandler: "
@@ -640,6 +650,11 @@ void CollidingShapesTestFramework::CollisionBarHandler
             << "Waiting for gzclient pose subscriber..." << std::endl;
   while (!posePub->HasConnections())
   {
+    static int cnt = 0;
+    ++cnt;
+    if (cnt > 10)
+      std::cerr << "WARNING: Connecting to pose subsciber takes too long"
+                << std::endl;
     gazebo::common::Time::MSleep(500);
   }
   std::cout << "CollidingShapesTestFramework::CollisionBarHandler: "
@@ -765,7 +780,7 @@ void CollidingShapesTestFramework::receiveControlMsg
     case CollidingShapesMsg::PERPENDICULAR_ANGLE:
       {
         // std::cout <<"Perp angle " << _msg->double_value() << std::endl;
-        this->perpendicularAngle = _msg->double_value() * M_PI/180.0;
+        this->perpendicularAngle = _msg->double_value();
         break;
       }
     case CollidingShapesMsg::PERPENDICULAR_VALUE:

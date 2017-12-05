@@ -420,10 +420,10 @@ bool ModelCollider<WM>::MoveModelPerpendicular(const double distance,
   modelState.SetPosition(modelState.position.x + mvAxis.X(),
                          modelState.position.y + mvAxis.Y(),
                          modelState.position.z + mvAxis.Z());
-//  std::cout << "SET MODEL STATE: " << modelState << std::endl;
 
-  std::cout << "Moving model state by " << distance << ":" << mvAxis.X()
-            << ", " << mvAxis.Y() << ", " << mvAxis.Z() << std::endl;
+//  std::cout << "SET MODEL STATE: " << modelState << std::endl;
+//  std::cout << "Moving model state by " << distance << ":" << mvAxis.X()
+//            << ", " << mvAxis.Y() << ", " << mvAxis.Z() << std::endl;
 
   if ((this->worldManager->SetBasicModelState(moveModelName, modelState)
        != this->worldManager->GetNumWorlds()))

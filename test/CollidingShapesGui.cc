@@ -225,7 +225,7 @@ void CollidingShapesGui::OnDialValueChanged()
   CollidingShapesMsg m;
   m.set_type(CollidingShapesMsg::PERPENDICULAR_ANGLE);
   double angle = val / (double) CollidingShapesParams::MaxDialVal;
-  m.set_double_value(angle*360);
+  m.set_double_value(angle*2*M_PI);
   this->pub->Publish(m);
 }
 

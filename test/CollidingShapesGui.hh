@@ -61,7 +61,7 @@ typedef const boost::shared_ptr<const msgs::CollidingShapesMsg>
  *      - When PERPENDICULAR_VALUE is set, an int value indicates the number of
  *        steps a model should move away from the collision axis, on an axis
  *        perpendicular to the collision axis.
- *      - When PERPENDICULAR_ANGLE is set, a double angle [0..360] is returned
+ *      - When PERPENDICULAR_ANGLE is set, a double angle [0..2*M_PI] is returned
  *        which indicates the rotation of the shape around the collision axis
  *
  * Subscription:
@@ -88,7 +88,7 @@ class GAZEBO_VISIBLE CollidingShapesGui : public gazebo::GUIPlugin
   /// \brief Callback trigged when the slider is changed
   protected slots: void OnValueChanged(int value);
 
-  /// \brief Callback trigged when the slider is released
+  /// \brief Callback trigged when the slider is changed
   protected slots: void OnDialValueChanged();
 
   /// \brief Callback trigged when the button "<" is pressed.
