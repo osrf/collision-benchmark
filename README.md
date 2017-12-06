@@ -390,6 +390,10 @@ The models' **pose can be changed** relative to the collision axis in order
 to find critical collision configurations which happen when the models collide.
 To change the pose of the models, the Gazebo client transformation tools
 can be used.
+Alternatively the additional helper tools in the Gui overlay (the dial
+and the translation buttons), which transform the model along the axis 
+perpendicular to the collision axis (this is only a test tool though, so not
+more detail will be provided here).
 
 A **configuration can be saved** an loaded again at a later point (to load,
 use the command line argument ``-c <config-file>``).

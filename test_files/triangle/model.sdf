@@ -1,16 +1,14 @@
 <?xml version="1.0" ?>
 <sdf version="1.5">
-
-
   <model name='triangle'>
-    <static>1</static>
     <link name='link'>
       <collision name='collision'>
+        <pose frame=''>0 0 0 1.570796327 0 0</pose>
         <geometry>
-         <mesh>
+          <mesh>
            <uri>model://triangle/triangle.obj</uri>
-         </mesh>
-       </geometry>
+          </mesh>
+        </geometry>
         <surface>
           <contact>
              <collide_bitmask>0xffff</collide_bitmask>
@@ -24,6 +22,7 @@
         </surface>
       </collision>
       <visual name="triangle_visual">
+        <pose frame=''>0 0 0 1.570796327 0 0</pose>
         <geometry>
          <mesh>
            <uri>model://triangle/triangle.obj</uri>

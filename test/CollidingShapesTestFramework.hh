@@ -65,6 +65,12 @@ typedef const boost::shared_ptr<const msgs::CollidingShapesMsg>
  * To change the pose of the models, the Gazebo client transformation tools
  * can be used.
  *
+ * An additional helper tool to change the model pose is the "perpendicular
+ * axis" which is the axis perpendicular to the collision axis. It can be
+ * rotated around the collision axis and one model can be moved along
+ * this axis. This is only an additional helper to transform the pose of
+ * one model colliding with the other.
+ *
  * A configuration can then be saved an loaded again at a later point.
  * The saved configuration will not save the amount the models were
  * moved via the axis slider or the auto-collide function, but only the amount
