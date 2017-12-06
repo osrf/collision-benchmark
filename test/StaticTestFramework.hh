@@ -24,6 +24,15 @@
 #include <string>
 #include <vector>
 
+/**
+ * \brief Framework for the static test.
+ *
+ * Main implementation can be found in AABBTestWorldsAgreement().
+ * Is meant to be used with the gtest framework.
+ *
+ * \author Jennifer Buehler
+ * \date April 2017
+ */
 class StaticTestFramework : public MultipleWorldsTestFramework
 {
  protected:
@@ -37,65 +46,9 @@ class StaticTestFramework : public MultipleWorldsTestFramework
   virtual ~StaticTestFramework()
   {}
 
-
-  // \brief Initializes the framework and creates the world manager, but no
-  // worlds are added to it.
-  //
-  // Throws gtest assertions so needs to be called from top-level
-  // test function (nested function calls will not work correctly)
-  void Init();
-
-  // \brief Calls Init() and loads the empty world with all the given engines.
-  //
-  // Throws gtest assertions so needs to be called from top-level
-  // test function (nested function calls will not work correctly)
-  void InitMultipleEngines(const std::vector<std::string>& engines);
-
-  // \brief Calls Init() and loads the empty world \e numWorld times
-  // with the given engine by calling LoadOneEngine().
-  // Each world can be accessed in the world
-  // manager given the index [0..numWorlds-1].
-  //
-  // Throws gtest assertions so needs to be called from top-level
-  // test function (nested function calls will not work correctly)
-  void InitOneEngine(const std::string &engine,
-                     const unsigned int numWorlds);
-
-
-  // \brief Loads the empty world \e numWorld times with the given engine.
-  // If the world manager previously had \e n engines, then it will then have
-  // \e n + \e numWorld empty worlds loaded after this call.
-  // Each world can be accessed in the world
-  // manager given the index ``[n-1..n+numWorlds-1]``.
-  //
-  // Throws gtest assertions so needs to be called from top-level
-  // test function (nested function calls will not work correctly)
-  void LoadOneEngine(const std::string &engine,
-                     const unsigned int numWorlds);
-
-  // \brief Loads a shape into *all* worlds.
-  // You must call Init(), InitMultipleEngines() or InitOneEngine()
-  // before you can use this.
-  //
-  // Throws gtest assertions so needs to be called from top-level
-  // test function (nested function calls will not work correctly)
-  void LoadShape(const collision_benchmark::Shape::Ptr &shape,
-                 const std::string &modelName);
-
-
-  // \brief Loads a shape into the worlds at the given index \e worldIdx.
-  // You must call Init(), InitMultipleEngines() or InitOneEngine()
-  // before you can use this.
-  //
-  // Throws gtest assertions so needs to be called from top-level
-  // test function (nested function calls will not work correctly)
-  void LoadShape(const collision_benchmark::Shape::Ptr &shape,
-                 const std::string &modelName,
-                 const unsigned int worldIdx);
-
   // Two models, which must already have been loaded, are moved relative to
   // each other by iterating through states in which their AABBs intersect.
-  // Alll engines have to agree on the collision state (boolean collision).
+  // All engines have to agree on the collision state (boolean collision).
   // You need to use a loading function such as LoadShapes() before.
   //
   // Model 1 will remain stationary, while model 2 will
@@ -140,18 +93,6 @@ class StaticTestFramework : public MultipleWorldsTestFramework
                 const bool interactive = false,
                 const std::string &outputBasePath = "",
                 const std::string &outputSubdir = "");
-
- private:
-  // checks that AABB of model 1 and 2 are the same in all worlds and
-  // returns the two AABBs
-  // \param bbTol tolerance for comparison of bounding box sizes. The min/max
-  //    coordinates (per x,y,z) are allowed to vary by this much in the worlds.
-  // \return true if worlds are consistent, falsle otherwise
-  bool GetAABBs(const std::string &modelName1,
-                const std::string &modelName2,
-                const double bbTol,
-                collision_benchmark::GzAABB &m1,
-                collision_benchmark::GzAABB &m2);
 };
 
 #endif  // COLLISION_BENCHMARK_TEST_STATICTESTFRAMEWORK_H

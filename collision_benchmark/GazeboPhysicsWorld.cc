@@ -310,7 +310,7 @@ bool GazeboPhysicsWorld::SaveToFile(const std::string &filename,
     return false;
   }
 
-  if (!worldSdf->HasElement("world"))
+  if (worldSdf->GetName() != "world")
   {
     std::cerr << "Missing SDF 'world' element" << std::endl;
     return false;
