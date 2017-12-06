@@ -174,6 +174,7 @@ set(TEST_LIB_SRCS
     test/TestUtils.cc
     test/MultipleWorldsTestFramework.cc
     test/StaticTestFramework.cc
+    test/ContactsFlickerTestFramework.cc
     test/CollidingShapesTestFramework.cc
     test/CollidingShapesParams.cc)
 
@@ -207,6 +208,12 @@ target_link_libraries(static_test
   collision_benchmark collision_benchmark_test ${GTEST_BOTH_LIBRARIES})
 add_test(StaticTest static_test)
 add_dependencies(tests static_test)
+
+add_executable(contacts_flicker_test EXCLUDE_FROM_ALL test/ContactsFlicker_TEST.cc)
+target_link_libraries(contacts_flicker_test
+  collision_benchmark collision_benchmark_test ${GTEST_BOTH_LIBRARIES})
+add_test(StaticTest contacts_flicker_test)
+add_dependencies(tests contacts_flicker_test)
 
 # tutorials
 add_custom_target(tutorials)

@@ -86,6 +86,9 @@ class MultipleWorldsTestFramework : public ::testing::Test
   // test function (nested function calls will not work correctly)
   void Init();
 
+  // Called from Init(), to be used by subclasses.
+  virtual void InitSpecific() {}
+
   // \brief Calls Init() and loads the empty world with all the given engines.
   //
   // Throws gtest assertions so needs to be called from top-level
