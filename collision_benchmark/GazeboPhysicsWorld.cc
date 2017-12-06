@@ -623,9 +623,9 @@ bool GazeboPhysicsWorld::SetBasicModelState(const ModelID  &_id,
   double timeDiff = (currentTime - this->prevPoseSetTime).Double();
   if (timeDiff < updatePeriod)
   {
-    std::cout << "WARNING: Throttling the setting of the pose due to the "
+    /* std::cout << "WARNING: Throttling the setting of the pose due to the "
               << "gazebo::physics::World throttle on pose publishing. "
-              << __FILE__ << std::endl;
+              << __FILE__ << std::endl;*/
     gazebo::common::Time::Sleep((updatePeriod - timeDiff) + 1e-03);
   }
   this->prevPoseSetTime = currentTime;

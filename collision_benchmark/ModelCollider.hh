@@ -59,14 +59,14 @@ class ModelCollider
   // \param[in] modelName2 name of second model. Must be loaded in all worlds.
   // \return success flag
   public: bool Init(const WorldManagerPtr &worldManager,
-                    const Vector3 &collisionAxis,
+                    const ignition::math::Vector3d &collisionAxis,
                     const std::string &modelName1,
                     const std::string &modelName2);
 
   // \brief sets the collision axis
   // \param[in] collisionAxis the collision axis to use
   // \return axis accepted or not
-  public: bool SetCollisionAxis(const Vector3 &axis);
+  public: bool SetCollisionAxis(const ignition::math::Vector3d &axis);
 
   // \brief places the models at both ends of the collision axis.
   // This will move the first model to the origin and the second along the
@@ -109,7 +109,7 @@ class ModelCollider
   // \retval 0 success
   // \retval 1 \e stopWhenPassed was true and object centers have passed
   //      each other.
-  public: int MoveModelsAlongAxis(const float moveDist,
+  public: int MoveModelsAlongAxis(const double moveDist,
                                   const bool moveBoth = false,
                                   const bool stopWhenPassed = false);
 
@@ -219,8 +219,9 @@ class ModelCollider
   // \e angle about \e axis.
   // Will always return the same vector for the same \e axis.
   // If \e axis is unit length, the returned vector is unit length too.
-  private: static Vector3 GetAxisPerpendicular(const Vector3 &axis,
-                                               const double angle);
+  private: static ignition::math::Vector3d
+            GetAxisPerpendicular(const ignition::math::Vector3d &axis,
+                                 const double angle);
 
   // \brief move a model perpendicular to the collision axis by this distance.
   // The perpendicular axis is always the same for the collision axis,
@@ -234,12 +235,20 @@ class ModelCollider
                                       const double angle,
                                       const bool model1) const;
 
-  // \brief rotate model about \e angle around the collision axis
-  // \param[in] axis the axis
+  // \brief Aligns the model with the perpendicular axis.
+  // The collision axis can be placed at a position \e axisOrigin.
+  // The model itself will keep its orientation, only the models position
+  // will change.
+  // Essentially this action amounts to first translating the model to its
+  // projection on the collision axis and then translating it by the same
+  // distance along the perpendicular axis which is returned by
+  // GetAxisPerpendicular(this->collisionAxis, angle).
   // \param[in] angle the angle
+  // \param[in] axisOrigin the origin of the axis
   // \param[in] model1 if true, model 1 is moved. Otherwise, model 2 is moved.
   // \return true on success, false if model state could not be set
-  public: bool RotateModel(const double angle,
+  public: bool RotateModelToPerpendicular(const double angle,
+                           const ignition::math::Vector3d &axisOrigin,
                            const bool model1) const;
 
   // \brief the world manager
@@ -249,7 +258,7 @@ class ModelCollider
   private: std::string modelNames[2];
 
   // \brief Axis to use for collision.
-  private: Vector3 collisionAxis;
+  private: ignition::math::Vector3d collisionAxis;
 
 };  // class
 

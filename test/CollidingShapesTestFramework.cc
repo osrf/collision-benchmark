@@ -356,13 +356,12 @@ bool CollidingShapesTestFramework::RunImpl
   // In a variable, remember the value which model 2 was moved by either
   // AutoCollide or by the sliding axis. This value will not be considered when
   // saving the configuration.
-  float model2MovedAlongAxis = 0;
+  double model2MovedAlongAxis = 0;
 
   // perpendicularAngle in the last step
   double lastPerpendicularAngle = 0;
-  // number of steps translated along perpendicular axis
-  int totalPerpendicularSteps = 0;
-  const static float perpendicularStepSize = 0.1;
+  // step size to move along perpendicular axis
+  const static double perpendicularStepSize = 0.1;
 
   // run the main loop
   while (gzMultiWorld->IsClientRunning())
@@ -407,34 +406,29 @@ bool CollidingShapesTestFramework::RunImpl
         std::lock_guard<std::mutex> lock(this->shapesOnAxisPosMtx);
         if (this->shapesOnAxisPos != shapesOnAxisPrev)
         {
-          float moveDist = (shapesOnAxisPrev - this->shapesOnAxisPos)*sliderStepSize;
+          double moveDist = (shapesOnAxisPrev - this->shapesOnAxisPos)*sliderStepSize;
           this->modelCollider.MoveModelsAlongAxis(moveDist, moveBoth);
           model2MovedAlongAxis += -moveDist;
           shapesOnAxisPrev = this->shapesOnAxisPos;
         }
       }
+      const static double angleThres = 0; // 5 * M_PI/180.0;
+      if (fabs(lastPerpendicularAngle - this->perpendicularAngle) > angleThres)
+      {
+        // std::cout << "Perpenicular angle: " << this->perpendicularAngle << std::endl;
+
+        this->modelCollider.RotateModelToPerpendicular(this->perpendicularAngle,
+                                        ignition::math::Vector3d(0,0,0), false);
+
+        lastPerpendicularAngle = this->perpendicularAngle;
+      }
       if (this->perpendicularSteps != 0)
       {
-        float moveDist = this->perpendicularSteps * perpendicularStepSize;
+        double moveDist = this->perpendicularSteps * perpendicularStepSize;
         this->modelCollider.MoveModelPerpendicular(moveDist,
                                                    this->perpendicularAngle,
                                                    false);
-        totalPerpendicularSteps += this->perpendicularSteps;
         this->perpendicularSteps = 0; // reset
-      }
-      if (fabs(lastPerpendicularAngle - this->perpendicularAngle) > 1e-06)
-      {
-        // translate the shape back along the old perpendicular axis
-        float moveDist = totalPerpendicularSteps * perpendicularStepSize;
-        this->modelCollider.MoveModelPerpendicular(-moveDist,
-                                                   lastPerpendicularAngle,
-                                                   false);
-
-        // translate the shape back along the perpendicular step size
-        this->modelCollider.MoveModelPerpendicular(moveDist,
-                                                   this->perpendicularAngle,
-                                                   false);
-        lastPerpendicularAngle = this->perpendicularAngle;
       }
       {  // lock scope
         std::lock_guard<std::mutex> lock(this->triggeredSaveConfigMtx);

@@ -31,7 +31,7 @@ ModelCollider<WM>::ModelCollider()
 /////////////////////////////////////////////////////////////////////////////
 template<class WM>
 bool ModelCollider<WM>::Init(const WorldManagerPtr &wManager,
-                         const Vector3 &collAxis,
+                         const ignition::math::Vector3d &collAxis,
                          const std::string &modelName1,
                          const std::string &modelName2)
 {
@@ -63,7 +63,8 @@ bool ModelCollider<WM>::Init(const WorldManagerPtr &wManager,
 
 /////////////////////////////////////////////////////////////////////////////
 template<class WM>
-bool ModelCollider<WM>::SetCollisionAxis(const Vector3 &collAxis)
+bool
+ModelCollider<WM>::SetCollisionAxis(const ignition::math::Vector3d &collAxis)
 {
   if (collAxis.Length() < 1e-06)
   {
@@ -190,7 +191,8 @@ bool ModelCollider<WM>::PlaceModels(const float modelsGap,
   double aabbDist = min2.Dot(collisionAxis) - max1.Dot(collisionAxis);
   // distance to move model 2 by
   double moveM2Distance = desiredDistance - aabbDist;
-  Vector3 moveM2AlongAxis = this->collisionAxis * moveM2Distance;
+  ignition::math::Vector3d moveM2AlongAxis
+    = this->collisionAxis * moveM2Distance;
   collision_benchmark::Vector3 newModelPos2 = modelState2.position;
   newModelPos2.x += moveM2AlongAxis.X();
   newModelPos2.y += moveM2AlongAxis.Y();
@@ -281,7 +283,7 @@ double ModelCollider<WM>::AutoCollide(const bool allWorlds,
 
 //////////////////////////////////////////////////////////////////////////////
 template<class WM>
-int ModelCollider<WM>::MoveModelsAlongAxis(const float moveDist,
+int ModelCollider<WM>::MoveModelsAlongAxis(const double moveDist,
                                             const bool moveBoth,
                                             const bool stopWhenPassed)
 {
@@ -305,12 +307,10 @@ int ModelCollider<WM>::MoveModelsAlongAxis(const float moveDist,
   {
     // project both poses onto collision axis and see if the models
     // center poses have passed each other along the collision axis
-    ignition::math::Vector3d pos1(modelState1.position.x,
-                                  modelState1.position.y,
-                                  modelState1.position.z);
-    ignition::math::Vector3d pos2(modelState2.position.x,
-                                  modelState2.position.y,
-                                  modelState2.position.z);
+    ignition::math::Vector3d
+      pos1(collision_benchmark::ConvIgn<double>(modelState1.position));
+    ignition::math::Vector3d
+      pos2(collision_benchmark::ConvIgn<double>(modelState2.position));
     double dot1 = pos1.Dot(this->collisionAxis);
     double dot2 = pos2.Dot(this->collisionAxis);
     if (dot1 > dot2)
@@ -357,16 +357,16 @@ bool VectorsCollinear(const Vec &v1, const double v1Len,
 
 //////////////////////////////////////////////////////////////////////////////
 template<class WM>
-typename WM::Vector3
-ModelCollider<WM>::GetAxisPerpendicular(const Vector3 &axis,
+typename ignition::math::Vector3d
+ModelCollider<WM>::GetAxisPerpendicular(const ignition::math::Vector3d &axis,
                                         const double angle)
 {
-  static const Vector3 unitX(1,0,0);
-  static const Vector3 unitY(0,1,0);
-  static const Vector3 unitZ(0,0,1);
-  static const float dotTolerance = 1e-02;
-  const float axisLength = axis.Length();
-  Vector3 ret;
+  static const ignition::math::Vector3d unitX(1,0,0);
+  static const ignition::math::Vector3d unitY(0,1,0);
+  static const ignition::math::Vector3d unitZ(0,0,1);
+  static const double dotTolerance = 1e-02;
+  const double axisLength = axis.Length();
+  ignition::math::Vector3d ret;
   if (!VectorsCollinear(axis, axisLength, unitX, dotTolerance))
   {
     ret = axis.Cross(unitX);
@@ -383,7 +383,7 @@ ModelCollider<WM>::GetAxisPerpendicular(const Vector3 &axis,
   {
     // will only get here unless dotTolerance is large or the
     // axis is not long enough. Return any vector in this case.
-    ret = Vector3(1,0,0);
+    ret.Set(1,0,0);
     std::cout << "WARNING: no origin axis found suitable. "
               << __FILE__ << std::endl;
   }
@@ -414,7 +414,7 @@ bool ModelCollider<WM>::MoveModelPerpendicular(const double distance,
     return false;
   }
 
-  const Vector3 mvAxis =
+  const ignition::math::Vector3d mvAxis =
     GetAxisPerpendicular(this->collisionAxis, angle) * distance;
 
   modelState.SetPosition(modelState.position.x + mvAxis.X(),
@@ -432,15 +432,16 @@ bool ModelCollider<WM>::MoveModelPerpendicular(const double distance,
     return false;
   }
   this->worldManager->Update(1);
-
   return true;
-
 }
+
+
+//////////////////////////////////////////////////////////////////////////////
 template<class WM>
-bool ModelCollider<WM>::RotateModel(const double angle,
+bool ModelCollider<WM>::RotateModelToPerpendicular(const double angle,
+                                    const ignition::math::Vector3d &axisOrigin,
                                     const bool model1) const
 {
-  std::cout << "Rotating model state by " << angle << std::endl;
   assert(this->worldManager);
   const std::string moveModelName =
     model1 ? this->modelNames[0] : this->modelNames[1];
@@ -451,17 +452,22 @@ bool ModelCollider<WM>::RotateModel(const double angle,
     return false;
   }
 
-  const ignition::math::Quaterniond axisQuat(this->collisionAxis, angle);
-  ignition::math::Quaterniond modelQuat = axisQuat;
-  if (modelState.RotEnabled())
-  {
-    ignition::math::Quaterniond
-      quat(modelState.rotation.w, modelState.rotation.x,
-            modelState.rotation.y, modelState.rotation.z);
-    modelQuat = quat * axisQuat;
-  }
-  modelState.SetRotation(modelQuat.X(), modelQuat.Y(),
-                         modelQuat.Z(), modelQuat.W());
+  // first, project the model origin on the axis and translate it there.
+  ignition::math::Vector3d
+    modelPos(collision_benchmark::ConvIgn<double>(modelState.position));
+  const double modelProjLen = (modelPos - axisOrigin).Dot(this->collisionAxis);
+  const ignition::math::Vector3d
+    modelProj = axisOrigin + this->collisionAxis * modelProjLen;
+  const ignition::math::Vector3d mvModelTowards = modelProj - modelPos;
+
+  const ignition::math::Vector3d mvModelAway =
+    GetAxisPerpendicular(this->collisionAxis, angle) * mvModelTowards.Length();
+
+  const ignition::math::Vector3d mvModel = mvModelTowards + mvModelAway;
+
+  modelState.SetPosition(modelState.position.x + mvModel.X(),
+                         modelState.position.y + mvModel.Y(),
+                         modelState.position.z + mvModel.Z());
 
   if ((this->worldManager->SetBasicModelState(moveModelName, modelState)
        != this->worldManager->GetNumWorlds()))

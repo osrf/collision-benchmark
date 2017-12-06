@@ -253,7 +253,7 @@ class CollidingShapesTestFramework
   private: ModelColliderT modelCollider;
 
   // \brief Axis to use for collision.
-  private: const Vector3 collisionAxis;
+  private: const ignition::math::Vector3d collisionAxis;
 
   // \brief Names of both loaded models
   private: std::string loadedModelNames[2];
