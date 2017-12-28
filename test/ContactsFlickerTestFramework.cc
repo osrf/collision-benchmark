@@ -50,22 +50,30 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
   ASSERT_NE(worldManager.get(), nullptr) << "No valid world manager created";
 
   worldManager->SetDynamicsEnabled(false);
-  worldManager->SetPaused(false);
+  worldManager->SetPaused(true);
 
   int numWorlds = worldManager->GetNumWorlds();
 
-  // Set models to their initial pose.
-  // First, place models at the origin in default orientation
-  // (in case they were loaded form SDF they may have a pose different
-  // to the origin, but here we want to start them at the origin).
-  BasicState originPose;
-  originPose.SetPosition(Vector3(0, 0, 0));
-  originPose.SetRotation(Quaternion(0, 0, 0, 1));
-  int cnt1 = worldManager->SetBasicModelState(modelName1, originPose);
-  ASSERT_EQ(cnt1, numWorlds) << "All worlds should have been updated";
-  int cnt2 = worldManager->SetBasicModelState(modelName2, originPose);
-  ASSERT_EQ(cnt2, numWorlds) << "All worlds should have been updated";
+  ignition::math::Vector3d collisionAxis(0,1,0);
+  // initialize the model collider helper
+  bool collInit = this->modelCollider.Init(worldManager, collisionAxis,
+                                modelName1, modelName2);
+  ASSERT_TRUE(collInit) << "Could not initialize model collider";
 
+  BasicState initModelState1, initModelState2;
+  // place models into their default position, with only a tiny gap
+  // to ensure also boxes initially not colliding
+  float modelsGap = 1e-2;
+  bool placeSuccess = this->modelCollider.PlaceModels(modelsGap, false,
+                                                      initModelState1,
+                                                      initModelState2);
+  ASSERT_TRUE(placeSuccess) << "Could not place models in initial pose";
+
+  ASSERT_TRUE(initModelState1.PosEnabled() &&
+              initModelState2.PosEnabled())
+    << "Models are expected to have a position";
+
+  worldManager->SetPaused(false);
   if (interactive)
   {
     std::cout << "Now start gzclient if you would like "
@@ -74,12 +82,152 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
     getchar();
   }
 
+
   std::cout << "Now starting test." << std::endl;
-  while (true)
+
+  ///// Iterate through all tests states.
+  //////////////////////////////////////
+  /// Move model 2 in circles of gradually increasing size relative to model 2
+  /// (alternatively we could iterate through a *grid* lying on the plane
+  /// to which the collision axis is the normal, but circles on this plane
+  /// will also cover the space which the two models can collide on).
+  /// Each time the model is moved one step along a circle, auto-collide the
+  /// models in order to get the exact point of collision.
+  /// We call this circle model2 is moved on the "outer circle".
+  /// The "inner circle" is a much smaller circle and
+  /// this is used at each pose on an outer circle to slightly vary the
+  /// models pose to do the test. The point moves within a small
+  /// neighbourhood (inner circle radius): the contacts are not meant to vary
+  /// greatly, if the collision status (collide yes/no) remains the same.
+
+  // Auto-collide parameters
+  // ----------------
+  const bool acAllWorlds = false;
+  const double acStepSize = 1e-03;
+  ASSERT_LT(acStepSize, modelsGap)
+    << "Test setup inconsistency: gap should be > auto-collide step size";
+  const bool acStopWhenPassed = true;
+  float acMaxMovePerSec = 0.4;
+  if (!interactive) acMaxMovePerSec = -1;
+
+  // Circle parameters
+  // ----------------
+
+  // number of outer circles
+  // TODO: This should be determined by the projection of both shapes on the plane
+  const int numOuterCircles = 20;
+  const int numInnerCircles = 2;
+  // Radius increase of outer circle per iteration
+  const float outerCircleRadiusInc = 0.1;
+  // Radius increase of inner circle per iteration
+  const float innerCircleRadiusInc = 0.02;
+  // number of subdivisions for the outer circle
+  const int numOuterCircleSubdivisions = 30;
+  // number of subdivisions for the inner circle
+  const int numInnerCircleSubdivisions = 30;
+  // subdivisions for orientation change test (see code below)
+  const int numOriSubdivisions = 30;
+
+  std::cout << "Now iterating through all states." << std::endl;
+  for (int oc = 0; oc < numOuterCircles; ++oc)
   {
-    int numSteps = 1;
+    // std::cout << "Outer circle " << oc << std::endl;
+    // move model along the outer circle in the requested number of subdivisions
+    for (int ocSubDiv = 0; ocSubDiv < numOuterCircleSubdivisions; ++ocSubDiv)
+    {
+      // rotate the model to the right place on the circle
+      const static double outerAngleStep
+        = 360.0/numOuterCircleSubdivisions * M_PI/180;
+      double outerAngle = ocSubDiv * outerAngleStep;
+
+      // move models along circle Radius
+      BasicState outerCurrMs2;
+      this->modelCollider.MoveModelPerpendicular((oc+1)*outerCircleRadiusInc,
+                     outerAngle, false, true, &initModelState2, &outerCurrMs2);
+      const ignition::math::Vector3d outerCurrModelPos
+        = collision_benchmark::ConvIgn<double>(outerCurrMs2.position);
+      const ignition::math::Quaterniond outerCurrModelRot
+        = collision_benchmark::ConvIgn<double>(outerCurrMs2.rotation);
+
+      // auto-collide models
+      // std::cout << "Auto-collide at angle " << outerAngle << std::endl;
+      this->modelCollider.AutoCollide(acAllWorlds, false, acStepSize,
+                                      acMaxMovePerSec, acStopWhenPassed,
+                                      NULL, &outerCurrMs2);
+
+      // do the inner circle movement and the test
+      ////////////////////////////////////////////////
+      for (int ic = 0; ic < numInnerCircles; ++ic)
+      {
+        // std::cout << "Inner circle " << ic << std::endl;
+        // move models along circle Radius
+        this->modelCollider.MoveModelPerpendicular((ic+1)*innerCircleRadiusInc,
+                                                 0, false, true, &outerCurrMs2);
+        // move model along the inner circle in the requested
+        // number of subdivisions
+        for (int icSubDiv = 0; icSubDiv < numInnerCircleSubdivisions; ++icSubDiv)
+        {
+          // first rotate the model to the right place on the circle
+          const static double innerAngleStep
+              = 360.0/numInnerCircleSubdivisions * M_PI/180;
+          double innerAngle = icSubDiv * innerAngleStep;
+          this->modelCollider.RotateModelToPerpendicular(innerAngle,
+                                                         outerCurrModelPos,
+                                                         false, true);
+          if (interactive) gazebo::common::Time::MSleep(10);
+        }
+      }
+
+      // re-set to model pose before the inner circle, and then do slight
+      // perturbations in the orientation
+      ASSERT_EQ(worldManager->SetBasicModelState(modelName2, outerCurrMs2),
+                worldManager->GetNumWorlds())
+        << "Could not set model pose to required pose";
+
+      /// Orientation change test
+      /////////////////////
+      // the orientation is changed as if the shape was fixed to an axis
+      // which initially equals the collision axis, and this axis then walks
+      // along the surface of a cone.
+
+      // First, get the coordinate system around the collision axis
+      const ignition::math::Vector3d collisionAxis = this->modelCollider.GetCollisionAxis();
+      const ignition::math::Vector3d perpAxis = this->modelCollider.GetAxisPerpendicular(0);
+      const ignition::math::Vector3d coneRotAxis = collisionAxis.Cross(perpAxis);
+
+      // Compute quaternion for the cone opening
+      const float coneAngle = 0.5 * M_PI/180;
+      const ignition::math::Quaterniond qCone(coneRotAxis, coneAngle);
+
+      // Iterate through one round around the cone
+      for (int oriSubDiv = 0; oriSubDiv < numOriSubdivisions; ++oriSubDiv)
+      {
+        const static double oriAngleStep = 360.0/numOriSubdivisions * M_PI/180;
+        double oriAngle = oriSubDiv * oriAngleStep;
+        double f = oriSubDiv/(double)numOriSubdivisions * 2*M_PI;
+        ignition::math::Quaterniond q(cos(f)*coneAngle, sin(f)*coneAngle, 0);
+        q = q * outerCurrModelRot;
+
+        BasicState oriState = outerCurrMs2;
+        oriState.rotation = collision_benchmark::Conv(q);
+        ASSERT_EQ(worldManager->SetBasicModelState(modelName2, oriState),
+                worldManager->GetNumWorlds())
+            << "Could not set model pose to required pose";
+        if (interactive) gazebo::common::Time::MSleep(100);
+      }
+      // reset model pose again
+      ASSERT_EQ(worldManager->SetBasicModelState(modelName2, outerCurrMs2),
+                worldManager->GetNumWorlds())
+        << "Could not set model pose to required pose";
+
+      if (interactive) gazebo::common::Time::MSleep(1000);
+    }
+  }
+/*  while (true)
+  {
+    const int numSteps = 1;
     worldManager->Update(numSteps);
     gazebo::common::Time::MSleep(1000);
-  }
+  }*/
   std::cout << "ContactsFlicker test finished. " << std::endl;
 }

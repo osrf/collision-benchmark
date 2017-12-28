@@ -244,7 +244,9 @@ double ModelCollider<WM>::AutoCollide(const bool allWorlds,
                                   const bool moveBoth,
                                   const double stepSize,
                                   const float maxMovePerSec,
-                                  const bool stopWhenPassed)
+                                  const bool stopWhenPassed,
+                                  BasicState *ms1,
+                                  BasicState *ms2)
 {
   assert(this->worldManager);
   double moved = 0;
@@ -270,7 +272,8 @@ double ModelCollider<WM>::AutoCollide(const bool allWorlds,
         continue;
       }
     }
-    if (MoveModelsAlongAxis(stepSize, moveBoth, stopWhenPassed) != 0)
+    if (MoveModelsAlongAxis(stepSize, moveBoth,
+                            stopWhenPassed, true, ms1, ms2) != 0)
     {
       std::cout << "Stopping Auto-Collide because objects weren't moved"
                 << std::endl;
@@ -284,14 +287,18 @@ double ModelCollider<WM>::AutoCollide(const bool allWorlds,
 //////////////////////////////////////////////////////////////////////////////
 template<class WM>
 int ModelCollider<WM>::MoveModelsAlongAxis(const double moveDist,
-                                            const bool moveBoth,
-                                            const bool stopWhenPassed)
+                                           const bool moveBoth,
+                                           const bool stopWhenPassed,
+                                           const bool worldUpdate,
+                                           BasicState *ms1,
+                                           BasicState *ms2)
 {
   assert(this->worldManager);
   // get state of both models
   BasicState modelState1, modelState2;
-  // get the states of the models as loaded in their original pose
-  if (moveBoth &&
+  // get the states of the models as loaded in their original pose.
+  // We need the state of model 1 only if moveBoth or stopWhenPassed are true.
+  if ((moveBoth || stopWhenPassed) &&
       (GetBasicModelState(modelNames[0], this->worldManager, modelState1) != 0))
   {
     std::cerr << "Could not get BasicModelState." << std::endl;
@@ -317,6 +324,8 @@ int ModelCollider<WM>::MoveModelsAlongAxis(const double moveDist,
     {
       std::cout << "Objects centers have passed on collision axis, "
                 << "not moving further. " << std::endl;
+      if (moveBoth && ms1) *ms1 = modelState1;
+      if (ms2) *ms2 = modelState2;
       return 1;
     }
   }
@@ -328,11 +337,13 @@ int ModelCollider<WM>::MoveModelsAlongAxis(const double moveDist,
     modelState1.SetPosition(modelState1.position.x + mv.X(),
                             modelState1.position.y + mv.Y(),
                             modelState1.position.z + mv.Z());
+    if (ms1) *ms1 = modelState1;
   }
 
   modelState2.SetPosition(modelState2.position.x - mv.X(),
                           modelState2.position.y - mv.Y(),
                           modelState2.position.z - mv.Z());
+  if (ms2) *ms2 = modelState2;
 
   if ((moveBoth &&
        (this->worldManager->SetBasicModelState(modelNames[0], modelState1)
@@ -343,7 +354,7 @@ int ModelCollider<WM>::MoveModelsAlongAxis(const double moveDist,
     std::cerr << "Could not set all model poses" << std::endl;
     return -1;
   }
-  this->worldManager->Update(1);
+  if (worldUpdate) this->worldManager->Update(1);
   return 0;
 }
 
@@ -353,6 +364,14 @@ bool VectorsCollinear(const Vec &v1, const double v1Len,
                       const Vec &v2, const double tolerance)
 {
   return fabs(fabs(v1.Dot(v2))-v1Len) < tolerance;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+template<class WM>
+typename ignition::math::Vector3d
+ModelCollider<WM>::GetAxisPerpendicular(const double angle) const
+{
+  return GetAxisPerpendicular(this->collisionAxis, angle);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -402,13 +421,21 @@ ModelCollider<WM>::GetAxisPerpendicular(const ignition::math::Vector3d &axis,
 template<class WM>
 bool ModelCollider<WM>::MoveModelPerpendicular(const double distance,
                                                const double angle,
-                                               const bool model1) const
+                                               const bool model1,
+                                               const bool worldUpdate,
+                                               const BasicState *fromState,
+                                               BasicState *endState) const
 {
   assert(this->worldManager);
   const std::string moveModelName =
     model1 ? this->modelNames[0] : this->modelNames[1];
   BasicState modelState;
-  if (GetBasicModelState(moveModelName, this->worldManager, modelState) != 0)
+  if (fromState)
+  {
+    modelState = *fromState;
+  }
+  else if (GetBasicModelState(moveModelName, this->worldManager,
+                              modelState) != 0)
   {
     std::cerr << "Could not get BasicModelState." << std::endl;
     return false;
@@ -431,7 +458,11 @@ bool ModelCollider<WM>::MoveModelPerpendicular(const double distance,
     std::cerr << "Could not set all model poses to origin" << std::endl;
     return false;
   }
-  this->worldManager->Update(1);
+  if (endState)
+  {
+    *endState = modelState;
+  }
+  if (worldUpdate) this->worldManager->Update(1);
   return true;
 }
 
@@ -440,7 +471,8 @@ bool ModelCollider<WM>::MoveModelPerpendicular(const double distance,
 template<class WM>
 bool ModelCollider<WM>::RotateModelToPerpendicular(const double angle,
                                     const ignition::math::Vector3d &axisOrigin,
-                                    const bool model1) const
+                                    const bool model1,
+                                    const bool worldUpdate) const
 {
   assert(this->worldManager);
   const std::string moveModelName =
@@ -475,7 +507,7 @@ bool ModelCollider<WM>::RotateModelToPerpendicular(const double angle,
     std::cerr << "Could not set all model poses to origin" << std::endl;
     return false;
   }
-  this->worldManager->Update(1);
+  if (worldUpdate) this->worldManager->Update(1);
   return true;
 }
 

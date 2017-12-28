@@ -20,6 +20,7 @@
 #include <test/MultipleWorldsTestFramework.hh>
 #include <test/TestUtils.hh>
 #include <collision_benchmark/Shape.hh>
+#include <collision_benchmark/ModelCollider.hh>
 
 #include <string>
 #include <vector>
@@ -39,6 +40,8 @@ class ContactsFlickerTestFramework : public MultipleWorldsTestFramework
             GzContactInfo;
   typedef GzContactInfo::Ptr GzContactInfoPtr;
 
+  typedef collision_benchmark::ModelCollider<GzWorldManager> ModelColliderT;
+
   ContactsFlickerTestFramework():
     MultipleWorldsTestFramework()
   {}
@@ -50,6 +53,9 @@ class ContactsFlickerTestFramework : public MultipleWorldsTestFramework
                    const bool interactive,
                    const std::string &outputBasePath,
                    const std::string &outputSubdir);
+
+  // the helper for colliding models
+  private: ModelColliderT modelCollider;
 };
 
 #endif  // COLLISION_BENCHMARK_TEST_CONTACTSFLICKERFRAMEWORK_H

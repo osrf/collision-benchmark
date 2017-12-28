@@ -92,9 +92,9 @@ void StaticTestFramework::AABBTestWorldsAgreement(const std::string &modelName1,
   int cnt = worldManager->SetBasicModelState(modelName2, bstate2);
   ASSERT_EQ(cnt, numWorlds) << "All worlds should have been updated";
 
-  float cellSizeX = grid.size().X() * cellSizeFactor;
-  float cellSizeY = grid.size().Y() * cellSizeFactor;
-  float cellSizeZ = grid.size().Z() * cellSizeFactor;
+  const float cellSizeX = grid.size().X() * cellSizeFactor;
+  const float cellSizeY = grid.size().Y() * cellSizeFactor;
+  const float cellSizeZ = grid.size().Z() * cellSizeFactor;
   /* std::cout << "GRID : " <<  grid.min << ", " << grid.max << std::endl;
   std::cout << "cell size : " <<  cellSizeX << ", " <<cellSizeY << ", "
             << cellSizeZ << std::endl; */

@@ -40,6 +40,7 @@ namespace collision_benchmark
 /**
  * \brief Helper class which loads up a MultpleWorldsServer and a gzclient
  * at the same time.
+ *
  * Will also load the collision benchmark GUI (collision_benchmark::ClientGui)
  * and provides the option to load additional GUI interfaces.
  *

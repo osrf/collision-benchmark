@@ -361,7 +361,7 @@ bool CollidingShapesTestFramework::RunImpl
   // perpendicularAngle in the last step
   double lastPerpendicularAngle = 0;
   // step size to move along perpendicular axis
-  const static double perpendicularStepSize = 0.1;
+  const static double perpendicularStepSize = 0.05;
 
   // run the main loop
   while (gzMultiWorld->IsClientRunning())

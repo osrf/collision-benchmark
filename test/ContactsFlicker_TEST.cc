@@ -18,6 +18,7 @@
 #include <collision_benchmark/PrimitiveShape.hh>
 #include <collision_benchmark/SimpleTriMeshShape.hh>
 #include <collision_benchmark/BasicTypes.hh>
+#include <collision_benchmark/GazeboModelLoader.hh>
 
 #include <collision_benchmark/MeshShapeGeneratorVtk.hh>
 
@@ -29,6 +30,7 @@
 using collision_benchmark::Shape;
 using collision_benchmark::PrimitiveShape;
 using collision_benchmark::SimpleTriMeshShape;
+using collision_benchmark::GazeboModelLoader;
 
 // tolerance for values close to zero: All contacts as close to zero will be
 // considered "just touching" and disagreement of engines won't be triggered.
@@ -68,16 +70,18 @@ TEST_P(ContactsFlickerTestWithParam, BoxTriangleTest)
   // XXX HACK: For now, only test with ODE
   if (engine != "ode") return;
 
-  // Model 1
-  std::string modelName1 = "model1";
-  Shape::Ptr shape1(PrimitiveShape::CreateBox(2, 2, 2));
-  // Model 2
-  std::string modelName2 = "model2";
-  Shape::Ptr shape2(PrimitiveShape::CreateCylinder(1, 3));
+  std::string boxSDF = GazeboModelLoader::GetModelSdfFilename("box");
+  std::string triangleSDF = GazeboModelLoader::GetModelSdfFilename("triangle");
+
+  ASSERT_NE(triangleSDF, "") << "Triangle model not found";
+  ASSERT_NE(boxSDF, "") << "Box model not found";
+
+  std::string modelName1 = "box";
+  std::string modelName2 = "triangle";
 
   InitOneEngine(engine, 1);
-  LoadShape(shape1, modelName1);
-  LoadShape(shape2, modelName2);
+  LoadModel(boxSDF, modelName1);
+  LoadModel(triangleSDF, modelName2);
   static const bool interactive = defaultInteractive;
   FlickerTest(modelName1, modelName2,
               interactive, defaultOutputPath, "BoxCylinderTest");

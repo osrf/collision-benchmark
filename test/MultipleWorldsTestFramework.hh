@@ -137,6 +137,25 @@ class MultipleWorldsTestFramework : public ::testing::Test
                  const std::string &modelName,
                  const unsigned int worldIdx);
 
+  // \brief Loads a model into *all* worlds.
+  // You must call Init(), InitMultipleEngines() or InitOneEngine()
+  // before you can use this.
+  //
+  // Throws gtest assertions so needs to be called from top-level
+  // test function (nested function calls will not work correctly)
+  void LoadModel(const std::string &modelFile,
+                 const std::string &modelName);
+
+  // \brief Loads a model into the worlds at the given index \e worldIdx.
+  // You must call Init(), InitMultipleEngines() or InitOneEngine()
+  // before you can use this.
+  //
+  // Throws gtest assertions so needs to be called from top-level
+  // test function (nested function calls will not work correctly)
+  void LoadModel(const std::string &modelFile,
+                 const std::string &modelName,
+                 const unsigned int worldIdx);
+
   // checks that AABB of model 1 and 2 are the same in all worlds and
   // returns the two AABBs
   // \param bbTol tolerance for comparison of bounding box sizes. The min/max

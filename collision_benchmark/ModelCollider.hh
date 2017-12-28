@@ -67,6 +67,10 @@ class ModelCollider
   // \param[in] collisionAxis the collision axis to use
   // \return axis accepted or not
   public: bool SetCollisionAxis(const ignition::math::Vector3d &axis);
+  public: ignition::math::Vector3d GetCollisionAxis() const
+          {
+            return this->collisionAxis;
+          }
 
   // \brief places the models at both ends of the collision axis.
   // This will move the first model to the origin and the second along the
@@ -105,13 +109,21 @@ class ModelCollider
   //    direction. This is not a reliable way to determine whether the models
   //    could theoretically not collide any more when moving in this direction,
   //    but in most cases (with convex shapes) this will be true.
+  // \param[in] worldUpdate if true, the worlds are updated upon success.
+  // \param[out] ms1 if set to not NULL, this is going to be the state
+  //    of model1 after the move, or left unchanged if \e moveBoth is false.
+  // \param[out] ms2 if set to not NULL, this is going to be the state
+  //    of model2 after the move
   // \retval -1 error
   // \retval 0 success
   // \retval 1 \e stopWhenPassed was true and object centers have passed
   //      each other.
   public: int MoveModelsAlongAxis(const double moveDist,
                                   const bool moveBoth = false,
-                                  const bool stopWhenPassed = false);
+                                  const bool stopWhenPassed = false,
+                                  const bool worldUpdate = true,
+                                  BasicState *ms1 = NULL,
+                                  BasicState *ms2 = NULL);
 
   // \brief Moves models along collision axis until they collide.
   // This requires that they do collide when slid towards each other along
@@ -133,16 +145,23 @@ class ModelCollider
   //    and the shapes will just move towards each other with steps of size
   //    \e stepSize
   // \param[in] stopWhenPassed see ModeModelsAlongAxis parameter stopWhenPassed
+  // \param[out] ms1 if set to not NULL, this is going to be the state
+  //    of model1 after the move, or left unchanged if \e moveBoth is false.
+  // \param[out] ms2 if set to not NULL, this is going to be the state
+  //    of model2 after the move
   // \return the distance the shape(s) have moved along the axis.
   //  If \e moveBoth was true, this is the distance that *both* shapes
   //  have moved along the axis (the overall distance decreased between
   //  the two objects will be twice this value). If \e moveBoth was false,
   //  this is the distance model 2 has traveled. For model 2, the distance
   //  moved will be the negative of the returned value.
-  public: double AutoCollide(const bool allWorlds, const bool moveBoth,
+  public: double AutoCollide(const bool allWorlds = false,
+                             const bool moveBoth = false,
                              const double stepSize = 1e-03,
                              const float maxMovePerSec = 0.4,
-                             const bool stopWhenPassed = false);
+                             const bool stopWhenPassed = false,
+                             BasicState *ms1 = NULL,
+                             BasicState *ms2 = NULL);
 
   // \brief Helper fuction which returns the AABB of the model from the first
   // world in \e worldManager.
@@ -215,6 +234,17 @@ class ModelCollider
   //    engines report collision between the objects
   private: bool ModelsCollide(bool allWorlds) const;
 
+
+  // \brief Gets the axis perpendicular to the collision axis, rotated around
+  // \e angle about the collision axis.
+  // Will always return the same vector for the same collision axis.
+  // \param[in] angle the angle the perpendicular axis is rotated about
+  //  the collision axis
+  // \return the perpendicular axis used in this ModelCollider, rotated
+  //    about \e angle. Is a unit length vector.
+  public: ignition::math::Vector3d
+            GetAxisPerpendicular(const double angle = 0) const;
+
   // \brief Helper: gets an axis perpendicular to the \e axis, rotated around
   // \e angle about \e axis.
   // Will always return the same vector for the same \e axis.
@@ -230,10 +260,19 @@ class ModelCollider
   // \param[in] angle the angle which the perpendicular axis is rotated around
   //    the collision axis
   // \param[in] model1 if true, model 1 is moved. Otherwise, model 2 is moved.
+  // \param[in] worldUpdate if true, the worlds are updated upon success.
+  // \param[in] fromState if set to not NULL, this pose is going to be as
+  //    current model pose from where to move it, instead of requesting the
+  //    current model state in the world.
+  // \param[out] endState if not NULL, this will be set to the model state
+  //    after the move.
   // \return true on success, false if model state could not be set
   public: bool MoveModelPerpendicular(const double distance,
                                       const double angle,
-                                      const bool model1) const;
+                                      const bool model1,
+                                      const bool worldUpdate = true,
+                                      const BasicState *fromState = NULL,
+                                      BasicState* endState = NULL) const;
 
   // \brief Aligns the model with the perpendicular axis.
   // The collision axis can be placed at a position \e axisOrigin.
@@ -246,10 +285,12 @@ class ModelCollider
   // \param[in] angle the angle
   // \param[in] axisOrigin the origin of the axis
   // \param[in] model1 if true, model 1 is moved. Otherwise, model 2 is moved.
+  // \param[in] worldUpdate if true, the worlds are updated upon success.
   // \return true on success, false if model state could not be set
   public: bool RotateModelToPerpendicular(const double angle,
                            const ignition::math::Vector3d &axisOrigin,
-                           const bool model1) const;
+                           const bool model1,
+                           const bool worldUpdate = true) const;
 
   // \brief the world manager
   private: WorldManagerPtr worldManager;
