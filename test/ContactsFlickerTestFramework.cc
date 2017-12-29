@@ -156,13 +156,9 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
       double outerAngle = ocSubDiv * outerAngleStep;
 
       // move models along circle Radius
-      BasicState outerCurrMs2;
+      BasicState tmp;
       this->modelCollider.MoveModelPerpendicular((oc+1)*outerCircleRadiusInc,
-                     outerAngle, false, true, &initModelState2, &outerCurrMs2);
-      const ignition::math::Vector3d outerCurrModelPos
-        = collision_benchmark::ConvIgn<double>(outerCurrMs2.position);
-      const ignition::math::Quaterniond outerCurrModelRot
-        = collision_benchmark::ConvIgn<double>(outerCurrMs2.rotation);
+                     outerAngle, false, true, &initModelState2, &tmp);
 
       if (this->modelCollider.CollisionExcluded())
       {
@@ -174,13 +170,20 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
       // std::cout << "Auto-collide at angle " << outerAngle << std::endl;
       this->modelCollider.AutoCollide(acAllWorlds, false, acStepSize,
                                       acMaxMovePerSec, acStopWhenPassed,
-                                      NULL, &outerCurrMs2);
+                                      NULL, &tmp);
 
       if (!this->modelCollider.ModelsCollide(acAllWorlds))
       {
         std::cout << "Models don't collide, skip test" << std::endl;
         continue;
       }
+
+      // use the "detour" via tmp to ensure outerCurrMs2 is const (and bugproof)
+      const BasicState outerCurrMs2 = tmp;
+      const ignition::math::Vector3d outerCurrModelPos
+        = collision_benchmark::ConvIgn<double>(outerCurrMs2.position);
+      const ignition::math::Quaterniond outerCurrModelRot
+        = collision_benchmark::ConvIgn<double>(outerCurrMs2.rotation);
 
       // do the inner circle movement and the test
       ////////////////////////////////////////////////
