@@ -237,3 +237,43 @@ void collision_benchmark::UpdateAABB
     }
 #endif
 }
+
+//////////////////////////////////////////////////////////////////////////////
+template<typename Float>
+bool collision_benchmark::SegmentsOverlap(const Float min1, const Float max1,
+                                          const Float min2, const Float max2,
+                                          Float *overlapFact)
+{
+  if (overlapFact) *overlapFact=0;
+
+  // compute the overlap between both points.
+  Float diff;
+  if (min1 < min2) diff = std::min(max1, max2) - min2;
+  else diff = std::min(max2, max1) - min1;
+
+  static Float zeroEps = 1e-07;
+  if (diff <= zeroEps)
+  {
+    // no overlap
+    return false;
+  }
+
+  Float minLen = std::min(max1 - min1, max2 - min2);
+  assert(minLen >= 0);
+
+  // zero length of one side can always be considered an overlap
+  // if the overlap was not excluded yet above
+  if (minLen < zeroEps)
+  {
+    if (overlapFact) *overlapFact = 1;
+    return true;
+  }
+
+  if (!overlapFact) return true;
+
+  Float fact = diff / minLen;
+  assert(fact > 0);
+  assert(fact <= 1.0);
+  *overlapFact = fact;
+  return true;
+}

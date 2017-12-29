@@ -184,7 +184,7 @@ class ModelCollider
               const WorldManagerPtr &worldManager,
               Vector3 &min, Vector3 &max, bool &inLocalFrame);
 
-  // \brief Helper fuction which returns the AABB of the model from the
+  // \brief Helper which returns the AABB of the model from the
   // \e idxWorld'th world in \e worldManager.
   // \param[in] modelName name of the model
   // \param[in] idxWorld index of the world
@@ -200,7 +200,21 @@ class ModelCollider
               const WorldManagerPtr &worldManager,
               Vector3 &min, Vector3 &max, bool &inLocalFrame);
 
-
+  // \brief Helper which can be used to get the AABB coordinates
+  // in global frame transformed by \e q
+  // \param[in] q additional rotation of the global frame. When identity,
+  //    AABB is therefore returned in global frame. Only rotation supported,
+  //    therefore a quaternion is used.
+  // \param[in] modelName name of the model
+  // \param[in] min min AABB coordinate in local frame
+  // \param[in] max max AABB coordinate in local frame
+  // \param[out] newMin min coordinate in global frame
+  // \param[out] newMax max coordinate in global frame
+  // \return false if the state of the model could not be retrieved
+  private: bool GetAABBInFrame(const ignition::math::Quaterniond& q,
+                               const std::string &modelName,
+                               const Vector3 &min, const Vector3 &max,
+                               Vector3 &newMin, Vector3 &newMax) const;
 
   // \brief Helper function which gets state of the model in the first world of
   // the \e worldManager. Presumes that the model exists in all worlds and the
@@ -232,8 +246,13 @@ class ModelCollider
   // \brief Checks whether models collide
   // \param[in] allWorlds collision criteria is only met if all physics
   //    engines report collision between the objects
-  private: bool ModelsCollide(bool allWorlds) const;
+  public: bool ModelsCollide(bool allWorlds) const;
 
+  // \brief Checks if collision of models along the collision axis is excluded.
+  // This is only an approximate test because the AABBs of the models are
+  // used to check for impossible collision. So even if this function returns
+  // false, the models may still not collide.
+  public: bool CollisionExcluded() const;
 
   // \brief Gets the axis perpendicular to the collision axis, rotated around
   // \e angle about the collision axis.

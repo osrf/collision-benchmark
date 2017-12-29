@@ -90,6 +90,20 @@ void ProjectAABBOnAxis(const ignition::math::Vector3<Float>& aabbMin,
                        Float& onAxisMin,
                        Float& onAxisMax);
 
+// \brief Tests if two segments along a 1D line overlap
+// and returns the overlap if desired.
+// \param[in] min1 minimum of first point
+// \param[in] max1 maximum of first point
+// \param[in] min2 minimum of second point
+// \param[in] max2 maximum of second point
+// \param[out] overlapFact the overlap factor. If NULL, it is not computed.
+// \return true if there is an overlap
+//////////////////////////////////////////////////////////////////////////////
+template<typename Float>
+bool SegmentsOverlap(const Float min1, const Float max1,
+                     const Float min2, const Float max2,
+                     Float *overlapFact = NULL);
+
 }  // namespace
 
 #include <collision_benchmark/MathHelpers-inl.hh>

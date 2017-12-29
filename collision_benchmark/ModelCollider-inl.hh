@@ -124,22 +124,15 @@ bool ModelCollider<WM>::PlaceModels(const float modelsGap,
 
   /*
   // NOTE
-  // In case models at some point are *not* first placed at the origin
-  // (as done now), so when global frame != local frame:
+  // In case models at some point are *not* first placed at the origin with
+  // identity orientation (as done now), so when global frame != local frame:
   // If the AABBs are not given in global coordinate frame, we need to transform
-  // the AABBs first!
+  // the AABB coordinates first!
   // Example for first AABB:
-  if (local1)
+  if (local1 && !GetAABBInFrame(ignition::math::Quaterniond::Identity,
+                                modelNames[0], min1, max1, min1, max1))
   {
-    ignition::math::Matrix4d trans =
-      collision_benchmark::GetMatrix<double>(modelState1.position,
-                                             modelState1.rotation);
-    ignition::math::Vector3d newMin, newMax;
-    ignition::math::Vector3d ignMin(collision_benchmark::ConvIgn<double>(min1));
-    ignition::math::Vector3d ignMax(collision_benchmark::ConvIgn<double>(max1));
-    collision_benchmark::UpdateAABB(ignMin, ignMax, trans, newMin, newMax);
-    min1 = newMin;
-    max1 = newMax;
+    std::cerr << "Error computing AABB in global frame" << std::endl;
   }
   */
 
@@ -205,6 +198,48 @@ bool ModelCollider<WM>::PlaceModels(const float modelsGap,
 
 //////////////////////////////////////////////////////////////////////////////
 template<class WM>
+bool ModelCollider<WM>::CollisionExcluded() const
+{
+  // First, get the AABB's of the two models and ensure they are in global
+  // frame
+  Vector3 min1, min2, max1, max2;
+  bool local1, local2;
+  if ((GetAABB(modelNames[0], this->worldManager, min1, max1, local1) != 0) ||
+      (GetAABB(modelNames[1], this->worldManager, min2, max2, local2) != 0))
+  {
+    std::cerr << "Could not get AABBs of models" << std::endl;
+    return false;
+  }
+
+  // get the AABBS in  a frame such that Z axis is aligned with the collision
+  // axis. The models collide along this axis, so we can use X and Y axes
+  // as separating axes, because the AABBs in this coordinate frame will
+  // either overlap in X or Y when they can collide along the Z axis.
+  ignition::math::Vector3d projAxis = ignition::math::Vector3d::UnitZ;
+  ignition::math::Quaterniond q;
+  q.From2Axes(projAxis, this->collisionAxis);
+  if (!GetAABBInFrame(q, modelNames[0], min1, max1, min1, max1) ||
+      !GetAABBInFrame(q, modelNames[1], min2, max2, min2, max2))
+  {
+    std::cerr << "Error computing AABBs in collision axis frame" << std::endl;
+    return false;
+  }
+
+
+  if (!collision_benchmark::SegmentsOverlap(min1.X(), max1.X(),
+                                           min2.X(), max2.X()) ||
+      !collision_benchmark::SegmentsOverlap(min1.Y(), max1.Y(),
+                                           min2.Y(), max2.Y()))
+  {
+    // std::cout << "Segments do not overlap" << std::endl;
+    return true;
+  }
+  return false;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+template<class WM>
 bool ModelCollider<WM>::ModelsCollide(bool allWorlds) const
 {
   assert(this->worldManager);
@@ -226,6 +261,7 @@ bool ModelCollider<WM>::ModelsCollide(bool allWorlds) const
     if (!contacts.empty())
     {
       ++modelsColliding;
+      if (!allWorlds) break;
     }
   }
 
@@ -275,8 +311,8 @@ double ModelCollider<WM>::AutoCollide(const bool allWorlds,
     if (MoveModelsAlongAxis(stepSize, moveBoth,
                             stopWhenPassed, true, ms1, ms2) != 0)
     {
-      std::cout << "Stopping Auto-Collide because objects weren't moved"
-                << std::endl;
+//      std::cout << "Stopping Auto-Collide because objects weren't moved"
+//                << std::endl;
       break;
     }
     moved += stepSize;
@@ -322,8 +358,8 @@ int ModelCollider<WM>::MoveModelsAlongAxis(const double moveDist,
     double dot2 = pos2.Dot(this->collisionAxis);
     if (dot1 > dot2)
     {
-      std::cout << "Objects centers have passed on collision axis, "
-                << "not moving further. " << std::endl;
+//      std::cout << "Objects centers have passed on collision axis, "
+//                << "not moving further. " << std::endl;
       if (moveBoth && ms1) *ms1 = modelState1;
       if (ms2) *ms2 = modelState2;
       return 1;
@@ -542,6 +578,35 @@ int ModelCollider<WM>::GetAABB(const std::string &modelName,
   }
   return 0;
 }
+
+//////////////////////////////////////////////////////////////////////////////
+template<class WM>
+bool ModelCollider<WM>::GetAABBInFrame(const ignition::math::Quaterniond& q,
+                                       const std::string &modelName,
+                                       const Vector3 &min, const Vector3 &max,
+                                       Vector3 &newMin, Vector3 &newMax) const
+{
+  BasicState modelState;
+  if ((GetBasicModelState(modelName, this->worldManager, modelState) != 0))
+  {
+    std::cerr << "Could not get model state for " << modelName << std::endl;
+    return false;
+  }
+
+  ignition::math::Matrix4d qTrans(q);
+  ignition::math::Matrix4d trans = qTrans.Inverse() *
+    collision_benchmark::GetMatrix<double>(modelState.position,
+                                           modelState.rotation);
+
+  ignition::math::Vector3d _newMin, _newMax;
+  ignition::math::Vector3d ignMin(collision_benchmark::ConvIgn<double>(min));
+  ignition::math::Vector3d ignMax(collision_benchmark::ConvIgn<double>(max));
+  collision_benchmark::UpdateAABB(ignMin, ignMax, trans, _newMin, _newMax);
+  newMin = _newMin;
+  newMax = _newMax;
+  return true;
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 template<class WM>
