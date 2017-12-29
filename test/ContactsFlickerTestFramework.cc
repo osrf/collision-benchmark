@@ -176,6 +176,12 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
                                       acMaxMovePerSec, acStopWhenPassed,
                                       NULL, &outerCurrMs2);
 
+      if (!this->modelCollider.ModelsCollide(acAllWorlds))
+      {
+        std::cout << "Models don't collide, skip test" << std::endl;
+        continue;
+      }
+
       // do the inner circle movement and the test
       ////////////////////////////////////////////////
       if (innerCircleTestEnabled)

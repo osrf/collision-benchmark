@@ -130,7 +130,7 @@ bool ModelCollider<WM>::PlaceModels(const float modelsGap,
   // the AABB coordinates first!
   // Example for first AABB:
   if (local1 && !GetAABBInFrame(ignition::math::Quaterniond::Identity,
-                                modelNames[0], min1, max1, min1, max1))
+                                modelNames[0], min1, max1, local1, min1, max1))
   {
     std::cerr << "Error computing AABB in global frame" << std::endl;
   }
@@ -210,6 +210,7 @@ bool ModelCollider<WM>::CollisionExcluded() const
     std::cerr << "Could not get AABBs of models" << std::endl;
     return false;
   }
+  assert(local1 == local2);
 
   // get the AABBS in  a frame such that Z axis is aligned with the collision
   // axis. The models collide along this axis, so we can use X and Y axes
@@ -217,21 +218,25 @@ bool ModelCollider<WM>::CollisionExcluded() const
   // either overlap in X or Y when they can collide along the Z axis.
   ignition::math::Vector3d projAxis = ignition::math::Vector3d::UnitZ;
   ignition::math::Quaterniond q;
-  q.From2Axes(projAxis, this->collisionAxis);
-  if (!GetAABBInFrame(q, modelNames[0], min1, max1, min1, max1) ||
-      !GetAABBInFrame(q, modelNames[1], min2, max2, min2, max2))
+  q.From2Axes(this->collisionAxis, projAxis);
+  if (!GetAABBInFrame(q, modelNames[0], min1, max1, local1, min1, max1) ||
+      !GetAABBInFrame(q, modelNames[1], min2, max2, local1, min2, max2))
   {
     std::cerr << "Error computing AABBs in collision axis frame" << std::endl;
     return false;
   }
 
-
+  double overlapX = -1;
+  double overlapY = -1;
   if (!collision_benchmark::SegmentsOverlap(min1.X(), max1.X(),
-                                           min2.X(), max2.X()) ||
+                                           min2.X(), max2.X(), &overlapX) ||
       !collision_benchmark::SegmentsOverlap(min1.Y(), max1.Y(),
-                                           min2.Y(), max2.Y()))
+                                           min2.Y(), max2.Y(), &overlapY))
   {
-    // std::cout << "Segments do not overlap" << std::endl;
+    /*std::cout << "AABB1: " << min1 << ", " << max1 << std::endl;
+    std::cout << "AABB2: " << min2 << ", " << max2 << std::endl;
+    std::cout << "Segments do not overlap: "
+              << overlapX << ", " << overlapY << std::endl;*/
     return true;
   }
   return false;
@@ -584,19 +589,24 @@ template<class WM>
 bool ModelCollider<WM>::GetAABBInFrame(const ignition::math::Quaterniond& q,
                                        const std::string &modelName,
                                        const Vector3 &min, const Vector3 &max,
+                                       const bool minMaxInLocal,
                                        Vector3 &newMin, Vector3 &newMax) const
 {
-  BasicState modelState;
-  if ((GetBasicModelState(modelName, this->worldManager, modelState) != 0))
+  ignition::math::Matrix4d globTrans = ignition::math::Matrix4d::Identity;
+  if (minMaxInLocal)
   {
-    std::cerr << "Could not get model state for " << modelName << std::endl;
-    return false;
+    BasicState modelState;
+    if ((GetBasicModelState(modelName, this->worldManager, modelState) != 0))
+    {
+      std::cerr << "Could not get model state for " << modelName << std::endl;
+      return false;
+    }
+    globTrans = collision_benchmark::GetMatrix<double>(modelState.position,
+                                                   modelState.rotation);
   }
 
   ignition::math::Matrix4d qTrans(q);
-  ignition::math::Matrix4d trans = qTrans.Inverse() *
-    collision_benchmark::GetMatrix<double>(modelState.position,
-                                           modelState.rotation);
+  ignition::math::Matrix4d trans = qTrans.Inverse() * globTrans;
 
   ignition::math::Vector3d _newMin, _newMax;
   ignition::math::Vector3d ignMin(collision_benchmark::ConvIgn<double>(min));

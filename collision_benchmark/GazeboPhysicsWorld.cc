@@ -1021,7 +1021,7 @@ bool GazeboPhysicsWorld::GetAABB(const ModelID &id,
   ignition::math::Box box = m->BoundingBox();
   min = Vector3(box.Min().X(), box.Min().Y(), box.Min().Z());
   max = Vector3(box.Max().X(), box.Max().Y(), box.Max().Z());
-  inLocalFrame = true;
+  inLocalFrame = false;
   return true;
 }
 

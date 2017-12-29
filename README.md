@@ -41,7 +41,6 @@ the [dart-6-devel](https://bitbucket.org/JenniferBuehler/gazebo/branch/dart-6-de
 branch, which is the default branch merged with
 
 - [PR 2657](https://bitbucket.org/osrf/gazebo/pull-requests/2657): problems with transport
-- [PR 2708](https://bitbucket.org/osrf/gazebo/pull-requests/2708): add method World::SDF()
 - [PR 2709](https://bitbucket.org/osrf/gazebo/pull-requests/2709): ODE contact points not constantly displayed
 - only minor: [PR 2705](https://bitbucket.org/osrf/gazebo/pull-requests/2705)
 

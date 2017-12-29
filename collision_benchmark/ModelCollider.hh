@@ -208,12 +208,15 @@ class ModelCollider
   // \param[in] modelName name of the model
   // \param[in] min min AABB coordinate in local frame
   // \param[in] max max AABB coordinate in local frame
+  // \param[in] minMaxInLocal \e min and \e max are given in local coordinate
+  //    frame of the model \e modelName.
   // \param[out] newMin min coordinate in global frame
   // \param[out] newMax max coordinate in global frame
   // \return false if the state of the model could not be retrieved
   private: bool GetAABBInFrame(const ignition::math::Quaterniond& q,
                                const std::string &modelName,
                                const Vector3 &min, const Vector3 &max,
+                               const bool minMaxInLocal,
                                Vector3 &newMin, Vector3 &newMax) const;
 
   // \brief Helper function which gets state of the model in the first world of
