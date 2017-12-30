@@ -23,22 +23,12 @@ using collision_benchmark::MirrorWorld;
 using collision_benchmark::PhysicsWorldBaseInterface;
 using collision_benchmark::BasicState;
 using collision_benchmark::Shape;
+using collision_benchmark::GazeboMultipleWorlds;
 
 ////////////////////////////////////////////////////////////////
 void MultipleWorldsTestFramework::SetUp()
 {
-  bool enforceContactCalc = true;
-  GzMultipleWorldsServer::WorldLoader_M loaders =
-    collision_benchmark::GetSupportedGazeboWorldLoaders(enforceContactCalc);
-
-  if (loaders.empty())
-  {
-    std::cerr << "Could not get support for any engine." << std::endl;
-    return;
-  }
-
-  server.reset(new collision_benchmark::GazeboMultipleWorldsServer(loaders));
-  server->Start(1, &fakeProgramName);
+  server.reset(new GazeboMultipleWorlds());
 }
 
 ////////////////////////////////////////////////////////////////
@@ -48,34 +38,30 @@ void MultipleWorldsTestFramework::TearDown()
 }
 
 ////////////////////////////////////////////////////////////////
-void MultipleWorldsTestFramework::Init()
+void
+MultipleWorldsTestFramework::Init(const bool interactiveMode,
+                                const std::vector<std::string> &additionalGuis)
 {
-  GzMultipleWorldsServer::Ptr mServer = GetServer();
-  ASSERT_NE(mServer.get(), nullptr) << "Could not create and start server";
-
+  ASSERT_NE(server, nullptr) << "server must have been created";
   bool loadMirror = true;
+  bool allowControlViaMirror = false;
+  bool enforceContactCalc = true;
   std::string mirrorName = "";
   if (loadMirror) mirrorName = "mirror";
-  // with the tests, the mirror can be used to watch the test,
-  // but not to manipulate the worlds.
-  bool allowControlViaMirror = false;
-  mServer->Init(mirrorName, allowControlViaMirror);
-
-/*  GzWorldManager::ControlServerPtr controlServer =
-    worldManager->GetControlServer();
-
-  if (controlServer)
-  {
-    controlServer->RegisterPauseCallback(std::bind(pauseCallback,
-                                                   std::placeholders::_1));
-  }*/
+  server->Init(loadMirror, enforceContactCalc,
+               allowControlViaMirror, interactiveMode, additionalGuis);
+  // ensure that the server is returned properly
+  GzMultipleWorldsServer::Ptr mServer = GetServer();
+  ASSERT_NE(mServer.get(), nullptr) << "Could not create and start server";
 }
 
 ////////////////////////////////////////////////////////////////
 void MultipleWorldsTestFramework::InitMultipleEngines
-        (const std::vector<std::string>& engines)
+        (const std::vector<std::string>& engines,
+         const bool interactiveMode,
+         const std::vector<std::string> &additionalGuis)
 {
-  Init();
+  Init(interactiveMode, additionalGuis);
 
   GzMultipleWorldsServer::Ptr mServer = GetServer();
   ASSERT_NE(mServer.get(), nullptr) << "Could not create and start server";
@@ -90,9 +76,12 @@ void MultipleWorldsTestFramework::InitMultipleEngines
 
 ////////////////////////////////////////////////////////////////
 void MultipleWorldsTestFramework::InitOneEngine(const std::string &engine,
-                                        const unsigned int numWorlds)
+                                        const unsigned int numWorlds,
+                                        const bool interactiveMode,
+                                        const std::vector<std::string>
+                                            &additionalGuis)
 {
-  Init();
+  Init(interactiveMode, additionalGuis);
 
   GzMultipleWorldsServer::Ptr mServer = GetServer();
   ASSERT_NE(mServer.get(), nullptr) << "Could not create and start server";

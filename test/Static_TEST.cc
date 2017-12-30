@@ -111,7 +111,7 @@ TEST_F(StaticTest, BoxCylinderTest)
   std::string modelName2 = "model2";
   Shape::Ptr shape2(PrimitiveShape::CreateCylinder(1, 3));
 
-  InitMultipleEngines(selectedEngines);
+  InitMultipleEngines(selectedEngines, defaultInteractive);
   LoadShape(shape1, modelName1);
   LoadShape(shape2, modelName2);
   static const bool interactive = defaultInteractive;
@@ -146,7 +146,7 @@ TEST_F(StaticTest, CylinderAndTwoTriangles)
   std::string modelName2 = "model2";
   Shape::Ptr shape2(PrimitiveShape::CreateCylinder(1, 3));
 
-  InitMultipleEngines(selectedEngines);
+  InitMultipleEngines(selectedEngines, defaultInteractive);
   LoadShape(shape1, modelName1);
   LoadShape(shape2, modelName2);
   static const bool interactive = defaultInteractive;
@@ -189,7 +189,7 @@ TEST_F(StaticTest, SpherePrimMesh)
   Shape::Ptr spherePrimitive(PrimitiveShape::CreateSphere(radius));
 
   // load up the worlds
-  InitMultipleEngines(selectedEngines);
+  InitMultipleEngines(selectedEngines, defaultInteractive);
   LoadShape(sphereMesh, meshName);
   LoadShape(spherePrimitive, primName);
   static const bool interactive = defaultInteractive;
@@ -225,7 +225,7 @@ TEST_P(StaticTestWithParam, SphereEquivalentsTest)
   Shape::Ptr spherePrimitive(PrimitiveShape::CreateSphere(radius));
 
   // load up the worlds
-  InitOneEngine(GetParam(), 2);
+  InitOneEngine(GetParam(), 2, defaultInteractive);
 
   // as a first shape, load the primitive into both worlds
   LoadShape(spherePrimitive, modelName1);

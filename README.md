@@ -317,12 +317,9 @@ run it in interactive mode, and save world files to */home/me/test/*:
 ./static_test --gtest_filter=*SpherePrimMesh* --interactive --output /home/me/test
 ```
 
-In interactive mode, when the test prompts you to hit ``[Enter]`` to continue,
-you have time to start gzclient with the world switching GUI interface: 
-
-```
-gzclient --gui-client-plugin libcollision_benchmark_gui.so
-```
+In interactive mode, gzclient is loaded up as well
+with the world switching GUI interface.
+Then the shell prompts you to hit ``[Enter]``.
 
 You should see the start state of the test. Before you start the test,
 you may want to **enable the displaying of contacts**

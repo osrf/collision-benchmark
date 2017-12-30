@@ -137,9 +137,9 @@ bool CollidingShapesTestFramework::RunImpl
   gzMultiWorld.reset(new GazeboMultipleWorlds());
   std::vector<std::string> additionalGuis
       = { "libcollision_benchmark_test_gui.so" };
-  gzMultiWorld->Load(physicsEngines, physicsEnabled,
-                    loadMirror, enforceContactCalc,
-                    allowControlViaMirror, additionalGuis);
+  gzMultiWorld->Init(loadMirror, enforceContactCalc,
+                    allowControlViaMirror, true, additionalGuis);
+  gzMultiWorld->LoadEngines(physicsEngines, physicsEnabled);
 
   // Load the two models to the world(s)
   /////////////////////////////////////////

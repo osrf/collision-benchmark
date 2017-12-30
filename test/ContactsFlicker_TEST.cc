@@ -66,6 +66,7 @@ class ContactsFlickerTestWithParam:
 TEST_P(ContactsFlickerTestWithParam, BoxTriangleTest)
 {
   std::string engine = GetParam();
+  static const bool interactive = defaultInteractive;
 
   // XXX HACK: For now, only test with ODE
   if (engine != "ode") return;
@@ -79,10 +80,9 @@ TEST_P(ContactsFlickerTestWithParam, BoxTriangleTest)
   std::string modelName1 = "box";
   std::string modelName2 = "triangle";
 
-  InitOneEngine(engine, 1);
+  InitOneEngine(engine, 1, interactive);
   LoadModel(boxSDF, modelName1);
   LoadModel(triangleSDF, modelName2);
-  static const bool interactive = defaultInteractive;
   FlickerTest(modelName1, modelName2,
               interactive, defaultOutputPath, "BoxCylinderTest");
 }

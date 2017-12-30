@@ -18,7 +18,6 @@
 #define COLLISION_BENCHMARK_TEST_MULTIPLEWORLDSTESTFRAMEWORK_H
 
 #include <collision_benchmark/GazeboMultipleWorlds.hh>
-#include <collision_benchmark/GazeboMultipleWorldsServer.hh>
 #include <collision_benchmark/GazeboWorldLoader.hh>
 #include <collision_benchmark/GazeboHelpers.hh>
 
@@ -49,12 +48,14 @@ class MultipleWorldsTestFramework : public ::testing::Test
                        GazeboPhysicsWorldTypes::Wrench>
             GzWorldManager;
 
-  GzMultipleWorldsServer::Ptr GetServer() { return server; }
+  GzMultipleWorldsServer::Ptr GetServer()
+  {
+    return server ? server->GetServer() : nullptr;
+  }
 
   protected:
 
   MultipleWorldsTestFramework()
-  :fakeProgramName("MultipleWorldsTestFramework")
   {
   }
   virtual ~MultipleWorldsTestFramework()
@@ -82,10 +83,12 @@ class MultipleWorldsTestFramework : public ::testing::Test
 
   // \brief Initializes the framework and creates the world manager, but no
   // worlds are added to it.
-  //
+  // \param[in] interactiveMode load up gzclient or not
+  // \param[in] additionalGuis additional GUI plugins to load with gzclient
   // Throws gtest assertions so needs to be called from top-level
   // test function (nested function calls will not work correctly)
-  void Init();
+  void Init(const bool interactiveMode,
+            const std::vector<std::string> &additionalGuis = {});
 
   // Called from Init(), to be used by subclasses.
   virtual void InitSpecific() {}
@@ -94,7 +97,9 @@ class MultipleWorldsTestFramework : public ::testing::Test
   //
   // Throws gtest assertions so needs to be called from top-level
   // test function (nested function calls will not work correctly)
-  void InitMultipleEngines(const std::vector<std::string>& engines);
+  void InitMultipleEngines(const std::vector<std::string>& engines,
+                           const bool interactiveMode,
+                           const std::vector<std::string> &additionalGuis = {});
 
   // \brief Calls Init() and loads the empty world \e numWorld times
   // with the given engine by calling LoadOneEngine().
@@ -104,7 +109,9 @@ class MultipleWorldsTestFramework : public ::testing::Test
   // Throws gtest assertions so needs to be called from top-level
   // test function (nested function calls will not work correctly)
   void InitOneEngine(const std::string &engine,
-                     const unsigned int numWorlds);
+                     const unsigned int numWorlds,
+                     const bool interactiveMode,
+                     const std::vector<std::string> &additionalGuis = {});
 
 
   // \brief Loads the empty world \e numWorld times with the given engine.
@@ -169,15 +176,9 @@ class MultipleWorldsTestFramework : public ::testing::Test
                 collision_benchmark::GzAABB &m2);
   private:
 
-  const char * fakeProgramName;
-
-  // the server, in case of non-interactive testing without gzclient
-  // (otherwise set to NULL and using interactiveServer instead).
-  GzMultipleWorldsServer::Ptr server;
-
-  // the multiple worlds server with a client, in case of interactive
-  // testing with gzclient (otherwise set to NULL and using server instead).
-  GazeboMultipleWorlds::Ptr interactiveServer;
+  // the multiple worlds server which can use a client in case of interactive
+  // testing with gzclient
+  collision_benchmark::GazeboMultipleWorlds::Ptr server;
 
   // node needed in RefreshClient()
   gazebo::transport::NodePtr node;
