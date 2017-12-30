@@ -17,6 +17,7 @@
 #ifndef COLLISION_BENCHMARK_TEST_MULTIPLEWORLDSTESTFRAMEWORK_H
 #define COLLISION_BENCHMARK_TEST_MULTIPLEWORLDSTESTFRAMEWORK_H
 
+#include <collision_benchmark/GazeboMultipleWorlds.hh>
 #include <collision_benchmark/GazeboMultipleWorldsServer.hh>
 #include <collision_benchmark/GazeboWorldLoader.hh>
 #include <collision_benchmark/GazeboHelpers.hh>
@@ -169,7 +170,14 @@ class MultipleWorldsTestFramework : public ::testing::Test
   private:
 
   const char * fakeProgramName;
+
+  // the server, in case of non-interactive testing without gzclient
+  // (otherwise set to NULL and using interactiveServer instead).
   GzMultipleWorldsServer::Ptr server;
+
+  // the multiple worlds server with a client, in case of interactive
+  // testing with gzclient (otherwise set to NULL and using server instead).
+  GazeboMultipleWorlds::Ptr interactiveServer;
 
   // node needed in RefreshClient()
   gazebo::transport::NodePtr node;

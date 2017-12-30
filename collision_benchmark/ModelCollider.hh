@@ -314,6 +314,14 @@ class ModelCollider
                            const bool model1,
                            const bool worldUpdate = true) const;
 
+  // \brief Clusters all the contacts currently happening between the models
+  // into clusters of max size \e clusterSize. This is only done for the
+  // world at index \e worldIdx.
+  // \return the center points of all contact clusters
+  public: std::vector<ignition::math::Vector3d>
+          GetClusteredContacts(const size_t worldIdx,
+                               double clusterSize) const;
+
   // \brief the world manager
   private: WorldManagerPtr worldManager;
 

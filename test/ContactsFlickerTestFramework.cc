@@ -38,6 +38,28 @@ using collision_benchmark::Quaternion;
 using collision_benchmark::PhysicsWorldBaseInterface;
 
 ////////////////////////////////////////////////////////////////
+ignition::math::Vector3d getClosest(const ignition::math::Vector3d& v,
+                                  const std::vector<ignition::math::Vector3d> c,
+                                  double& dist)
+{
+  double minDist = std::numeric_limits<double>::max();
+  ignition::math::Vector3d ret(minDist, minDist, minDist);
+  for (std::vector<ignition::math::Vector3d>::const_iterator it = c.begin();
+       it != c.end(); ++it)
+  {
+    ignition::math::Vector3d diff = v-*it;
+    double len = diff.Length();
+    if (len < minDist)
+    {
+      ret = *it;
+      minDist = len;
+      dist = minDist;
+    }
+  }
+  return ret;
+}
+
+////////////////////////////////////////////////////////////////
 void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
                                                const std::string &modelName2,
                                                const bool interactive,
@@ -135,7 +157,7 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
   // ---------------------------
 
   // the orientation test may be disabled
-  const bool orientationTestEnabled = true;
+  const bool orientationTestEnabled = false;
   // subdivisions for orientation change test (see code below)
   const int numOriSubdivisions = 30;
   // the orientation is changed as if the shape was fixed to an axis
@@ -177,6 +199,47 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
         std::cout << "Models don't collide, skip test" << std::endl;
         continue;
       }
+
+
+      // XXX ////////// temporary
+
+      // XXX TODO this must be derived from the distance the shapes have moved
+      // between iterations, or vice versa!!
+      const double contactsMoveTolerance = 1e-02;
+      static std::vector<ignition::math::Vector3d> lastConts;
+      std::vector<ignition::math::Vector3d> conts
+        = this->modelCollider.GetClusteredContacts(0,contactsMoveTolerance);
+      if (conts.size() != lastConts.size())
+      {
+        std::cout << "Failed due to number count. # Clusters: "
+                  << conts.size() << std::endl;
+        std::cout << "Press [Enter] to continue." << std::endl;
+        getchar();
+      }
+      else
+      {
+        // equal number of clusters: No cluster should have moved further
+        // than the tolerance from any cluster in the previous iteration
+        for (std::vector<ignition::math::Vector3d>::const_iterator
+             it = conts.begin(); it != conts.end(); ++it)
+        {
+          const ignition::math::Vector3d &contact = *it;
+          double dist = -1;
+          ignition::math::Vector3d closest =
+            getClosest(contact, lastConts, dist);
+          if (dist > contactsMoveTolerance)
+          {
+            std::cout << "Failed due to point distance " << dist
+                      << ". # Clusters: " << conts.size() << std::endl;
+            std::cout << "Press [Enter] to continue." << std::endl;
+            getchar();
+            break;
+          }
+        }
+      }
+      lastConts = conts;
+      // XXX ////////// temporary
+
 
       // use the "detour" via tmp to ensure outerCurrMs2 is const (and bugproof)
       const BasicState outerCurrMs2 = tmp;
@@ -240,7 +303,7 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
           BasicState oriState = outerCurrMs2;
           oriState.rotation = collision_benchmark::Conv(q);
           ASSERT_EQ(worldManager->SetBasicModelState(modelName2, oriState),
-                  worldManager->GetNumWorlds())
+                    worldManager->GetNumWorlds())
               << "Could not set model pose to required pose";
           worldManager->Update(1);
           if (interactive) gazebo::common::Time::MSleep(10);
@@ -252,11 +315,16 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
       }
     }
   }
-/*  while (true)
-  {
-    const int numSteps = 1;
-    worldManager->Update(numSteps);
-    gazebo::common::Time::MSleep(1000);
-  }*/
   std::cout << "ContactsFlicker test finished. " << std::endl;
+  if (interactive)
+  {
+    std::cout << "Now entering endless update loop, kill with Ctrl+C"
+              << std::endl;
+    while (true)
+    {
+      const int numSteps = 1;
+      worldManager->Update(numSteps);
+      gazebo::common::Time::MSleep(1000);
+    }
+  }
 }

@@ -39,8 +39,8 @@ collision_benchmark::ConvIgn(const collision_benchmark::Vector3& v)
 }
 
 //////////////////////////////////////////////////////////////////////////////
-template<typename Float>
-ignition::math::Vector3<Float>
+template<typename FloatRet, typename Float>
+ignition::math::Vector3<FloatRet>
 collision_benchmark::ConvIgn(const ignition::math::Vector3<Float>& v)
 {
   // no conversion required
@@ -64,8 +64,8 @@ collision_benchmark::ConvIgn(const collision_benchmark::Quaternion &v)
 }
 
 //////////////////////////////////////////////////////////////////////////////
-template<typename Float>
-ignition::math::Quaternion<Float>
+template<typename FloatRet, typename Float>
+ignition::math::Quaternion<FloatRet>
 collision_benchmark::ConvIgn(const ignition::math::Quaternion<Float>& q)
 {
   // no conversion required

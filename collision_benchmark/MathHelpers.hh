@@ -33,8 +33,9 @@ collision_benchmark::Vector3 Conv(const ignition::math::Vector3<Float>& v);
 template<typename Float>
 ignition::math::Vector3<Float> ConvIgn(const collision_benchmark::Vector3& v);
 
-template<typename Float>
-ignition::math::Vector3<Float> ConvIgn(const ignition::math::Vector3<Float>& v);
+template<typename FloatRet, typename Float>
+ignition::math::Vector3<FloatRet>
+    ConvIgn(const ignition::math::Vector3<Float>& v);
 
 template<typename Float>
 collision_benchmark::Quaternion
@@ -44,8 +45,8 @@ template<typename Float>
 ignition::math::Quaternion<Float>
   ConvIgn(const collision_benchmark::Quaternion &v);
 
-template<typename Float>
-ignition::math::Quaternion<Float>
+template<typename FloatRet, typename Float>
+ignition::math::Quaternion<FloatRet>
 ConvIgn(const ignition::math::Quaternion<Float>& q);
 
 template<typename Float>
@@ -61,6 +62,8 @@ ignition::math::Matrix4<Float>
 template<typename Float1, typename Float2>
 bool EqualFloats(const Float1& f1, const Float2& f2, const double &t);
 
+// \brief compares the individual coordinates (x,y,z) of the vectors
+// against the tolerance using EqualFloats().
 template<typename Float>
 bool EqualVectors(const ignition::math::Vector3<Float>& v1,
                   const ignition::math::Vector3<Float>& v2,

@@ -279,6 +279,185 @@ bool ModelCollider<WM>::ModelsCollide(bool allWorlds) const
   return modelsColliding > 0;
 }
 
+
+namespace collision_benchmark
+{
+/**
+ * Simple implementation of a contacts cluster based on the average
+ * vector of all the contacts.
+ */
+template<class Contact>
+class ContactsCluster
+{
+  typedef typename Contact::Vector3 ContVec3;
+  typedef ignition::math::Vector3d IgnVec;
+  typedef std::pair<Contact, IgnVec> Pair;
+  // constructs a cluster with only one point
+  public: ContactsCluster(const Contact& c)
+          {
+            add(c);
+          }
+  public: ContactsCluster(const ContactsCluster& o):
+          contacts(o.contacts),
+          avg(o.avg) {}
+
+  // cluster size (radius of the cluster)
+  public: static double ToleranceRadius;
+
+  // checks whether the contact is less than the cluster radius
+  // tolerance away from the current center point. If the cluster is empty,
+  // this always returns true.
+  public: bool inside(const Contact& c) const
+  {
+    if (contacts.empty()) return true;
+    IgnVec v = collision_benchmark::ConvIgn<double>(c.position);
+    return inside(v);
+  }
+  // Helper, checks whether \e v is less than ToleranceRadius from avg
+  private: bool inside(const IgnVec& v) const
+  {
+    if (contacts.empty()) return true;
+    IgnVec diff = avg - v;
+    std::cout << "Dist: " << diff.Length() << std::endl;
+    return diff.Length() <= ToleranceRadius;
+  }
+
+  public: void add(const Contact& c)
+  {
+    IgnVec v = collision_benchmark::ConvIgn<double>(c.position);
+    // add point and recompute average
+    contacts.push_back(std::make_pair(c, v));
+    IgnVec accum(0,0,0);
+    for (typename std::vector<Pair>::const_iterator it = contacts.begin();
+         it != contacts.end(); ++it)
+    {
+      const Pair cPair = *it;
+      accum += cPair.second;
+    }
+    avg = accum / contacts.size();
+  }
+/*  public: void merge(const ContactsCluster& c)
+  {
+    for (typename std::vector<Pair>::const_iterator it = c.contacts.begin();
+         it != c.contacts.end(); ++it)
+    {
+      const Pair cPair = *it;
+      // not the most efficient because the average is being re-computed
+      // all the time, but for now we don't emphasise efficiency
+      add(cPair->first);
+    }
+  }*/
+  // operator returns < if \e c may be merged with this cluster
+  // without exceeding ToleranceRadius. The center point may change however.
+  public: bool operator<(const ContactsCluster& c) const
+  {
+    std::cout << "YEEEAH" << std::endl;
+    for (typename std::vector<Pair>::const_iterator it = c.contacts.begin();
+         it != c.contacts.end(); ++it)
+    {
+      const Pair cPair = *it;
+      if (!inside(cPair.second)) return false;
+    }
+    std::cout << "Can merge clusters!!" << std::endl;
+    return true;
+  }
+  private: std::vector<Pair> contacts;
+  public: IgnVec avg;
+
+}; // end class ContactCluster
+
+
+template<class Contact>
+double ContactsCluster<Contact>::ToleranceRadius = 0.0;
+
+} // end namespace
+
+//////////////////////////////////////////////////////////////////////////////
+template<class WM>
+std::vector<ignition::math::Vector3d>
+ModelCollider<WM>::GetClusteredContacts(const size_t worldIdx,
+                                        double clusterSize) const
+{
+  assert(this->worldManager);
+  if (worldIdx >= this->worldManager->GetNumWorlds())
+    throw new std::runtime_error("World index out of bounds");
+
+  typedef typename WorldManagerT::PhysicsWorldContactInterfacePtr
+          PhysicsWorldContactInterfacePtr;
+  typedef typename WorldManagerT::PhysicsWorldContactInterfaceT::ContactInfoPtr
+          ContactInfoPtr;
+  typedef typename WorldManagerT::PhysicsWorldContactInterfaceT::Contact
+          Contact;
+  typedef typename Contact::Ptr ContactPtr;
+
+  std::vector<PhysicsWorldContactInterfacePtr>
+    contactWorlds = this->worldManager->GetContactPhysicsWorlds();
+
+  assert(contactWorlds.size() == this->worldManager->GetNumWorlds());
+
+  PhysicsWorldContactInterfacePtr world = contactWorlds[worldIdx];
+  std::vector<ContactInfoPtr> contactInfo = world->GetContactInfo();
+  if (contactInfo.empty())
+  {
+    // models don't collide
+    return std::vector<ignition::math::Vector3d>();
+  }
+
+  // temporary for testing, make assert of this soon!
+  if (contactInfo.size() != 1)
+    throw std::runtime_error("Consistency: All contacts between models should be in one ContactInfo");
+
+  std::vector<Contact> contacts = contactInfo.front()->contacts;
+
+  typedef ContactsCluster<Contact> ContactsClusterT;
+  ContactsClusterT::ToleranceRadius = clusterSize;
+  std::vector<ContactsClusterT> clusteredContacts;
+  for (typename std::vector<Contact>::const_iterator it = contacts.begin();
+       it != contacts.end(); ++it)
+  {
+    // add contact to the first cluster in which it fits (this can be
+    // optimized later!). Create a new cluster if it doesn't fit in any.
+    const Contact &contact = *it;
+    bool added = false;
+    for (typename std::vector<ContactsClusterT>::iterator
+         cit = clusteredContacts.begin(); cit != clusteredContacts.end(); ++cit)
+    {
+      ContactsClusterT& cluster = *cit;
+      if (cluster.inside(contact))
+      {
+        cluster.add(contact);
+        added = true;
+        break;
+      }
+    }
+    if (!added)
+    {
+      ContactsClusterT single(contact);
+      clusteredContacts.push_back(single);
+    }
+/*    ContactsClusterT single(contact);
+    typename std::set<ContactsClusterT>::iterator cIt =
+      clusteredContacts.find(single);
+    if (cIt != clusteredContacts.end())
+    {
+      std::cout << "Found a cluster which fits" << std::endl;
+      cIt->add(contact);
+    }
+    else
+    {
+      clusteredContacts.insert(single);
+    }*/
+  }
+  std::vector<ignition::math::Vector3d> ret;
+  for (typename std::vector<ContactsClusterT>::iterator
+       cit = clusteredContacts.begin(); cit != clusteredContacts.end(); ++cit)
+  {
+    ContactsClusterT& cluster = *cit;
+    ret.push_back(cluster.avg);
+  }
+  return ret;
+}
+
 //////////////////////////////////////////////////////////////////////////////
 template<class WM>
 double ModelCollider<WM>::AutoCollide(const bool allWorlds,
