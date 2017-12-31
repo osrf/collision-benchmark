@@ -20,6 +20,7 @@
 #include <collision_benchmark/SimpleTriMeshShape.hh>
 #include <collision_benchmark/BasicTypes.hh>
 #include <collision_benchmark/Helpers.hh>
+#include <collision_benchmark/StartWaiter.hh>
 
 #include <ignition/math/Vector3.hh>
 
@@ -36,6 +37,7 @@ using collision_benchmark::BasicState;
 using collision_benchmark::Vector3;
 using collision_benchmark::Quaternion;
 using collision_benchmark::PhysicsWorldBaseInterface;
+using collision_benchmark::StartWaiter;
 
 ////////////////////////////////////////////////////////////////
 ignition::math::Vector3d getClosest(const ignition::math::Vector3d& v,
@@ -214,6 +216,12 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
         std::cout << "Failed due to number count. # Clusters: "
                   << conts.size() << std::endl;
         std::cout << "Press [Enter] to continue." << std::endl;
+        GzWorldManager::ControlServerPtr controlServer =
+                worldManager->GetControlServer();
+        if (!controlServer)
+        {
+          std::cerr << "NO CONTROL SERVIER" << std::endl;
+        }
         getchar();
       }
       else
@@ -232,7 +240,22 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
             std::cout << "Failed due to point distance " << dist
                       << ". # Clusters: " << conts.size() << std::endl;
             std::cout << "Press [Enter] to continue." << std::endl;
-            getchar();
+
+            GzWorldManager::ControlServerPtr controlServer =
+                worldManager->GetControlServer();
+            StartWaiter startWaiter;
+            if (controlServer)
+            {
+              controlServer->RegisterPauseCallback(std::bind(&StartWaiter::PauseCallback,
+                &startWaiter,
+                std::placeholders::_1));
+              std::cout << "WAITING FOR UNPAUSE" << std::endl;
+              startWaiter.WaitForUnpause();
+            }
+            else
+            {
+              getchar();
+            }
             break;
           }
         }

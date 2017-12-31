@@ -80,7 +80,7 @@ TEST_P(ContactsFlickerTestWithParam, BoxTriangleTest)
   std::string modelName1 = "box";
   std::string modelName2 = "triangle";
 
-  InitOneEngine(engine, 1, interactive);
+  InitOneEngine(engine, 1, interactive, {"libcollision_benchmark_step_gui.so"});
   LoadModel(boxSDF, modelName1);
   LoadModel(triangleSDF, modelName2);
   FlickerTest(modelName1, modelName2,

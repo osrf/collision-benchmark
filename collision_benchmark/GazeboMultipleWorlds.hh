@@ -42,7 +42,8 @@ namespace collision_benchmark
  * at the same time. Optionally, the non-interactive mode can be used to
  * not load up the gzclient and only load the server.
  *
- * Will also load the collision benchmark GUI (collision_benchmark::ClientGui)
+ * Will also by default load the collision benchmark GUI
+ * (collision_benchmark::ClientGui),
  * and provides the option to load additional GUI interfaces.
 
  * This class uses fork() to start gzclient in the child process.
@@ -79,7 +80,7 @@ class GazeboMultipleWorlds
   // A call to this function will fork the process with fork().
   // \param[in] useInteractiveMode flag whether the gzclient is to be loaded to
   //      allow interactive mode. If false, gzclient is not loaded.
-  // \param[in] additionalGuis additional guis to load on gzclient
+  // \param[in] additionalGuis additional guis to load in gzclient
   public: bool Init(const bool loadMirror = true,
                     const bool enforceContactCalc = false,
                     const bool allowControlViaMirror = true,

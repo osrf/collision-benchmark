@@ -130,6 +130,15 @@ add_library(collision_benchmark_test_gui SHARED
 target_link_libraries(collision_benchmark_test_gui collision_benchmark_msgs)
 add_dependencies(tests collision_benchmark_test_gui)
 
+QT5_WRAP_CPP(StepGui_MOC test/StepGui.hh)
+add_library(collision_benchmark_step_gui SHARED
+    test/StepGui.cc
+)
+target_link_libraries(collision_benchmark_step_gui
+  ${dependencies_LIBRARIES})
+add_dependencies(tests collision_benchmark_step_gui)
+
+
 # compile testing libraries and executables
 # -----------------------------------------
 
