@@ -32,12 +32,16 @@
 #include <thread>
 #include <atomic>
 
+#define NEXT_SIGNAL 0
+#define PREV_SIGNAL 1
+
 using collision_benchmark::Shape;
 using collision_benchmark::BasicState;
 using collision_benchmark::Vector3;
 using collision_benchmark::Quaternion;
 using collision_benchmark::PhysicsWorldBaseInterface;
 using collision_benchmark::StartWaiter;
+using collision_benchmark::SignalReceiver;
 
 ////////////////////////////////////////////////////////////////
 ignition::math::Vector3d getClosest(const ignition::math::Vector3d& v,
@@ -62,6 +66,18 @@ ignition::math::Vector3d getClosest(const ignition::math::Vector3d& v,
 }
 
 ////////////////////////////////////////////////////////////////
+ContactsFlickerTestFramework::ContactsFlickerTestFramework():
+  MultipleWorldsTestFramework()
+{
+}
+
+////////////////////////////////////////////////////////////////
+ContactsFlickerTestFramework::~ContactsFlickerTestFramework()
+{
+}
+
+
+////////////////////////////////////////////////////////////////
 void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
                                                const std::string &modelName2,
                                                const bool interactive,
@@ -75,6 +91,16 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
 
   worldManager->SetDynamicsEnabled(false);
   worldManager->SetPaused(true);
+
+  if (interactive)
+  {
+    // initialize signalReceiver for the StepGui interface.
+    // This should not be done in the constructor because the constructors
+    // are called before transport is initialized.
+    signalReceiver.InitAnyMsg("/test/cmd");
+    signalReceiver.AddIntSignal(NEXT_SIGNAL, 1);
+    signalReceiver.AddIntSignal(PREV_SIGNAL, -1);
+  }
 
   int numWorlds = worldManager->GetNumWorlds();
 
@@ -100,12 +126,9 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
   worldManager->SetPaused(false);
   if (interactive)
   {
-    std::cout << "Now start gzclient if you would like "
-              << "to view the test. " << std::endl;
-    std::cout << "Press [Enter] to continue." << std::endl;
-    getchar();
+    std::cout << "Press [>>] to start the test." << std::endl;
+    signalReceiver.WaitForSignal(NEXT_SIGNAL);
   }
-
 
   std::cout << "Now starting test." << std::endl;
 
@@ -222,7 +245,12 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
         {
           std::cerr << "NO CONTROL SERVIER" << std::endl;
         }
-        getchar();
+        if (interactive)
+        {
+          std::cout << "Press [<<] or [>>] to continue." << std::endl;
+          std::set<int> sigs =
+            signalReceiver.WaitForSignal({PREV_SIGNAL, NEXT_SIGNAL});
+        }
       }
       else
       {
@@ -239,22 +267,12 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
           {
             std::cout << "Failed due to point distance " << dist
                       << ". # Clusters: " << conts.size() << std::endl;
-            std::cout << "Press [Enter] to continue." << std::endl;
 
-            GzWorldManager::ControlServerPtr controlServer =
-                worldManager->GetControlServer();
-            StartWaiter startWaiter;
-            if (controlServer)
+            if (interactive)
             {
-              controlServer->RegisterPauseCallback(std::bind(&StartWaiter::PauseCallback,
-                &startWaiter,
-                std::placeholders::_1));
-              std::cout << "WAITING FOR UNPAUSE" << std::endl;
-              startWaiter.WaitForUnpause();
-            }
-            else
-            {
-              getchar();
+              std::cout << "Press [<<] or [>>] to continue." << std::endl;
+              std::set<int> sigs =
+                signalReceiver.WaitForSignal({PREV_SIGNAL, NEXT_SIGNAL});
             }
             break;
           }

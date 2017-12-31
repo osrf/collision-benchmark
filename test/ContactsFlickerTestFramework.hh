@@ -21,6 +21,7 @@
 #include <test/TestUtils.hh>
 #include <collision_benchmark/Shape.hh>
 #include <collision_benchmark/ModelCollider.hh>
+#include <collision_benchmark/SignalReceiver.hh>
 
 #include <string>
 #include <vector>
@@ -42,11 +43,8 @@ class ContactsFlickerTestFramework : public MultipleWorldsTestFramework
 
   typedef collision_benchmark::ModelCollider<GzWorldManager> ModelColliderT;
 
-  ContactsFlickerTestFramework():
-    MultipleWorldsTestFramework()
-  {}
-  virtual ~ContactsFlickerTestFramework()
-  {}
+  ContactsFlickerTestFramework();
+  virtual ~ContactsFlickerTestFramework();
 
   void FlickerTest(const std::string &modelName1,
                    const std::string &modelName2,
@@ -56,6 +54,8 @@ class ContactsFlickerTestFramework : public MultipleWorldsTestFramework
 
   // the helper for colliding models
   private: ModelColliderT modelCollider;
+  // Receiver for commands from the StepGui interface
+  private: collision_benchmark::SignalReceiver signalReceiver;
 };
 
 #endif  // COLLISION_BENCHMARK_TEST_CONTACTSFLICKERFRAMEWORK_H

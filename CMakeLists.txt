@@ -34,6 +34,7 @@ set(collision_benchmark_HEADERS
   collision_benchmark/PrimitiveShape.hh
   collision_benchmark/PrimitiveShapeParameters.hh
   collision_benchmark/Shape.hh
+  collision_benchmark/SignalReceiver.hh
   collision_benchmark/SimpleTriMeshShape.hh
   collision_benchmark/TypeHelper.hh
   collision_benchmark/WorldManager.hh
@@ -52,6 +53,7 @@ add_library(collision_benchmark SHARED
   collision_benchmark/Helpers.cc
   collision_benchmark/MeshShapeGenerationVtk.cc
   collision_benchmark/PrimitiveShape.cc
+  collision_benchmark/SignalReceiver.cc
   collision_benchmark/SimpleTriMeshShape.cc
   collision_benchmark/Shape.cc
   collision_benchmark/TypeHelper.cc
