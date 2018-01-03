@@ -49,6 +49,14 @@ void SignalReceiver::InitAnyMsg(const std::string& topic)
     this->node->Subscribe(topic, &SignalReceiver::ReceiveAnyMsg, this);
 }
 
+
+/////////////////////////////////////////////////
+void SignalReceiver::AddCallback(const int sigID,
+                                 const std::function<bool(void)>& fct)
+{
+  callbacks[sigID]=fct;
+}
+
 /////////////////////////////////////////////////
 void SignalReceiver::AddStringSignal(const int sigID, const std::string &strVal)
 {
@@ -120,6 +128,21 @@ void SignalReceiver::ReceiveAnyMsg(ConstAnyPtr &msg)
 }
 
 /////////////////////////////////////////////////
+void SignalReceiver::CheckCallbacks()
+{
+  for (std::map<int, std::function<bool(void)>>::const_iterator
+       it = callbacks.begin(); it != callbacks.end(); ++it)
+  {
+    const std::function<bool(void)> &cb = it->second;
+    if (cb())
+    {
+      std::lock_guard<std::mutex> lock(receivedSignalsMtx);
+      receivedSignals.insert(it->first);
+    }
+  }
+}
+
+/////////////////////////////////////////////////
 void SignalReceiver::WaitForSignal(const int sig)
 {
   // we have to wait for a new signal (not an old one), so erase the signal
@@ -130,6 +153,7 @@ void SignalReceiver::WaitForSignal(const int sig)
   while (!ReceivedSignal(sig))
   {
     gazebo::common::Time::MSleep(100);
+    CheckCallbacks();
   }
   std::lock_guard<std::mutex> lock(receivedSignalsMtx);
   receivedSignals.erase(sig);
@@ -151,6 +175,7 @@ std::set<int> SignalReceiver::WaitForSignal(const std::set<int> &sigs)
   while ((receivedSigs=ReceivedSignal(sigs)).empty())
   {
     gazebo::common::Time::MSleep(100);
+    CheckCallbacks();
   }
   std::lock_guard<std::mutex> lock(receivedSignalsMtx);
   for (std::set<int>::const_iterator it = receivedSigs.begin();

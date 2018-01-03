@@ -52,6 +52,19 @@ class ContactsFlickerTestFramework : public MultipleWorldsTestFramework
                    const std::string &outputBasePath,
                    const std::string &outputSubdir);
 
+  private:
+  // Helper function which determines whether the difference between contact1
+  // and contacts2 are significant and the test will fail
+  // \return true if the difference is significant
+  bool SignificantContactDiff(
+      const std::vector<ignition::math::Vector3d> &contacts1,
+      const std::vector<ignition::math::Vector3d> &contacts2,
+      const double contactsMoveTolerance = 1e-02) const;
+
+  // Helper function which checks if the client is running, when using
+  // interactive mode.
+  bool CheckClientExit() const;
+
   // the helper for colliding models
   private: ModelColliderT modelCollider;
   // Receiver for commands from the StepGui interface

@@ -73,6 +73,16 @@ namespace collision_benchmark
     // \brief initialize topic to receive msgs::Any messages on
     public: void InitAnyMsg(const std::string& topic);
 
+
+    // Additional callbacks can be used to determine whether there
+    // has been a signal.
+    // Currently, this callbacks are only checked in the WaitForSignal()
+    // functions.
+    // \param[in] sigID signal ID to use for this signal. Will be returned
+    //    with GetReceivedSignals after a signal was indicated by the callback.
+    public: void AddCallback(const int sigID,
+                             const std::function<bool(void)>& fct);
+
     // \brief add a string signal
     // \param[in] sigID signal ID to use for this signal. Will be returned
     //    with GetReceivedSignals after a signal of \e strVal was received.
@@ -86,6 +96,9 @@ namespace collision_benchmark
 
     /// \brief Callback triggered upon reception of an Any message
     private: void ReceiveAnyMsg(ConstAnyPtr &msg);
+
+    /// \brief Helper which checks all callbacks registered with AddCallback()
+    private: void CheckCallbacks();
 
     /// \brief table of all registered string signals and their signal IDs
     private: std::map<std::string, int> stringSignals;
@@ -103,6 +116,9 @@ namespace collision_benchmark
 
     /// \brief Subscriber for receiving msgs::Any messages.
     private: gazebo::transport::SubscriberPtr anySub;
+
+    /// \brief Callbacks for signals
+    private: std::map<int, std::function<bool(void)>> callbacks;
   };
 }
 #endif

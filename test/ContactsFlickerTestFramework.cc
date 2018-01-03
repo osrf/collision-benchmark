@@ -32,6 +32,7 @@
 #include <thread>
 #include <atomic>
 
+#define EXIT_SIGNAL -1
 #define NEXT_SIGNAL 0
 #define PREV_SIGNAL 1
 
@@ -78,6 +79,53 @@ ContactsFlickerTestFramework::~ContactsFlickerTestFramework()
 
 
 ////////////////////////////////////////////////////////////////
+bool ContactsFlickerTestFramework::SignificantContactDiff(
+      const std::vector<ignition::math::Vector3d> &contacts1,
+      const std::vector<ignition::math::Vector3d> &contacts2,
+      const double contactsMoveTolerance) const
+{
+  // XXX TODO this must be derived from the distance the shapes have moved
+  // between iterations, or vice versa!!
+  if (contacts1.size() != contacts2.size())
+  {
+    std::cout << "Failed due to number count. # Clusters: "
+              << contacts1.size() << std::endl;
+    return true;
+  }
+  else
+  {
+    // equal number of clusters: No cluster should have moved further
+    // than the tolerance from any cluster in the previous iteration
+    for (std::vector<ignition::math::Vector3d>::const_iterator
+         it = contacts1.begin(); it != contacts1.end(); ++it)
+    {
+      const ignition::math::Vector3d &contact = *it;
+      double dist = -1;
+      ignition::math::Vector3d closest =
+        getClosest(contact, contacts2, dist);
+      if (dist > contactsMoveTolerance)
+      {
+        std::cout << "Failed due to point distance " << dist
+                  << ". # Clusters: " << contacts1.size() << std::endl;
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////
+bool ContactsFlickerTestFramework::CheckClientExit() const
+{
+  if (!GetMultipleWorlds())
+  {
+    std::cerr << "Server is down" << std::endl;
+    return true;
+  }
+  return !GetMultipleWorlds()->IsClientRunning();
+}
+
+////////////////////////////////////////////////////////////////
 void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
                                                const std::string &modelName2,
                                                const bool interactive,
@@ -100,6 +148,9 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
     signalReceiver.InitAnyMsg("/test/cmd");
     signalReceiver.AddIntSignal(NEXT_SIGNAL, 1);
     signalReceiver.AddIntSignal(PREV_SIGNAL, -1);
+    std::function<bool(void)> cb =
+      std::bind(&ContactsFlickerTestFramework::CheckClientExit, this);
+    signalReceiver.AddCallback(EXIT_SIGNAL, cb);
   }
 
   int numWorlds = worldManager->GetNumWorlds();
@@ -127,7 +178,13 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
   if (interactive)
   {
     std::cout << "Press [>>] to start the test." << std::endl;
-    signalReceiver.WaitForSignal(NEXT_SIGNAL);
+    std::set<int> sig =
+      signalReceiver.WaitForSignal({NEXT_SIGNAL, EXIT_SIGNAL});
+    if (sig.find(EXIT_SIGNAL) != sig.end())
+    {
+      std::cout << "EXIT test." << std::endl;
+      return;
+    }
   }
 
   std::cout << "Now starting test." << std::endl;
@@ -197,6 +254,12 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
     // move model along the outer circle in the requested number of subdivisions
     for (int ocSubDiv = 0; ocSubDiv < numOuterCircleSubdivisions; ++ocSubDiv)
     {
+      ASSERT_NE(GetMultipleWorlds(), nullptr) << "Server is down";
+      if (interactive && !GetMultipleWorlds()->IsClientRunning())
+      {
+        std::cout << "Client stopped. " << std::endl;
+        return;
+      }
       // rotate the model to the right place on the circle
       const static double outerAngleStep
         = 360.0/numOuterCircleSubdivisions * M_PI/180;
@@ -234,48 +297,13 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
       static std::vector<ignition::math::Vector3d> lastConts;
       std::vector<ignition::math::Vector3d> conts
         = this->modelCollider.GetClusteredContacts(0,contactsMoveTolerance);
-      if (conts.size() != lastConts.size())
+      if (SignificantContactDiff(lastConts, conts, contactsMoveTolerance))
       {
-        std::cout << "Failed due to number count. # Clusters: "
-                  << conts.size() << std::endl;
-        std::cout << "Press [Enter] to continue." << std::endl;
-        GzWorldManager::ControlServerPtr controlServer =
-                worldManager->GetControlServer();
-        if (!controlServer)
-        {
-          std::cerr << "NO CONTROL SERVIER" << std::endl;
-        }
         if (interactive)
         {
           std::cout << "Press [<<] or [>>] to continue." << std::endl;
           std::set<int> sigs =
-            signalReceiver.WaitForSignal({PREV_SIGNAL, NEXT_SIGNAL});
-        }
-      }
-      else
-      {
-        // equal number of clusters: No cluster should have moved further
-        // than the tolerance from any cluster in the previous iteration
-        for (std::vector<ignition::math::Vector3d>::const_iterator
-             it = conts.begin(); it != conts.end(); ++it)
-        {
-          const ignition::math::Vector3d &contact = *it;
-          double dist = -1;
-          ignition::math::Vector3d closest =
-            getClosest(contact, lastConts, dist);
-          if (dist > contactsMoveTolerance)
-          {
-            std::cout << "Failed due to point distance " << dist
-                      << ". # Clusters: " << conts.size() << std::endl;
-
-            if (interactive)
-            {
-              std::cout << "Press [<<] or [>>] to continue." << std::endl;
-              std::set<int> sigs =
-                signalReceiver.WaitForSignal({PREV_SIGNAL, NEXT_SIGNAL});
-            }
-            break;
-          }
+            signalReceiver.WaitForSignal({PREV_SIGNAL, NEXT_SIGNAL, EXIT_SIGNAL});
         }
       }
       lastConts = conts;

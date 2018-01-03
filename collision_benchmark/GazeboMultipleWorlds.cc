@@ -99,13 +99,13 @@ bool GazeboMultipleWorlds::InitServer(const bool loadMirror,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-bool GazeboMultipleWorlds::IsClientClosed()
+bool GazeboMultipleWorlds::IsClientClosed() const
 {
   return !IsClientRunning();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-bool GazeboMultipleWorlds::IsClientRunning()
+bool GazeboMultipleWorlds::IsClientRunning() const
 {
   if (progPID == 0)
     throw std::runtime_error("CONSISTENCY: This must be the parent process!");

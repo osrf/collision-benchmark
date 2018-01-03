@@ -53,6 +53,15 @@ class MultipleWorldsTestFramework : public ::testing::Test
     return server ? server->GetServer() : nullptr;
   }
 
+  collision_benchmark::GazeboMultipleWorlds::Ptr GetMultipleWorlds()
+  {
+    return server;
+  }
+  collision_benchmark::GazeboMultipleWorlds::ConstPtr GetMultipleWorlds() const
+  {
+    return server;
+  }
+
   protected:
 
   MultipleWorldsTestFramework()

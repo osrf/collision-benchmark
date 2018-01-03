@@ -132,9 +132,9 @@ class GazeboMultipleWorlds
   public: bool HasStarted() const;
 
   // returns true if gzclient is still running
-  public: bool IsClientRunning();
+  public: bool IsClientRunning() const;
   // returns !isClientRunning()
-  private: bool IsClientClosed();
+  private: bool IsClientClosed() const;
 
   // \brief Shuts down the server.
   // Must be called after Run() has been used with
