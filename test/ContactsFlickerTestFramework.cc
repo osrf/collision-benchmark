@@ -26,6 +26,7 @@
 
 #include <gazebo/gazebo.hh>
 #include <gazebo/msgs/msgs.hh>
+#include <gazebo/transport/transport.hh>
 
 
 #include <sstream>
@@ -49,11 +50,14 @@ ignition::math::Vector3d getClosest(const ignition::math::Vector3d& v,
                                   const std::vector<ignition::math::Vector3d> c,
                                   double& dist)
 {
+  if (c.empty())
+    throw std::runtime_error("Don't call getClosest() with an empty vector");
   double minDist = std::numeric_limits<double>::max();
   ignition::math::Vector3d ret(minDist, minDist, minDist);
   for (std::vector<ignition::math::Vector3d>::const_iterator it = c.begin();
        it != c.end(); ++it)
   {
+    // std::cout << "Check " << v << std::endl;
     ignition::math::Vector3d diff = v-*it;
     double len = diff.Length();
     if (len < minDist)
@@ -84,31 +88,33 @@ bool ContactsFlickerTestFramework::SignificantContactDiff(
       const std::vector<ignition::math::Vector3d> &contacts2,
       const double contactsMoveTolerance) const
 {
-  // XXX TODO this must be derived from the distance the shapes have moved
-  // between iterations, or vice versa!!
-  if (contacts1.size() != contacts2.size())
+  // if one of the states had no contacts, any change in contact
+  // points is accepted
+  if (contacts1.empty() || contacts2.empty())
   {
-    std::cout << "Failed due to number count. # Clusters: "
-              << contacts1.size() << std::endl;
-    return true;
+    return false;
   }
-  else
+
+  // the loop below has to use the larger cluster
+  const std::vector<ignition::math::Vector3d> &cLarge =
+    contacts1.size() > contacts2.size() ? contacts1 : contacts2;
+  const std::vector<ignition::math::Vector3d> &cSmall =
+    contacts1.size() <= contacts2.size() ? contacts1 : contacts2;
+
+  // equal number of clusters: No cluster should have moved further
+  // than the tolerance from any cluster in the previous iteration
+  for (std::vector<ignition::math::Vector3d>::const_iterator
+       it = cLarge.begin(); it != cLarge.end(); ++it)
   {
-    // equal number of clusters: No cluster should have moved further
-    // than the tolerance from any cluster in the previous iteration
-    for (std::vector<ignition::math::Vector3d>::const_iterator
-         it = contacts1.begin(); it != contacts1.end(); ++it)
+    const ignition::math::Vector3d &contact = *it;
+    double dist = -1;
+    ignition::math::Vector3d closest =
+      getClosest(contact, cSmall, dist);
+    if (dist > contactsMoveTolerance)
     {
-      const ignition::math::Vector3d &contact = *it;
-      double dist = -1;
-      ignition::math::Vector3d closest =
-        getClosest(contact, contacts2, dist);
-      if (dist > contactsMoveTolerance)
-      {
-        std::cout << "Failed due to point distance " << dist
-                  << ". # Clusters: " << contacts1.size() << std::endl;
-        return true;
-      }
+      std::cout << "Failed due to point distance " << dist
+                << ". # Clusters: " << contacts1.size() << ", " << contacts2.size() << std::endl;
+      return true;
     }
   }
   return false;
@@ -124,6 +130,7 @@ bool ContactsFlickerTestFramework::CheckClientExit() const
   }
   return !GetMultipleWorlds()->IsClientRunning();
 }
+
 
 ////////////////////////////////////////////////////////////////
 void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
@@ -151,6 +158,19 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
     std::function<bool(void)> cb =
       std::bind(&ContactsFlickerTestFramework::CheckClientExit, this);
     signalReceiver.AddCallback(EXIT_SIGNAL, cb);
+
+    ASSERT_NE(GetMultipleWorlds(), nullptr) << "Server is down";
+    while (!GetMultipleWorlds()->IsClientRunning())
+    {
+      std::cout << "Waiting for client to be up" << std::endl;
+      gazebo::common::Time::MSleep(100);
+    }
+    // switch on contacts display and transparent view
+    gazebo::common::Time::Sleep(1);  // XXX TODO do a wait for transport instead of this
+    gazebo::transport::requestNoReply("mirror",
+                                      "show_contact", "all");
+    gazebo::transport::requestNoReply("mirror",
+                                      "set_transparent", "all");
   }
 
   int numWorlds = worldManager->GetNumWorlds();
@@ -207,6 +227,33 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
   /// (b) The shape is "wiggled" around, changing the orientation slightly,
   /// at the current pose along the outer circle.
 
+
+  // General parameters
+  // ----------------
+
+  // in interactive mode, slow down movements
+  const bool slowDown = false;
+  const double slowDownMS = 10;
+  // minimum absolute tolerance the contacts are allowed to move
+  const double minMoveTolerance = 8e-02;
+  // the contacts are allowed to move as much as the model has moved
+  // times this tolerance factor. So if the model moved by x, the contacts
+  // are allowed to move by max(x*toleranceFact, minMoveTolerance).
+  const double toleranceFact = 1.0;
+  // Contact points are clustered before doing the check.
+  // This is the minimum absolute cluster size
+  const double minClusterSize = 1e-02;
+  // The size of the cluster is std::max(m*clusterFact, minClusterSize),
+  // where m is the distance the model moved
+  const double clusterFact = 0.1;
+  // the inner circle test can be disabled
+  const bool innerCircleTestEnabled = false;
+  // the orientation test may be disabled
+  const bool orientationTestEnabled = true;
+  // the world index (in WorldManager) to test
+  const int testWorldIdx = 0;
+
+
   // Auto-collide parameters
   // ----------------
   const bool acAllWorlds = false;
@@ -222,37 +269,58 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
 
   // number of outer circles
   // TODO: This should be determined by the projection of both shapes on the plane
-  const int numOuterCircles = 20;
-  const int numInnerCircles = 2;
+  const int numOuterCircles = 40;
+  const int numInnerCircles = 1;
   // Radius increase of outer circle per iteration
-  const float outerCircleRadiusInc = 0.1;
+  const float outerCircleRadiusInc = 0.05;
   // Radius increase of inner circle per iteration
-  const float innerCircleRadiusInc = 0.02;
+  const float innerCircleRadiusInc = 0.001;
   // number of subdivisions for the outer circle
-  const int numOuterCircleSubdivisions = 30;
+  const int numOuterCircleSubdivisions = 50;
   // number of subdivisions for the inner circle
-  const int numInnerCircleSubdivisions = 30;
-  // the inner circle test can be disabled
-  const bool innerCircleTestEnabled = false;
+  const int numInnerCircleSubdivisions = 50;
 
   // Orientation change paramters
   // ---------------------------
 
-  // the orientation test may be disabled
-  const bool orientationTestEnabled = false;
   // subdivisions for orientation change test (see code below)
   const int numOriSubdivisions = 30;
   // the orientation is changed as if the shape was fixed to an axis
   // which walks along the surface of a cone around the collision axis.
   // This is the angle/opening of this cone.
-  const float coneAngle = 0.5 * M_PI/180;
+  const float coneAngle = 0.2 * M_PI/180;
+
+
+  // Iteration start paramters
+  // ---------------------------
+#if 1
+  // start outer loop at this index
+  const int ocStart = 0;
+  // start outer loop of circle subdivisions at this index
+  const int ocSubDivStart = 0;
+  // start inner loop at this index
+  const int icSubDivStart = 0;
+  // start orientation loop at this index
+  const int oriSubDivStart = 0;
+#else
+  const int ocStart = 7;
+  const int ocSubDivStart = 6;
+  const int icSubDivStart = 0;
+  const int oriSubDivStart = 12;
+#endif
+
+  // XXX ODE test cases:
+  // oc=2, ocSubDiv=42, oriSubDiv=16
+  // oc=7, ocSubDiv=6, oriSubDiv=12  pretty good
+
 
   std::cout << "Now iterating through all states." << std::endl;
-  for (int oc = 0; oc < numOuterCircles; ++oc)
+  for (int oc = ocStart; oc < numOuterCircles; ++oc)
   {
     // std::cout << "Outer circle " << oc << std::endl;
     // move model along the outer circle in the requested number of subdivisions
-    for (int ocSubDiv = 0; ocSubDiv < numOuterCircleSubdivisions; ++ocSubDiv)
+    for (int ocSubDiv = ocSubDivStart;
+         ocSubDiv < numOuterCircleSubdivisions; ++ocSubDiv)
     {
       ASSERT_NE(GetMultipleWorlds(), nullptr) << "Server is down";
       if (interactive && !GetMultipleWorlds()->IsClientRunning())
@@ -288,29 +356,7 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
         continue;
       }
 
-
-      // XXX ////////// temporary
-
-      // XXX TODO this must be derived from the distance the shapes have moved
-      // between iterations, or vice versa!!
-      const double contactsMoveTolerance = 1e-02;
-      static std::vector<ignition::math::Vector3d> lastConts;
-      std::vector<ignition::math::Vector3d> conts
-        = this->modelCollider.GetClusteredContacts(0,contactsMoveTolerance);
-      if (SignificantContactDiff(lastConts, conts, contactsMoveTolerance))
-      {
-        if (interactive)
-        {
-          std::cout << "Press [<<] or [>>] to continue." << std::endl;
-          std::set<int> sigs =
-            signalReceiver.WaitForSignal({PREV_SIGNAL, NEXT_SIGNAL, EXIT_SIGNAL});
-        }
-      }
-      lastConts = conts;
-      // XXX ////////// temporary
-
-
-      // use the "detour" via tmp to ensure outerCurrMs2 is const (and bugproof)
+      // ensure outerCurrMs2 is const (and bugproof), therefore use tmp above
       const BasicState outerCurrMs2 = tmp;
       const ignition::math::Vector3d outerCurrModelPos
         = collision_benchmark::ConvIgn<double>(outerCurrMs2.position);
@@ -325,20 +371,92 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
         {
           // std::cout << "Inner circle " << ic << std::endl;
           // move models along circle Radius
-          this->modelCollider.MoveModelPerpendicular((ic+1)*innerCircleRadiusInc,
-                                                   0, false, true, &outerCurrMs2);
+          this->modelCollider.MoveModelPerpendicular
+                ((ic+1)*innerCircleRadiusInc, 0, false, true, &outerCurrMs2);
+
+          // to remember the last iterations contact points
+          std::vector<ignition::math::Vector3d> lastConts;
+          // flag on whether the current iteration is only to view the state.
+          // The following iteration will do the test again.
+          bool viewLastIteration = false;
           // move model along the inner circle in the requested
           // number of subdivisions
-          for (int icSubDiv = 0; icSubDiv < numInnerCircleSubdivisions; ++icSubDiv)
+          for (int icSubDiv = icSubDivStart;
+               icSubDiv < numInnerCircleSubdivisions; ++icSubDiv)
           {
+            if (interactive && slowDown)
+              gazebo::common::Time::MSleep(slowDownMS);
             // first rotate the model to the right place on the circle
             const static double innerAngleStep
                 = 360.0/numInnerCircleSubdivisions * M_PI/180;
             double innerAngle = icSubDiv * innerAngleStep;
+
+            BasicState innerCurrMs;
             this->modelCollider.RotateModelToPerpendicular(innerAngle,
                                                            outerCurrModelPos,
-                                                           false, true);
-            if (interactive) gazebo::common::Time::MSleep(10);
+                                                           false, true,
+                                                           &innerCurrMs);
+            const ignition::math::Vector3d innerCurrModelPos
+              = collision_benchmark::ConvIgn<double>(innerCurrMs.position);
+
+            if (viewLastIteration)
+            {
+              std::cout << "Press [>>] to continue." << std::endl;
+              std::set<int> sigs =
+                signalReceiver.WaitForSignal({EXIT_SIGNAL, NEXT_SIGNAL});
+              if (sigs.find(EXIT_SIGNAL) != sigs.end())
+              {
+                std::cout << "Exit client." << std::endl;
+                return;
+              }
+              viewLastIteration = false;
+              // continue to avoid setting of lastConts
+              continue;
+            }
+
+            // Do the test
+            // ***********************
+            const double modelMoved =
+              (outerCurrModelPos - innerCurrModelPos).Length();
+            // XXX TODO: the orientation would need to be considered too.
+            // The maximum amount a contact may have moved is then the maximum
+            // distance a point in the model would have traveled if only the
+            // orientation had changed.
+            const double clusterSize =
+              std::max(modelMoved * clusterFact, minClusterSize);
+            const double contactsMoveTolerance
+              = std::max(modelMoved * toleranceFact, minMoveTolerance);
+            std::vector<ignition::math::Vector3d> conts
+              = this->modelCollider.GetClusteredContacts(testWorldIdx,
+                                                         clusterSize);
+            // do the diff test only for the 2nd contact because we
+            // need lastConts
+            if ((icSubDiv > icSubDivStart) &&
+                SignificantContactDiff(lastConts, conts, contactsMoveTolerance))
+            {
+              std::cout << "Movement test: Stop at oc=" << oc
+                << ", ocSubDiv=" << ocSubDiv << ", icSubDiv="
+                << icSubDiv << std::endl;
+              if (interactive)
+              {
+                std::cout << "Press [<<] or [>>] to continue." << std::endl;
+                std::set<int> sigs = signalReceiver.WaitForAnySignal();
+                if (sigs.find(EXIT_SIGNAL) != sigs.end())
+                {
+                  std::cout << "Exit client." << std::endl;
+                  return;
+                }
+                else if (sigs.find(PREV_SIGNAL) != sigs.end())
+                {
+                  icSubDiv -= 2;
+                  viewLastIteration = true;
+                  // continue in order to avoid
+                  continue;
+                }
+              }
+            }
+            lastConts = conts;
+            // ***********************
           }
         }
       }
@@ -349,21 +467,35 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
                 worldManager->GetNumWorlds())
         << "Could not set model pose to required pose";
 
+
       /// Orientation change test
       /////////////////////
       if (orientationTestEnabled)
       {
-        // First, get the coordinate system around the collision axis
-        const ignition::math::Vector3d collisionAxis = this->modelCollider.GetCollisionAxis();
-        const ignition::math::Vector3d perpAxis = this->modelCollider.GetAxisPerpendicular(0);
-        const ignition::math::Vector3d coneRotAxis = collisionAxis.Cross(perpAxis);
+        // Get the coordinate system around the collision axis
+        const ignition::math::Vector3d collisionAxis =
+          this->modelCollider.GetCollisionAxis();
+        const ignition::math::Vector3d perpAxis =
+          this->modelCollider.GetAxisPerpendicular(0);
+        const ignition::math::Vector3d coneRotAxis =
+          collisionAxis.Cross(perpAxis);
         // Compute quaternion for the cone opening
         const ignition::math::Quaterniond qCone(coneRotAxis, coneAngle);
 
+
+        // flag on whether the current iteration is only to view the state.
+        // The following iteration will do the test again.
+        bool viewLastIteration = false;
+        // for remebering the last iteration's AABB
+        ignition::math::Vector3d lastMinAABB, lastMaxAABB;
+        // to remember the last iterations contact points
+        std::vector<ignition::math::Vector3d> lastConts;
         // Iterate through one round around the cone
-        for (int oriSubDiv = 0; oriSubDiv < numOriSubdivisions; ++oriSubDiv)
+        for (int oriSubDiv = oriSubDivStart;
+             oriSubDiv < numOriSubdivisions; ++oriSubDiv)
         {
-          const static double oriAngleStep = 360.0/numOriSubdivisions * M_PI/180;
+          const static double oriAngleStep
+            = 360.0/numOriSubdivisions * M_PI/180;
           double oriAngle = oriSubDiv * oriAngleStep;
           double f = oriSubDiv/(double)numOriSubdivisions * 2*M_PI;
           ignition::math::Quaterniond q(cos(f)*coneAngle, sin(f)*coneAngle, 0);
@@ -375,7 +507,95 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
                     worldManager->GetNumWorlds())
               << "Could not set model pose to required pose";
           worldManager->Update(1);
-          if (interactive) gazebo::common::Time::MSleep(10);
+          if (interactive && slowDown)
+            gazebo::common::Time::MSleep(slowDownMS);
+
+          if (viewLastIteration)
+          {
+            std::cout << "VIEW ITERATION: Orientation test oc=" << oc
+              << ", ocSubDiv=" << ocSubDiv << ", oriSubDiv="
+              << oriSubDiv << std::endl;
+            std::cout << "Press [>>] to continue." << std::endl;
+            std::set<int> sigs =
+              signalReceiver.WaitForSignal({EXIT_SIGNAL, NEXT_SIGNAL});
+            if (sigs.find(EXIT_SIGNAL) != sigs.end())
+            {
+              std::cout << "Exit client." << std::endl;
+              return;
+            }
+            viewLastIteration = false;
+            // continue to avoid setting of lastConts
+            continue;
+          }
+
+          // Do the test
+          // ***********************
+          ignition::math::Vector3d minAABB, maxAABB;
+          bool aabbInLocal;
+          this->modelCollider.GetAABB(modelName2, testWorldIdx,
+                                      minAABB, maxAABB, aabbInLocal);
+          EXPECT_FALSE(aabbInLocal)
+            << "Adjust implementation to support AABB in local frame";
+
+          // Check min and max points of AABBs of this and last iteration
+          // to see how much it may have moved at most.
+          // If there is no last iteration, assume a move of 0 so the cluster
+          // size is minimal. The actual test won't be performed then.
+          double maxMove =
+              (oriSubDiv == oriSubDivStart) ? 0 :
+                                 std::max(fabs((lastMinAABB-minAABB).Length()),
+                                          fabs((lastMaxAABB-maxAABB).Length()));
+          const double clusterSize =
+              std::max(maxMove * clusterFact, minClusterSize);
+          const double contactsMoveTolerance =
+            std::max(maxMove * toleranceFact, minMoveTolerance);
+
+          /*std::cout << "DEBUG: Orientation test: Stop at oc=" << oc
+              << ", ocSubDiv=" << ocSubDiv << ", oriSubDiv="
+              << oriSubDiv << ", max move tol = " << contactsMoveTolerance
+              << " ( maxMove=" << maxMove << ")" << std::endl;*/
+
+          std::vector<ignition::math::Vector3d> conts
+            = this->modelCollider.GetClusteredContacts(testWorldIdx,
+                                                       clusterSize);
+
+          /*std::cout  << "... Number of contacts: " << conts.size() << std::endl;
+          for (auto ii=conts.begin(); ii!=conts.end(); ++ii)
+            std::cout << *ii << " ";
+          std::cout << std::endl << "LAST: " << std::endl;
+          for (auto ii=lastConts.begin(); ii!=lastConts.end(); ++ii)
+            std::cout << *ii << " ";*/
+
+          // do the diff test only for the 2nd contact because we
+          // need lastConts and lastMin/MaxAABB
+          if ((oriSubDiv > oriSubDivStart) &&
+              SignificantContactDiff(lastConts, conts, contactsMoveTolerance))
+          {
+            std::cout << "Orientation test: Stop at oc=" << oc
+              << ", ocSubDiv=" << ocSubDiv << ", oriSubDiv="
+              << oriSubDiv << ", max move tol = " << contactsMoveTolerance
+              << " ( maxMove=" << maxMove << ")" << std::endl;
+            if (interactive)
+            {
+              std::cout << "Press [<<] or [>>] to continue." << std::endl;
+              std::set<int> sigs = signalReceiver.WaitForAnySignal();
+              if (sigs.find(EXIT_SIGNAL) != sigs.end())
+              {
+                std::cout << "Exit client." << std::endl;
+                return;
+              }
+              else if (sigs.find(PREV_SIGNAL) != sigs.end())
+              {
+                oriSubDiv -= 2;
+                viewLastIteration = true;
+                continue;
+              }
+            }
+          }
+          lastConts = conts;
+          lastMinAABB = minAABB;
+          lastMaxAABB = maxAABB;
+          // ***********************
         }
         // reset model pose again
         ASSERT_EQ(worldManager->SetBasicModelState(modelName2, outerCurrMs2),
@@ -385,7 +605,7 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
     }
   }
   std::cout << "ContactsFlicker test finished. " << std::endl;
-  if (interactive)
+/*  if (interactive)
   {
     std::cout << "Now entering endless update loop, kill with Ctrl+C"
               << std::endl;
@@ -395,5 +615,5 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
       worldManager->Update(numSteps);
       gazebo::common::Time::MSleep(1000);
     }
-  }
+  }*/
 }

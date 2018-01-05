@@ -183,3 +183,23 @@ std::set<int> SignalReceiver::WaitForSignal(const std::set<int> &sigs)
     receivedSignals.erase(*it);
   return receivedSigs;
 }
+
+/////////////////////////////////////////////////
+std::set<int> SignalReceiver::WaitForAnySignal()
+{
+  // we have to wait for a new signal (not an old one), so erase
+  // all signals.
+  {
+    std::lock_guard<std::mutex> lock(receivedSignalsMtx);
+    receivedSignals.clear();
+  }
+  std::set<int> receivedSigs;
+  while ((receivedSigs=GetReceivedSignals()).empty())
+  {
+    gazebo::common::Time::MSleep(100);
+    CheckCallbacks();
+  }
+  std::lock_guard<std::mutex> lock(receivedSignalsMtx);
+  receivedSignals.clear();
+  return receivedSigs;
+}

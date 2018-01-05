@@ -318,7 +318,7 @@ class ContactsCluster
   {
     if (contacts.empty()) return true;
     IgnVec diff = avg - v;
-    std::cout << "Dist: " << diff.Length() << std::endl;
+    // std::cout << "Dist: " << diff.Length() << std::endl;
     return diff.Length() <= ToleranceRadius;
   }
 
@@ -346,7 +346,7 @@ class ContactsCluster
       // all the time, but for now we don't emphasise efficiency
       add(cPair->first);
     }
-  }*/
+  }
   // operator returns < if \e c may be merged with this cluster
   // without exceeding ToleranceRadius. The center point may change however.
   public: bool operator<(const ContactsCluster& c) const
@@ -360,7 +360,7 @@ class ContactsCluster
     }
     std::cout << "Can merge clusters!!" << std::endl;
     return true;
-  }
+  }*/
   private: std::vector<Pair> contacts;
   public: IgnVec avg;
 
@@ -409,6 +409,8 @@ ModelCollider<WM>::GetClusteredContacts(const size_t worldIdx,
 
   std::vector<Contact> contacts = contactInfo.front()->contacts;
 
+  // std::cout << "Number of contacts: " << contacts.size() << std::endl;
+
   typedef ContactsCluster<Contact> ContactsClusterT;
   ContactsClusterT::ToleranceRadius = clusterSize;
   std::vector<ContactsClusterT> clusteredContacts;
@@ -425,6 +427,7 @@ ModelCollider<WM>::GetClusteredContacts(const size_t worldIdx,
       ContactsClusterT& cluster = *cit;
       if (cluster.inside(contact))
       {
+        // std::cout << "Adding contact " << contact << " to cluster" << std::endl;
         cluster.add(contact);
         added = true;
         break;
@@ -432,21 +435,10 @@ ModelCollider<WM>::GetClusteredContacts(const size_t worldIdx,
     }
     if (!added)
     {
+      // std::cout << "Making new cluster with " << contact << "." << std::endl;
       ContactsClusterT single(contact);
       clusteredContacts.push_back(single);
     }
-/*    ContactsClusterT single(contact);
-    typename std::set<ContactsClusterT>::iterator cIt =
-      clusteredContacts.find(single);
-    if (cIt != clusteredContacts.end())
-    {
-      std::cout << "Found a cluster which fits" << std::endl;
-      cIt->add(contact);
-    }
-    else
-    {
-      clusteredContacts.insert(single);
-    }*/
   }
   std::vector<ignition::math::Vector3d> ret;
   for (typename std::vector<ContactsClusterT>::iterator
@@ -455,6 +447,7 @@ ModelCollider<WM>::GetClusteredContacts(const size_t worldIdx,
     ContactsClusterT& cluster = *cit;
     ret.push_back(cluster.avg);
   }
+//  std::cout << "Number of clusters: " << clusteredContacts.size() << std::endl;
   return ret;
 }
 
@@ -692,7 +685,8 @@ template<class WM>
 bool ModelCollider<WM>::RotateModelToPerpendicular(const double angle,
                                     const ignition::math::Vector3d &axisOrigin,
                                     const bool model1,
-                                    const bool worldUpdate) const
+                                    const bool worldUpdate,
+                                    BasicState* endState) const
 {
   assert(this->worldManager);
   const std::string moveModelName =
@@ -717,9 +711,9 @@ bool ModelCollider<WM>::RotateModelToPerpendicular(const double angle,
 
   const ignition::math::Vector3d mvModel = mvModelTowards + mvModelAway;
 
-  modelState.SetPosition(modelState.position.x + mvModel.X(),
-                         modelState.position.y + mvModel.Y(),
-                         modelState.position.z + mvModel.Z());
+  const ignition::math::Vector3d newPos = modelPos + mvModel;
+  modelState.SetPosition(newPos.X(), newPos.Y(), newPos.Z());
+  if (endState) *endState = modelState;
 
   if ((this->worldManager->SetBasicModelState(moveModelName, modelState)
        != this->worldManager->GetNumWorlds()))
@@ -761,6 +755,15 @@ int ModelCollider<WM>::GetAABB(const std::string &modelName,
       return -2;
   }
   return 0;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+template<class WM>
+int ModelCollider<WM>::GetAABB(const std::string &modelName,
+            const unsigned int idxWorld,
+            Vector3 &min, Vector3 &max, bool &inLocalFrame)
+{
+  return GetAABB(modelName, 0, this->worldManager, min, max, inLocalFrame);
 }
 
 //////////////////////////////////////////////////////////////////////////////

@@ -70,6 +70,13 @@ namespace collision_benchmark
     // so it waits for the arrival of a new signal in \e sigs.
     public: std::set<int> WaitForSignal(const std::set<int> &sigs);
 
+    // \brief waits for any signal (or several arriving at once)
+    // All signals returned by this function will have been removed from
+    // the received signals list.
+    // All received signals are cleared before the wait, so it waits
+    // for arrival of any new signal.
+    public: std::set<int> WaitForAnySignal();
+
     // \brief initialize topic to receive msgs::Any messages on
     public: void InitAnyMsg(const std::string& topic);
 

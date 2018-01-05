@@ -64,7 +64,7 @@ class Contact
   public: friend std::ostream &operator << (std::ostream &o, const Self &c)
   {
     o << "{";
-    // o <<"Position: " << c.position << " ";
+     o <<"Position: " << c.position << " ";
     // o <<"normal: " << c.normal << " ";
     o <<"force: b1=" << c.wrench.body1Force
       << " b2=" << c.wrench.body2Force << " ";

@@ -200,6 +200,21 @@ class ModelCollider
               const WorldManagerPtr &worldManager,
               Vector3 &min, Vector3 &max, bool &inLocalFrame);
 
+  // \brief Helper which returns the AABB of the model from the
+  // \e idxWorld'th world
+  // \param[in] modelName name of the model
+  // \param[in] idxWorld index of the world
+  // \param[out] min minimum point of AABB
+  // \param[out] max maxium point of AABB
+  // \param[out] inLocalFrame \e min and \e max given in local coordinate frame
+  // \retval 0 success
+  // \retval -1 world \e idxWorld does not exist in world manager
+  // \retval -2 could not get AABB for model
+  public: int GetAABB(const std::string &modelName,
+              const unsigned int idxWorld,
+              Vector3 &min, Vector3 &max, bool &inLocalFrame);
+
+
   // \brief Helper which can be used to get the AABB coordinates
   // in global frame transformed by \e q
   // \param[in] q additional rotation of the global frame. When identity,
@@ -308,11 +323,14 @@ class ModelCollider
   // \param[in] axisOrigin the origin of the axis
   // \param[in] model1 if true, model 1 is moved. Otherwise, model 2 is moved.
   // \param[in] worldUpdate if true, the worlds are updated upon success.
+  // \param[out] endState if not NULL, this will be set to the model state
+  //    after the move.
   // \return true on success, false if model state could not be set
   public: bool RotateModelToPerpendicular(const double angle,
                            const ignition::math::Vector3d &axisOrigin,
                            const bool model1,
-                           const bool worldUpdate = true) const;
+                           const bool worldUpdate = true,
+                           BasicState* endState = NULL) const;
 
   // \brief Clusters all the contacts currently happening between the models
   // into clusters of max size \e clusterSize. This is only done for the
