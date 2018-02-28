@@ -18,7 +18,6 @@
 #include <collision_benchmark/PrimitiveShape.hh>
 #include <collision_benchmark/SimpleTriMeshShape.hh>
 #include <collision_benchmark/BasicTypes.hh>
-
 #include <collision_benchmark/MeshShapeGeneratorVtk.hh>
 
 #include <gazebo/gazebo.hh>
@@ -94,10 +93,13 @@ Shape::Ptr GetSimpleTestTriangle(const std::string &modelName)
 TEST_F(StaticTest, BoxCylinderTest)
 {
   std::vector<std::string> selectedEngines;
+#ifdef BULLET_SUPPORT
   selectedEngines.push_back("bullet");
+#endif
   selectedEngines.push_back("ode");
+#ifdef DART_SUPPORT
   selectedEngines.push_back("dart");
-  // selectedEngines.push_back("simbody");
+#endif
 
   /*std::set<std::string> engines =
     collision_benchmark::GetSupportedPhysicsEngines();
@@ -127,9 +129,13 @@ TEST_F(StaticTest, BoxCylinderTest)
 TEST_F(StaticTest, CylinderAndTwoTriangles)
 {
   std::vector<std::string> selectedEngines;
+#ifdef BULLET_SUPPORT
   selectedEngines.push_back("bullet");
+#endif
   selectedEngines.push_back("ode");
+#ifdef DART_SUPPORT
   selectedEngines.push_back("dart");
+#endif
   // selectedEngines.push_back("simbody");
 
   /*std::set<std::string> engines =
@@ -161,9 +167,13 @@ TEST_F(StaticTest, CylinderAndTwoTriangles)
 TEST_F(StaticTest, SpherePrimMesh)
 {
   std::vector<std::string> selectedEngines;
+#ifdef BULLET_SUPPORT
   selectedEngines.push_back("bullet");
+#endif
   selectedEngines.push_back("ode");
+#ifdef DART_SUPPORT
   selectedEngines.push_back("dart");
+#endif
   // selectedEngines.push_back("simbody");
 
   /*std::set<std::string> engines =

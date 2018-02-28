@@ -76,13 +76,12 @@ collision_benchmark::ConvIgn(const ignition::math::Quaternion<Float>& q)
 template<typename Float>
 ignition::math::Matrix4<Float>
 collision_benchmark::GetMatrix(const collision_benchmark::Vector3& p,
-                                       const collision_benchmark::Quaternion &q)
+                               const collision_benchmark::Quaternion &q)
 {
   ignition::math::Vector3<Float> pos(ConvIgn<Float>(p));
   ignition::math::Quaternion<Float> quat(ConvIgn<Float>(q));
   ignition::math::Matrix4<Float> m(quat);
-  // Translate() only sets the position to the last column
-  m.Translate(pos);
+  m.SetTranslation(pos);
   return m;
 }
 
@@ -93,8 +92,7 @@ collision_benchmark::GetMatrix(const ignition::math::Vector3<Float>& pos,
             const ignition::math::Quaternion<Float>& quat)
 {
   ignition::math::Matrix4<Float> m(quat);
-  // Translate() only sets the position to the last column
-  m.Translate(pos);
+  m.SetTranslation(pos);
   return m;
 }
 

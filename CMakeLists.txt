@@ -243,7 +243,8 @@ set (test_WORLDS
   test_worlds/empty_ode.world
   test_worlds/sphere_bullet.world
   test_worlds/sphere_dart.world
-  test_worlds/sphere_ode.world)
+  test_worlds/sphere_ode.world
+  test_worlds/void.world)
 
 set(physics_SDF
   physics_settings/bullet_default.sdf
