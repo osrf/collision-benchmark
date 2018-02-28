@@ -18,7 +18,6 @@
 #include <collision_benchmark/PrimitiveShape.hh>
 #include <collision_benchmark/SimpleTriMeshShape.hh>
 #include <collision_benchmark/BasicTypes.hh>
-
 #include <collision_benchmark/MeshShapeGeneratorVtk.hh>
 
 #include <gazebo/gazebo.hh>
@@ -94,15 +93,21 @@ Shape::Ptr GetSimpleTestTriangle(const std::string &modelName)
 TEST_F(StaticTest, BoxCylinderTest)
 {
   std::vector<std::string> selectedEngines;
+/*#ifdef BULLET_SUPPORT
   selectedEngines.push_back("bullet");
+#endif
   selectedEngines.push_back("ode");
+#ifdef DART_SUPPORT
   selectedEngines.push_back("dart");
-  // selectedEngines.push_back("simbody");
+#endif*/
 
-  /*std::set<std::string> engines =
+  std::set<std::string> engines =
     collision_benchmark::GetSupportedPhysicsEngines();
   // run test on all engines
-  selectedEngines.insert(selectedEngines.end(), engines.begin(), engines.end());*/
+  selectedEngines.insert(selectedEngines.end(), engines.begin(), engines.end());
+
+  ASSERT_GE(selectedEngines.size(), 2)
+    << "Need at least two physics engines";
 
   // Model 1
   std::string modelName1 = "model1";
@@ -111,7 +116,7 @@ TEST_F(StaticTest, BoxCylinderTest)
   std::string modelName2 = "model2";
   Shape::Ptr shape2(PrimitiveShape::CreateCylinder(1, 3));
 
-  InitMultipleEngines(selectedEngines);
+  InitMultipleEngines(selectedEngines, defaultInteractive);
   LoadShape(shape1, modelName1);
   LoadShape(shape2, modelName2);
   static const bool interactive = defaultInteractive;
@@ -127,16 +132,25 @@ TEST_F(StaticTest, BoxCylinderTest)
 TEST_F(StaticTest, CylinderAndTwoTriangles)
 {
   std::vector<std::string> selectedEngines;
-  selectedEngines.push_back("bullet");
-  selectedEngines.push_back("ode");
-  selectedEngines.push_back("dart");
-  // selectedEngines.push_back("simbody");
 
-  /*std::set<std::string> engines =
+/*#ifdef BULLET_SUPPORT
+  selectedEngines.push_back("bullet");
+#endif
+  selectedEngines.push_back("ode");
+#ifdef DART_SUPPORT
+  selectedEngines.push_back("dart");
+#endif
+  // selectedEngines.push_back("simbody");
+*/
+
+  std::set<std::string> engines =
     collision_benchmark::GetSupportedPhysicsEngines();
   // run test on all engines
   selectedEngines.insert(selectedEngines.end(),
-                         engines.begin(), engines.end());*/
+                         engines.begin(), engines.end());
+
+  ASSERT_GE(selectedEngines.size(), 2)
+    << "Need at least two physics engines";
 
   // Model 1
   std::string modelName1 = "model1";
@@ -146,7 +160,7 @@ TEST_F(StaticTest, CylinderAndTwoTriangles)
   std::string modelName2 = "model2";
   Shape::Ptr shape2(PrimitiveShape::CreateCylinder(1, 3));
 
-  InitMultipleEngines(selectedEngines);
+  InitMultipleEngines(selectedEngines, defaultInteractive);
   LoadShape(shape1, modelName1);
   LoadShape(shape2, modelName2);
   static const bool interactive = defaultInteractive;
@@ -161,16 +175,24 @@ TEST_F(StaticTest, CylinderAndTwoTriangles)
 TEST_F(StaticTest, SpherePrimMesh)
 {
   std::vector<std::string> selectedEngines;
-  selectedEngines.push_back("bullet");
-  selectedEngines.push_back("ode");
-  selectedEngines.push_back("dart");
-  // selectedEngines.push_back("simbody");
 
-  /*std::set<std::string> engines =
+/*#ifdef BULLET_SUPPORT
+  selectedEngines.push_back("bullet");
+#endif
+  selectedEngines.push_back("ode");
+#ifdef DART_SUPPORT
+  selectedEngines.push_back("dart");
+#endif
+  // selectedEngines.push_back("simbody");
+*/
+  std::set<std::string> engines =
     collision_benchmark::GetSupportedPhysicsEngines();
   // run test on all engines
   selectedEngines.insert(selectedEngines.end(),
-                         engines.begin(), engines.end());*/
+                         engines.begin(), engines.end());
+
+  ASSERT_GE(selectedEngines.size(), 2)
+    << "Need at least two physics engines";
 
   typedef SimpleTriMeshShape::MeshDataT::VertexPrecision Precision;
   collision_benchmark::MeshShapeGenerator<Precision>::Ptr generator
@@ -189,7 +211,7 @@ TEST_F(StaticTest, SpherePrimMesh)
   Shape::Ptr spherePrimitive(PrimitiveShape::CreateSphere(radius));
 
   // load up the worlds
-  InitMultipleEngines(selectedEngines);
+  InitMultipleEngines(selectedEngines, defaultInteractive);
   LoadShape(sphereMesh, meshName);
   LoadShape(spherePrimitive, primName);
   static const bool interactive = defaultInteractive;
@@ -225,7 +247,7 @@ TEST_P(StaticTestWithParam, SphereEquivalentsTest)
   Shape::Ptr spherePrimitive(PrimitiveShape::CreateSphere(radius));
 
   // load up the worlds
-  InitOneEngine(GetParam(), 2);
+  InitOneEngine(GetParam(), 2, defaultInteractive);
 
   // as a first shape, load the primitive into both worlds
   LoadShape(spherePrimitive, modelName1);

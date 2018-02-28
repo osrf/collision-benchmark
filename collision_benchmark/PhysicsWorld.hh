@@ -315,6 +315,10 @@ class PhysicsWorldModelInterface
 
   public: virtual std::vector<ModelID> GetAllModelIDs() const = 0;
 
+  // Returns true if the world has this model
+  // \param[in] id the ID of the model
+  public: virtual bool HasModel(const ModelID &id) const = 0;
+
   // If the underlying implementation offers integer IDs for models
   // in addition to the ModelID type, this function will return the
   // integer ID. Usually, negative numbers mean that the implementation

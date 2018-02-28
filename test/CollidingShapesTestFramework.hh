@@ -19,6 +19,7 @@
 
 #include <test/CollidingShapesConfiguration.hh>
 #include <collision_benchmark/GazeboMultipleWorlds.hh>
+#include <collision_benchmark/ModelCollider.hh>
 
 #include <thread>
 #include <mutex>
@@ -34,6 +35,16 @@ namespace collision_benchmark
 {
 namespace test
 {
+
+namespace msgs
+{
+  // forward declaration of message
+  class CollidingShapesMsg;
+}
+
+typedef const boost::shared_ptr<const msgs::CollidingShapesMsg>
+        ConstCollidingShapesMsgPtr;
+
 /**
  * \brief Test framework for colliding two shapes along an axis.
  *
@@ -53,6 +64,12 @@ namespace test
  * find critical collision configurations which happen when the models collide.
  * To change the pose of the models, the Gazebo client transformation tools
  * can be used.
+ *
+ * An additional helper tool to change the model pose is the "perpendicular
+ * axis" which is the axis perpendicular to the collision axis. It can be
+ * rotated around the collision axis and one model can be moved along
+ * this axis. This is only an additional helper to transform the pose of
+ * one model colliding with the other.
  *
  * A configuration can then be saved an loaded again at a later point.
  * The saved configuration will not save the amount the models were
@@ -88,8 +105,9 @@ namespace test
 class CollidingShapesTestFramework
 {
   private: typedef GazeboMultipleWorlds::GzWorldManager GzWorldManager;
-  private: typedef GzWorldManager
-            ::PhysicsWorldModelInterfaceT::Vector3 Vector3;
+  private: typedef GzWorldManager::Vector3 Vector3;
+  private: typedef collision_benchmark::ModelCollider<GzWorldManager>
+                     ModelColliderT;
 
   public: CollidingShapesTestFramework();
 
@@ -167,132 +185,41 @@ class CollidingShapesTestFramework
                            const float cylinderLength,
                            const std::string &mirrorName);
 
-  // \brief Helper fuction which returns the AABB of the model from the first
-  // world in \e worldManager.
-  // Presumes that the model exists in all worlds and the AABB would be
-  // the same (or very, very similar) in all worlds.
-  // See also collision_benchmark::GetConsistentAABB() (in test/TestUtils.hh)
-  // which checks that all AABBs are the same in both worlds. Automated tests
-  // have ensured that this is the case if the model has been loaded in
-  // all collision engine worlds simultaneously and the world hasn't been
-  // updated since the model was added.
-  // \param[in] modelName name of the model
-  // \param[in] worldManager the world manager
-  // \param[out] min minimum point of AABB
-  // \param[out] max maxium point of AABB
-  // \param[out] inLocalFrame \e min and \e max given in local coordinate frame
-  // \retval 0 success
-  // \retval -1 no worlds in world manager
-  // \retval -2 could not get AABB for model
-  private: int GetAABB(const std::string &modelName,
-              const GzWorldManager::Ptr &worldManager,
-              Vector3 &min, Vector3 &max, bool &inLocalFrame);
-
-  // \brief Helper fuction which returns the AABB of the model from the
-  // \e idxWorld'th world in \e worldManager.
-  // \param[in] modelName name of the model
-  // \param[in] idxWorld index of the world
-  // \param[in] worldManager the world manager
-  // \param[out] min minimum point of AABB
-  // \param[out] max maxium point of AABB
-  // \param[out] inLocalFrame \e min and \e max given in local coordinate frame
-  // \retval 0 success
-  // \retval -1 world \e idxWorld does not exist in world manager
-  // \retval -2 could not get AABB for model
-  private: int GetAABB(const std::string &modelName,
-              const unsigned int idxWorld,
-              const GzWorldManager::Ptr &worldManager,
-              Vector3 &min, Vector3 &max, bool &inLocalFrame);
-
-
-
-  // \brief Helper function which gets state of the model in the first world of
-  // the \e worldManager. Presumes that the model exists in all worlds and the
-  // state would be the same (or very, very similar) in all worlds.
-  // \param[in] modelName name of the model
-  // \param[in] worldManager the manager for all worlds
-  // \param[out] state the output state
-  // \retval 0 success
-  // \retval -1 the model does not exist in the first world.
-  // \retval -2 no worlds in world manager
-  private: int GetBasicModelState(const std::string &modelName,
-                   const GzWorldManager::Ptr &worldManager,
-                   BasicState &state);
-
-  // \brief Helper function which gets state of the model in \e idxWorld'th
-  // world in the \e worldManager.
-  // \param[in] modelName name of the model
-  // \param[in] idxWold number of the world
-  // \param[in] worldManager the manager for all worlds
-  // \param[out] state the output state
-  // \retval 0 success
-  // \retval -1 the model does not exist in the \e idxWorld'th world.
-  // \retval -2 world \e idxWorld does not exist
-  private: int GetBasicModelState(const std::string &modelName,
-                   const unsigned int idxWorld,
-                   const GzWorldManager::Ptr &worldManager,
-                   BasicState &state);
-
-  // \brief Helper function which moves models towards/away from each other
-  // along the axis by distance \e moveDist. Model 1 will move at \e moveDist,
-  // model 2 will move the opposite direction at \e -moveDist.
-  // \param[in] moveDist distance to move each model along axis
-  // \param[in] moveBoth if true, both models are moved towards each other.
-  //    If false, only model 2 is moved towards model 1.
-  private: void MoveModelsAlongAxis(const float moveDist,
-                                    const bool moveBoth = false);
-
-  // \brief Moves models along collision axis until they collide
-  // \param[in] allWorlds collision criteria is only met if all physics
-  //    engines report collision between the objects
-  // \param[in] moveBoth if true, both models are moved towards each other.
-  //    If false, only model 2 is moved towards model 1.
-  // \param[in] stepSize size of step the models are moved towards each other
-  //    at a time.
-  // \return the distance the shape(s) have moved along the axis.
-  //  If \e moveBoth was true, this is the distance that *both* shapes
-  //  have moved along the axis (the overall distance decreased between
-  //  the two objects will be twice this value). If \e moveBoth was false,
-  //  this is the distance model 2 has traveled. For model 2, the distance
-  //  moved will be the negative of the returned value.
-  private: double AutoCollide(const bool allWorlds, const bool moveBoth,
-                              const double stepSize = 1e-03);
-
-  // \brief Checks whether models collide
-  // \param[in] allWorlds collision criteria is only met if all physics
-  //    engines report collision between the objects
-  private: bool ModelsCollide(bool allWorlds);
-
   // \brief Receives control messages from the GUI
-  private: void receiveControlMsg(ConstAnyPtr &_msg);
+  private: void receiveControlMsg(ConstCollidingShapesMsgPtr &_msg);
 
-  // \brief Saves the configuration.
-  // This will save the model poses relative to their starting pose which
-  // have been changed by the user. The amount the models were slid towards
-  // or away from each other by means of AutoCollide or using the GUI slider
-  // will not count. So when the configuration is loaded again, the models
-  // will still start at each end of the collision axis, and when they are
-  // collided, the same collision configuration as saved by this function
-  // will be achieved by AutoCollide and/or the slider.
-  // \param[in] model1Slide the amount which model 1 has been slid along the
-  //    collision axis via AutoCollide or the slider
-  // \param[in] model2Slide the amount which model 2 has been slid along the
-  //    collision axis via AutoCollide or the slider
+  // \brief Saves the configuration with the given states.
+  // Model states to save should be a transform from the end point of the
+  // collision axis to the desired pose.
+  // \param[in] model1 the state of model 1
+  // \param[in] model2 the state of model 2
   private: void SaveConfiguration(const std::string &file,
-                                  const double model1Slide,
-                                  const double model2Slide);
+                                  const BasicState &model1,
+                                  const BasicState &model2) const;
 
-  // \brief updates the current configuration
-  // by reading the current model poses.
+  // \brief reverts the sliding that has been done along the collision axis
   // \param[in] model1Slide the amount which model 1 has been slid along the
   //    collision axis via AutoCollide or the slider
   // \param[in] model2Slide the amount which model 2 has been slid along the
   //    collision axis via AutoCollide or the slider
-  // \return a *copy* of the current (updated) configuration or nullptr
-  //    upon error.
-  private: CollidingShapesConfiguration::Ptr
-              UpdateConfiguration(const double model1Slide,
-                                  const double model2Slide);
+  // \param[in] modelState1 is also output parameter. State of model 1.
+  // \param[in] modelState2 is also output parameter. State of model 2.
+  private: void RevertSlide(const double model1Slide,
+                            const double model2Slide,
+                            BasicState &modelState1,
+                            BasicState &modelState2) const;
+
+
+  // \brief gets the transform from \e from to \e to
+  // \return the transform from \e from to \e to
+  private: BasicState GetTrans(const BasicState &from,
+                               const BasicState &to) const;
+
+  // \brief Helper function which gets the current state of the models.
+  // \param[out] modelState1 state of model 1
+  // \param[out] modelState2 state of model 2
+  private: bool GetModelStates(BasicState &modelState1,
+                               BasicState &modelState2) const;
 
   // \brief Pointer to the multiple worlds server/client
   private: collision_benchmark::GazeboMultipleWorlds::Ptr gzMultiWorld;
@@ -301,6 +228,7 @@ class CollidingShapesTestFramework
   // Mainly used for the thread handling the collision bar in
   // CollisionBarHandler.
   private: std::atomic<bool> running;
+
 
   // \brief is set to true when a message is received to auto-collide objects
   private: std::atomic<bool> triggeredAutoCollide;
@@ -319,9 +247,19 @@ class CollidingShapesTestFramework
   // \brief mutex for shapesOnAxisPos
   private: std::mutex shapesOnAxisPosMtx;
 
+  // \brief number of steps to move along the axis perpendicular to
+  //    the collision axis in the next iteration
+  private: std::atomic<int> perpendicularSteps;
+
+  // \brief angle to rotate the perpendicular axis around the collision axis
+  // in radians.
+  private: std::atomic<double> perpendicularAngle;
+
+  // the helper for colliding models
+  private: ModelColliderT modelCollider;
+
   // \brief Axis to use for collision.
-  // Can be unit x, y or z axis
-  private: const Vector3 collisionAxis;
+  private: const ignition::math::Vector3d collisionAxis;
 
   // \brief Names of both loaded models
   private: std::string loadedModelNames[2];

@@ -467,6 +467,20 @@ class WorldManager
     return cnt;
   }
 
+  /// Calls PhysicsWorldModelInterface::HasModel on
+  /// all worlds. Assumes that all worlds use the same model name.
+  public: bool ModelInAllWorlds(const ModelID &id)
+  {
+    std::vector<bool> ret = CallOnAllWorldsWithModel<bool, const ModelID&>
+        (&Self::ModelInAllWorldsCB, id);
+    int cnt = 0;
+    for (std::vector<bool>::iterator it = ret.begin(); it != ret.end(); ++it)
+    {
+      if (*it) ++cnt;
+    }
+    std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
+    return cnt == this->worlds.size();
+  }
 
   // Convenience method which casts the world \e w to a
   // PhysicsWorldStateInterface with the given state
@@ -533,7 +547,7 @@ class WorldManager
   /// calls MirrorWorld::Sync() and MirrorWorld::Update().
   public: void Update(int iter = 1, bool force = false)
   {
-    // we cannot just lock the worldMutex with a lock here, because
+    // we cannot just lock the worldMutex in the whole function, because
     // calling Update() may trigger the call of callbacks in this
     // class, called by the ControlServer. ControlServer implementations
     // may trigger the call of the callbacks from a different thread,
@@ -791,6 +805,14 @@ class WorldManager
                const BasicState &state)
   {
     return w.SetBasicModelState(id, state);
+  }
+
+  // Helper callback to call ModelInAllWorlds on the world
+  private: static bool ModelInAllWorldsCB
+              (PhysicsWorldModelInterfaceT &w,
+               const ModelID&id)
+  {
+    return w.HasModel(id);
   }
 
   // Helper function which calls a callback function on each of the worlds

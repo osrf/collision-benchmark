@@ -33,8 +33,9 @@ collision_benchmark::Vector3 Conv(const ignition::math::Vector3<Float>& v);
 template<typename Float>
 ignition::math::Vector3<Float> ConvIgn(const collision_benchmark::Vector3& v);
 
-template<typename Float>
-ignition::math::Vector3<Float> ConvIgn(const ignition::math::Vector3<Float>& v);
+template<typename FloatRet, typename Float>
+ignition::math::Vector3<FloatRet>
+    ConvIgn(const ignition::math::Vector3<Float>& v);
 
 template<typename Float>
 collision_benchmark::Quaternion
@@ -44,8 +45,8 @@ template<typename Float>
 ignition::math::Quaternion<Float>
   ConvIgn(const collision_benchmark::Quaternion &v);
 
-template<typename Float>
-ignition::math::Quaternion<Float>
+template<typename FloatRet, typename Float>
+ignition::math::Quaternion<FloatRet>
 ConvIgn(const ignition::math::Quaternion<Float>& q);
 
 template<typename Float>
@@ -61,21 +62,50 @@ ignition::math::Matrix4<Float>
 template<typename Float1, typename Float2>
 bool EqualFloats(const Float1& f1, const Float2& f2, const double &t);
 
-bool EqualVectors(const ignition::math::Vector3d &v1,
-                  const ignition::math::Vector3d &v2, const double &t);
-
+// \brief compares the individual coordinates (x,y,z) of the vectors
+// against the tolerance using EqualFloats().
 template<typename Float>
 bool EqualVectors(const ignition::math::Vector3<Float>& v1,
-                  const ignition::math::Vector3<Float>& v2, const double &t);
+                  const ignition::math::Vector3<Float>& v2,
+                  const double &t);
 
 
 // \brief Transforms the axis-aligned bounding box by \e transform.
+// If the box is rotated by \e transform, the dimensions of the box may change.
 template<typename Float>
 void UpdateAABB(const ignition::math::Vector3<Float>& initialMin,
                 const ignition::math::Vector3<Float>& initialMax,
                 const ignition::math::Matrix4<Float>& transform,
                 ignition::math::Vector3<Float>& newMin,
                 ignition::math::Vector3<Float>& newMax);
+
+// \brief Projects an axis-aligned bounding box onto the axis \e projAxis.
+// \param[in] aabbMin min point of AABB
+// \param[in] aabbMax max point of AABB
+// \param[in] projAxis axis to project on (goes through origin)
+// \param[out] onAxisMin minimum point of axis. \e projAxis * \e onAxisMin
+//    will be the point on the axis (the axis goes through the origin)
+// \param[out] onAxisMax max point, like \e onAxisMin
+template<typename Float>
+void ProjectAABBOnAxis(const ignition::math::Vector3<Float>& aabbMin,
+                       const ignition::math::Vector3<Float>& aabbMax,
+                       const ignition::math::Vector3<Float>& projAxis,
+                       Float& onAxisMin,
+                       Float& onAxisMax);
+
+// \brief Tests if two segments along a 1D line overlap
+// and returns the overlap if desired.
+// \param[in] min1 minimum of first point
+// \param[in] max1 maximum of first point
+// \param[in] min2 minimum of second point
+// \param[in] max2 maximum of second point
+// \param[out] overlapFact the overlap factor. If NULL, it is not computed.
+// \return true if there is an overlap
+//////////////////////////////////////////////////////////////////////////////
+template<typename Float>
+bool SegmentsOverlap(const Float min1, const Float max1,
+                     const Float min2, const Float max2,
+                     Float *overlapFact = NULL);
 
 }  // namespace
 

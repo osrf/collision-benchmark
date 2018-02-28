@@ -23,8 +23,10 @@ namespace test
 {
   struct CollidingShapesParams
   {
-    // \brief max value for the slider axis
+    // \brief max value for the slider
     static const int MaxSliderVal;
+    // \brief max value for the dial
+    static const int MaxDialVal;
   };
 }  // namespace test
 }  // namespace collision_benchmark

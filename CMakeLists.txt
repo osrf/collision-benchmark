@@ -34,6 +34,7 @@ set(collision_benchmark_HEADERS
   collision_benchmark/PrimitiveShape.hh
   collision_benchmark/PrimitiveShapeParameters.hh
   collision_benchmark/Shape.hh
+  collision_benchmark/SignalReceiver.hh
   collision_benchmark/SimpleTriMeshShape.hh
   collision_benchmark/TypeHelper.hh
   collision_benchmark/WorldManager.hh
@@ -52,6 +53,7 @@ add_library(collision_benchmark SHARED
   collision_benchmark/Helpers.cc
   collision_benchmark/MeshShapeGenerationVtk.cc
   collision_benchmark/PrimitiveShape.cc
+  collision_benchmark/SignalReceiver.cc
   collision_benchmark/SimpleTriMeshShape.cc
   collision_benchmark/Shape.cc
   collision_benchmark/TypeHelper.cc
@@ -60,6 +62,7 @@ add_library(collision_benchmark SHARED
 # expand the dependencies_* variables for the include directories and libraries
 set(dependencies_INCLUDE_DIRS
   ${dependencies_INCLUDE_DIRS}
+  ${CMAKE_CURRENT_BINARY_DIR}
   ${PROJECT_SOURCE_DIR})
 
 include_directories(${dependencies_INCLUDE_DIRS})
@@ -87,6 +90,32 @@ target_link_libraries(collision_benchmark_gui
 
 target_link_libraries(multiple_worlds_server collision_benchmark)
 
+
+#############################################
+# messages
+#############################################
+find_package(Protobuf REQUIRED)
+
+set(PROTOBUF_IMPORT_DIRS)
+foreach(ITR ${GAZEBO_INCLUDE_DIRS})
+  if(ITR MATCHES ".*gazebo-[0-9.]+$")
+    set(PROTOBUF_IMPORT_DIRS "${ITR}/gazebo/msgs/proto")
+  endif()
+endforeach()
+
+set (msgs test/msgs/colliding_shapes.proto)
+PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${msgs})
+add_library(collision_benchmark_msgs SHARED ${PROTO_SRCS})
+target_link_libraries(collision_benchmark_msgs ${PROTOBUF_LIBRARY})
+
+# get a list of all generated headers
+# set(PROTO_TEST_MSGS_HDRS)
+# foreach(FIL ${msgs})
+#   get_filename_component(ABS_FIL ${FIL} ABSOLUTE)
+#   get_filename_component(FIL_WE ${FIL} NAME_WE)
+#   list(APPEND PROTO_TEST_MSGS_HDRS "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.h")
+# endforeach()
+
 #############################################
 # testing
 #############################################
@@ -100,7 +129,17 @@ add_library(collision_benchmark_test_gui SHARED
     test/CollidingShapesGui.cc
     test/CollidingShapesParams.cc
 )
+target_link_libraries(collision_benchmark_test_gui collision_benchmark_msgs)
 add_dependencies(tests collision_benchmark_test_gui)
+
+QT5_WRAP_CPP(StepGui_MOC test/StepGui.hh)
+add_library(collision_benchmark_step_gui SHARED
+    test/StepGui.cc
+)
+target_link_libraries(collision_benchmark_step_gui
+  ${dependencies_LIBRARIES})
+add_dependencies(tests collision_benchmark_step_gui)
+
 
 # compile testing libraries and executables
 # -----------------------------------------
@@ -146,6 +185,7 @@ set(TEST_LIB_SRCS
     test/TestUtils.cc
     test/MultipleWorldsTestFramework.cc
     test/StaticTestFramework.cc
+    test/ContactsFlickerTestFramework.cc
     test/CollidingShapesTestFramework.cc
     test/CollidingShapesParams.cc)
 
@@ -158,7 +198,8 @@ add_dependencies(tests collision_benchmark_test)
 add_executable(colliding_shapes_test
   test/colliding_shapes_test.cc)
 target_link_libraries(colliding_shapes_test collision_benchmark
-                                            collision_benchmark_test)
+                                            collision_benchmark_test
+                                            collision_benchmark_msgs)
 add_dependencies(tests colliding_shapes_test)
 
 add_executable(multiple_worlds_test EXCLUDE_FROM_ALL test/MultipleWorlds_TEST.cc)
@@ -179,6 +220,12 @@ target_link_libraries(static_test
 add_test(StaticTest static_test)
 add_dependencies(tests static_test)
 
+add_executable(contacts_flicker_test EXCLUDE_FROM_ALL test/ContactsFlicker_TEST.cc)
+target_link_libraries(contacts_flicker_test
+  collision_benchmark collision_benchmark_test ${GTEST_BOTH_LIBRARIES})
+add_test(StaticTest contacts_flicker_test)
+add_dependencies(tests contacts_flicker_test)
+
 # tutorials
 add_custom_target(tutorials)
 
@@ -196,7 +243,8 @@ set (test_WORLDS
   test_worlds/empty_ode.world
   test_worlds/sphere_bullet.world
   test_worlds/sphere_dart.world
-  test_worlds/sphere_ode.world)
+  test_worlds/sphere_ode.world
+  test_worlds/void.world)
 
 set(physics_SDF
   physics_settings/bullet_default.sdf

@@ -14,17 +14,15 @@
  * limitations under the License.
  *
 */
-#include <gazebo/msgs/msgs.hh>
+#include "colliding_shapes.pb.h"
 #include <sstream>
-
-#include <QScrollBar>
-#include <QSlider>
 
 #include "CollidingShapesGui.hh"
 #include "CollidingShapesParams.hh"
 
 using collision_benchmark::test::CollidingShapesGui;
 using collision_benchmark::test::CollidingShapesParams;
+using collision_benchmark::test::msgs::CollidingShapesMsg;
 
 // Register this plugin with the simulator
 GZ_REGISTER_GUI_PLUGIN(CollidingShapesGui)
@@ -46,66 +44,103 @@ CollidingShapesGui::CollidingShapesGui()
     ("QFrame { background-color : rgba(100, 100, 100, 255); color : white; }");
 
   // Create the main layout
+  // QGridLayout *mainLayout = new QGridLayout;
   QHBoxLayout *mainLayout = new QHBoxLayout;
 
-  // Create the frame and layout to hold all elements
+  // Create the frame and layout to hold all perpendicular move elements
+  //////////////////////
+
+  QFrame *perpMoveShapesFrame = new QFrame();
+  QHBoxLayout *perpMoveShapesLayout = new QHBoxLayout();
+  this->dial = new QDial();
+  this->dial->setMinimum(0);
+  this->dial->setMaximum(CollidingShapesParams::MaxDialVal);
+  this->dial->setValue(0);
+  this->dial->resize(300, 20);
+  connect(this->dial, SIGNAL(valueChanged(int)),
+          this, SLOT(OnDialValueChanged(int)));
+  perpMoveShapesLayout->addWidget(this->dial);
+  // Button up
+  QPushButton * buttonDecPerp = new QPushButton("^");
+  buttonDecPerp->resize(buttonDecPerp->sizeHint());
+  connect(buttonDecPerp, SIGNAL(clicked()), this, SLOT(OnButtonPerpInc()));
+  perpMoveShapesLayout->addWidget(buttonDecPerp);
+  // Button down
+  QPushButton * buttonIncPerp = new QPushButton("v");
+  buttonIncPerp->resize(buttonIncPerp->sizeHint());
+  connect(buttonIncPerp, SIGNAL(clicked()), this, SLOT(OnButtonPerpDec()));
+  perpMoveShapesLayout->addWidget(buttonIncPerp);
+  // set the layout
+  perpMoveShapesFrame->setLayout(perpMoveShapesLayout);
+
+  // Create the frame and layout to hold all other control elements
+  //////////////////////
+
   QFrame *collidingShapesFrame = new QFrame();
   QHBoxLayout *collidingShapesLayout = new QHBoxLayout();
-
   // Button to the left
   QPushButton * buttonDec = new QPushButton("<");
   buttonDec->resize(buttonDec->sizeHint());
   connect(buttonDec, SIGNAL(clicked()), this, SLOT(OnButtonDec()));
   collidingShapesLayout->addWidget(buttonDec);
-
-  slider = new QSlider(Qt::Horizontal);
-  slider->setMinimum(0);
-  slider->setMaximum(CollidingShapesParams::MaxSliderVal);
-  slider->setValue(CollidingShapesParams::MaxSliderVal);
-  slider->resize(300, 20);
-  connect(slider, SIGNAL(valueChanged(int)),
+  // slider
+  this->slider = new QSlider(Qt::Horizontal);
+  this->slider->setMinimum(0);
+  this->slider->setMaximum(CollidingShapesParams::MaxSliderVal);
+  this->slider->setValue(CollidingShapesParams::MaxSliderVal);
+  this->slider->resize(20, 20);
+  connect(this->slider, SIGNAL(valueChanged(int)),
           this, SLOT(OnValueChanged(int)));
-  collidingShapesLayout->addWidget(slider);
-
+  collidingShapesLayout->addWidget(this->slider);
   // Button to the right
   QPushButton * buttonInc = new QPushButton(">");
   buttonInc->resize(buttonInc->sizeHint());
   connect(buttonInc, SIGNAL(clicked()), this, SLOT(OnButtonInc()));
   collidingShapesLayout->addWidget(buttonInc);
-
+  // auto collide button
   QPushButton * buttonAutoCollide = new QPushButton("AutoCollide");
   buttonAutoCollide->resize(buttonAutoCollide->sizeHint());
   connect(buttonAutoCollide, SIGNAL(clicked()), this,
           SLOT(OnButtonAutoCollide()));
   collidingShapesLayout->addWidget(buttonAutoCollide);
-
+  // save button
   QPushButton * buttonSave = new QPushButton("Save config");
   buttonSave->resize(buttonSave->sizeHint());
   connect(buttonSave, SIGNAL(clicked()), this,
           SLOT(OnButtonSaveConfig()));
   collidingShapesLayout->addWidget(buttonSave);
-
-  // set the layout and add the frame as widget
+  // set the layout
   collidingShapesFrame->setLayout(collidingShapesLayout);
+
+  // add frame widgets to main frame and do resizing operations
+  //////////////////
+
   mainLayout->addWidget(collidingShapesFrame);
+  mainLayout->addWidget(perpMoveShapesFrame);
 
   // Remove margins to reduce space
   collidingShapesLayout->setContentsMargins(0, 0, 0, 0);
+  perpMoveShapesLayout->setContentsMargins(0, 0, 0, 0);
   mainLayout->setContentsMargins(0, 0, 0, 0);
   this->setLayout(mainLayout);
 
-  // Resize this widget
+  // Resize this widget. Stupidly, the collision slider is resized if this
+  // is not done manually :(
   QSize buttonsSize = maxHeightAddWidth(buttonInc->size(), buttonDec->size());
   buttonsSize = maxHeightAddWidth(buttonsSize, buttonSave->size());
   buttonsSize = maxHeightAddWidth(buttonsSize, buttonAutoCollide->size());
-  QSize totalSize = maxHeightAddWidth(buttonsSize, slider->size());
+  QSize totalCollSize = maxHeightAddWidth(buttonsSize, this->slider->size());
+  QSize perpButtonsSize = maxHeightAddWidth(buttonIncPerp->size(),
+                                            buttonDecPerp->size());
+  QSize totalPerpSize = maxHeightAddWidth(perpButtonsSize, this->dial->size());
+  QSize totalSize = maxHeightAddWidth(totalCollSize, totalPerpSize);
   this->resize(totalSize);
 
   // Set up transportation system
   this->node = gazebo::transport::NodePtr(new gazebo::transport::Node());
   this->node->Init();
   std::string pub_topic="collide_shapes_test/control";
-  this->pub = this->node->Advertise<gazebo::msgs::Any>(pub_topic);
+  this->pub = this->node->Advertise<CollidingShapesMsg>(pub_topic);
 
   std::string sub_topic="collide_shapes_test/feedback";
   this->sub = this->node->Subscribe(sub_topic,
@@ -177,19 +212,28 @@ bool CollidingShapesGui::eventFilter(QObject *obj, QEvent *event)
 /////////////////////////////////////////////////
 void CollidingShapesGui::OnValueChanged(int val)
 {
-  // std::cout << "Value changed! " << val << std::endl;
-  gazebo::msgs::Any m;
-  m.set_type(gazebo::msgs::Any::INT32);
+  CollidingShapesMsg m;
+  m.set_type(CollidingShapesMsg::COLLISION_SLIDER);
   m.set_int_value(val);
+  this->pub->Publish(m);
+}
+
+/////////////////////////////////////////////////
+void CollidingShapesGui::OnDialValueChanged(int val)
+{
+//  int val = this->dial->value();
+  CollidingShapesMsg m;
+  m.set_type(CollidingShapesMsg::PERPENDICULAR_ANGLE);
+  double angle = val / (double) CollidingShapesParams::MaxDialVal;
+  m.set_double_value(angle*2*M_PI);
   this->pub->Publish(m);
 }
 
 /////////////////////////////////////////////////
 void CollidingShapesGui::OnButtonAutoCollide()
 {
-  gazebo::msgs::Any m;
-  m.set_type(gazebo::msgs::Any::BOOLEAN);
-  m.set_bool_value(true);
+  CollidingShapesMsg m;
+  m.set_type(CollidingShapesMsg::AUTO_COLLIDE);
   this->pub->Publish(m);
 }
 
@@ -220,8 +264,8 @@ void CollidingShapesGui::OnButtonSaveConfig()
       configFile += ".cstc";
   }
   // std::cout << "Chosen to save as file " << configFile << std::endl;
-  gazebo::msgs::Any m;
-  m.set_type(gazebo::msgs::Any::STRING);
+  CollidingShapesMsg m;
+  m.set_type(CollidingShapesMsg::SAVE_CONFIG);
   m.set_string_value(configFile);
   this->pub->Publish(m);
 }
@@ -229,33 +273,50 @@ void CollidingShapesGui::OnButtonSaveConfig()
 /////////////////////////////////////////////////
 void CollidingShapesGui::OnButtonInc()
 {
-  if (!slider) return;
-  slider->setValue(slider->value() + 1);
+  if (!this->slider) return;
+  this->slider->setValue(slider->value() + 1);
 }
 /////////////////////////////////////////////////
 void CollidingShapesGui::OnButtonDec()
 {
-  if (!slider) return;
-  slider->setValue(slider->value() - 1);
+  if (!this->slider) return;
+  this->slider->setValue(slider->value() - 1);
 }
 
+/////////////////////////////////////////////////
+void CollidingShapesGui::OnButtonPerpInc()
+{
+  CollidingShapesMsg m;
+  m.set_type(CollidingShapesMsg::PERPENDICULAR_VALUE);
+  m.set_int_value(1);
+  this->pub->Publish(m);
+}
 
 /////////////////////////////////////////////////
-void CollidingShapesGui::receiveFeedbackMsg(ConstAnyPtr &_msg)
+void CollidingShapesGui::OnButtonPerpDec()
+{
+  CollidingShapesMsg m;
+  m.set_type(CollidingShapesMsg::PERPENDICULAR_VALUE);
+  m.set_int_value(-1);
+  this->pub->Publish(m);
+}
+
+/////////////////////////////////////////////////
+void CollidingShapesGui::receiveFeedbackMsg(ConstCollidingShapesMsgPtr &_msg)
 {
   // std::cout << "GUI FEEDBACK! " << _msg->DebugString();
   switch (_msg->type())
   {
-    case gazebo::msgs::Any::INT32:
+    case CollidingShapesMsg::COLLISION_SLIDER:
       {
         // std::cout << "GUI feedback: Moved shapes to "
         //           << _msg->int_value() << std::endl;
-        slider->setValue(_msg->int_value());
+        this->slider->setValue(_msg->int_value());
         break;
       }
-
     default:
-      std::cerr << "Unsupported AnyMsg type" << std::endl;
+      std::cerr << "CollidingShapesGui: Unsupported CollidingShapesMsg type"
+                << std::endl;
   }
 }
 

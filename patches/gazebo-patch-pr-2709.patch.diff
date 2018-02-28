@@ -1,0 +1,47 @@
+# HG changeset patch
+# User Bitbucket <noreply@bitbucket.org>
+# Date 0 0
+# Node ID 01e1ba465f9ac2ccbd9905ba343109cd268e71d6
+# Parent  43aba69517080eeaa792990795dc7ed72913928c
+# Parent  d80fa60268e687272229abdab29f874e160a9635
+Application of patch for Gazebo [PR 2709](https://bitbucket.org/osrf/gazebo/pull-requests/2709/)
+
+diff -r 43aba69517080eeaa792990795dc7ed72913928c -r 01e1ba465f9ac2ccbd9905ba343109cd268e71d6 gazebo/physics/ode/ODEPhysics.cc
+--- a/gazebo/physics/ode/ODEPhysics.cc
++++ b/gazebo/physics/ode/ODEPhysics.cc
+@@ -960,16 +960,6 @@
+     ODECollision *collision1 = nullptr;
+     ODECollision *collision2 = nullptr;
+ 
+-    // Exit if both bodies are not enabled
+-    if (dGeomGetCategoryBits(_o1) != GZ_SENSOR_COLLIDE &&
+-        dGeomGetCategoryBits(_o2) != GZ_SENSOR_COLLIDE &&
+-        ((b1 && b2 && !dBodyIsEnabled(b1) && !dBodyIsEnabled(b2)) ||
+-        (!b2 && b1 && !dBodyIsEnabled(b1)) ||
+-        (!b1 && b2 && !dBodyIsEnabled(b2))))
+-    {
+-      return;
+-    }
+-
+     // Get pointers to the underlying collisions
+     if (dGeomGetClass(_o1) == dGeomTransformClass)
+       collision1 =
+@@ -983,6 +973,18 @@
+     else
+       collision2 = static_cast<ODECollision*>(dGeomGetData(_o2));
+ 
++    // Exit if both bodies are not enabled
++    if (dGeomGetCategoryBits(_o1) != GZ_SENSOR_COLLIDE &&
++        dGeomGetCategoryBits(_o2) != GZ_SENSOR_COLLIDE &&
++        !self->contactManager->NeverDropContacts() &&
++        !self->contactManager->SubscribersConnected(collision1, collision2) &&
++        ((b1 && b2 && !dBodyIsEnabled(b1) && !dBodyIsEnabled(b2)) ||
++        (!b2 && b1 && !dBodyIsEnabled(b1)) ||
++        (!b1 && b2 && !dBodyIsEnabled(b2))))
++    {
++      return;
++    }
++
+     // Make sure both collision pointers are valid.
+     if (collision1 && collision2)
+     {

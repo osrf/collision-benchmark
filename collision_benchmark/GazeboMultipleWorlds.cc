@@ -61,18 +61,13 @@ GazeboMultipleWorlds::GazeboMultipleWorlds()
 
 GazeboMultipleWorlds::~GazeboMultipleWorlds()
 {
-  if (IsClientRunning())
-  {
-    KillClient();
-  }
-  // XXX TODO: interrupt Run() if it was called in blocking mode
-  ShutdownServer();
+  Stop();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-bool GazeboMultipleWorlds::Init(const bool loadMirror,
-                                const bool allowControlViaMirror,
-                                const bool enforceContactCalc)
+bool GazeboMultipleWorlds::InitServer(const bool loadMirror,
+                                      const bool allowControlViaMirror,
+                                      const bool enforceContactCalc)
 {
   started = false;
   GzMultipleWorldsServer::WorldLoader_M loaders =
@@ -104,19 +99,19 @@ bool GazeboMultipleWorlds::Init(const bool loadMirror,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-bool GazeboMultipleWorlds::IsClientClosed()
+bool GazeboMultipleWorlds::IsClientClosed() const
 {
   return !IsClientRunning();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-bool GazeboMultipleWorlds::IsClientRunning()
+bool GazeboMultipleWorlds::IsClientRunning() const
 {
-  if (gzclient_pid == 0)
+  if (progPID == 0)
     throw std::runtime_error("CONSISTENCY: This must be the parent process!");
   int child_status;
   // result will be 0 if child is still running
-  pid_t result = waitpid(gzclient_pid, &child_status, WNOHANG);
+  pid_t result = waitpid(progPID, &child_status, WNOHANG);
   if (result != 0)
   {
     // child has stopped (client closed)
@@ -130,8 +125,19 @@ void GazeboMultipleWorlds::KillClient()
 {
   if (IsParent())
   {
-    kill(gzclient_pid, SIGKILL);
+    kill(progPID, SIGKILL);
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void GazeboMultipleWorlds::Stop()
+{
+  if (IsClientRunning())
+  {
+    KillClient();
+  }
+  // XXX TODO: interrupt Run() if it was called in blocking mode
+  ShutdownServer();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -140,6 +146,90 @@ GazeboMultipleWorlds::GetWorldManager()
 {
   if (!server) return nullptr;
   return server->GetWorldManager();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+bool GazeboMultipleWorlds::HasStarted() const
+{
+  return started;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void GazeboMultipleWorlds::ShutdownServer()
+{
+  if (!server) return;
+  server->Stop();
+  // need to call server Fini() (or delete the server)
+  // because if it's deleted after program exit
+  // then it still will try to access static variables
+  // which may have been deleted before.
+  // server.reset();
+  server->Fini();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+bool GazeboMultipleWorlds::IsChild() const
+{
+  return progPID == 0;
+}
+///////////////////////////////////////////////////////////////////////////////
+bool GazeboMultipleWorlds::IsParent() const
+{
+  return progPID > 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// handler for SIGSEV to kill all child processes
+pid_t gPGid;
+void handler(int sig)
+{
+  if (sig == SIGSEGV)
+  {
+    std::cout << "Segmentation fault - caught SIGSEV and killing "
+              << "child process(es). " << __FILE__
+              << ", " << __LINE__ << std::endl;
+    kill(-gPGid, SIGTERM);     // kill the whole process group
+  }
+}
+
+void initProcessGroup()
+{
+  setpgid(0, 0);       // Make new process group, if needed
+  gPGid = getpgid(0);
+  signal(SIGSEGV, handler);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+void StartClient(const bool verbose,
+                 const std::vector<std::string>& additionalGuis)
+{
+  char **argvClient = new char*[4 +
+                                additionalGuis.size() * 2 +
+                                verbose ? 1 : 0];
+  // silly const cast to avoid compiler warning
+  argvClient[0] = const_cast<char*>(static_cast<const char*>("gzclient"));
+  argvClient[1] = const_cast<char*>(static_cast<const char*>("--gui-client-plugin"));
+  argvClient[2] = const_cast<char*>
+                  (static_cast<const char*>("libcollision_benchmark_gui.so"));
+  int i = 3;
+  for (int g = 0; g < additionalGuis.size(); ++g)
+  {
+    argvClient[i] = const_cast<char*>(static_cast<const char*>("--gui-client-plugin"));
+    ++i;
+    argvClient[i] = const_cast<char*>
+                    (static_cast<const char*>(additionalGuis[g].c_str()));
+    ++i;
+  }
+
+  if (verbose)
+  {
+    argvClient[i] = const_cast<char*>(static_cast<const char*>("--verbose"));
+    ++i;
+  }
+
+  argvClient[i] = static_cast<char*>(NULL);
+  execvp(argvClient[0], argvClient);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -155,7 +245,7 @@ bool GazeboMultipleWorlds::Run(bool waitForStartSignal,
   }
   if (IsChild())
   {
-    std::cerr << "Consistency: Calling this from child process, "
+    std::cerr << "Consistency: Calling from child process, "
               << "this should not happen. " << std::endl;
     return false;
   }
@@ -233,108 +323,52 @@ bool GazeboMultipleWorlds::Run(bool waitForStartSignal,
   return true;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
-bool GazeboMultipleWorlds::HasStarted() const
-{
-  return started;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-void GazeboMultipleWorlds::ShutdownServer()
-{
-  if (!server) return;
-  server->Stop();
-  // need to call server Fini() (or delete the server)
-  // because if it's deleted after program exit
-  // then it still will try to access static variables
-  // which may have been deleted before.
-  // server.reset();
-  server->Fini();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-bool GazeboMultipleWorlds::IsChild() const
-{
-  return gzclient_pid == 0;
-}
-///////////////////////////////////////////////////////////////////////////////
-bool GazeboMultipleWorlds::IsParent() const
-{
-  return gzclient_pid > 0;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// handler for SIGSEV to kill all child processes
-pid_t gPGid;
-void handler(int sig)
-{
-  if (sig == SIGSEGV)
-  {
-    std::cout << "Segmentation fault - caught SIGSEV and killing "
-              << "child process(es). " << __FILE__
-              << ", " << __LINE__ << std::endl;
-    kill(-gPGid, SIGTERM);     // kill the whole process group
-  }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-bool GazeboMultipleWorlds::Load(const std::vector<std::string>& selectedEngines,
-                                bool physicsEnabled,
-                                bool loadMirror,
-                                bool enforceContactCalc,
-                                bool allowControlViaMirror,
+bool GazeboMultipleWorlds::Init(const bool loadMirror,
+                                const bool enforceContactCalc,
+                                const bool allowControlViaMirror,
+                                const bool useInteractiveMode,
                                 const std::vector<std::string>& additionalGuis
                                 )
 {
+  interactiveMode = useInteractiveMode;
   bool verbose = false;
-  setpgid(0, 0);       // Make new process group, if needed
-  gPGid = getpgid(0);
-  signal(SIGSEGV, handler);
 
-  gzclient_pid = fork();
-  if (gzclient_pid == 0)
+  // only interactive mode loads up gzclient and needs fork().
+  if (InteractiveMode())
+  {
+    initProcessGroup();
+    progPID = fork();
+  }
+  else
+  {
+    // only set the PID to the parent PID
+    progPID = getpid();
+  }
+  if (IsChild())
   {
     // child process: Start gzclient with the multiple worlds plugin
-    char **argvClient = new char*[4 +
-                                  additionalGuis.size() * 2 +
-                                  verbose ? 1 : 0];
-    // silly const cast to avoid compiler warning
-    argvClient[0] = const_cast<char*>(static_cast<const char*>("gzclient"));
-    argvClient[1] = const_cast<char*>(static_cast<const char*>("--gui-client-plugin"));
-    argvClient[2] = const_cast<char*>
-                    (static_cast<const char*>("libcollision_benchmark_gui.so"));
-    int i = 3;
-    for (int g = 0; g < additionalGuis.size(); ++g)
-    {
-      argvClient[i] = const_cast<char*>(static_cast<const char*>("--gui-client-plugin"));
-      ++i;
-      argvClient[i] = const_cast<char*>
-                      (static_cast<const char*>(additionalGuis[g].c_str()));
-      ++i;
-    }
-
-    if (verbose)
-    {
-      argvClient[i] = const_cast<char*>(static_cast<const char*>("--verbose"));
-      ++i;
-    }
-
-    argvClient[i] = static_cast<char*>(NULL);
-
-    execvp(argvClient[0], argvClient);
+    StartClient(verbose, additionalGuis);
     return true;
   }
-  else if (gzclient_pid < 0)
+  else if (progPID < 0)
   {
     std::cerr << "Failed to fork process." << std::endl;
     return false;
   }
 
   // this must be the parent process
-
-  Init(loadMirror, allowControlViaMirror, enforceContactCalc);
+  InitServer(loadMirror, allowControlViaMirror, enforceContactCalc);
   assert(server);
+  return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+bool GazeboMultipleWorlds::LoadEngines
+      (const std::vector<std::string>& selectedEngines, bool physicsEnabled)
+{
+  assert(server);
+  if (!server) return false;
 
   // load the world with the engine names given
   std::string worldPrefix = "collide_world";

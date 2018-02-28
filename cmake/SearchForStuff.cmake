@@ -8,13 +8,12 @@ set(CMAKE_AUTOMOC ON)
 # Find tinyxml. Only required to check for SDF validity.
 find_package(tinyxml REQUIRED)
 
-
 #################################################
 # Find Gazebo
-find_package(gazebo 9.0 REQUIRED)
+find_package(gazebo 10.0 REQUIRED)
 
 #################################################
-# Find Assimp 
+# Find Assimp
 find_package(assimp REQUIRED)
 
 #################################################
@@ -31,7 +30,6 @@ else()
   set(VTK_LIBS vtkHybrid vtkWidgets)
 endif()
 
-
 #################################################
 # find boost incl. serialization
 find_package(Boost REQUIRED COMPONENTS system filesystem serialization)
@@ -39,6 +37,7 @@ find_package(Boost REQUIRED COMPONENTS system filesystem serialization)
 #################################################
 # Set variables with all dependencies
 set(dependencies_INCLUDE_DIRS
+  ${ASSIMP_INCLUDE_DIRS}
   ${assimp_INCLUDE_DIRS}
   ${TINYXML_INCLUDE_DIRS}
   ${GAZEBO_INCLUDE_DIRS}
@@ -50,6 +49,7 @@ set(dependencies_INCLUDE_DIRS
 )
 
 set(dependencies_LIBRARY_DIRS
+  ${ASSIMP_LIBRARY_DIRS}
   ${assimp_LIBRARY_DIRS}
   ${TINYXML_LIBRARY_DIRS}
   ${GAZEBO_LIBRARY_DIRS}
@@ -58,6 +58,7 @@ set(dependencies_LIBRARY_DIRS
 )
 
 set(dependencies_LIBRARIES
+  ${ASSIMP_LIBRARIES}
   ${assimp_LIBRARIES}
   ${TINYXML_LIBRARIES}
   ${GAZEBO_LIBRARIES}

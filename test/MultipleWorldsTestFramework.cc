@@ -22,6 +22,246 @@
 using collision_benchmark::MirrorWorld;
 using collision_benchmark::PhysicsWorldBaseInterface;
 using collision_benchmark::BasicState;
+using collision_benchmark::Shape;
+using collision_benchmark::GazeboMultipleWorlds;
+
+////////////////////////////////////////////////////////////////
+void MultipleWorldsTestFramework::SetUp()
+{
+  server.reset(new GazeboMultipleWorlds());
+}
+
+////////////////////////////////////////////////////////////////
+void MultipleWorldsTestFramework::TearDown()
+{
+  if (server) server->Stop();
+}
+
+////////////////////////////////////////////////////////////////
+void
+MultipleWorldsTestFramework::Init(const bool interactiveMode,
+                                const std::vector<std::string> &additionalGuis)
+{
+  ASSERT_NE(server, nullptr) << "server must have been created";
+  bool loadMirror = true;
+  bool allowControlViaMirror = false;
+  bool enforceContactCalc = true;
+  std::string mirrorName = "";
+  if (loadMirror) mirrorName = "mirror";
+  server->Init(loadMirror, enforceContactCalc,
+               allowControlViaMirror, interactiveMode, additionalGuis);
+  // ensure that the server is returned properly
+  GzMultipleWorldsServer::Ptr mServer = GetServer();
+  ASSERT_NE(mServer.get(), nullptr) << "Could not create and start server";
+}
+
+////////////////////////////////////////////////////////////////
+void MultipleWorldsTestFramework::InitMultipleEngines
+        (const std::vector<std::string>& engines,
+         const bool interactiveMode,
+         const std::vector<std::string> &additionalGuis)
+{
+  Init(interactiveMode, additionalGuis);
+
+  GzMultipleWorldsServer::Ptr mServer = GetServer();
+  ASSERT_NE(mServer.get(), nullptr) << "Could not create and start server";
+  GzWorldManager::Ptr worldManager = mServer->GetWorldManager();
+  ASSERT_NE(worldManager.get(), nullptr) << "No valid world manager created";
+
+  // world to load
+  std::string worldfile = "test_worlds/void.world";
+  int numWorlds = mServer->Load(worldfile, engines);
+  ASSERT_EQ(numWorlds, engines.size()) << "Could not prepare all engines";
+}
+
+////////////////////////////////////////////////////////////////
+void MultipleWorldsTestFramework::InitOneEngine(const std::string &engine,
+                                        const unsigned int numWorlds,
+                                        const bool interactiveMode,
+                                        const std::vector<std::string>
+                                            &additionalGuis)
+{
+  Init(interactiveMode, additionalGuis);
+
+  GzMultipleWorldsServer::Ptr mServer = GetServer();
+  ASSERT_NE(mServer.get(), nullptr) << "Could not create and start server";
+  GzWorldManager::Ptr worldManager = mServer->GetWorldManager();
+  ASSERT_NE(worldManager.get(), nullptr) << "No valid world manager created";
+
+  int numWorldsInMgr = worldManager->GetNumWorlds();
+  ASSERT_EQ(numWorldsInMgr, 0) << "No worlds should be loaded yet.";
+
+  LoadOneEngine(engine, numWorlds);
+}
+
+////////////////////////////////////////////////////////////////
+void MultipleWorldsTestFramework::LoadOneEngine(const std::string &engine,
+                                        const unsigned int numWorlds)
+{
+  GzMultipleWorldsServer::Ptr mServer = GetServer();
+  ASSERT_NE(mServer.get(), nullptr) << "Could not create and start server";
+  GzWorldManager::Ptr worldManager = mServer->GetWorldManager();
+  ASSERT_NE(worldManager.get(), nullptr) << "No valid world manager created";
+
+  int numWorldsInMgr = worldManager->GetNumWorlds();
+
+  // world to load
+  std::string worldfile = "test_worlds/void.world";
+  for (int i = 0; i < numWorlds; ++i)
+  {
+    std::stringstream _worldname;
+    _worldname << "world_" << i << "_" << engine;
+    std::string worldname = _worldname.str();
+    mServer->Load(worldfile, engine, worldname);
+  }
+  int numWorldsInMgrNew = worldManager->GetNumWorlds();
+  ASSERT_EQ(numWorldsInMgrNew, numWorldsInMgr + numWorlds)
+    << "Could not load up world " << numWorlds << " times.";
+}
+
+////////////////////////////////////////////////////////////////
+void MultipleWorldsTestFramework::LoadShape(const Shape::Ptr &shape,
+                                    const std::string &modelName)
+{
+  GzMultipleWorldsServer::Ptr mServer = GetServer();
+  ASSERT_NE(mServer.get(), nullptr) << "Could not create and start server";
+  GzWorldManager::Ptr worldManager = mServer->GetWorldManager();
+  ASSERT_NE(worldManager.get(), nullptr) << "No valid world manager created";
+
+  int numWorlds = worldManager->GetNumWorlds();
+
+  // Load model
+  typedef GzWorldManager::ModelLoadResult ModelLoadResult;
+  std::vector<ModelLoadResult> res
+    = worldManager->AddModelFromShape(modelName, shape, shape);
+  ASSERT_EQ(res.size(), numWorlds)
+    << "Model must have been loaded in all worlds";
+
+  for (std::vector<ModelLoadResult>::iterator it = res.begin();
+       it != res.end(); ++it)
+  {
+    const ModelLoadResult &mlRes=*it;
+    ASSERT_EQ(mlRes.opResult, collision_benchmark::SUCCESS)
+      << "Could not load model";
+    ASSERT_EQ(mlRes.modelID, modelName)
+      << "Model names should be equal";
+  }
+}
+
+////////////////////////////////////////////////////////////////
+void MultipleWorldsTestFramework::LoadShape(const Shape::Ptr &shape,
+                                    const std::string &modelName,
+                                    const unsigned int worldIdx)
+{
+  GzMultipleWorldsServer::Ptr mServer = GetServer();
+  ASSERT_NE(mServer.get(), nullptr) << "Could not create and start server";
+  GzWorldManager::Ptr worldManager = mServer->GetWorldManager();
+  ASSERT_NE(worldManager.get(), nullptr) << "No valid world manager created";
+
+  int numWorlds = worldManager->GetNumWorlds();
+
+  // get the world
+  PhysicsWorldBaseInterface::Ptr world = worldManager->GetWorld(worldIdx);
+  ASSERT_NE(world.get(), nullptr) << "No world at index " << worldIdx;
+
+  GzWorldManager::PhysicsWorldModelInterfacePtr mWorld =
+    GzWorldManager::ToWorldWithModel(world);
+  ASSERT_NE(mWorld.get(), nullptr) << "Cast failure";
+
+  // Load model
+  typedef GzWorldManager::ModelLoadResult ModelLoadResult;
+  ModelLoadResult res =
+    mWorld->AddModelFromShape(modelName, shape, shape);
+
+  ASSERT_EQ(res.opResult, collision_benchmark::SUCCESS)
+    << "Could not load model";
+
+  ASSERT_EQ(res.modelID, modelName)
+    << "Model names should be equal";
+}
+
+////////////////////////////////////////////////////////////////
+void MultipleWorldsTestFramework::LoadModel(const std::string &modelFile,
+                                            const std::string &modelName)
+{
+  GzMultipleWorldsServer::Ptr mServer = GetServer();
+  ASSERT_NE(mServer.get(), nullptr) << "Could not create and start server";
+  GzWorldManager::Ptr worldManager = mServer->GetWorldManager();
+  ASSERT_NE(worldManager.get(), nullptr) << "No valid world manager created";
+
+  int numWorlds = worldManager->GetNumWorlds();
+
+  // Load model
+  typedef GzWorldManager::ModelLoadResult ModelLoadResult;
+  std::vector<ModelLoadResult> res
+    = worldManager->AddModelFromFile(modelFile,modelName);
+  ASSERT_EQ(res.size(), numWorlds)
+    << "Model must have been loaded in all worlds";
+
+  for (std::vector<ModelLoadResult>::iterator it = res.begin();
+       it != res.end(); ++it)
+  {
+    const ModelLoadResult &mlRes=*it;
+    ASSERT_EQ(mlRes.opResult, collision_benchmark::SUCCESS)
+      << "Could not load model";
+    ASSERT_EQ(mlRes.modelID, modelName)
+      << "Model names should be equal";
+  }
+}
+
+////////////////////////////////////////////////////////////////
+void MultipleWorldsTestFramework::LoadModel(const std::string &modelFile,
+                                            const std::string &modelName,
+                                            const unsigned int worldIdx)
+{
+  GzMultipleWorldsServer::Ptr mServer = GetServer();
+  ASSERT_NE(mServer.get(), nullptr) << "Could not create and start server";
+  GzWorldManager::Ptr worldManager = mServer->GetWorldManager();
+  ASSERT_NE(worldManager.get(), nullptr) << "No valid world manager created";
+
+  int numWorlds = worldManager->GetNumWorlds();
+
+  // get the world
+  PhysicsWorldBaseInterface::Ptr world = worldManager->GetWorld(worldIdx);
+  ASSERT_NE(world.get(), nullptr) << "No world at index " << worldIdx;
+
+  GzWorldManager::PhysicsWorldModelInterfacePtr mWorld =
+    GzWorldManager::ToWorldWithModel(world);
+  ASSERT_NE(mWorld.get(), nullptr) << "Cast failure";
+
+  // Load model
+  typedef GzWorldManager::ModelLoadResult ModelLoadResult;
+  ModelLoadResult res =
+    mWorld->AddModelFromFile(modelFile, modelName);
+
+  ASSERT_EQ(res.opResult, collision_benchmark::SUCCESS)
+    << "Could not load model";
+
+  ASSERT_EQ(res.modelID, modelName)
+    << "Model names should be equal";
+}
+
+
+////////////////////////////////////////////////////////////////
+bool MultipleWorldsTestFramework::GetAABBs(const std::string &modelName1,
+                                   const std::string &modelName2,
+                                   const double bbTol,
+                                   collision_benchmark::GzAABB &m1,
+                                   collision_benchmark::GzAABB &m2)
+{
+  GzMultipleWorldsServer::Ptr mServer = GetServer();
+  if (!mServer) return false;
+  GzWorldManager::Ptr worldManager = mServer->GetWorldManager();
+  if (!worldManager) return false;
+
+  return collision_benchmark::GetConsistentAABB(modelName1, worldManager,
+                                                bbTol, m1)
+         &&
+         collision_benchmark::GetConsistentAABB(modelName2, worldManager,
+                                                bbTol, m2);
+}
+
+
 
 ////////////////////////////////////////////////////////////////
 bool MultipleWorldsTestFramework::RefreshClient(const double timeoutSecs)

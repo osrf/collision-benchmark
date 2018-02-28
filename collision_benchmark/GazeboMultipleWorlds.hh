@@ -38,10 +38,15 @@
 namespace collision_benchmark
 {
 /**
- * \brief Helper class which loads up a MultpleWorldsServer and a gzclient
- * at the same time.
- * Will also load the collision benchmark GUI (collision_benchmark::ClientGui)
+ * \brief Convenience class which loads up a MultpleWorldsServer and a gzclient
+ * at the same time. Optionally, the non-interactive mode can be used to
+ * not load up the gzclient and only load the server.
+ *
+ * Will also by default load the collision benchmark GUI
+ * (collision_benchmark::ClientGui),
  * and provides the option to load additional GUI interfaces.
+
+ * This class uses fork() to start gzclient in the child process.
  *
  * \author Jennifer Buehler
  * \date May 2017
@@ -70,20 +75,31 @@ class GazeboMultipleWorlds
   public: GazeboMultipleWorlds();
   public: virtual ~GazeboMultipleWorlds();
 
-  // Loads the client and initializes the server.
-  // Must be called before Run().
-  // A call to this function will fork the process, returning one parent
-  // and one child. Though only the parent returns from this call.
-  public: bool Load(const std::vector<std::string>& selectedEngines,
-                    bool physicsEnabled = true,
-                    bool loadMirror = true,
-                    bool enforceContactCalc = false,
-                    bool allowControlViaMirror = true,
-                    const std::vector<std::string>& additionalGuis
-                      = std::vector<std::string>());
+  // Starts the client and initializes the server.
+  // Must be called before Run() and before Load().
+  // A call to this function will fork the process with fork().
+  // \param[in] useInteractiveMode flag whether the gzclient is to be loaded to
+  //      allow interactive mode. If false, gzclient is not loaded.
+  // \param[in] additionalGuis additional guis to load in gzclient
+  public: bool Init(const bool loadMirror = true,
+                    const bool enforceContactCalc = false,
+                    const bool allowControlViaMirror = true,
+                    const bool useInteractiveMode = true,
+                    const std::vector<std::string>& additionalGuis = {});
+
+  // \brief Loads an empty world with each of the given engines
+  // and sets the physics enabled flag.
+  // Before this is called, Init() has to be called.
+  public: bool LoadEngines(const std::vector<std::string>& selectedEngines,
+                           bool physicsEnabled);
 
   // \return the world manager.
   public: GzWorldManager::Ptr GetWorldManager();
+
+  // \return the server
+  public: GzMultipleWorldsServer::Ptr GetServer() { return server; }
+
+  public: bool InteractiveMode() { return interactiveMode; }
 
   // \brief Runs the multiple worlds server.
   // Can be run in blocking or non-blocking mode.
@@ -105,6 +121,9 @@ class GazeboMultipleWorlds
                    const std::function<void(int)>& loopCallback
                       = std::function<void(int)>());
 
+  // \brief stops the client and server
+  public: void Stop();
+
   // \brief flag whether the simulation has been started.
   // This will only be true after the user hit "play" or [Enter] after
   // Run() is being called (if Run() was called with \e waitForStartSignal
@@ -113,9 +132,9 @@ class GazeboMultipleWorlds
   public: bool HasStarted() const;
 
   // returns true if gzclient is still running
-  public: bool IsClientRunning();
+  public: bool IsClientRunning() const;
   // returns !isClientRunning()
-  private: bool IsClientClosed();
+  private: bool IsClientClosed() const;
 
   // \brief Shuts down the server.
   // Must be called after Run() has been used with
@@ -124,7 +143,7 @@ class GazeboMultipleWorlds
 
   // \brief Returns the name of the mirror.
   // This is the name of the world which the gzclient will use.
-  // This is useful when Load() was called with parameter \e loadMirror
+  // This is useful when Init() was called with parameter \e loadMirror
   // set to true, and the application needs to know the name of the
   // mirror being used.
   public: std::string GetMirrorName() const { return MirrorName; }
@@ -133,9 +152,9 @@ class GazeboMultipleWorlds
   protected: bool IsParent() const;
 
     // Initializes the multiple worlds server
-  protected: bool Init(const bool loadMirror,
-                       const bool allowControlViaMirror,
-                       const bool enforceContactCalc);
+  protected: bool InitServer(const bool loadMirror,
+                             const bool allowControlViaMirror,
+                             const bool enforceContactCalc);
 
 
   protected: void KillClient();
@@ -148,10 +167,14 @@ class GazeboMultipleWorlds
   private: GzMultipleWorldsServer::Ptr server;
 
   // the child process ID for running gzclient
-  private: pid_t gzclient_pid;
+  private: pid_t progPID;
 
   // \brief flag whether the simulation has been started.
   private: std::atomic<bool> started;
+
+  // \brief flag whether the gzclient is to be loaded to allow interactive mode
+  private: bool interactiveMode;
+
 };  // class GazeboMultipleWorlds
 }  // namespace
 #endif  // COLLISION_BENCHMARK_GAZEBOMULTIPLEWORLDS_H

@@ -310,7 +310,7 @@ bool GazeboPhysicsWorld::SaveToFile(const std::string &filename,
     return false;
   }
 
-  if (!worldSdf->HasElement("world"))
+  if (worldSdf->GetName() != "world")
   {
     std::cerr << "Missing SDF 'world' element" << std::endl;
     return false;
@@ -512,6 +512,12 @@ GazeboPhysicsWorld::AddModelFromShape(const std::string &modelname,
 }
 
 //////////////////////////////////////////////////////////////////////////////
+bool GazeboPhysicsWorld::HasModel(const ModelID &id) const
+{
+  return world->ModelByName(id) != nullptr;
+}
+
+//////////////////////////////////////////////////////////////////////////////
 std::vector<GazeboPhysicsWorld::ModelID>
 GazeboPhysicsWorld::GetAllModelIDs() const
 {
@@ -607,6 +613,23 @@ bool GazeboPhysicsWorld::SetBasicModelState(const ModelID  &_id,
 
   // std::cout << "Setting world state " << _state << std::endl;
 
+  // Fix / HACK: Because World::posePub is throttled for publishing the
+  // pose, space the publishing of poses apart to make sure they are
+  // actually published.
+  // Get the current time
+  gazebo::common::Time currentTime = gazebo::common::Time::GetWallTime();
+  static const double updatePeriod = 1.0 / 60.0;
+  // Skip publication if the time difference is less than the update period.
+  double timeDiff = (currentTime - this->prevPoseSetTime).Double();
+  if (timeDiff < updatePeriod)
+  {
+    /* std::cout << "WARNING: Throttling the setting of the pose due to the "
+              << "gazebo::physics::World throttle on pose publishing. "
+              << __FILE__ << std::endl;*/
+    gazebo::common::Time::Sleep((updatePeriod - timeDiff) + 1e-03);
+  }
+  this->prevPoseSetTime = currentTime;
+
   m->SetWorldPose(pose);
 
   if (_state.ScaleEnabled())
@@ -676,9 +699,9 @@ void GazeboPhysicsWorld::Update(int steps, bool force)
     static bool printOnce = true;
     if (printOnce)
     {
-      std::cout << "DEBUG WARNING: The Gazebo world is not paused. "
+      std::cout << "WARNING: The Gazebo world is not paused. "
         <<"In GazeboPhysicsWorld::Update(), we operate it in "
-        <<"paused mode and rely on manually doint the updates "
+        <<"paused mode and rely on manually doing the updates "
         <<"instead of letting the gazebo world update "
         <<"itself continuously." << std::endl;
       printOnce = false;
@@ -998,7 +1021,7 @@ bool GazeboPhysicsWorld::GetAABB(const ModelID &id,
   ignition::math::Box box = m->BoundingBox();
   min = Vector3(box.Min().X(), box.Min().Y(), box.Min().Z());
   max = Vector3(box.Max().X(), box.Max().Y(), box.Max().Z());
-  inLocalFrame = true;
+  inLocalFrame = false;
   return true;
 }
 

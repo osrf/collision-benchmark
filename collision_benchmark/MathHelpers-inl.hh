@@ -39,8 +39,8 @@ collision_benchmark::ConvIgn(const collision_benchmark::Vector3& v)
 }
 
 //////////////////////////////////////////////////////////////////////////////
-template<typename Float>
-ignition::math::Vector3<Float>
+template<typename FloatRet, typename Float>
+ignition::math::Vector3<FloatRet>
 collision_benchmark::ConvIgn(const ignition::math::Vector3<Float>& v)
 {
   // no conversion required
@@ -64,8 +64,8 @@ collision_benchmark::ConvIgn(const collision_benchmark::Quaternion &v)
 }
 
 //////////////////////////////////////////////////////////////////////////////
-template<typename Float>
-ignition::math::Quaternion<Float>
+template<typename FloatRet, typename Float>
+ignition::math::Quaternion<FloatRet>
 collision_benchmark::ConvIgn(const ignition::math::Quaternion<Float>& q)
 {
   // no conversion required
@@ -76,13 +76,12 @@ collision_benchmark::ConvIgn(const ignition::math::Quaternion<Float>& q)
 template<typename Float>
 ignition::math::Matrix4<Float>
 collision_benchmark::GetMatrix(const collision_benchmark::Vector3& p,
-                                       const collision_benchmark::Quaternion &q)
+                               const collision_benchmark::Quaternion &q)
 {
   ignition::math::Vector3<Float> pos(ConvIgn<Float>(p));
   ignition::math::Quaternion<Float> quat(ConvIgn<Float>(q));
   ignition::math::Matrix4<Float> m(quat);
-  // Translate() only sets the position to the last column
-  m.Translate(pos);
+  m.SetTranslation(pos);
   return m;
 }
 
@@ -93,8 +92,7 @@ collision_benchmark::GetMatrix(const ignition::math::Vector3<Float>& pos,
             const ignition::math::Quaternion<Float>& quat)
 {
   ignition::math::Matrix4<Float> m(quat);
-  // Translate() only sets the position to the last column
-  m.Translate(pos);
+  m.SetTranslation(pos);
   return m;
 }
 
@@ -105,16 +103,6 @@ collision_benchmark::EqualFloats(const Float1& f1, const Float2& f2,
                                  const double &t)
 {
   return fabs(f1-f2) < t;
-}
-
-//////////////////////////////////////////////////////////////////////////////
-bool
-collision_benchmark::EqualVectors(const ignition::math::Vector3d &v1,
-                  const ignition::math::Vector3d &v2, const double &t)
-{
-  return EqualFloats(v1.X(), v2.X(), t)
-      && EqualFloats(v1.Y(), v2.Y(), t)
-      && EqualFloats(v1.Z(), v2.Z(), t);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -157,6 +145,35 @@ void SetIdx(const int idx,
         break;
       }
   }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+template<typename Float>
+void collision_benchmark::ProjectAABBOnAxis
+        (const ignition::math::Vector3<Float>& aabbMin,
+         const ignition::math::Vector3<Float>& aabbMax,
+         const ignition::math::Vector3<Float>& projAxis,
+         Float& onAxisMin,
+         Float& onAxisMax)
+{
+    // make sure to use normalized axis
+    ignition::math::Vector3<Float> axis(projAxis);
+    axis.Normalize();
+    Float xCoords[2] = { aabbMin.X(), aabbMax.X() };
+    Float yCoords[2] = { aabbMin.Y(), aabbMax.Y() };
+    Float zCoords[2] = { aabbMin.Z(), aabbMax.Z() };
+
+    onAxisMin = std::numeric_limits<Float>::max();
+    onAxisMax = -onAxisMin;
+    for (int x = 0; x < 2; ++x)
+      for (int y = 0; y < 2; ++y)
+        for (int z = 0; z < 2; ++z)
+        {
+          ignition::math::Vector3<Float> v(xCoords[x], yCoords[y], zCoords[z]);
+          Float projLength = v.Dot(axis);
+          onAxisMin = std::min(onAxisMin, projLength);
+          onAxisMax = std::max(onAxisMax, projLength);
+        }
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -217,4 +234,44 @@ void collision_benchmark::UpdateAABB
       }
     }
 #endif
+}
+
+//////////////////////////////////////////////////////////////////////////////
+template<typename Float>
+bool collision_benchmark::SegmentsOverlap(const Float min1, const Float max1,
+                                          const Float min2, const Float max2,
+                                          Float *overlapFact)
+{
+  if (overlapFact) *overlapFact=0;
+
+  // compute the overlap between both points.
+  Float diff;
+  if (min1 < min2) diff = std::min(max1, max2) - min2;
+  else diff = std::min(max2, max1) - min1;
+
+  static Float zeroEps = 1e-07;
+  if (diff <= zeroEps)
+  {
+    // no overlap
+    return false;
+  }
+
+  Float minLen = std::min(max1 - min1, max2 - min2);
+  assert(minLen >= 0);
+
+  // zero length of one side can always be considered an overlap
+  // if the overlap was not excluded yet above
+  if (minLen < zeroEps)
+  {
+    if (overlapFact) *overlapFact = 1;
+    return true;
+  }
+
+  if (!overlapFact) return true;
+
+  Float fact = diff / minLen;
+  assert(fact > 0);
+  assert(fact <= 1.0);
+  *overlapFact = fact;
+  return true;
 }
