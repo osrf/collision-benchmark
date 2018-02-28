@@ -1,0 +1,440 @@
+# HG changeset patch
+# User Bitbucket <noreply@bitbucket.org>
+# Date 0 0
+# Node ID 6382c21bb388cd232090849d757dfa6c4f43c1e1
+# Parent  43aba69517080eeaa792990795dc7ed72913928c
+# Parent  92e9d409c51b8535fecc05ff6501e7a0cf4b96b9
+Application of patch for Gazebo [PR 2657](https://bitbucket.org/osrf/gazebo/pull-requests/2657/)
+
+diff -r 43aba69517080eeaa792990795dc7ed72913928c -r 6382c21bb388cd232090849d757dfa6c4f43c1e1 gazebo/transport/Publisher.cc
+--- a/gazebo/transport/Publisher.cc
++++ b/gazebo/transport/Publisher.cc
+@@ -169,7 +169,9 @@
+   {
+     boost::mutex::scoped_lock lock(this->mutex);
+     if (!this->pubIds.empty() || this->messages.empty())
++    {
+       return;
++    }
+ 
+     for (unsigned int i = 0; i < this->messages.size(); ++i)
+     {
+@@ -192,14 +194,69 @@
+     for (std::list<MessagePtr>::iterator iter = localBuffer.begin();
+         iter != localBuffer.end(); ++iter, ++pubIter)
+     {
++#define TEMP_NEW_APPROACH_TEST
++#ifdef TEMP_NEW_APPROACH_TEST
++      // Expected number of calls to the callback function
++      // Publisher::OnPublishComplete() triggered by subscriber callbacks.
++      // If there are no subscriber callbacks, OnPublishComplete()
++      // will be called exactly once instead.
++      int expRemoteCalls = this->publication->GetCallbackCount();
++      {
++        boost::mutex::scoped_lock lock(this->mutex);
++        // Set the minimum expected times OnPublishComplete() has to be
++        // called for this message ID. Only once the expected amount
++        // of calls has been made, SendMessage() can be called again to
++        // send off any new messages (see condition !this->pubIds.empty() in
++        // the beginning of this function). This ensures that messages
++        // are sent out in the right order. OnPublishComplete() will decrease
++        // this counter.
++        this->pubIds[*pubIter] = std::max(1, expRemoteCalls);
++      }
++#endif
++
+       // Send the latest message.
++      // The result will be the number of calls to OnPublishComplete()
++      // which will have been triggered by remote subscribers. The actual
++      // calling of OnPublishComplete() happens asynchronously though
++      // (the subscriber callback SubscriptionTransport::HandleData() only
++      // enqueues the message!).
+       int result = this->publication->Publish(*iter,
+           boost::bind(&Publisher::OnPublishComplete, this, _1), *pubIter);
+ 
+-      if (result > 0)
+-        this->pubIds[*pubIter] = result;
+-      else
+-        this->pubIds.erase(*pubIter);
++#ifdef TEMP_NEW_APPROACH_TEST
++      // It is possible that OnPublishComplete() was called less times than
++      // initially expected, which happens when a callback of the
++      // transport::Publication was found invalid and deleted. In this case
++      // we have to adjust the counter for this message ID.
++      // Technically, subscriber callbacks could meanwhile also have been added,
++      // in which case it would not be safe to increase the pubIds counter,
++      // because it's quite possible that a call to OnPublishComplete was
++      // already done and the entry has already been deleted - then we would
++      // just re-add it here.
++      int diff = result - expRemoteCalls;
++      if (diff < 0)
++      {
++        boost::mutex::scoped_lock lock(this->mutex);
++        // Check that the entry still exists. If it doesn't, OnPublishComplete()
++        // has already been called the expected amount of times.
++        std::map<uint32_t, int>::iterator pIt = this->pubIds.find(*pubIter);
++        if (pIt != this->pubIds.end())
++        {
++          pIt->second += diff;
++          // If OnPublishComplete() was already called as many times as
++          // expected (it will reflect in the value of pIt->second), then
++          // we have to delete the entry of the publication ID (which is
++          // what last call of OnPublishComplete() would have done if it was
++          // called the expected amount of times).
++          if (pIt->second <= 0) this->pubIds.erase(pIt);
++        }
++      }
++#else
++    if (result > 0)
++      this->pubIds[*pubIter] = result;
++    else
++      this->pubIds.erase(*pubIter);
++#endif
+     }
+ 
+     // Clear the local buffer.
+@@ -250,6 +307,12 @@
+ }
+ 
+ //////////////////////////////////////////////////
++unsigned int Publisher::GetRemoteSubscriptionCount()
++{
++  return this->publication->GetRemoteSubscriptionCount();
++}
++
++//////////////////////////////////////////////////
+ void Publisher::Fini()
+ {
+   if (!this->messages.empty())
+diff -r 43aba69517080eeaa792990795dc7ed72913928c -r 6382c21bb388cd232090849d757dfa6c4f43c1e1 gazebo/transport/Publisher.hh
+--- a/gazebo/transport/Publisher.hh
++++ b/gazebo/transport/Publisher.hh
+@@ -73,10 +73,17 @@
+       /// \param[in] _publication Pointer to the publication object to be set
+       public: void SetPublication(PublicationPtr _publication);
+ 
++      // \brief Get the amount of remote subscribers.
++      // \sa Publication::GetRemoteSubscriptionCount()
++      public: unsigned int GetRemoteSubscriptionCount();
++
+       /// \brief Publish a protobuf message on the topic
+       /// \param[in] _message Message to be published
+       /// \param[in] _block Whether to block until the message is actually
+-      /// written out
++      /// written into the local message buffer, and SendMessage() is called.
++      /// Note that it may be required to call SendMessage() again if it could
++      /// not be sent out immediately. Check with  GetOutgoingCount() if
++      /// there are still messages in the queue which need to be sent out.
+       public: void Publish(const google::protobuf::Message &_message,
+                  bool _block = false)
+               { this->PublishImpl(_message, _block); }
+@@ -84,7 +91,10 @@
+       /// \brief Publish an arbitrary message on the topic
+       /// \param[in] _message Message to be published
+       /// \param[in] _block Whether to block until the message is actually
+-      /// written out
++      /// written into the local message buffer, and SendMessage() is called.
++      /// Note that it may be required to call SendMessage() again if it could
++      /// not be sent out immediately. Check with  GetOutgoingCount() if
++      /// there are still messages in the queue which need to be sent out.
+       public: template< typename M>
+               void Publish(M _message, bool _block = false)
+               { this->PublishImpl(_message, _block); }
+@@ -101,7 +111,11 @@
+       /// \return The message type
+       public: std::string GetMsgType() const;
+ 
+-      /// \brief Send latest message over the wire. For internal use only
++      /// \brief Send message(s) in the local buffer over the wire.
++      /// This will be called from Publish() and should normally only be
++      /// used internally, however you may need to call this function if
++      /// using blocking calls to Publish (parameter \e _block = true) in
++      /// order to ensure the whole message buffer is sent out.
+       public: void SendMessage();
+ 
+       /// \brief Set our containing node.
+diff -r 43aba69517080eeaa792990795dc7ed72913928c -r 6382c21bb388cd232090849d757dfa6c4f43c1e1 test/integration/CMakeLists.txt
+--- a/test/integration/CMakeLists.txt
++++ b/test/integration/CMakeLists.txt
+@@ -104,6 +104,7 @@
+   transceiver.cc
+   transport.cc
+   transporter.cc
++  transport_msg_count.cc
+   world.cc
+   world_clone.cc
+   world_entity_below_point.cc
+@@ -134,6 +135,10 @@
+ set_tests_properties(${TEST_TYPE}_world_remove PROPERTIES TIMEOUT 400)
+ set_tests_properties(${TEST_TYPE}_worlds_installed PROPERTIES TIMEOUT 700)
+ 
++# TODO: remove the timeout for this test after the requirement
++# to manually start a remote subscriber is removed.
++set_tests_properties(${TEST_TYPE}_transport_msg_count PROPERTIES TIMEOUT 20)
++
+ set_property(
+   SOURCE world_clone.cc
+   PROPERTY COMPILE_DEFINITIONS
+diff -r 43aba69517080eeaa792990795dc7ed72913928c -r 6382c21bb388cd232090849d757dfa6c4f43c1e1 test/integration/transport_msg_count.cc
+--- /dev/null
++++ b/test/integration/transport_msg_count.cc
+@@ -0,0 +1,259 @@
++/*
++ * Copyright (C) 2017 Open Source Robotics Foundation
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++*/
++#include <gazebo/gazebo.hh>
++#include <gazebo/transport/transport.hh>
++#include <gazebo/msgs/msgs.hh>
++#include <gtest/gtest.h>
++#include <unistd.h>
++#include <iostream>
++
++#include <thread>
++
++using namespace gazebo;
++
++/**
++ * \brief Test class for gtest which forks into parent and child process
++ */
++class TransportMsgCountTest: public ::testing::Test
++{
++protected:
++
++  TransportMsgCountTest()
++    :fakeProgramName("TransportMsgCountTest"),
++     pid(-1)
++  {}
++  virtual ~TransportMsgCountTest() {}
++
++  virtual void SetUp()
++  {
++    pid = fork();
++    if (pid > 0)
++    {
++      // parent process
++      // irrelevant to pass fake argv, so make an exception
++      // and pass away constness, so that fakeProgramName can be
++      // initialized easily in constructor.
++      gazebo::setupServer(1, (char**)&fakeProgramName);
++    }
++    else if (pid == 0)
++    {
++      // child process
++      if (!gazebo::transport::init())
++      {
++        gzerr << "Unable to initialize transport.\n";
++      }
++      else
++      {
++        gazebo::transport::run();
++      }
++    }
++  }
++
++  virtual void TearDown()
++  {
++    KillChildProcess();
++    gazebo::shutdown();
++  }
++
++protected:
++
++  bool IsParent()
++  {
++    return pid > 0;
++  }
++
++  bool IsChild()
++  {
++    return pid == 0;
++  }
++
++  bool ForkSuccess()
++  {
++    return pid >= 0;
++  }
++
++  // \brief can be used from the parent to check if the child is still running
++  // \retval 1 child is still running
++  // \retval 0 child is not running
++  // \retval -1 this is not the parent process
++  int ChildRunning()
++  {
++    if (!IsParent()) return -1;
++    int child_status;
++    // result will be 0 if child is still running
++    pid_t result = waitpid(pid, &child_status, WNOHANG);
++    if (result != 0)
++    {
++      std::cerr << "CHILD STOPPED" << std::endl;
++    }
++    return result == 0;
++  }
++
++private:
++  // kills the child process, if it's the parent process.
++  void KillChildProcess()
++  {
++    if (IsParent())
++    {
++      kill(pid, SIGKILL);
++    }
++  }
++
++  // \brief fake program name as argv for gazebo::setupServer()
++  const char * fakeProgramName;
++
++  // \brief PID for child process which will run the remote subscriber
++  pid_t pid;
++};
++
++
++// number of pose messages received
++int g_receivedPosesStamped = 0;
++
++// callback counting pose messages received
++void ReceivePosesStampedMsgCounter(ConstPosesStampedPtr &/*_msg*/)
++{
++  ++g_receivedPosesStamped;
++}
++
++TEST_F(TransportMsgCountTest, MsgCount)
++{
++  // only continue if the forking has succeeded
++  ASSERT_EQ(ForkSuccess(), true);
++
++  // The test case error (error with the old code) will only be
++  // triggered with remote connections (see code in Publisher.cc
++  // and Publishing.cc). So create a remote subscriber with the child
++  // process.
++  if (IsChild())
++  {
++    // transport system has to have been successfully started for the
++    // child process
++    ASSERT_EQ(gazebo::transport::is_stopped(), false);
++
++    transport::NodePtr nodeRemote(new transport::Node());
++    nodeRemote->Init();
++    // we can use the same callback method for the subscriber as the child
++    // process global variable doesn't interfer with the parent process.
++    transport::SubscriberPtr subRemote =
++      nodeRemote->Subscribe("/gazebo/ttest/test",
++                            &ReceivePosesStampedMsgCounter);
++    // sleep forever until child process is killed
++    while (true) common::Time::MSleep(500);
++    return;
++  }
++
++  // at this point, it can only be the parent process
++  ASSERT_EQ(IsParent(), true);
++  ASSERT_EQ(ChildRunning(), 1);
++
++  // size of the publisher buffer
++  int bufferSize = 10000;
++
++  // Start the publisher in the parent process
++  transport::NodePtr node(new transport::Node());
++  node->Init();
++
++  // create the publisher
++  transport::PublisherPtr pub =
++    node->Advertise<msgs::PosesStamped>("/gazebo/ttest/test", bufferSize);
++
++  // wait for the connection to the remote subscriber started in the
++  // child process
++  pub->WaitForConnection();
++
++  // connection received, now we can continue with the test..
++  std::cout << "Remote subscription count: "
++            << pub->GetRemoteSubscriptionCount() << std::endl;
++  ASSERT_GE(pub->GetRemoteSubscriptionCount(), 1u);
++
++  // Create an additional subscriber which will count the
++  // number of messages arrived.
++  // This has to be a subscriber in the parent process itself, because the
++  // remote subscriber may actually not get all the messages when we end
++  // this test - this is because of the asynchronous nature of the transport
++  // system itself. This test is designed to chedk that a local subscriber
++  // also receives all the messages while there is a remote subscriber
++  // at the same time. This test would fail before the bug fix in
++  // pull request 2657 (https://bitbucket.org/osrf/gazebo/pull-requests/2657).
++  transport::SubscriberPtr poseSub =
++    node->Subscribe("/gazebo/ttest/test", &ReceivePosesStampedMsgCounter);
++
++  msgs::PosesStamped msg;
++  msgs::Init(msg, "test");
++
++  // The "dead-end" of message reception happens randomly due to
++  // multi-threading. So send a large numer of messages to increase the
++  // chance that this happens.
++  int numMsgs = 10000;
++  // We still have a problem when the number of messages sent quickly
++  // is greater than the buffer size, so allow number of messages
++  // to be not larger than buffersize
++  numMsgs = std::max(numMsgs, bufferSize);
++  for (int i = 0; i < numMsgs; ++i)
++  {
++    // std::cout<<"SENDING MESSAGE! "<<i<<"..."<<std::endl;
++    msgs::Set(msg.mutable_time(), common::Time(i));
++    // do a direct publishing in which the message should
++    // be written out right away: set "blocking" parameter to true.
++    pub->Publish(msg, true);
++  }
++
++  std::cout << "Have sent out all messages." << std::endl;
++
++  // CAVEAT: Now we actually need to call SendMessage() at least once more
++  // if not all outgoing messages were already sent.
++  // This can happen because the actual sending of messages happens
++  // asynchronously. The existing message buffer in Publisher has to be
++  // regularly emptied with SendMessage() calls.
++  // Trying more times than the actualy amount of left-over messages
++  // would be an error though.
++  int tries = 20; // pub->GetOutgoingCount();  20 is plenty for testing
++  while ((pub->GetOutgoingCount() > 0) && (tries > 0))
++  {
++    std::cout << "Sending out " << pub->GetOutgoingCount()
++              << " left-over messages. " << std::endl;
++    pub->SendMessage();
++    // NOTE: Tried to use ConnectionManager::Instance()->TriggerUpdate()
++    // instead but that does not do the job!
++    // transport::ConnectionManager::Instance()->TriggerUpdate();
++    common::Time::MSleep(200);
++    --tries;
++  }
++
++  // it is not very nice to sleep for even longer, but to be sure all messages
++  // have arrived and the callback has been called, sleep for a max of
++  // timeoutSecs seconds.
++  static const int timeoutSecs = 10;
++  double sleepTime = 0;
++  while ((g_receivedPosesStamped != numMsgs) && (sleepTime < timeoutSecs))
++  {
++    // not very nice but sleep just to make sure
++    // enough time has passed for all messages to arrive
++    static const double sleepSecs = 1.0;
++    common::Time::Sleep(sleepSecs);
++    sleepTime += sleepSecs;
++  }
++
++  // Optional: Sleep a bit more if no time was slept, just to see the messages
++  // also arriving in the remote subscriber (it will be interrupted if
++  // the publisher gets destroyed after the test ends)
++  if (sleepTime < 3) common::Time::Sleep(3);
++
++  ASSERT_EQ(g_receivedPosesStamped, numMsgs)
++    << "Have not received all messages.";
++}

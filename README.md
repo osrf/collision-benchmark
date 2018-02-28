@@ -2,217 +2,13 @@
 
 Test framework for collision and physics engines.
 
-This test framework provides an API which acts as a general interface to physics engine's worlds.
-The API can support a variety of physics engine implementations and is therefore useful
-to compare performance and output of different engines.
-
-One main idea behind the collision_benchmark API is to compare the output of different physics
-engine implementations and find cases in which the engines significantly disagree
-on a specific situation (e.g. collision / no collision). Such cases can
-be helpful for debugging.
-
-The main implementation of the API provided to date uses Gazebo and therefore
-all physics engines coming with Gazebo are supported. However it is also
-possible to add other non-gazebo physics engines to the test framework.
-
-## Table of Contents
-
-1. [Installation](#installation)
-1. [Simulating multiple parallel worlds](#simulating-multiple-parallel-worlds)
-1. [Physics engine testing](#physics-engine-testing)
-    - [Static tests](#the-static-tests)
-    - [The "two colliding shapes" test](#the-two-colliding-shapes-test-framework)
-1. [Short introduction to the API](#short-introduction-to-the-api)
-
-## Installation
-
-### Dependencies
-
-You will reqiure 
-
-* Gazebo (currently only newest version compiled from source is tested)
-  and its dependencies
-* Assimp
-* libvtk
-
-To fulfill current requirements for some functionality, it is highly
-recommended to compile Gazebo from source and use the
-the [dart-6-devel](https://bitbucket.org/JenniferBuehler/gazebo/branch/dart-6-devel)
-branch, which is the default branch merged with
-
-- [PR 2657](https://bitbucket.org/osrf/gazebo/pull-requests/2657): problems with transport
-- [PR 2709](https://bitbucket.org/osrf/gazebo/pull-requests/2709): ODE contact points not constantly displayed
-- only minor: [PR 2705](https://bitbucket.org/osrf/gazebo/pull-requests/2705)
-
-Please also see [fcl PR 213](https://github.com/flexible-collision-library/fcl/pull/213)
-which fixes an issue with fcl.
-
-If you compiled Gazebo from source, don't forget to source
-``<your-gazebo-install-path>/share/setup.sh`` to set up the 
-gazebo environment variables.
-We will in particular need the ``GAZEBO_RESOURCE_PATH``.
-
-### Compile and Setup
-
-```
-cd build
-cmake ..
-make
-make tests
-make install
-```
-
-Make sure that:
-
-1. the library ``libcollision_benchmark_gui.so`` compiled by this project (installed to ``<your-install-prefix>/lib``)
-is in your GAZEBO_PLUGIN_PATH, and
-2. that you add ``<your-install-prefix>/share`` to your GAZEBO_RESOURCE_PATH.
-3. You may also want to add the ``<your-install-prefix>/bin`` path to your PATH.
-
-In order to be able to visualize all models you saved with the test
-framework in gzclient, you will need to have the directory
-``<temp-path>/.gazebo/models``
-in your ``GAZEBO_RESOURCE_PATH``.
-``<temp-path>`` should be your default system path temp folder
-(more specifically, the one returned by
- ``gazebo::common::SystemPaths::TmpPath()``):
-This is required for generated mesh shapes
-which have to be written to file (because SDF reads meshes from file).
-
-``export GAZEBO_RESOURCE_PATH=${GAZEBO_RESOURCE_PATH}:/tmp/.gazebo/models``
-
-## Simulating multiple parallel worlds
-
-The framework allows to run multiple worlds with their own physics engine
-each simultaneously. This way the output of different engines can be compared.
-
-### One world, different engines
-
-The "multiple worlds server" allows you to specify one world file to load, and several physics engines the world
-should be loaded with. This means the world will be loaded multiple times, once with each physics engine,
-and then you can switch between the worlds. It is possible to control all
-worlds (e.g. pausing) using gzclient.
-
-Print the help of ``multiple_worlds_server`` to learn more about the options:
-
-```
-multiple_worlds_server --help
-```
-
-You may start the multiple worlds server as follows:
-
-```
-multiple_worlds_server <world file> -e <list of phyiscs engines>
-```
-
-The ``<list of physics engines>`` can contain *ode, bullet, simbody* and *dart*
-(the latter three are only supported if your Gazebo version installed
- supports it).
-
-This will prompt you with a keypress so you get the chance to start gzclient before the worlds are started.
-Confirm with ``[Enter]`` immediately if you don't want to wait, otherwise press ``[Enter]`` after gzclient has loaded up.
-
-Now you may start gzclient. You should load start it with the GUI plugin,
-which will allow you to control switching between the worlds:
-
-```
-gzclient --gui-client-plugin libcollision_benchmark_gui.so
-```
-
-Make sure *libcollision_benchmark_gui.so* is in the *GAZEBO_PLUGIN_PATH*.
-
-You will see the world with the engine with the name which comes first
-in lexicographical order.
-
-
-![Multiple worlds](images/Multiple-worlds-rubble.png)
-
-*Image: Differences in the rubble world in bullet and ODE at the
-same time of simulation*
-
-You can switch between the physics engines with the GUI control panel displayed on the top left.
-Between the buttons, the name of the currently displayed world is shown, which should contain the physics
-engine in the name.
-
-The world is started in paused mode. You may press the "play" button in gzclient,
-or hit ``[Enter]`` in the terminal where you started the server,
-to start the simulation.
-
-You can also pause the simulation and advance it with individual steps only, and you may add models to
-the world, or change poses of the existing models - all of which will apply to **all** the worlds
-loaded. So you can think of gzclient as the control interface to all the worlds.
-This way you can compare how the same world behaves in different physics engines, how the
-contact points compare, etc.
-
-Note that not all controls from within the client (or by sending messages to the server)
-are supported yet for the ``collision_benchmark`` framework. Always watch the terminal where you
-started the server for hints that some functionality has been blocked, if you get no reaction
-from the client controls.
-
-**Example:**
-
-``multiple_worlds_server worlds/rubble.world -e bullet ode``
-
-This will load up the rubble world with the bullet and ODE engines.
-
-Now start the gzclient:
-
-```
-gzclient --gui-client-plugin libcollision_benchmark_gui.so
-```
-
-Use the GUI control panels to start the world (press ``<Play>``) and 
-switch between the bullet and ode worlds using the panel on the top left.
-
-### Multiple worlds, one or several engines
-
-You may also use the ``multiple_worlds_server`` to load up several worlds
-in Gazebo and switch between them.
-
-```
-multiple_worlds_server <list of world files>
-```
-
-For example:
-
-```
-multiple_worlds_server worlds/rubble.world worlds/empty.world
-```
-
-As before, you can start up the gzclient with the world switching GUI
-plugin to switch between the worlds:
-
-```
-gzclient --gui-client-plugin libcollision_benchmark_gui.so
-```
-
-Place a cube or any other new model in the empty world, switch back to the
-rubble world to see that the cube is in this world now as well.
-Then switch back to the empty world again, to see that your
-newly inserted model is still there as well.
-
-You may even load up several worlds with several physics engines.
-What this will do is load up each world *w* with each physics engine *p*,
-creating a total of *w * p* worlds.
-
-```
-multiple_worlds_server <list of world files> -e <list of phyiscs engines>
-```
-
-Example: 
-
-```
-multiple_worlds_server worlds/rubble.world worlds/empty.world -e bullet ode
-```
-
-This will load four worlds, twice the rubble world
-and twice the empty world (each once with bullet and once with ODE).
+You can find the documentation in the wiki pages of this repository.
 
 ## Physics engine testing
 
 The main purpose of the framework is to test physics engines, not to just
 run multiple worlds in parallel.
-Several tests can be designed and implemented with the help of the API of 
+Several tests can be designed and implemented with the help of the API of
 this testing framework. All tests that benefit from this framework
 have one characteristing in common: They compare the behaviour of several
 worlds. Typically, all worlds will therefore contain the same or equivalent
@@ -233,9 +29,9 @@ To run all tests, type
 ``make test``
 
 Running all the tests will also run the static tests (see below) which
-has a lot of failures. 
+has a lot of failures.
 To run only a specific test instead, use the test executable directly by
-running the executable, e.g. 
+running the executable, e.g.
 
 ``<your-build-dir>/world_interface_test``
 
@@ -251,7 +47,7 @@ for example, to run ``WorldInterfaceTest.TransferWorldState``:
 In order to be able to visualize all shapes in gzclient, you
 will need to have the directory
 ``<temp-path>/.gazebo/models``
-in your ``GAZEBO_RESOURCE_PATH``, as described in the 
+in your ``GAZEBO_RESOURCE_PATH``, as described in the
 [Installation](#installation) section.
 This is required because the tests use generated mesh shapes
 which have to be written to file (because SDF reads meshes from file).
@@ -282,7 +78,7 @@ If the worlds disagree about the collision state, a failure is triggered.
 ![Static test](images/Static-test-spheres.png)
 *Image: An example where the engines disagree. Bullet detects a collision, but ODE doesnt'.*
 
-*Info:* The two-objects-world is loaded multiple times, because states 
+*Info:* The two-objects-world is loaded multiple times, because states
 of different worlds need to be compared. The multiple worlds loaded can
 use the same, or different physics engines. Option (1): load the same
 world multiple times with different physics engines, or Option (2): load
@@ -326,16 +122,16 @@ you may want to **enable the displaying of contacts**
 (``View -> Contacts``), because once the test stops due to failure, the
 simulation will be paused (and the contacts will only show once
 the worlds are advanced again, so you won't see the contacts
-until the next test failure).    
+until the next test failure).
 It will also be helpful to **switch on wireframe rendering**
 (``View -> Wireframe``)
 to see the contacts better.
 
 When you are ready, to start the test,
 hit ``[Enter]`` in the terminal running the test and watch
-the test.     
+the test.
 If the test stops due to a failure, it will prompt you to hit
-``[Enter]`` again to continue.     
+``[Enter]`` again to continue.
 Before you continue, you may want to switch between
 the worlds in gzclient and inspect the results and find the reason of failure.
 Some information will also have been printed in the terminal about
@@ -344,10 +140,10 @@ the test failure details.
 **Reminder:** When you display the test results which were saved to file
 in gazebo later (ie. loading the saved *.world* file into gazebo directly),
 don't forget to start gazebo in paused mode. This will allow the world to be
-displayed in the state it was in when the test failed.    
+displayed in the state it was in when the test failed.
 The tests also don't use a ground floor, which means the objects will
 be falling in free space if you start gazebo with physics engine enabled and
-in unpaused mode.    
+in unpaused mode.
 You will also need to add ``<your-output-path>`` to the ``GAZEBO_RESOURCE_PATH``
 in order to be able to display models which contain meshes.
 
@@ -378,7 +174,7 @@ A **slider** can be used to move the objects step-wise towards and apart from ea
 other along the collision axis.
 An **"Auto-collide"** function will move the objects along the collision
 bar until at least one of the physics engines used for testing reports a
-collision between the objects. 
+collision between the objects.
 
 ![Two shapes test](images/Two-shapes-test-cans.png)
 
@@ -387,7 +183,7 @@ to find critical collision configurations which happen when the models collide.
 To change the pose of the models, the Gazebo client transformation tools
 can be used.
 Alternatively the additional helper tools in the Gui overlay (the dial
-and the translation buttons), which transform the model along the axis 
+and the translation buttons), which transform the model along the axis
 perpendicular to the collision axis (this is only a test tool though, so not
 more detail will be provided here).
 
@@ -509,7 +305,7 @@ of the interfaces together is **PhysicsWorld**. However for accessing a world,
 a pointer of only one of the interfaces may be required
 (which does not depend on as many template parameters as PhysicsWorld).
 
-There are the following abstract (pure virtual) interfaces which define different sets of 
+There are the following abstract (pure virtual) interfaces which define different sets of
 functionalities in relation to simulated worlds, all defined in
 [PhysicsWorld.hh](collision_benchmark/PhysicsWorld.hh):
 
@@ -521,7 +317,7 @@ functionalities in relation to simulated worlds, all defined in
     physics engines operating under this interface -
     the only requirement is that they support the same *world state* type.
     The world state can be defined as a general data type which can be supported by many different engines.
-    It is expected to contain all important information about the world.    
+    It is expected to contain all important information about the world.
     The idea is that there may be several different physics engines, all supporting the same world state.
     With this, states of the different worlds can be directly compared.
 *   **PhysicsWorldModelInterface** is an interface which defines functions to access
@@ -531,7 +327,7 @@ functionalities in relation to simulated worlds, all defined in
     Therefore, this interface is still fairly idependent of the physics engine, the only restriction being
     that all classes operating under this interface must support the same identifier types for models.
 *   **PhysicsWorldContactInterface** is an interface which defines functions to access contact points.
-*   **PhysicsWorldEngineInterface** adds a few functions which provide low-level access to the 
+*   **PhysicsWorldEngineInterface** adds a few functions which provide low-level access to the
     underlying implementation of the physics engine (e.g. retrieve shared pointers to specific model
     types) . This interface is highly dependent on the physics engine used.
 
@@ -543,7 +339,7 @@ There are two main abstract classes which combine the above interfaces into a co
     by the interfaces, except *PhysicsWorldEngineInterface* which is highly physics engine dependent.
 *   **PhyicsEngineWorld** derives from *PhysicsWorld* and further implements *PhysicsWorldEngineInterface*.
     It is therefore very specific to the physics engine used.
-    It requires the types of the classes for the models and the contact points and optionally, of 
+    It requires the types of the classes for the models and the contact points and optionally, of
     the world class and of the class for a physics engine.
     This interface is mainly useful as a common superclass
     for the more specific implementations.
@@ -591,7 +387,7 @@ which can be useful for managing several worlds at the same time.
   make the use of multiple worlds easier, including the maintenance of a
   WorldManager and providing methods for loading, starting and stopping worlds.
 
-## API tutorials 
+## API tutorials
 
 The tutorials are mainly documented in the given source files and only briefly described there. Please refer to the
 mentioned source files for more information. All tutorials use the *GazeboPhysicsWorld* to demonstrate the use of
@@ -611,7 +407,7 @@ from one is read, and the other world is set to the same state.
 
 The first world is going to be the one which will be displayed with
 *gzclient* (which always displays the first world that was loaded).
-This will be the empty world to start with.    
+This will be the empty world to start with.
 The second world will be loaded with the rubble world (*worlds/rubble.world*),
 which is a world with quite a bit of movement in it, as you can watch the
 rubble collapse.
@@ -633,7 +429,7 @@ Start the tutorial:
 
 ``transfer_world_state``
 
-You will receive a command line prompt when the tutorial is ready to start. 
+You will receive a command line prompt when the tutorial is ready to start.
 Then, in another terminal, load upgzclient:
 
 ``gzclient``
@@ -648,7 +444,7 @@ Then, the rubble world should suddenly pop up, as the state of the world is
 set to the rubble world state (a message like *"Now starting to set the world
 to the rubble state"* should also be printed in the terminal)
 
-Please refer to the code in 
+Please refer to the code in
 [transfer_world_state.cc](tutorials/transfer_world_state.cc),
 which contains detailed documentation about how this is achieved.
 

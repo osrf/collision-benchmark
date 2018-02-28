@@ -29,7 +29,7 @@
 /**
  * \brief Framework for the flickering contacts test.
  *
- * Is meant to be used with the gtest framework.
+ * This test is experimental and has not been finalised.
  *
  * \author Jennifer Buehler
  * \date April 2017

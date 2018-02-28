@@ -311,8 +311,7 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
 
   // XXX ODE test cases:
   // oc=2, ocSubDiv=42, oriSubDiv=16
-  // oc=7, ocSubDiv=6, oriSubDiv=12  pretty good
-
+  // oc=7, ocSubDiv=6, oriSubDiv=12  is pretty good
 
   std::cout << "Now iterating through all states." << std::endl;
   for (int oc = ocStart; oc < numOuterCircles; ++oc)
@@ -344,6 +343,7 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
                   << outerAngle << ", circle " << oc << std::endl;
         continue;
       }
+
       // auto-collide models
       // std::cout << "Auto-collide at angle " << outerAngle << std::endl;
       this->modelCollider.AutoCollide(acAllWorlds, false, acStepSize,
@@ -356,7 +356,8 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
         continue;
       }
 
-      // ensure outerCurrMs2 is const (and bugproof), therefore use tmp above
+      // ensure outerCurrMs2 is const (to make it bugproof),
+      // therefore reassign tmp from before
       const BasicState outerCurrMs2 = tmp;
       const ignition::math::Vector3d outerCurrModelPos
         = collision_benchmark::ConvIgn<double>(outerCurrMs2.position);
