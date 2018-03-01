@@ -53,7 +53,9 @@ endif()
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
 # Add googletest directly to our build. This defines
-# the gtest and gtest_main targets.
+# the gtest and gtest_main targets, but doesn't install them.
+set(INSTALL_GTEST OFF CACHE INTERNAL "Enable installation of googletest.")
+set(INSTALL_GMOCK OFF CACHE INTERNAL "Enable installation of googlemock.")
 add_subdirectory(${CMAKE_BINARY_DIR}/googletest-src
                  ${CMAKE_BINARY_DIR}/googletest-build)
 
