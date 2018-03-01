@@ -35,7 +35,9 @@ bool GazeboMultipleWorldsServer::IsRunning() const
 }
 
 /////////////////////////////////////////////////////////////////////
-bool GazeboMultipleWorldsServer::Start(int argc, const char** argv)
+bool GazeboMultipleWorldsServer::Start(const std::string &mirrorName,
+                                       const bool allowMirrorControl,
+                                       int argc, const char** argv)
 {
   if ((argc == 0) || !argv)
   {
@@ -44,6 +46,8 @@ bool GazeboMultipleWorldsServer::Start(int argc, const char** argv)
     THROW_EXCEPTION("At this point, for gazebo you need to pass "
                     <<" valid command line parameters");
   }
+
+  // make the console verbose for improved output
   gazebo::common::Console::SetQuiet(false);
 
   // Initialize gazebo.
@@ -59,6 +63,11 @@ bool GazeboMultipleWorldsServer::Start(int argc, const char** argv)
     std::cerr << "Could not setup server" << std::endl;
     return false;
   }
+
+  WorldManagerPtr wm = CreateWorldManager(mirrorName, allowMirrorControl);
+  assert(wm);
+  SetWorldManager(wm);
+
   running = true;
   return true;
 }
@@ -75,7 +84,7 @@ void GazeboMultipleWorldsServer::Stop()
 
 /////////////////////////////////////////////////////////////////////
 GazeboMultipleWorldsServer::WorldManagerPtr
-GazeboMultipleWorldsServer::createWorldManager
+GazeboMultipleWorldsServer::CreateWorldManager
     (const std::string &mirror_name,
      const bool allowMirrorControl)
 {

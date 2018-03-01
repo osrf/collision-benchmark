@@ -85,12 +85,9 @@ bool GazeboMultipleWorlds::InitServer(const bool loadMirror,
 
   int argc = 1;
   const char * argv = "MultipleWorldsServer";
-  server->Start(argc, &argv);
-
   std::string mirrorName = "";
   if (loadMirror) mirrorName = MirrorName;
-
-  server->Init(mirrorName, allowControlViaMirror);
+  server->Start(mirrorName, allowControlViaMirror, argc, &argv);
 
   GzWorldManager::Ptr worldManager = server->GetWorldManager();
   if (!worldManager) return false;

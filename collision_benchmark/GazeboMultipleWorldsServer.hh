@@ -50,26 +50,36 @@ class GazeboMultipleWorldsServer
                               GazeboPhysicsWorldTypes::Vector3,
                               GazeboPhysicsWorldTypes::Wrench> Super;
 
-  /**
-   * \brief Calls superclass constructor with same parameters
-   */
+  // \brief Calls superclass constructor with same parameters
   public: GazeboMultipleWorldsServer
               (const WorldLoader_M &worldLoaders,
                const WorldLoader::ConstPtr &universalLoader =
                  WorldLoader::ConstPtr(new GazeboWorldLoader())):
           Super(worldLoaders, universalLoader),
           running(false) {}
+  // \brief Destructor
   public: virtual ~GazeboMultipleWorldsServer() { Stop(); }
-  public: virtual bool Start(int argc, const char** argv);
+  // \brief Documentation inherited from parent class
+  public: virtual bool Start(const std::string &mirrorName,
+                             const bool allowMirrorControl,
+                             int argc = 0, const char** argv = NULL);
+
+  // \brief Documentation inherited from parent class
   public: virtual void Stop();
+
+  // \brief Documentation inherited from parent class
   public: virtual bool IsRunning() const;
-  protected: virtual WorldManagerPtr
-             createWorldManager(const std::string &mirror_name = "",
+
+  // \brief Creates the world manager.
+  // \param[in] mirrorName the name of the mirror world, or empty to disable
+  //        creating a mirror world.
+  // \param[in] allowMirrorControl \e activeControl constructor parameter
+  //        for WorldManager.
+  protected: WorldManagerPtr
+             CreateWorldManager(const std::string &mirror_name = "",
                                 const bool allowMirrorControl = false);
+
   private: std::atomic<bool> running;
 };  // class GazeboMultipleWorldsServer
-
-
 }  // namespace
-
 #endif  // COLLISION_BENCHMARK_GAZEBOMULTIPLEWORLDSSERVER_H

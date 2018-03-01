@@ -88,20 +88,8 @@ class MultipleWorldsServer
   // \brief Start the server.
   // The starting of the server may accept command line parameters
   // depending on the implementation.
-  // \param[in] argc commandline parameter
-  // \param[in] argv commandline parameter
-  // \return success of starting the server
-  public: virtual bool Start(int argc = 0, const char** argv = NULL) = 0;
-
-  // \brief Stops the server.
-  public: virtual void Stop() = 0;
-
-  // \brief Checks whether the server is running.
-  public: virtual bool IsRunning() const = 0;
-
-  // \brief Initializes the server.
-  // Should be called before any Load() functions and will create the
-  // world manager.
+  // The world manager and (if desired) the mirror world must be created
+  // after this call.
   // \param[in] mirrorName the name of the mirror world, or empty to disable
   //            creating a mirror world.
   // \param[in] allowMirrorControl if true, the mirror world will be allowed to
@@ -109,12 +97,18 @@ class MultipleWorldsServer
   //        it is mirroring ONE at a time.
   //        This corresponds to the \e activeControl parameter of WorldManager
   //        constructor
-  public: void Init(const std::string &mirrorName = "mirror",
-                    const bool allowMirrorControl = false)
-  {
-    worldManager = createWorldManager(mirrorName, allowMirrorControl);
-    assert(worldManager);
-  }
+  // \param[in] argc commandline parameter
+  // \param[in] argv commandline parameter
+  // \return success of starting the server
+  public: virtual bool Start(const std::string &mirrorName = "mirror",
+                             const bool allowMirrorControl = false,
+                             int argc = 0, const char** argv = NULL) = 0;
+
+  // \brief Stops the server.
+  public: virtual void Stop() = 0;
+
+  // \brief Checks whether the server is running.
+  public: virtual bool IsRunning() const = 0;
 
   // \brief Finalisation method
   public: void Fini()
@@ -123,7 +117,8 @@ class MultipleWorldsServer
   }
 
   // \brief Loads the world file with the different engines.
-  // Generates a world name based on the prefix \e namePrefix.
+  // Generates a world name based on the prefix \e namePrefix,
+  // appending the physics engine name.
   // Name generation is required because multiple
   // worlds loaded from the same world file cannot have the same name.
   //
@@ -228,17 +223,13 @@ class MultipleWorldsServer
     return ret;
   }
 
-  // \brief Returns the world manager used in this MultipleWorldsServer
-  WorldManagerPtr GetWorldManager() { return worldManager; }
+  protected: void SetWorldManager(const WorldManagerPtr &wm)
+             {
+               worldManager = wm;
+             }
 
-  // \brief Creates the world manager.
-  // \param[in] mirrorName the name of the mirror world, or empty to disable
-  //        creating a mirror world.
-  // \param[in] allowMirrorControl \e activeControl constructor parameter
-  //        for WorldManager.
-  protected: virtual WorldManagerPtr
-             createWorldManager(const std::string &mirrorName = "",
-                                const bool allowMirrorControl = false) = 0;
+  // \brief Returns the world manager used in this MultipleWorldsServer
+  public: WorldManagerPtr GetWorldManager() { return worldManager; }
 
   // \brief world loaders for all the physics engines.
   protected: WorldLoader_M worldLoaders;
@@ -247,7 +238,7 @@ class MultipleWorldsServer
   // engine to load from the world file given upon loading.
   protected: WorldLoader::ConstPtr universalLoader;
 
-  protected: WorldManagerPtr worldManager;
+  private: WorldManagerPtr worldManager;
 };  // class MultipleWorldsServer
 }  // namespace
 #endif  // COLLISION_BENCHMARK_MULTIPLEWORLDSSERVER_H
