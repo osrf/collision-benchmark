@@ -20,37 +20,15 @@
  */
 
 #include <collision_benchmark/PhysicsWorldInterfaces.hh>
-#include <collision_benchmark/GazeboPhysicsWorld.hh>
-#include <collision_benchmark/GazeboWorldState.hh>
-#include <collision_benchmark/GazeboTopicForwardingMirror.hh>
-#include <collision_benchmark/boost_std_conversion.hh>
-#include <collision_benchmark/GazeboHelpers.hh>
-#include <collision_benchmark/WorldManager.hh>
-#include <collision_benchmark/GazeboControlServer.hh>
-
 #include <collision_benchmark/GazeboMultipleWorldsServer.hh>
-#include <collision_benchmark/WorldLoader.hh>
-
-#include <collision_benchmark/StartWaiter.hh>
-
-#include <gazebo/gazebo.hh>
-#include <gazebo/physics/physics.hh>
-#include <gazebo/sensors/SensorsIface.hh>
 
 using collision_benchmark::PhysicsWorldBaseInterface;
 using collision_benchmark::PhysicsWorldStateInterface;
-using collision_benchmark::PhysicsWorld;
-using collision_benchmark::GazeboPhysicsWorld;
 using collision_benchmark::GazeboPhysicsWorldTypes;
-using collision_benchmark::MirrorWorld;
-using collision_benchmark::GazeboTopicForwardingMirror;
 using collision_benchmark::WorldManager;
-using collision_benchmark::GazeboControlServer;
-
 using collision_benchmark::WorldLoader;
 using collision_benchmark::MultipleWorldsServer;
 using collision_benchmark::GazeboMultipleWorldsServer;
-using collision_benchmark::StartWaiter;
 
 typedef MultipleWorldsServer<GazeboPhysicsWorldTypes::WorldState,
                              GazeboPhysicsWorldTypes::ModelID,
@@ -69,11 +47,11 @@ typedef WorldManager<GazeboPhysicsWorldTypes::WorldState,
 // the server
 GzMultipleWorldsServer::Ptr g_server;
 
-// Initializes the multiple worlds server
-// \param loadMirror whether to load a mirror world or not
-// \param allowControlViaMirror allow control of the worlds via mirror.
+// \brief Initializes the multiple worlds server
+// \param[in] loadMirror whether to load a MirrorWorld or not
+// \param[in] allowControlViaMirror allow control of the worlds via mirror.
 //        See also constructor parameter \e activeControl in WorldManager.
-// \param enforceContactCalc by default, contacts in Gazebo are only
+// \param[in] enforceContactCalc by default, contacts in Gazebo are only
 //    computed if there is at least one subscriber to the contacts topic.
 //    Use this flag to enforce contacts computation in any case.
 //    See also constructor parameter \e enforceContactComputation in
@@ -108,31 +86,7 @@ void Init(const bool loadMirror,
   g_server->Start(mirrorName, allowControlViaMirror, argc, &fake_argv);
 }
 
-// Runs the multiple worlds server
-bool Run()
-{
-  GzWorldManager::Ptr worldManager = g_server->GetWorldManager();
-  if (!worldManager) return false;
-
-  worldManager->SetPaused(false);
-
-  std::cout << "Starting to update worlds." << std::endl;
-  std::cout << "You can the worlds with gzclient --gui-client-plugin "
-            << "libcollision_benchmark_gui.so" << std::endl;
-  int iter = 0;
-  // TODO: at this point, we can only stop the program with Ctrl+C
-  // which is not great. Find a better way to do this.
-  while (true)
-  {
-    int numSteps = 1;
-    worldManager->Update(numSteps);
-    ++iter;
-  }
-  g_server->Stop();
-  return true;
-}
-
-/////////////////////////////////////////////////
+// \brief main method
 int main(int argc, char **argv)
 {
   // Add some world files to be loaded.
@@ -188,10 +142,35 @@ int main(int argc, char **argv)
     }
   }
 
-  if (!Run())
+  // get the world manager
+  GzWorldManager::Ptr worldManager = g_server->GetWorldManager();
+  assert(worldManager);
+
+  // Set the paused state of the worlds. We will for now pause the
+  // worlds and you can un-pause them using gzclient
+  // (unless you set allowControlViaMirror to false, then it won't work)
+  worldManager->SetPaused(true);
+
+  // print a status on screen so that we know that the server is running
+  // and we can now start the client.
+  std::cout << "Starting to update worlds." << std::endl;
+  std::cout << "You can the worlds with gzclient --gui-client-plugin "
+            << "libcollision_benchmark_gui.so" << std::endl;
+
+  // Main loop is an endless loop here for demonstration purposes,
+  // but you can use any abort criterion here.
+  int iter = 0;
+  while (true)
   {
-    std::cerr << "Could not run the multiple worlds server" << std::endl;
-    return 1;
+    int numSteps = 1;
+    worldManager->Update(numSteps);
+    ++iter;
   }
+
+  // If you add a proper exit criterion for the main loop and the
+  // code here is actually executed, you can stop the server here.
+  // However GazeboMultipleWorldsServer stops itself in its destructor
+  // too so in this particular case, we don't need to to this.
+  g_server->Stop();
   return 0;
 }
