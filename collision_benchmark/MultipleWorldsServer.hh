@@ -22,7 +22,7 @@
 
 #include <collision_benchmark/MirrorWorld.hh>
 
-#include <collision_benchmark/PhysicsWorld.hh>
+#include <collision_benchmark/PhysicsWorldInterfaces.hh>
 #include <collision_benchmark/WorldManager.hh>
 #include <collision_benchmark/WorldLoader.hh>
 #include <collision_benchmark/ControlServer.hh>
@@ -70,38 +70,53 @@ class MultipleWorldsServer
   // the world loader assigned to it.
   public: typedef std::map<std::string, WorldLoader::ConstPtr> WorldLoader_M;
 
-  // \param _worldLoaders world loaders for all the physics engines.
-  // \param _universalLoader a loader which will automatically choose the
-  //    engine to load from the world file given upon loading. nullptr if
-  //    no such loader specified.
-  public: MultipleWorldsServer(const WorldLoader_M &_worldLoaders,
-                               const WorldLoader::ConstPtr &_universalLoader =
+  // \param wldLoaders world loaders for all the physics engines.
+  // \param uniLoader a loader which will automatically choose the
+  //    engine to load from the world file given upon loading. Set to nullptr if
+  //    no such loader specified (default).
+  public: MultipleWorldsServer(const WorldLoader_M &wldLoaders,
+                               const WorldLoader::ConstPtr &uniLoader =
                                      nullptr):
-          worldLoaders(_worldLoaders),
-          universalLoader(_universalLoader) {}
+          worldLoaders(wldLoaders),
+          universalLoader(uniLoader) {}
+
+  // Destructor.
+  // Does not call stop() because it is virtual, so make sure to stop
+  // the server separately (or in subclasses) before destroying.
   public: virtual ~MultipleWorldsServer() { Fini(); }
 
-  // Start the server. Starting of the server may accept
-  // command line parameters depending on the implementation.
+  // \brief Start the server.
+  // The starting of the server may accept command line parameters
+  // depending on the implementation.
+  // \param[in] argc commandline parameter
+  // \param[in] argv commandline parameter
   // \return success of starting the server
   public: virtual bool Start(int argc = 0, const char** argv = NULL) = 0;
-  public: virtual void Stop() = 0;
-  public: virtual bool isRunning() const = 0;
 
-  // Initializes the server. Should be called before any Load()
-  // functions and will create the world manager.
-  // \param mirror_name the name of the mirror world, or empty to disable
-  //        creating a mirror world.
-  // \param allowMirrorControl if true, the mirror world will be allowed to
-  //        serve as control world to control all underlying worlds, while
-  //        it is mirroring one at a time.
-  public: void Init(const std::string &mirror_name = "mirror",
-                   const bool allowMirrorControl = false)
+  // \brief Stops the server.
+  public: virtual void Stop() = 0;
+
+  // \brief Checks whether the server is running.
+  public: virtual bool IsRunning() const = 0;
+
+  // \brief Initializes the server.
+  // Should be called before any Load() functions and will create the
+  // world manager.
+  // \param[in] mirrorName the name of the mirror world, or empty to disable
+  //            creating a mirror world.
+  // \param[in] allowMirrorControl if true, the mirror world will be allowed to
+  //        serve as control world to control ALL underlying worlds, while
+  //        it is mirroring ONE at a time.
+  //        This corresponds to the \e activeControl parameter of WorldManager
+  //        constructor
+  public: void Init(const std::string &mirrorName = "mirror",
+                    const bool allowMirrorControl = false)
   {
-    worldManager = createWorldManager(mirror_name, allowMirrorControl);
+    worldManager = createWorldManager(mirrorName, allowMirrorControl);
     assert(worldManager);
   }
 
+  // \brief Finalisation method
   public: void Fini()
   {
     worldManager.reset();
@@ -109,13 +124,16 @@ class MultipleWorldsServer
 
   // \brief Loads the world file with the different engines.
   // Generates a world name based on the prefix \e namePrefix.
+  // Name generation is required because multiple
+  // worlds loaded from the same world file cannot have the same name.
+  //
   // This will create several worlds (one for each engine) which are
   // added to the WorldManager.
-  // \param worldfile the filename the filename
-  // \param engines the physics engines (identified by name) to use.
-  // \param namePrefix The name of the world will be generated
-  //  using this prefix to the name. This is required because multiple
-  //  worlds loaded from the same world file cannot have the same name.
+  //
+  // \param[in] worldfile the filename the filename
+  // \param[in] engines the physics engines (identified by name) to use.
+  // \param[in] namePrefix The name of the world will be generated
+  //    using this prefix to the name.
   // \return number of engines which were successfully loaded
   public: int Load(const std::string &worldfile,
                    const std::vector<std::string>& engines,
@@ -145,9 +163,9 @@ class MultipleWorldsServer
   // \brief Loads the world file with the given engine.
   // This will create one new world using this engine which will be
   // added to the WorldManager.
-  // \param worldfile the filename the filename
-  // \param engine the physics engine (identified by name) to use.
-  // \param worldname name to use for the world. If empty, will use the
+  // \param[in] worldfile the filename the filename
+  // \param[in] engine the physics engine (identified by name) to use.
+  // \param[in] worldname name to use for the world. If empty, will use the
   //    name specified in the file.
   // \retval >= 0 on success, the index at which this world can be accessed in
   //    the world manager.
@@ -183,13 +201,13 @@ class MultipleWorldsServer
   // \brief Loads the world file and determines the engine to use from the file.
   // This will create one new worlds using the engine determined
   // from the file. The world will be added to the WorldManager.
-  // \param worldfile the filename the filename
-  // \param worldname name to use for the world. If empty, will use the
+  // \param[in] worldfile the filename the filename
+  // \param[in] worldname name to use for the world. If empty, will use the
   //    name specified in the file.
   // \retval >0 success, and index this world can be accessed at in the
   //    world manager.
-  // \retval -1 f there is no world loader which can determine the
-  //    engine from the file
+  // \retval -1 if there is no world loader which can determine the
+  //    engine from the file (see also contructor parameter \e uniLoader)
   // \retval -2 if the loader failed to the world
   // \retval -3 world with this name already exists
   public: int AutoLoad(const std::string &worldfile,
@@ -210,22 +228,22 @@ class MultipleWorldsServer
     return ret;
   }
 
+  // \brief Returns the world manager used in this MultipleWorldsServer
   WorldManagerPtr GetWorldManager() { return worldManager; }
 
-  // creates the world manager.
-  // \param mirror_name the name of the mirror world, or empty to disable
+  // \brief Creates the world manager.
+  // \param[in] mirrorName the name of the mirror world, or empty to disable
   //        creating a mirror world.
-  // \param allowMirrorControl if true, the mirror world will be allowed to
-  //        serve as control world to control all underlying worlds, while
-  //        it is mirroring one at a time.
+  // \param[in] allowMirrorControl \e activeControl constructor parameter
+  //        for WorldManager.
   protected: virtual WorldManagerPtr
-             createWorldManager(const std::string &mirror_name = "",
+             createWorldManager(const std::string &mirrorName = "",
                                 const bool allowMirrorControl = false) = 0;
 
-  // world loaders for all the physics engines.
+  // \brief world loaders for all the physics engines.
   protected: WorldLoader_M worldLoaders;
 
-  // A loader which will automatically choose the
+  // \brief A loader which will automatically choose the
   // engine to load from the world file given upon loading.
   protected: WorldLoader::ConstPtr universalLoader;
 

@@ -22,6 +22,7 @@
 
 #include <collision_benchmark/MultipleWorldsServer.hh>
 #include <collision_benchmark/GazeboPhysicsWorld.hh>
+#include <collision_benchmark/GazeboWorldLoader.hh>
 
 #include <gazebo/physics/WorldState.hh>
 #include <ignition/math/Vector3.hh>
@@ -49,15 +50,19 @@ class GazeboMultipleWorldsServer
                               GazeboPhysicsWorldTypes::Vector3,
                               GazeboPhysicsWorldTypes::Wrench> Super;
 
-  public: GazeboMultipleWorldsServer(const WorldLoader_M &_worldLoaders,
-                               const WorldLoader::ConstPtr &_universalLoader =
-                                  nullptr):
-          Super(_worldLoaders, _universalLoader),
+  /**
+   * \brief Calls superclass constructor with same parameters
+   */
+  public: GazeboMultipleWorldsServer
+              (const WorldLoader_M &worldLoaders,
+               const WorldLoader::ConstPtr &universalLoader =
+                 WorldLoader::ConstPtr(new GazeboWorldLoader())):
+          Super(worldLoaders, universalLoader),
           running(false) {}
   public: virtual ~GazeboMultipleWorldsServer() { Stop(); }
   public: virtual bool Start(int argc, const char** argv);
   public: virtual void Stop();
-  public: virtual bool isRunning() const;
+  public: virtual bool IsRunning() const;
   protected: virtual WorldManagerPtr
              createWorldManager(const std::string &mirror_name = "",
                                 const bool allowMirrorControl = false);

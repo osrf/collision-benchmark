@@ -21,7 +21,7 @@
 #ifndef COLLISION_BENCHMARK_MIRRORWORLD_H
 #define COLLISION_BENCHMARK_MIRRORWORLD_H
 
-#include <collision_benchmark/PhysicsWorld.hh>
+#include <collision_benchmark/PhysicsWorldInterfaces.hh>
 #include <mutex>
 #include <string>
 
@@ -31,13 +31,12 @@ namespace collision_benchmark
  * \brief World which can be set to mirror a PhysicsWorld.
  *
  * The world which mirrors another world is called the *mirror world*.
- * Because it is only a mirror to the other *original* world,
- * manipulation of the original world should not be possible via this interface.
- * It is only possible to view the original world in the mirror.
  *
  * The mirror can be useful for scenarios such as visualization of a world,
- * in which the mirror world is the one used for displaying the original world;
- * it can be switched to display a different world.
+ * in which the mirror world is the one being visualized.
+ * When the mirror world is switched to mirror a different world, visualization
+ * should reflect this switch seamlessly (subclasses may need to consider this
+ * in NotifyOriginalWorldChange()).
  *
  * This is just a basic interface which can have a variety of implementations.
  *
@@ -72,8 +71,8 @@ class MirrorWorld
              // Therefore, as we don't know what excatly is done in
              // the implementation of NotifyOriginalWorldChange, we can't
              // have a lock in place while calling it, even if it is recursvie.
-             // Hence lock it only around the actual access to the local
-             // variable.
+             // Hence lock it only around the actual access to the
+             // originalWorld_.
              std::lock_guard<std::mutex> lock(originalWorldMutex);
              originalWorld = _originalWorld;
            }

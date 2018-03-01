@@ -15,7 +15,7 @@
  *
  */
 #include <collision_benchmark/GazeboWorldLoader.hh>
-#include <collision_benchmark/PhysicsWorld.hh>
+#include <collision_benchmark/PhysicsWorldInterfaces.hh>
 #include <collision_benchmark/GazeboPhysicsWorld.hh>
 #include <collision_benchmark/GazeboStateCompare.hh>
 #include <collision_benchmark/GazeboHelpers.hh>

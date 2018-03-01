@@ -21,7 +21,7 @@
 #ifndef COLLISION_BENCHMARK_WORLDMANAGER_H
 #define COLLISION_BENCHMARK_WORLDMANAGER_H
 
-#include <collision_benchmark/PhysicsWorld.hh>
+#include <collision_benchmark/PhysicsWorldInterfaces.hh>
 #include <collision_benchmark/MirrorWorld.hh>
 #include <collision_benchmark/ControlServer.hh>
 #include <collision_benchmark/BasicTypes.hh>
@@ -110,28 +110,28 @@ class WorldManager
   public: typedef typename ControlServer<ModelID>::Ptr ControlServerPtr;
 
   /// Constructor.
-  /// \param _mirrorWorld the main mirror world (the one which will reflect
+  /// \param mWorld the main mirror world (the one which will reflect
   ///   the original). Does not need to be set to mirror any particular world
   ///     yet, will automatically be set to mirror the first world added with
   ///     AddPhysicsWorld().
-  /// \param _controlServer server which receives control commands
+  /// \param ctrlServer server which receives control commands
   ///     for the world(s). If NULL, worlds cannot be controlled.
-  /// \param _activeControl if true, the control server \e _controlServer will
+  /// \param activeControl if true, the control server \e ctrlServer will
   ///        allow all functions incl. the onew which manipulate the world,
   ///        itself, such as adding models, changing model poses, changing
   ///        gravity etc. If false, only basic controls for passively viewing
   ///        the world are allowed.
-  public: WorldManager(const MirrorWorldPtr &_mirrorWorld = MirrorWorldPtr(),
-                       const ControlServerPtr &_controlServer
+  public: WorldManager(const MirrorWorldPtr &mWorld = MirrorWorldPtr(),
+                       const ControlServerPtr &ctrlServer
                            = ControlServerPtr(),
-                       const bool _activeControl = true):
+                       const bool activeControl = true):
             mirroredWorldIdx(-1),
-            controlServer(_controlServer)
+            controlServer(ctrlServer)
   {
-    this->SetMirrorWorld(_mirrorWorld);
+    this->SetMirrorWorld(mWorld);
     if (this->controlServer)
     {
-      if (_activeControl)
+      if (activeControl)
       {
         this->controlServer->RegisterPauseCallback
           (std::bind(&Self::NotifyPause, this, std::placeholders::_1));

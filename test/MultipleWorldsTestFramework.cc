@@ -15,7 +15,7 @@
  *
  */
 #include <test/MultipleWorldsTestFramework.hh>
-#include <collision_benchmark/PhysicsWorld.hh>
+#include <collision_benchmark/PhysicsWorldInterfaces.hh>
 #include <collision_benchmark/MirrorWorld.hh>
 #include <collision_benchmark/BasicTypes.hh>
 

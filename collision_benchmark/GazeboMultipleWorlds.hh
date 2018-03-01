@@ -20,7 +20,7 @@
 #ifndef COLLISION_BENCHMARK_GAZEBOMULTIPLEWORLDS_H
 #define COLLISION_BENCHMARK_GAZEBOMULTIPLEWORLDS_H
 
-#include <collision_benchmark/PhysicsWorld.hh>
+#include <collision_benchmark/PhysicsWorldInterfaces.hh>
 #include <collision_benchmark/GazeboPhysicsWorld.hh>
 #include <collision_benchmark/GazeboWorldState.hh>
 #include <collision_benchmark/WorldManager.hh>

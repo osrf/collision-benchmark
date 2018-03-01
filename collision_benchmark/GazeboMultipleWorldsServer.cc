@@ -29,7 +29,7 @@
 using collision_benchmark::GazeboMultipleWorldsServer;
 
 /////////////////////////////////////////////////////////////////////
-bool GazeboMultipleWorldsServer::isRunning() const
+bool GazeboMultipleWorldsServer::IsRunning() const
 {
   return running;
 }

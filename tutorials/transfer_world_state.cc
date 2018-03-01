@@ -19,7 +19,7 @@
  * Date: January 2017
  */
 
-#include <collision_benchmark/PhysicsWorld.hh>
+#include <collision_benchmark/PhysicsWorldInterfaces.hh>
 #include <collision_benchmark/GazeboPhysicsWorld.hh>
 #include <collision_benchmark/GazeboStateCompare.hh>
 
@@ -30,7 +30,7 @@ using collision_benchmark::PhysicsWorld;
 using collision_benchmark::GazeboPhysicsWorld;
 using collision_benchmark::GazeboStateCompare;
 
-// take command line argument
+// fake command line argument
 const char * g_fakeProgramName="tutorial";
 void StartGzServer()
 {
@@ -72,21 +72,28 @@ int main(int argc, char** argv)
   // Create this for convenience so you don't have to type the full
   // template type each time.
   typedef collision_benchmark::PhysicsWorldStateInterface
-            < gazebo::physics::WorldState > GzPhysicsWorld;
+            < gazebo::physics::WorldState > GzPhysicsWorldStateInterface;
 
   // two worlds with the full interface of collision_engine::PhysicsEngineWorld.
+  // (only required for instantiating other interfaces next)
   GazeboPhysicsWorld::Ptr gazeboWorld1(new GazeboPhysicsWorld());
   GazeboPhysicsWorld::Ptr gazeboWorld2(new GazeboPhysicsWorld());
 
-  // pointers to access the worlds via the GzPhysicsWorld interface depending
+  // pointers to access the worlds via the GzPhysicsWorldStateInterface interface depending
   // only on the gazebo state.
-  GzPhysicsWorld::Ptr gzWorld1(gazeboWorld1);
-  GzPhysicsWorld::Ptr gzWorld2(gazeboWorld2);
+  GzPhysicsWorldStateInterface::Ptr gzStateWorld1(gazeboWorld1);
+  GzPhysicsWorldStateInterface::Ptr gzStateWorld2(gazeboWorld2);
 
   // pointers to access the worlds via the basic interface
   // PhysicsWorldBaseInterface.
   PhysicsWorldBaseInterface::Ptr world1(gazeboWorld1);
   PhysicsWorldBaseInterface::Ptr world2(gazeboWorld2);
+
+  //////////////////////////////////////
+  // From here on, code only depends on
+  // PhysicsWorldBaseInterface and
+  // GzPhysicsWorldStateInterface
+  /////////////////////////////////////
 
   // Load the empty world.
   //
@@ -124,7 +131,6 @@ int main(int argc, char** argv)
     return 1;
   }
 
-
   // print a messsage to notify you that you can now start the client
   // to view the world.
   std::cout << "You may now start gzclient to view the first world. "
@@ -145,9 +151,9 @@ int main(int argc, char** argv)
           << std::endl;
 
       // get the rubble world state
-      gazebo::physics::WorldState rubbleState = gzWorld2->GetWorldState();
+      gazebo::physics::WorldState rubbleState = gzStateWorld2->GetWorldState();
       // set the first world to the same state
-      gzWorld1->SetWorldState(rubbleState);
+      gzStateWorld1->SetWorldState(rubbleState);
 
       // do a test: the states of both worlds should be the same,
       // or something went wrong!
@@ -155,7 +161,7 @@ int main(int argc, char** argv)
       if (doTestComparison)
       {
         // First get the new state of the first world:
-        gazebo::physics::WorldState newState1 = gzWorld1->GetWorldState();
+        gazebo::physics::WorldState newState1 = gzStateWorld1->GetWorldState();
         // Now, set the tolerances we want to use for comparing.
         // We will just use the default tolerances.
         GazeboStateCompare::Tolerances t =

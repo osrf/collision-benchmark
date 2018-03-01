@@ -20,7 +20,7 @@
  */
 
 #include <collision_benchmark/GazeboWorldLoader.hh>
-#include <collision_benchmark/PhysicsWorld.hh>
+#include <collision_benchmark/PhysicsWorldInterfaces.hh>
 #include <collision_benchmark/GazeboPhysicsWorld.hh>
 #include <collision_benchmark/GazeboWorldState.hh>
 #include <collision_benchmark/GazeboTopicForwardingMirror.hh>
@@ -83,6 +83,14 @@ void LoopIter(int iter)
 }
 
 // Initializes the multiple worlds server
+// \param loadMirror whether to load a mirror world or not
+// \param allowControlViaMirror allow control of the worlds via mirror.
+//        See also constructor parameter \e activeControl in WorldManager.
+// \param enforceContactCalc by default, contacts in Gazebo are only
+//    computed if there is at least one subscriber to the contacts topic.
+//    Use this flag to enforce contacts computation in any case.
+//    See also constructor parameter \e enforceContactComputation in
+//    GazeboPhysicsWorld.
 bool Init(const bool loadMirror,
           const bool allowControlViaMirror,
           const bool enforceContactCalc)
