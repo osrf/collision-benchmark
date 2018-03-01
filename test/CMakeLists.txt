@@ -2,9 +2,7 @@ cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 
-#############################################
-# testing
-#############################################
+set(ENABLE_TEST_INSTALL false)
 
 # Compile the GUI library for the "colliding shapes test".
 # When using a different folder for the header file, must to
@@ -16,7 +14,7 @@ add_library(collision_benchmark_test_gui SHARED
     CollidingShapesParams.cc
 )
 target_link_libraries(collision_benchmark_test_gui collision_benchmark_msgs)
-add_dependencies(tests collision_benchmark_test_gui)
+# add_dependencies(tests collision_benchmark_test_gui)
 
 QT5_WRAP_CPP(StepGui_MOC StepGui.hh)
 add_library(collision_benchmark_step_gui SHARED
@@ -24,7 +22,7 @@ add_library(collision_benchmark_step_gui SHARED
 )
 target_link_libraries(collision_benchmark_step_gui
   ${dependencies_LIBRARIES})
-add_dependencies(tests collision_benchmark_step_gui)
+# add_dependencies(tests collision_benchmark_step_gui)
 
 
 # compile testing libraries and executables
@@ -53,9 +51,10 @@ endif()
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
 # Add googletest directly to our build. This defines
-# the gtest and gtest_main targets, but doesn't install them.
-set(INSTALL_GTEST OFF CACHE INTERNAL "Enable installation of googletest.")
-set(INSTALL_GMOCK OFF CACHE INTERNAL "Enable installation of googlemock.")
+# the gtest and gtest_main targets. Installation of the targets
+# can be switch on or off with the flags.
+set(INSTALL_GTEST ${ENABLE_TEST_INSTALL} CACHE INTERNAL "Enable installation of googletest.")
+set(INSTALL_GMOCK ${ENABLE_TEST_INSTALL} CACHE INTERNAL "Enable installation of googlemock.")
 add_subdirectory(${CMAKE_BINARY_DIR}/googletest-src
                  ${CMAKE_BINARY_DIR}/googletest-build)
 
@@ -69,7 +68,11 @@ endif()
 # names of both gtest libraries for linking
 set(GTEST_BOTH_LIBRARIES gtest gtest_main)
 
-set(TEST_LIB_SRCS
+set (collision_benchmark_test_HEADERS
+  MultipleWorldsTestFramework.hh
+)
+
+set(collision_benchmark_test_SRCS
     TestUtils.cc
     MultipleWorldsTestFramework.cc
     StaticTestFramework.cc
@@ -77,14 +80,14 @@ set(TEST_LIB_SRCS
     CollidingShapesTestFramework.cc
     CollidingShapesParams.cc)
 
-add_library(collision_benchmark_test EXCLUDE_FROM_ALL ${TEST_LIB_SRCS})
+add_library(collision_benchmark_test
+  EXCLUDE_FROM_ALL ${collision_benchmark_test_SRCS})
 target_link_libraries(collision_benchmark_test
   collision_benchmark ${GTEST_BOTH_LIBRARIES})
 add_test(MultipleWorldsTest collision_benchmark_test)
-add_dependencies(tests collision_benchmark_test)
+#add_dependencies(tests collision_benchmark_test)
 
-add_executable(colliding_shapes_test
-  colliding_shapes_test.cc)
+add_executable(colliding_shapes_test colliding_shapes_test.cc)
 target_link_libraries(colliding_shapes_test collision_benchmark
                                             collision_benchmark_test
                                             collision_benchmark_msgs)
@@ -113,3 +116,19 @@ target_link_libraries(contacts_flicker_test
   collision_benchmark collision_benchmark_test ${GTEST_BOTH_LIBRARIES})
 add_test(StaticTest contacts_flicker_test)
 add_dependencies(tests contacts_flicker_test)
+
+#############################
+# Installation
+#############################
+if (ENABLE_TEST_INSTALL)
+  install (FILES ${collision_benchmark_test_HEADERS}
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/include/collision_benchmark/test/)
+
+  install (TARGETS
+      collision_benchmark_test
+      collision_benchmark_test_gui
+      collision_benchmark_step_gui
+    LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+    RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+endif (ENABLE_TEST_INSTALL)
