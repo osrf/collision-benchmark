@@ -122,6 +122,7 @@ target_link_libraries(collision_benchmark_msgs ${PROTOBUF_LIBRARY})
 #############################################
 add_subdirectory(tutorials)
 add_subdirectory(test)
+add_subdirectory(mytest)
 
 #############################################
 # installing

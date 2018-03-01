@@ -82,7 +82,8 @@ set(collision_benchmark_test_SRCS
     CollidingShapesParams.cc)
 
 add_library(collision_benchmark_test
-  EXCLUDE_FROM_ALL ${collision_benchmark_test_SRCS})
+  # EXCLUDE_FROM_ALL
+  ${collision_benchmark_test_SRCS})
 target_link_libraries(collision_benchmark_test
   collision_benchmark ${GTEST_BOTH_LIBRARIES})
 add_test(MultipleWorldsTest collision_benchmark_test)

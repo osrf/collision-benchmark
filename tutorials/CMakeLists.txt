@@ -18,6 +18,6 @@ add_dependencies(tutorials multiple_worlds)
 add_executable(gtest_test EXCLUDE_FROM_ALL gtest_TEST.cc)
 target_link_libraries(gtest_test
   collision_benchmark collision_benchmark_test gtest gmock)
-#add_test(MultipleWorldsTest gtest_test)
+#add_test(MyGtestTest gtest_test)
 #add_dependencies(tests gtest_test)
 add_dependencies(tutorials gtest_test)
