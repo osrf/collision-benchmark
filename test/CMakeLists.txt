@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 
-set(ENABLE_TEST_INSTALL false)
+set(ENABLE_TEST_INSTALL true)
 
 # Compile the GUI library for the "colliding shapes test".
 # When using a different folder for the header file, must to
@@ -69,6 +69,7 @@ endif()
 set(GTEST_BOTH_LIBRARIES gtest gtest_main)
 
 set (collision_benchmark_test_HEADERS
+  BasicTestFramework.hh
   MultipleWorldsTestFramework.hh
 )
 
