@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 
-set(ENABLE_TEST_INSTALL true)
+set(ENABLE_TEST_INSTALL false)
 
 # Compile the GUI library for the "colliding shapes test".
 # When using a different folder for the header file, must to

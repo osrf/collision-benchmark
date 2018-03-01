@@ -92,10 +92,10 @@ class MultipleWorldsTestFramework : public ::testing::Test
 
   // \brief Initializes the framework and creates the world manager, but no
   // worlds are added to it.
-  // \param[in] interactiveMode load up gzclient or not
-  // \param[in] additionalGuis additional GUI plugins to load with gzclient
   // Throws gtest assertions so needs to be called from top-level
   // test function (nested function calls will not work correctly)
+  // \param[in] interactiveMode load up gzclient or not
+  // \param[in] additionalGuis additional GUI plugins to load with gzclient
   void Init(const bool interactiveMode,
             const std::vector<std::string> &additionalGuis = {});
 
@@ -106,6 +106,9 @@ class MultipleWorldsTestFramework : public ::testing::Test
   //
   // Throws gtest assertions so needs to be called from top-level
   // test function (nested function calls will not work correctly)
+  // \param[in] engines the physics engines to load
+  // \param[in] interactiveMode load up gzclient or not
+  // \param[in] additionalGuis additional GUI plugins to load with gzclient
   void InitMultipleEngines(const std::vector<std::string>& engines,
                            const bool interactiveMode,
                            const std::vector<std::string> &additionalGuis = {});
@@ -117,6 +120,11 @@ class MultipleWorldsTestFramework : public ::testing::Test
   //
   // Throws gtest assertions so needs to be called from top-level
   // test function (nested function calls will not work correctly)
+  //
+  // \param[in] engine the physics engine to load
+  // \param[in] numWorlds number of empty worlds to load up with the engine
+  // \param[in] interactiveMode load up gzclient or not
+  // \param[in] additionalGuis additional GUI plugins to load with gzclient
   void InitOneEngine(const std::string &engine,
                      const unsigned int numWorlds,
                      const bool interactiveMode,
@@ -131,6 +139,9 @@ class MultipleWorldsTestFramework : public ::testing::Test
   //
   // Throws gtest assertions so needs to be called from top-level
   // test function (nested function calls will not work correctly)
+  //
+  // \param[in] engine the physics engine to load
+  // \param[in] numWorlds number of empty worlds to load up with the engine
   void LoadOneEngine(const std::string &engine,
                      const unsigned int numWorlds);
 
