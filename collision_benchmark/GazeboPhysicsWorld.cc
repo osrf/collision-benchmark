@@ -644,7 +644,7 @@ bool GazeboPhysicsWorld::SetBasicModelState(const ModelID  &_id,
 
 //////////////////////////////////////////////////////////////////////////////
 bool GazeboPhysicsWorld::GetBasicModelState(const ModelID  &_id,
-                                            BasicState &_state)
+                                            BasicState &_state) const
 {
   gazebo::physics::ModelPtr m = world->ModelByName(_id);
   if (!m)

@@ -218,7 +218,7 @@ class GazeboPhysicsWorld
                                           const BasicState &state);
 
   public: virtual bool GetBasicModelState(const ModelID &id,
-                                          BasicState &state);
+                                          BasicState &state) const;
 
 
   // Returns the absolute path which is used to temporarily write mesh files to.

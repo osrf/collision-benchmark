@@ -338,7 +338,7 @@ class PhysicsWorldModelInterface
   /// Gets the pose and scale of a model.
   /// \retval false the model was not in the world
   public: virtual bool GetBasicModelState(const ModelID &id,
-                                          BasicState &state) = 0;
+                                          BasicState &state) const = 0;
 
   /// \brief Get axis aligned bounding box of the model.
   /// \param[out] inLocalFrame true if the AABB is expressed in the

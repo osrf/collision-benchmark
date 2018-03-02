@@ -32,8 +32,15 @@
 
 namespace collision_benchmark
 {
-// simple 3D vector data with no functionality,
-// just for portability of data
+
+/**
+ * \brief Simple 3D vector data with no functionality.
+ * Just for portability of data.
+ *
+ * TODO the values should be returned by getters
+ * \author Jennifer Buehler
+ * \date 2016
+ */
 class Vector3
 {
   // helper struct to allow external boost serialization
@@ -53,8 +60,14 @@ class Vector3
   public: double x, y, z;
 };
 
-// simple quaternion data with no functionality,
-// just for portability of data
+/**
+ * \brief Simple quaternion data with no functionality.
+ * Just for portability of data
+ *
+ * TODO the values should be returned by getters
+ * \author Jennifer Buehler
+ * \date 2016
+ */
 class Quaternion: public Vector3
 {
   // helper struct to allow external boost serialization
@@ -76,9 +89,16 @@ class Quaternion: public Vector3
 };
 
 /**
- * \brief Simple state of an object
- * Not all values are mandatory.
- * If disabled, assumes current values are kept.
+ * \brief Very simple state of an object
+ *
+ * Not all values (position, rotation, scale) are mandatory.
+ *
+ * If this state is used to set a model pose and position, rotation or
+ * scale is disabled in this class, it assumes the current model values
+ * are kept.
+ *
+ * TODO the values should be returned by getters
+ *
  * \author Jennifer Buehler
  * \date 2017
  */
