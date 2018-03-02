@@ -101,7 +101,8 @@ void StaticTestFramework::AABBTestWorldsAgreement(const std::string &modelName1,
 
   if (interactive)
   {
-    std::cout << "Check that gzclient is up and then press [Enter] to continue." << std::endl;
+    std::cout << "Check that gzclient is up and then press [Enter] "
+              << "to continue." << std::endl;
     getchar();
   }
 

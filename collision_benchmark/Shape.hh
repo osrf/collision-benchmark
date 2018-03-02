@@ -47,7 +47,7 @@ class Shape
   public: typedef ignition::math::Vector3<double> Vector3;
   public: typedef ignition::math::Vector2<double> Vector2;
 
-  public: Shape(const Type &type_):
+  public: explicit Shape(const Type &type_):
           type(type_) {}
   public: Shape(const Shape &o):
           type(o.type),

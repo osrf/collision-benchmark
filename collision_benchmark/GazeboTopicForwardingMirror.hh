@@ -62,7 +62,7 @@ class GazeboTopicForwardingMirror
                 gazebo::physics::World> GazeboPhysicsEngineWorld;
 
     /// Constructor.
-    public:  GazeboTopicForwardingMirror(const std::string &worldname
+    public:  explicit GazeboTopicForwardingMirror(const std::string &worldname
                                           = "default");
     // prohibit copy constructor
     private: GazeboTopicForwardingMirror(const GazeboTopicForwardingMirror &o)
@@ -76,7 +76,7 @@ class GazeboTopicForwardingMirror
                   (const OriginalWorldPtr &_newWorld);
 
     // connect the subscribers to the world name of this topic
-    public: void ConnectOriginalWorld(const std::string origWorldName);
+    public: void ConnectOriginalWorld(const std::string &origWorldName);
 
     public: virtual std::string GetName() const { return worldName; }
 

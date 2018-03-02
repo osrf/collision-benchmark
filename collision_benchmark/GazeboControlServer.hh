@@ -47,7 +47,8 @@ class GazeboControlServer
   public: typedef std::shared_ptr<const GazeboControlServer> ConstPtr;
 
   /// Constructor.
-  public:  GazeboControlServer(const std::string &_worldName="default");
+  public:  explicit GazeboControlServer(const std::string &_worldName
+                                          = "default");
 
   // prohibit copy constructor
   private: GazeboControlServer(const GazeboControlServer &o) {}

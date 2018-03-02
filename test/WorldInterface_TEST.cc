@@ -347,7 +347,8 @@ TEST_F(WorldInterfaceTest, GazeboWorldSaving)
     = std::dynamic_pointer_cast<GazeboPhysicsWorld>(world);
   ASSERT_NE(gzWorld, nullptr) << "Expecting a GazeboPhyscisWorld";
   std::string tempOutputSubdir;
-  std::string tempOutputPath = gzWorld->GetMeshOutputPath(tempOutputSubdir);
+  // std::string tempOutputPath =
+  gzWorld->GetMeshOutputPath(tempOutputSubdir);
 
   boost::filesystem::path expectedMeshLocation =
     boost::filesystem::path(resourceDir) /
@@ -409,7 +410,6 @@ TEST_F(WorldInterfaceTest, GazeboContacts)
     world->Update(1);
     std::vector<GzPhysicsWorld::ContactInfoPtr> contacts1 =
       world->GetContactInfo();
-    contacts1 = world->GetContactInfo();
     if (contacts1.size() > 0)
     {
       std::cout << "World has " << contacts1.size()

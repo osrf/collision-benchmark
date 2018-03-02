@@ -32,7 +32,6 @@ namespace collision_benchmark
 {
 namespace test
 {
-
 namespace msgs
 {
   // forward declaration of message

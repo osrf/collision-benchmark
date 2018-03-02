@@ -79,8 +79,8 @@ int main(int argc, char** argv)
   GazeboPhysicsWorld::Ptr gazeboWorld1(new GazeboPhysicsWorld());
   GazeboPhysicsWorld::Ptr gazeboWorld2(new GazeboPhysicsWorld());
 
-  // pointers to access the worlds via the GzPhysicsWorldStateInterface interface depending
-  // only on the gazebo state.
+  // pointers to access the worlds via the GzPhysicsWorldStateInterface
+  // interface depending only on the gazebo state.
   GzPhysicsWorldStateInterface::Ptr gzStateWorld1(gazeboWorld1);
   GzPhysicsWorldStateInterface::Ptr gzStateWorld2(gazeboWorld2);
 

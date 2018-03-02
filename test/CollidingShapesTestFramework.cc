@@ -87,7 +87,7 @@ bool CollidingShapesTestFramework::Run
 /////////////////////////////////////////////////////////////////////////////
 bool CollidingShapesTestFramework::Run
     (const std::vector<std::string>& physicsEngines,
-     const std::string configFile,
+     const std::string& configFile,
      const float modelsGap,
      const bool modelsGapIsFactor)
 {
@@ -361,7 +361,7 @@ bool CollidingShapesTestFramework::RunImpl
   // perpendicularAngle in the last step
   double lastPerpendicularAngle = 0;
   // step size to move along perpendicular axis
-  const static double perpendicularStepSize = 0.05;
+  static const double perpendicularStepSize = 0.05;
 
   // run the main loop
   while (gzMultiWorld->IsClientRunning())
@@ -406,19 +406,18 @@ bool CollidingShapesTestFramework::RunImpl
         std::lock_guard<std::mutex> lock(this->shapesOnAxisPosMtx);
         if (this->shapesOnAxisPos != shapesOnAxisPrev)
         {
-          double moveDist = (shapesOnAxisPrev - this->shapesOnAxisPos)*sliderStepSize;
+          double moveDist =
+            (shapesOnAxisPrev - this->shapesOnAxisPos) * sliderStepSize;
           this->modelCollider.MoveModelsAlongAxis(moveDist, moveBoth);
           model2MovedAlongAxis += -moveDist;
           shapesOnAxisPrev = this->shapesOnAxisPos;
         }
       }
-      const static double angleThres = 0; // 5 * M_PI/180.0;
+      static const double angleThres = 0;  // 5 * M_PI/180.0;
       if (fabs(lastPerpendicularAngle - this->perpendicularAngle) > angleThres)
       {
-        // std::cout << "Perpenicular angle: " << this->perpendicularAngle << std::endl;
-
         this->modelCollider.RotateModelToPerpendicular(this->perpendicularAngle,
-                                        ignition::math::Vector3d(0,0,0), false);
+                                      ignition::math::Vector3d(0, 0, 0), false);
 
         lastPerpendicularAngle = this->perpendicularAngle;
       }
@@ -428,7 +427,8 @@ bool CollidingShapesTestFramework::RunImpl
         this->modelCollider.MoveModelPerpendicular(moveDist,
                                                    this->perpendicularAngle,
                                                    false);
-        this->perpendicularSteps = 0; // reset
+        // reset
+        this->perpendicularSteps = 0;
       }
       {  // lock scope
         std::lock_guard<std::mutex> lock(this->triggeredSaveConfigMtx);
@@ -444,20 +444,20 @@ bool CollidingShapesTestFramework::RunImpl
           // and/or the slider.
 
           std::lock_guard<std::mutex> lock(this->shapesOnAxisPosMtx);
-          // Amount that model 2 has been moved along the collision axis
-          // with the slider or AutoCollide - this will not count for the
-          // configuration.
-          // (NOTE: presuming moveBoth is false, otherwise we also have
-          // to pass something for model 1)
-          double model1Slide = 0;
-          // model 2 has moved as we displaced it in
-          // ModelCollider::PlaceModels(), and the moves via the shapes axis.
-          double model2Slide = -model2MovedAlongAxis;
 
           // get current state
           BasicState currModelState1, currModelState2;
           if (GetModelStates(currModelState1, currModelState2))
           {
+            // Amount that model 2 has been moved along the collision axis
+            // with the slider or AutoCollide - this will not count for the
+            // configuration.
+            // (NOTE: presuming moveBoth is false, otherwise we also have
+            // to pass something for model 1)
+            double model1Slide = 0;
+            // model 2 has moved as we displaced it in
+            // ModelCollider::PlaceModels(), and the moves via the shapes axis.
+            double model2Slide = -model2MovedAlongAxis;
 
             // revert the sliding that has been done during runtime
             RevertSlide(model1Slide, model2Slide,

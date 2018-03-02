@@ -16,6 +16,12 @@
 */
 #include <collision_benchmark/MathHelpers.hh>
 #include <gazebo/common/Timer.hh>
+#include <utility>
+#include <limits>
+#include <string>
+#include <algorithm>
+#include <vector>
+
 #include "ModelCollider.hh"
 
 using collision_benchmark::ModelCollider;
@@ -261,8 +267,9 @@ bool ModelCollider<WM>::ModelsCollide(bool allWorlds) const
        it = contactWorlds.begin(); it != contactWorlds.end(); ++it)
   {
     PhysicsWorldContactInterfacePtr world = *it;
-    std::vector<typename WorldManagerT::PhysicsWorldContactInterfaceT::ContactInfoPtr>
-      contacts = world->GetContactInfo();
+    std::vector
+      <typename WorldManagerT::PhysicsWorldContactInterfaceT::ContactInfoPtr>
+        contacts = world->GetContactInfo();
     if (!contacts.empty())
     {
       ++modelsColliding;
@@ -293,7 +300,7 @@ class ContactsCluster
   typedef ignition::math::Vector3d IgnVec;
   typedef std::pair<Contact, IgnVec> Pair;
   // constructs a cluster with only one point
-  public: ContactsCluster(const Contact& c)
+  public: explicit ContactsCluster(const Contact& c)
           {
             add(c);
           }
@@ -327,7 +334,7 @@ class ContactsCluster
     IgnVec v = collision_benchmark::ConvIgn<double>(c.position);
     // add point and recompute average
     contacts.push_back(std::make_pair(c, v));
-    IgnVec accum(0,0,0);
+    IgnVec accum(0, 0, 0);
     for (typename std::vector<Pair>::const_iterator it = contacts.begin();
          it != contacts.end(); ++it)
     {
@@ -363,14 +370,11 @@ class ContactsCluster
   }*/
   private: std::vector<Pair> contacts;
   public: IgnVec avg;
-
-}; // end class ContactCluster
-
+};  // end class ContactCluster
 
 template<class Contact>
 double ContactsCluster<Contact>::ToleranceRadius = 0.0;
-
-} // end namespace
+}  // end namespace
 
 //////////////////////////////////////////////////////////////////////////////
 template<class WM>
@@ -402,13 +406,9 @@ ModelCollider<WM>::GetClusteredContacts(const size_t worldIdx,
     // models don't collide
     return std::vector<ignition::math::Vector3d>();
   }
-
-  // temporary for testing, make assert of this soon!
-  if (contactInfo.size() != 1)
-    throw std::runtime_error("Consistency: All contacts between models should be in one ContactInfo");
+  assert(contactInfo.size() == 1);
 
   std::vector<Contact> contacts = contactInfo.front()->contacts;
-
   // std::cout << "Number of contacts: " << contacts.size() << std::endl;
 
   typedef ContactsCluster<Contact> ContactsClusterT;
@@ -427,7 +427,6 @@ ModelCollider<WM>::GetClusteredContacts(const size_t worldIdx,
       ContactsClusterT& cluster = *cit;
       if (cluster.inside(contact))
       {
-        // std::cout << "Adding contact " << contact << " to cluster" << std::endl;
         cluster.add(contact);
         added = true;
         break;
@@ -447,7 +446,6 @@ ModelCollider<WM>::GetClusteredContacts(const size_t worldIdx,
     ContactsClusterT& cluster = *cit;
     ret.push_back(cluster.avg);
   }
-//  std::cout << "Number of clusters: " << clusteredContacts.size() << std::endl;
   return ret;
 }
 
@@ -593,9 +591,9 @@ typename ignition::math::Vector3d
 ModelCollider<WM>::GetAxisPerpendicular(const ignition::math::Vector3d &axis,
                                         const double angle)
 {
-  static const ignition::math::Vector3d unitX(1,0,0);
-  static const ignition::math::Vector3d unitY(0,1,0);
-  static const ignition::math::Vector3d unitZ(0,0,1);
+  static const ignition::math::Vector3d unitX(1, 0, 0);
+  static const ignition::math::Vector3d unitY(0, 1, 0);
+  static const ignition::math::Vector3d unitZ(0, 0, 1);
   static const double dotTolerance = 1e-02;
   const double axisLength = axis.Length();
   ignition::math::Vector3d ret;
@@ -615,7 +613,7 @@ ModelCollider<WM>::GetAxisPerpendicular(const ignition::math::Vector3d &axis,
   {
     // will only get here unless dotTolerance is large or the
     // axis is not long enough. Return any vector in this case.
-    ret.Set(1,0,0);
+    ret.Set(1, 0, 0);
     std::cout << "WARNING: no origin axis found suitable. "
               << __FILE__ << std::endl;
   }

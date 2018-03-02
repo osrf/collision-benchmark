@@ -92,14 +92,15 @@ class StartWaiter
   // waits until enter has been pressed and sets keypressed to true
   private: void WaitForEnter()
   {
-    int key = getchar();
+    // wait for key to be pressed
+    getchar();
     keypressed = true;
   }
 
   // test is paused or not
   private: std::atomic<bool> unpaused;
   private: std::atomic<bool> keypressed;
-  private: std::vector<std::function<bool(void)>> unpausedCallbacks;
+  private: std::vector<std::function<bool(void)> > unpausedCallbacks;
 };
 }
 #endif  // COLLISION_BENCHMARK_START_WAITER_HH

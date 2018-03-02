@@ -14,9 +14,8 @@
  * limitations under the License.
  *
 */
-#include "colliding_shapes.pb.h"
 #include <sstream>
-
+#include "colliding_shapes.pb.h"
 #include "CollidingShapesGui.hh"
 #include "CollidingShapesParams.hh"
 

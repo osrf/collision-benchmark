@@ -109,8 +109,10 @@ class GazeboPhysicsWorld
   // \param enforceContactComputation by default, contacts in Gazebo are only
   //  computed if there is at least one subscriber to the contacts topic.
   //  Use this flag to enforce contacts computation in any case.
-  public: GazeboPhysicsWorld(bool enforceContactComputation = false);
-  public: GazeboPhysicsWorld(const GazeboPhysicsWorld &w) {}
+  public: explicit GazeboPhysicsWorld(bool enforceContactComputation = false);
+  public: GazeboPhysicsWorld(const GazeboPhysicsWorld &w):
+             enforceContactComputation(w.enforceContactComputation),
+             paused(w.paused) {}
   public: virtual ~GazeboPhysicsWorld();
 
   public: virtual bool SupportsSDF() const;

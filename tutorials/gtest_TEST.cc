@@ -18,9 +18,9 @@
 #include <collision_benchmark/PrimitiveShape.hh>
 #include <collision_benchmark/BasicTypes.hh>
 
+#include <gazebo/gazebo.hh>
 #include "test/MultipleWorldsTestFramework.hh"
 
-#include <gazebo/gazebo.hh>
 
 using collision_benchmark::Shape;
 using collision_benchmark::PrimitiveShape;
@@ -29,8 +29,8 @@ using collision_benchmark::BasicState;
 /**
  * \brief subclass to create a new test group
  */
-class MyTest:
-  public MultipleWorldsTestFramework
+class MyTest
+  : public MultipleWorldsTestFramework
 {
   public:
 };
@@ -98,7 +98,7 @@ TEST_F(MyTest, ExampleTest)
   BasicState modelState1;
 
   // Loop through all world updates in which model 1 turns numCircle circle(s)
-  for (int i=0; i < numIters; ++i, angle+=angleInc)
+  for (int i =0 ; i < numIters; ++i, angle += angleInc)
   {
     // update the model pose in all worlds
     modelState1.SetPosition(cos(angle), sin(angle), 0);

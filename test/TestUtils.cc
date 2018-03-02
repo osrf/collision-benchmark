@@ -43,7 +43,8 @@ std::atomic<bool> g_keypressed(false);
 ////////////////////////////////////////////////////////////////
 void WaitForEnterImpl()
 {
-  int key = getchar();
+  // wait for keypress
+  getchar();
   g_keypressed = true;
 }
 
@@ -127,8 +128,6 @@ collision_benchmark::GetContactInfo(const std::string &modelName1,
                                     const std::string &worldName,
                                     const GzWorldManager::Ptr &worldManager)
 {
-  std::vector<GzContactInfoPtr> ret;
-
   PhysicsWorldBaseInterface::Ptr w = worldManager->GetWorld(worldName);
   assert(w);
 

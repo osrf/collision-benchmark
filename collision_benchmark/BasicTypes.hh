@@ -32,7 +32,6 @@
 
 namespace collision_benchmark
 {
-
 /**
  * \brief Simple 3D vector data with no functionality.
  * Just for portability of data.
@@ -171,7 +170,5 @@ class BasicState
   public: Vector3 scale;
   private: bool posEnabled, rotEnabled, scaleEnabled;
 };
-
-
 }  // namespace
 #endif  // COLLISION_BENCHMARK_BASICTYPES_H

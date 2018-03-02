@@ -50,7 +50,7 @@ class GazeboWorldLoader: public WorldLoader
   // the SDF of the world.
   // \param _alwaysCalcContacts constructor parameter for
   //        GazeboPhysicsWorld
-  public: GazeboWorldLoader(const bool _alwaysCalcContacts = true);
+  public: explicit GazeboWorldLoader(const bool _alwaysCalcContacts = true);
 
   public: virtual PhysicsWorldBaseInterface::Ptr
           LoadFromSDF(const sdf::ElementPtr &sdf,

@@ -73,7 +73,7 @@ namespace collision_benchmark
   // checks that AABB of model \e modelName is the same in all worlds in
   // \e worldManager and returns the AABBs of the model if it is
   // the same in all worlds.
-  // \param[in] bbTol tolerance for comparison of bounding box sizes. The min/max
+  // \param[in] bbTol tolerance for comparison of bounding box sizes. Min/max
   //    coordinates (per x,y,z) are allowed to vary by this much in the worlds.
   // \return true if models have same AABB in both worlds, false otherwise
   bool GetConsistentAABB(const std::string &modelName,

@@ -174,7 +174,6 @@ class GazeboMultipleWorlds
 
   // \brief flag whether the gzclient is to be loaded to allow interactive mode
   private: bool interactiveMode;
-
 };  // class GazeboMultipleWorlds
 }  // namespace
 #endif  // COLLISION_BENCHMARK_GAZEBOMULTIPLEWORLDS_H

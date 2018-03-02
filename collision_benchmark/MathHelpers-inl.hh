@@ -21,6 +21,7 @@
 
 #include <collision_benchmark/MathHelpers.hh>
 #include <algorithm>
+#include <limits>
 
 //////////////////////////////////////////////////////////////////////////////
 template<typename Float>
@@ -246,8 +247,10 @@ bool collision_benchmark::SegmentsOverlap(const Float min1, const Float max1,
 
   // compute the overlap between both points.
   Float diff;
-  if (min1 < min2) diff = std::min(max1, max2) - min2;
-  else diff = std::min(max2, max1) - min1;
+  if (min1 < min2)
+    diff = std::min(max1, max2) - min2;
+  else
+    diff = std::min(max2, max1) - min1;
 
   static Float zeroEps = 1e-07;
   if (diff <= zeroEps)

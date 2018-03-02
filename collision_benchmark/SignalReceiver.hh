@@ -25,6 +25,7 @@
 #include <string>
 #include <map>
 #include <mutex>
+#include <set>
 
 namespace collision_benchmark
 {

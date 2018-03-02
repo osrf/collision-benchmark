@@ -45,8 +45,7 @@ std::string defaultOutputPath = "";
 /**
  * \brief subclass to create a new test group
  */
-class ContactsFlickerTest:
-  public ContactsFlickerTestFramework
+class ContactsFlickerTest: public ContactsFlickerTestFramework
 {
   public:
 };
@@ -54,9 +53,9 @@ class ContactsFlickerTest:
 /**
  * \brief subclass to create a new test group
  */
-class ContactsFlickerTestWithParam:
-  public ContactsFlickerTestFramework,
-  public testing::WithParamInterface<const char*>
+class ContactsFlickerTestWithParam
+  : public ContactsFlickerTestFramework,
+    public testing::WithParamInterface<const char*>
 {
   public:
 };

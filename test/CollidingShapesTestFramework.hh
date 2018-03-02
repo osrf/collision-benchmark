@@ -35,7 +35,6 @@ namespace collision_benchmark
 {
 namespace test
 {
-
 namespace msgs
 {
   // forward declaration of message
@@ -162,7 +161,7 @@ class CollidingShapesTestFramework
   // \return true on successful run, false if the test could not be started
   //        due to an error.
   public: bool Run(const std::vector<std::string>& physicsEngines,
-                   const std::string configFile,
+                   const std::string& configFile,
                    const float modelsGap = -1,
                    const bool modelsGapIsFactor = true);
 

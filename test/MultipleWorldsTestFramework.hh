@@ -27,6 +27,9 @@
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
 
+#include <string>
+#include <vector>
+
 using collision_benchmark::GazeboPhysicsWorldTypes;
 
 class MultipleWorldsTestFramework : public ::testing::Test

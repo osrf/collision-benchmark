@@ -47,8 +47,8 @@ using collision_benchmark::SignalReceiver;
 
 ////////////////////////////////////////////////////////////////
 ignition::math::Vector3d getClosest(const ignition::math::Vector3d& v,
-                                  const std::vector<ignition::math::Vector3d> c,
-                                  double& dist)
+                                const std::vector<ignition::math::Vector3d>& c,
+                                double& dist)
 {
   if (c.empty())
     throw std::runtime_error("Don't call getClosest() with an empty vector");
@@ -71,8 +71,8 @@ ignition::math::Vector3d getClosest(const ignition::math::Vector3d& v,
 }
 
 ////////////////////////////////////////////////////////////////
-ContactsFlickerTestFramework::ContactsFlickerTestFramework():
-  MultipleWorldsTestFramework()
+ContactsFlickerTestFramework::ContactsFlickerTestFramework()
+  : MultipleWorldsTestFramework()
 {
 }
 
@@ -80,7 +80,6 @@ ContactsFlickerTestFramework::ContactsFlickerTestFramework():
 ContactsFlickerTestFramework::~ContactsFlickerTestFramework()
 {
 }
-
 
 ////////////////////////////////////////////////////////////////
 bool ContactsFlickerTestFramework::SignificantContactDiff(
@@ -113,7 +112,8 @@ bool ContactsFlickerTestFramework::SignificantContactDiff(
     if (dist > contactsMoveTolerance)
     {
       std::cout << "Failed due to point distance " << dist
-                << ". # Clusters: " << contacts1.size() << ", " << contacts2.size() << std::endl;
+                << ". # Clusters: " << contacts1.size() << ", "
+                << contacts2.size() << std::endl;
       return true;
     }
   }
@@ -134,10 +134,10 @@ bool ContactsFlickerTestFramework::CheckClientExit() const
 
 ////////////////////////////////////////////////////////////////
 void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
-                                               const std::string &modelName2,
-                                               const bool interactive,
-                                               const std::string &outputBasePath,
-                                               const std::string &outputSubdir)
+                                              const std::string &modelName2,
+                                              const bool interactive,
+                                              const std::string &outputBasePath,
+                                              const std::string &outputSubdir)
 {
   GzMultipleWorldsServer::Ptr mServer = GetServer();
   ASSERT_NE(mServer.get(), nullptr) << "Could not create and start server";
@@ -166,16 +166,15 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
       gazebo::common::Time::MSleep(100);
     }
     // switch on contacts display and transparent view
-    gazebo::common::Time::Sleep(1);  // XXX TODO do a wait for transport instead of this
+    // XXX TODO do a wait for transport instead of this
+    gazebo::common::Time::Sleep(1);
     gazebo::transport::requestNoReply("mirror",
                                       "show_contact", "all");
     gazebo::transport::requestNoReply("mirror",
                                       "set_transparent", "all");
   }
 
-  int numWorlds = worldManager->GetNumWorlds();
-
-  ignition::math::Vector3d collisionAxis(0,1,0);
+  ignition::math::Vector3d collisionAxis(0, 1, 0);
   // initialize the model collider helper
   bool collInit = this->modelCollider.Init(worldManager, collisionAxis,
                                 modelName1, modelName2);
@@ -268,7 +267,8 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
   // ----------------
 
   // number of outer circles
-  // TODO: This should be determined by the projection of both shapes on the plane
+  // TODO: This should be determined by the projection of both shapes
+  // on the plane
   const int numOuterCircles = 40;
   const int numInnerCircles = 1;
   // Radius increase of outer circle per iteration
@@ -328,7 +328,7 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
         return;
       }
       // rotate the model to the right place on the circle
-      const static double outerAngleStep
+      static const double outerAngleStep
         = 360.0/numOuterCircleSubdivisions * M_PI/180;
       double outerAngle = ocSubDiv * outerAngleStep;
 
@@ -388,7 +388,7 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
             if (interactive && slowDown)
               gazebo::common::Time::MSleep(slowDownMS);
             // first rotate the model to the right place on the circle
-            const static double innerAngleStep
+            static const double innerAngleStep
                 = 360.0/numInnerCircleSubdivisions * M_PI/180;
             double innerAngle = icSubDiv * innerAngleStep;
 
@@ -495,10 +495,10 @@ void ContactsFlickerTestFramework::FlickerTest(const std::string &modelName1,
         for (int oriSubDiv = oriSubDivStart;
              oriSubDiv < numOriSubdivisions; ++oriSubDiv)
         {
-          const static double oriAngleStep
-            = 360.0/numOriSubdivisions * M_PI/180;
-          double oriAngle = oriSubDiv * oriAngleStep;
-          double f = oriSubDiv/(double)numOriSubdivisions * 2*M_PI;
+          // static const double oriAngleStep
+          //  = 360.0/numOriSubdivisions * M_PI/180;
+          // double oriAngle = oriSubDiv * oriAngleStep;
+          double f = oriSubDiv/static_cast<double>(numOriSubdivisions) * 2*M_PI;
           ignition::math::Quaterniond q(cos(f)*coneAngle, sin(f)*coneAngle, 0);
           q = q * outerCurrModelRot;
 

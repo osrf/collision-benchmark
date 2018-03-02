@@ -30,7 +30,6 @@
 
 namespace collision_benchmark
 {
-
 /**
  * \brief Helper class which can be used to collide two models.
  * The models are collided by moving them towards each other along a
@@ -348,10 +347,7 @@ class ModelCollider
 
   // \brief Axis to use for collision.
   private: ignition::math::Vector3d collisionAxis;
-
 };  // class
-
 }  // namespace collision_benchmark
-
 #include "ModelCollider-inl.hh"
 #endif  // COLLISION_BENCHMARK_MODELCOLLIDER_H

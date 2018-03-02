@@ -267,7 +267,7 @@ class WorldManager
   public: PhysicsWorldBaseInterface::Ptr GetWorld(unsigned int _index) const
   {
     std::lock_guard<std::recursive_mutex> lock(this->worldsMutex);
-    GZ_ASSERT(_index >=0 && _index < this->worlds.size(),
+    GZ_ASSERT(_index < this->worlds.size(),
               "Index out of range");
     if (_index >= this->worlds.size())
     {
@@ -617,12 +617,6 @@ class WorldManager
         boost::filesystem::path(subDirectory) /
         boost::filesystem::path(prefix + "_" + w->GetName() + "." + ext);
       std::cout << "Writing to file " << filename << std::endl;
-      std::string resourceDir, resourceSubdir;
-      if (copyResources)
-      {
-        resourceDir = directory;
-        resourceSubdir = subDirectory;
-      }
       if (!w->SaveToFile(filename.string(), directory, subDirectory))
       {
         std::cerr << "ERROR: Could not save world " << w->GetName() <<

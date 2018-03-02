@@ -203,19 +203,23 @@ void StartClient(const bool verbose,
 {
   char **argvClient = new char*[4 +
                                 additionalGuis.size() * 2 +
-                                verbose ? 1 : 0];
+                                (verbose ? 1 : 0)];
   // silly const cast to avoid compiler warning
-  argvClient[0] = const_cast<char*>(static_cast<const char*>("gzclient"));
-  argvClient[1] = const_cast<char*>(static_cast<const char*>("--gui-client-plugin"));
-  argvClient[2] = const_cast<char*>
-                  (static_cast<const char*>("libcollision_benchmark_gui.so"));
+  argvClient[0] =
+    const_cast<char*>(static_cast<const char*>("gzclient"));
+  argvClient[1] =
+    const_cast<char*>(static_cast<const char*>("--gui-client-plugin"));
+  argvClient[2] =
+    const_cast<char*>(static_cast<const char*>
+                       ("libcollision_benchmark_gui.so"));
   int i = 3;
   for (int g = 0; g < additionalGuis.size(); ++g)
   {
-    argvClient[i] = const_cast<char*>(static_cast<const char*>("--gui-client-plugin"));
+    argvClient[i] =
+      const_cast<char*>(static_cast<const char*>("--gui-client-plugin"));
     ++i;
-    argvClient[i] = const_cast<char*>
-                    (static_cast<const char*>(additionalGuis[g].c_str()));
+    argvClient[i] =
+      const_cast<char*>(static_cast<const char*>(additionalGuis[g].c_str()));
     ++i;
   }
 
@@ -329,7 +333,6 @@ bool GazeboMultipleWorlds::Init(const bool loadMirror,
                                 )
 {
   interactiveMode = useInteractiveMode;
-  bool verbose = false;
 
   // only interactive mode loads up gzclient and needs fork().
   if (InteractiveMode())
@@ -344,6 +347,7 @@ bool GazeboMultipleWorlds::Init(const bool loadMirror,
   }
   if (IsChild())
   {
+    bool verbose = false;
     // child process: Start gzclient with the multiple worlds plugin
     StartClient(verbose, additionalGuis);
     return true;

@@ -98,7 +98,7 @@ class WorldStatMsgFilter
   public: typedef boost::shared_ptr<WorldStatistics const>
                     WorldStatisticsConstPtr;
 
-  public: WorldStatMsgFilter(const MirrorWeakPtr &_mirror):
+  public: explicit WorldStatMsgFilter(const MirrorWeakPtr &_mirror):
           mirror(_mirror) {}
   public: virtual WorldStatisticsConstPtr
                   Filter(const WorldStatisticsConstPtr &_msg) const
@@ -353,7 +353,7 @@ void GazeboTopicForwardingMirror::Init()
 
 ///////////////////////////////////////////////////////////////////////////////
 void GazeboTopicForwardingMirror::ConnectOriginalWorld
-      (const std::string origWorldName)
+      (const std::string &origWorldName)
 {
   if (!this->initialized) Init();
 

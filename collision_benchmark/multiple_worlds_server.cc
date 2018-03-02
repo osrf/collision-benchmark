@@ -141,7 +141,8 @@ bool Run()
 
   std::cout << "Now start gzclient if you would like "
             << "to view the worlds: " << std::endl;
-  std::cout << "gzclient --gui-client-plugin libcollision_benchmark_gui.so" << std::endl;
+  std::cout << "gzclient --gui-client-plugin libcollision_benchmark_gui.so"
+            << std::endl;
   std::cout << "Press [Enter] to continue without gzclient or hit "
             << "the play button in gzclient." << std::endl;
 

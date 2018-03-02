@@ -19,8 +19,8 @@
  * Date: December 2016
  */
 
-#include "SignalReceiver.hh"
 #include <algorithm>
+#include "SignalReceiver.hh"
 
 using collision_benchmark::SignalReceiver;
 
@@ -130,7 +130,7 @@ void SignalReceiver::ReceiveAnyMsg(ConstAnyPtr &msg)
 /////////////////////////////////////////////////
 void SignalReceiver::CheckCallbacks()
 {
-  for (std::map<int, std::function<bool(void)>>::const_iterator
+  for (std::map<int, std::function<bool(void)> >::const_iterator
        it = callbacks.begin(); it != callbacks.end(); ++it)
   {
     const std::function<bool(void)> &cb = it->second;

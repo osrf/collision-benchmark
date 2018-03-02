@@ -46,8 +46,6 @@ MultipleWorldsTestFramework::Init(const bool interactiveMode,
   bool loadMirror = true;
   bool allowControlViaMirror = false;
   bool enforceContactCalc = true;
-  std::string mirrorName = "";
-  if (loadMirror) mirrorName = "mirror";
   server->Init(loadMirror, enforceContactCalc,
                allowControlViaMirror, interactiveMode, additionalGuis);
   // ensure that the server is returned properly
@@ -158,8 +156,6 @@ void MultipleWorldsTestFramework::LoadShape(const Shape::Ptr &shape,
   GzWorldManager::Ptr worldManager = mServer->GetWorldManager();
   ASSERT_NE(worldManager.get(), nullptr) << "No valid world manager created";
 
-  int numWorlds = worldManager->GetNumWorlds();
-
   // get the world
   PhysicsWorldBaseInterface::Ptr world = worldManager->GetWorld(worldIdx);
   ASSERT_NE(world.get(), nullptr) << "No world at index " << worldIdx;
@@ -194,7 +190,7 @@ void MultipleWorldsTestFramework::LoadModel(const std::string &modelFile,
   // Load model
   typedef GzWorldManager::ModelLoadResult ModelLoadResult;
   std::vector<ModelLoadResult> res
-    = worldManager->AddModelFromFile(modelFile,modelName);
+    = worldManager->AddModelFromFile(modelFile, modelName);
   ASSERT_EQ(res.size(), numWorlds)
     << "Model must have been loaded in all worlds";
 
@@ -218,8 +214,6 @@ void MultipleWorldsTestFramework::LoadModel(const std::string &modelFile,
   ASSERT_NE(mServer.get(), nullptr) << "Could not create and start server";
   GzWorldManager::Ptr worldManager = mServer->GetWorldManager();
   ASSERT_NE(worldManager.get(), nullptr) << "No valid world manager created";
-
-  int numWorlds = worldManager->GetNumWorlds();
 
   // get the world
   PhysicsWorldBaseInterface::Ptr world = worldManager->GetWorld(worldIdx);
