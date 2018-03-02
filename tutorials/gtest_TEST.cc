@@ -38,6 +38,10 @@ class MyTest:
 //////////////////////////////////////////////////////////////////////////////
 // Example for physics engine testing.
 // Creates two shapes and adds them to the worlds.
+// Then sets the state of the second shape in a loop, letting it rotate in
+// circles for a number of iterations. The state of the first model is
+// changed in ALL worlds, and the test ensures that this has been
+// done correctly.
 TEST_F(MyTest, ExampleTest)
 {
   // get all supported physics engines
@@ -58,6 +62,7 @@ TEST_F(MyTest, ExampleTest)
   std::string modelName2 = "model2";
   Shape::Ptr shape2(PrimitiveShape::CreateCylinder(1, 3));
 
+  // Initialize the test framework with the given physics engines.
   // Running the test in interactive mode will also bring up gzclient
   bool interactive = true;
   InitMultipleEngines(selectedEngines, interactive);
@@ -139,8 +144,7 @@ TEST_F(MyTest, ExampleTest)
     worldManager->Update(1);
   }
 
-  // if you run the test in interactive mode, gzclient will not have
-  // been loaded by the time this test finishes, so we will end the
+  // if you run the test in interactive mode, we can end the
   // test only once the client is closed.
   if (interactive)
   {
