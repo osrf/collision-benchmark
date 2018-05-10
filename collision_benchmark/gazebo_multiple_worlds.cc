@@ -64,8 +64,8 @@ void InitWorlds(const std::vector<std::string>& engines,
                 const bool keepWorldNames = false)
 {
   bool loadMirror = true;
-  bool allowControlViaMirror = false;
-  bool enforceContactCalc = true;
+  bool allowControlViaMirror = true;
+  bool enforceContactCalc = false;
   g_server.reset(new GazeboMultipleWorlds());
   g_server->Init(loadMirror, enforceContactCalc,
                allowControlViaMirror, true, additionalGuis);
