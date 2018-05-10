@@ -82,6 +82,9 @@ add_custom_target(tests)
 add_executable(multiple_worlds_server
   collision_benchmark/multiple_worlds_server.cc)
 
+add_executable(gazebo_multiple_worlds
+  collision_benchmark/gazebo_multiple_worlds.cc)
+
 target_link_libraries(collision_benchmark
   ${dependencies_LIBRARIES})
 
@@ -89,6 +92,8 @@ target_link_libraries(collision_benchmark_gui
   ${dependencies_LIBRARIES})
 
 target_link_libraries(multiple_worlds_server collision_benchmark)
+
+target_link_libraries(gazebo_multiple_worlds collision_benchmark)
 
 
 #############################################
@@ -122,7 +127,6 @@ target_link_libraries(collision_benchmark_msgs ${PROTOBUF_LIBRARY})
 #############################################
 add_subdirectory(tutorials)
 add_subdirectory(test)
-add_subdirectory(mytest)
 
 #############################################
 # installing

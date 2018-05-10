@@ -27,6 +27,7 @@
 #include <collision_benchmark/boost_std_conversion.hh>
 
 #include <gazebo/gazebo.hh>
+#include <gazebo/sensors/SensorsIface.hh>
 #include <gazebo/physics/physics.hh>
 
 #include <sstream>
@@ -405,11 +406,11 @@ collision_benchmark::LoadWorldFromSDF(const sdf::ElementPtr &sdfRoot,
   gazebo::physics::WorldPtr world;
   try
   {
-    // XXX this just creates a new world object, all worlds objects are
+    // this creates a new world object. All worlds objects are
     // kept in a static list and can be retrieved. No Physics engine
-    // is created yet - this is done in World::Load (line 257), called
-    // from load_world: The physics engine specified **in the SDF** is
-    // loaded.
+    // is created yet - this is done in World::Load(), called
+    // from gazebo::physics::load_world(), where
+    // the physics engine specified in the SDF is loaded.
     world = gazebo::physics::create_world(useName);
 
     // std::cout << "Loading world..." << std::endl;
@@ -419,13 +420,19 @@ collision_benchmark::LoadWorldFromSDF(const sdf::ElementPtr &sdfRoot,
     // call to world->init
     if (world) gazebo::physics::init_world(world);
 
+    // Make sure the sensors are updated once before running the world.
+    // This makes sure plugins get loaded properly.
     // See also gazebo::Server::Run()
     // (see World::Step() where this->sensorsInitialized() will otherwise
     // return false).
     // We cannot use SensorManager::Update() as called by sensors::run_once(),
-    // in turn called by gazebo::Server, because this only initializes
-    // the sensors of the current world, physics::get_world();
+    // because this only initializes the sensors of the current
+    // world (physics::get_world()). This call here makes sure the
+    // initialization is called for the current world.
     if (forceSensorsInit) world->_SetSensorsInitialized(true);
+    // call the update method in case other initializations need to be done
+    // in this function.
+    gazebo::sensors::run_once(true);
   }
   catch(gazebo::common::Exception &e)
   {

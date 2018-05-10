@@ -187,23 +187,27 @@ int main(int argc, char **argv)
       po::value<std::vector<std::string> >(&selectedEngines)->multitoken(),
       descEngines.str().c_str())
     ("keep-name,k", "keep the names of the worlds as specified in the files. \
-Only works when no engines are specified with -e.");
-  po::options_description desc_hidden("Positional options");
-  desc_hidden.add_options()
+Only works when no engines are specified with -e.")
     ("worlds,w",
       po::value<std::vector<std::string> >(&worldFiles)->multitoken(),
       "World file(s).");
 
-  po::variables_map vm;
+  /*po::options_description desc_hidden("Positional options");
+  desc_hidden.add_options()
+    ("worlds,w",
+      po::value<std::vector<std::string> >(&worldFiles)->multitoken(),
+      "World file(s).");
   po::positional_options_description p;
   // positional arguments default to "worlds" argument
-  p.add("worlds", -1);
+  p.add("worlds", -1);*/
 
+
+  po::variables_map vm;
   po::options_description desc_composite;
-  desc_composite.add(desc).add(desc_hidden);
+  desc_composite.add(desc); //.add(desc_hidden);
 
   po::command_line_parser parser(argc, argv);
-  parser.options(desc_composite).positional(p);
+  parser.options(desc_composite); //.positional(p);
   po::parsed_options parsedOpt = parser.run();
   po::store(parsedOpt, vm);
   po::notify(vm);
