@@ -155,6 +155,7 @@ install (FILES ${physics_SDF}
 install (FILES ${test_WORLDS}
   DESTINATION ${CMAKE_INSTALL_PREFIX}/share/test_worlds)
 
-install (TARGETS collision_benchmark multiple_worlds_server
+install(
+  TARGETS collision_benchmark multiple_worlds_server gazebo_multiple_worlds
   LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
   RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)

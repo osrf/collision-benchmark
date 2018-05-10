@@ -132,8 +132,11 @@ Only works when no engines are specified with -e.")
   po::options_description desc_composite;
   desc_composite.add(desc); //.add(desc_hidden);
 
+  po::positional_options_description p;
+  // positional arguments default to "worlds" argument
+  p.add("worlds", -1);
   po::command_line_parser parser(argc, argv);
-  parser.options(desc_composite); //.positional(p);
+  parser.options(desc_composite).positional(p);
   po::parsed_options parsedOpt = parser.run();
   po::store(parsedOpt, vm);
   po::notify(vm);

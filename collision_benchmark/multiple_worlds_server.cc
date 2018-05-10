@@ -196,18 +196,18 @@ Only works when no engines are specified with -e.")
   desc_hidden.add_options()
     ("worlds,w",
       po::value<std::vector<std::string> >(&worldFiles)->multitoken(),
-      "World file(s).");
+      "World file(s).");*/
+
   po::positional_options_description p;
   // positional arguments default to "worlds" argument
-  p.add("worlds", -1);*/
-
+  p.add("worlds", -1);
 
   po::variables_map vm;
   po::options_description desc_composite;
   desc_composite.add(desc); //.add(desc_hidden);
 
   po::command_line_parser parser(argc, argv);
-  parser.options(desc_composite); //.positional(p);
+  parser.options(desc_composite).positional(p);
   po::parsed_options parsedOpt = parser.run();
   po::store(parsedOpt, vm);
   po::notify(vm);
