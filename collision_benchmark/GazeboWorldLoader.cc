@@ -254,7 +254,7 @@ collision_benchmark::GetSDFElementFromFile(const std::string &filename,
 
   if (fullFile.empty())
   {
-    std::cerr << "Unable to find file[" << filename << "]\n";
+    std::cerr << "Unable to find file [" << filename << "]\n";
     return sdfRoot;
   }
 
@@ -265,13 +265,13 @@ collision_benchmark::GetSDFElementFromFile(const std::string &filename,
   {
     if (!sdf::readFile(fullFile, sdf))
     {
-      std::cerr << "Unable to read sdf file[" << filename << "]\n";
+      std::cerr << "Unable to read sdf file [" << filename << "]\n";
       return sdfRoot;
     }
   }
   catch(...)
   {
-    std::cerr << "Unable to read sdf file[" << filename << "]\n";
+    std::cerr << "Unable to read sdf file [" << filename << "]\n";
     return sdfRoot;
   }
 
@@ -554,7 +554,7 @@ LoadWorld_helper(const std::string &str,
   }
   if (!sdfRoot)
   {
-    std::cerr << "Could not load world" << std::endl;
+    std::cerr << "LoadWorld: Could not read SDF for " << str << std::endl;
     return world;
   }
   if (overridePhysics)
@@ -589,7 +589,7 @@ collision_benchmark::LoadWorldFromFile(const std::string &worldfile,
 {
   /* std::cout << "Loading world from file " << worldfile;
   if (!name.empty()) std::cout << " (to be named '" << name << "')";
-  std::cout << std::endl;*/
+  std::cout << std::endl; */
   return LoadWorld_helper(worldfile, true, name, overridePhysics);
 }
 

@@ -294,7 +294,7 @@ void GazeboTopicForwardingMirror::Init()
 
   // initialize topic forwarders
   ////////////////////////////////////////////////
-  int verboseLevel = 0;
+  const int verboseLevel = 0;
   try
   {
     this->statFwd.reset(new GazeboTopicForwarder<gazebo::msgs::WorldStatistics>
@@ -356,6 +356,9 @@ void GazeboTopicForwardingMirror::ConnectOriginalWorld
       (const std::string &origWorldName)
 {
   if (!this->initialized) Init();
+
+  //  std::cout << "GazeboTopicForwardingMirror: Connecting to original world "
+  //          << origWorldName << "." << std::endl;
 
   // connect services
   assert(this->origServiceFwd);

@@ -47,7 +47,7 @@ bool GazeboMultipleWorldsServer::Start(const std::string &mirrorName,
                     <<" valid command line parameters");
   }
 
-  // make the console verbose for improved output
+  // console verbose mode
   gazebo::common::Console::SetQuiet(false);
 
   // Initialize gazebo.

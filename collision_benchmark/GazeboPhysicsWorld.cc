@@ -662,20 +662,24 @@ bool GazeboPhysicsWorld::GetBasicModelState(const ModelID  &_id,
   return true;
 }
 
-#define NEW_WORLDRUN_SOLUTION
+// This flag sets the behaviour of GazeboPhysicsWorld::Update().
+// If defined, physics::World::Step(int) is called every loop, which is
+// the behavior we would like.
+// If not defined, gazebo::runWorld() is used instead.
+//
+// See also issue #2509
+// https://bitbucket.org/osrf/gazebo/issues/2509/
+#define UPDATE_CALLS_STEP
 
 //////////////////////////////////////////////////////////////////////////////
 void GazeboPhysicsWorld::PostWorldLoaded()
 {
   GZ_ASSERT(world, "World is null, must have been loaded!");
-#ifdef NEW_WORLDRUN_SOLUTION
-  // Stop the world just in case it has been started already.
-  // We want to start it under controlled conitions here.
-  world->Stop();
-  world->SetPaused(true);
+#ifdef UPDATE_CALLS_STEP
   // Run the world in paused mode so that the main
   // loop of the gazebo world is working and calls of
   // Update() will do a World::Step().
+  world->SetPaused(true);
   world->Run(0);
 #endif
 }
@@ -687,7 +691,7 @@ void GazeboPhysicsWorld::Update(int steps, bool force)
   // std::cout << "Running " << steps << " steps for world "
   //          <<world->Name() << ", physics engine: "
   //          <<world->Physics()->GetType() << std::endl;
-#ifdef NEW_WORLDRUN_SOLUTION
+#ifdef UPDATE_CALLS_STEP
   if (!force && IsPaused()) return;
 
   // if the world is not paused, it is updating itself already
@@ -716,7 +720,8 @@ void GazeboPhysicsWorld::Update(int steps, bool force)
   // This method calls world->RunBlocking();
   gazebo::runWorld(world, steps);
   // iterations is always 1 if it has been set with steps != 0
-  // in call above. Should fix this in Gazebo::World?
+  // in call above. Also, start time will be reset every time (see
+  // World::RunLoop()).
   // std::cout << "Iterations: " << world->Iterations() << std::endl;
 #endif
 }
@@ -724,7 +729,7 @@ void GazeboPhysicsWorld::Update(int steps, bool force)
 //////////////////////////////////////////////////////////////////////////////
 void GazeboPhysicsWorld::SetPaused(bool flag)
 {
-#ifdef NEW_WORLDRUN_SOLUTION
+#ifdef UPDATE_CALLS_STEP
   paused = flag;
 #else
   world->SetPaused(flag);
@@ -734,7 +739,7 @@ void GazeboPhysicsWorld::SetPaused(bool flag)
 //////////////////////////////////////////////////////////////////////////////
 bool GazeboPhysicsWorld::IsPaused() const
 {
-#ifdef NEW_WORLDRUN_SOLUTION
+#ifdef UPDATE_CALLS_STEP
   return paused;
 #else
   return world->IsPaused();

@@ -152,8 +152,8 @@ class GazeboTopicForwarder
 
             if (this->verbose)
             {
-              std::cout << "Forwarding messages (verbose: "
-                        << (verbose ? "true" : "false") << ") of type "
+              std::cout << "GazeboTopicForwarder: Forwarding messages (verbose:"
+                        << (verbose ? " true" : " false") << ") of type "
                         << GetTypeName<Msg>() << " from topic "
                         << _from << " to topic ";
               if (this->pub)
@@ -180,13 +180,18 @@ class GazeboTopicForwarder
                      unsigned int _pubQueueLimit = 1000,
                      double _pubHzRate = 0)
            {
-             // std::cout << "Forwarding messages of type "
-             //       << GetTypeName<Msg>() << " to topic " << _to << std::endl;
+             /*if (this->verbose)
+             {
+              std::cout << "GazeboTopicForwarder: Forwarding messages of type "
+                      << GetTypeName<Msg>() << " to topic " << _to << std::endl;
+             }*/
              try
              {
                std::lock_guard<std::mutex> lock(transportMutex);
                this->pub =
                  _node->Advertise<Msg>(_to, _pubQueueLimit, _pubHzRate);
+               // std::cout << "GazeboTopicForwarder: Advertised " << _to
+               //          << std::endl;
              }
              catch(gazebo::common::Exception &e)
              {
