@@ -33,6 +33,7 @@
 #include <collision_benchmark/StartWaiter.hh>
 
 #include <gazebo/gazebo.hh>
+#include <gazebo/gazebo_config.h>
 
 using collision_benchmark::GazeboMultipleWorlds;
 
@@ -204,9 +205,13 @@ void StartClient(const bool verbose,
   char **argvClient = new char*[4 +
                                 additionalGuis.size() * 2 +
                                 (verbose ? 1 : 0)];
+  if (GAZEBO_VERSION_FULL == "")
+    throw std::runtime_error("ERROR: GAZEBO_VERSION_FULL is empty.");
+  std::stringstream gzclient_cmd;
+  gzclient_cmd << "gzclient-" << GAZEBO_VERSION_FULL;
   // silly const cast to avoid compiler warning
   argvClient[0] =
-    const_cast<char*>(static_cast<const char*>("gzclient"));
+    const_cast<char*>(static_cast<const char*>(gzclient_cmd.str().c_str()));
   argvClient[1] =
     const_cast<char*>(static_cast<const char*>("--gui-client-plugin"));
   argvClient[2] =
