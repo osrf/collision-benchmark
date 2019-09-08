@@ -10,7 +10,7 @@ find_package(tinyxml REQUIRED)
 
 #################################################
 # Find Gazebo
-find_package(gazebo 10.0 REQUIRED)
+find_package(gazebo REQUIRED)
 
 #################################################
 # Find Assimp
